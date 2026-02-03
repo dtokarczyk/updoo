@@ -124,6 +124,9 @@ function ListingCard({
             {listing.rate && (
               <span className="font-medium text-foreground">
                 {formatRate(listing.rate, listing.currency, listing.billingType)}
+                {listing.rateNegotiable && (
+                  <span className="text-muted-foreground font-normal"> · do negocjacji</span>
+                )}
               </span>
             )}
             {listing.experienceLevel && (

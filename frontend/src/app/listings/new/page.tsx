@@ -67,6 +67,7 @@ export default function NewListingPage() {
   const [billingType, setBillingType] = useState<BillingType>("HOURLY");
   const [hoursPerWeek, setHoursPerWeek] = useState<HoursPerWeek | "">("");
   const [rate, setRate] = useState("");
+  const [rateNegotiable, setRateNegotiable] = useState(false);
   const [currency, setCurrency] = useState("PLN");
   const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel>("MID");
   const [locationId, setLocationId] = useState("");
@@ -161,6 +162,7 @@ export default function NewListingPage() {
         billingType,
         hoursPerWeek: billingType === "HOURLY" ? (hoursPerWeek as HoursPerWeek) : undefined,
         rate: rateNum,
+        rateNegotiable,
         currency,
         experienceLevel,
         locationId: locationId || undefined,
@@ -325,6 +327,20 @@ export default function NewListingPage() {
                     ))}
                   </select>
                 </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  id="rateNegotiable"
+                  type="checkbox"
+                  checked={rateNegotiable}
+                  onChange={(e) => setRateNegotiable(e.target.checked)}
+                  disabled={submitting}
+                  className="rounded border-input"
+                />
+                <Label htmlFor="rateNegotiable" className="cursor-pointer">
+                  Stawka do negocjacji
+                </Label>
               </div>
 
               <div className="space-y-2">

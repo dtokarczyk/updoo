@@ -155,6 +155,7 @@ export class ListingsService implements OnModuleInit {
           ? (dto.hoursPerWeek as HoursPerWeek)
           : null,
         rate: dto.rate,
+        rateNegotiable: dto.rateNegotiable ?? false,
         currency: dto.currency.toUpperCase().slice(0, 3),
         experienceLevel: dto.experienceLevel as ExperienceLevel,
         locationId: dto.locationId || null,

@@ -64,6 +64,11 @@ export class CreateListingDto {
   @Type(() => Number)
   rate: number;
 
+  @IsOptional()
+  @IsBoolean()
+  @Type(() => Boolean)
+  rateNegotiable?: boolean;
+
   @IsString()
   @MinLength(3, { message: 'Currency must be 3 characters (e.g. PLN, EUR)' })
   @MaxLength(3)

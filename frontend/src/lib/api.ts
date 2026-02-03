@@ -156,6 +156,7 @@ export interface Listing {
   billingType: BillingType;
   hoursPerWeek: HoursPerWeek | null;
   rate: string;
+  rateNegotiable?: boolean;
   currency: string;
   experienceLevel: ExperienceLevel;
   locationId: string | null;
@@ -231,6 +232,7 @@ export interface CreateListingPayload {
   billingType: BillingType;
   hoursPerWeek?: HoursPerWeek;
   rate: number;
+  rateNegotiable?: boolean;
   currency: string;
   experienceLevel: ExperienceLevel;
   locationId?: string | null;

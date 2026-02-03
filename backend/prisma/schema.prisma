@@ -90,6 +90,7 @@ model Listing {
   billingType     BillingType
   hoursPerWeek    HoursPerWeek?   // when HOURLY
   rate            Decimal        @db.Decimal(12, 2)
+  rateNegotiable  Boolean        @default(false)
   currency        String         @db.VarChar(3)
   experienceLevel ExperienceLevel
   locationId      String?

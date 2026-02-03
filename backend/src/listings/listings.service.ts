@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, OnModuleInit, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateListingDto } from './dto/create-listing.dto';
-import { BillingType, HoursPerWeek, ExperienceLevel, ProjectType } from '@prisma/client';
+import { BillingType, HoursPerWeek, ExperienceLevel, ProjectType, ListingStatus } from '@prisma/client';
 
 const DEFAULT_CATEGORIES = [
   { name: 'Usługi', slug: 'uslugi' },
@@ -149,6 +149,7 @@ export class ListingsService implements OnModuleInit {
         description: dto.description.trim(),
         categoryId: dto.categoryId,
         authorId,
+        status: ListingStatus.DRAFT,
         billingType: dto.billingType as BillingType,
         hoursPerWeek: dto.billingType === 'HOURLY' && dto.hoursPerWeek
           ? (dto.hoursPerWeek as HoursPerWeek)
@@ -186,10 +187,15 @@ export class ListingsService implements OnModuleInit {
     });
   }
 
-  async getFeed(take = 50, cursor?: string) {
+  /** Feed: published for everyone; when userId is set, also include that user's draft listings. */
+  async getFeed(take = 50, cursor?: string, userId?: string) {
+    const where = userId
+      ? { OR: [{ status: ListingStatus.PUBLISHED }, { status: ListingStatus.DRAFT, authorId: userId }] }
+      : { status: ListingStatus.PUBLISHED };
     const listings = await this.prisma.listing.findMany({
       take: take + 1,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      where,
       orderBy: { createdAt: 'desc' },
       include: {
         category: true,
@@ -202,5 +208,27 @@ export class ListingsService implements OnModuleInit {
     const items = hasMore ? listings.slice(0, take) : listings;
     const nextCursor = hasMore ? items[items.length - 1].id : undefined;
     return { items, nextCursor };
+  }
+
+  async publishListing(listingId: string, adminUserId: string, isAdmin: boolean) {
+    if (!isAdmin) {
+      throw new ForbiddenException('Tylko użytkownik z typem konta ADMIN może publikować ogłoszenia');
+    }
+    const listing = await this.prisma.listing.findUnique({
+      where: { id: listingId },
+    });
+    if (!listing) {
+      throw new NotFoundException('Listing not found');
+    }
+    return this.prisma.listing.update({
+      where: { id: listingId },
+      data: { status: ListingStatus.PUBLISHED },
+      include: {
+        category: true,
+        author: { select: { id: true, email: true, name: true } },
+        location: true,
+        skills: { include: { skill: true } },
+      },
+    });
   }
 }

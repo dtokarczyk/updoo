@@ -1,6 +1,6 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
-export type AccountType = "CLIENT" | "FREELANCER";
+export type AccountType = "CLIENT" | "FREELANCER" | "ADMIN";
 
 export interface AuthUser {
   id: string;
@@ -130,6 +130,7 @@ export interface Skill {
   name: string;
 }
 
+export type ListingStatus = "DRAFT" | "PUBLISHED";
 export type BillingType = "FIXED" | "HOURLY";
 export type HoursPerWeek = "LESS_THAN_10" | "FROM_11_TO_20" | "FROM_21_TO_30" | "MORE_THAN_30";
 export type ExperienceLevel = "JUNIOR" | "MID" | "SENIOR";
@@ -151,6 +152,7 @@ export interface Listing {
   description: string;
   categoryId: string;
   authorId: string;
+  status: ListingStatus;
   billingType: BillingType;
   hoursPerWeek: HoursPerWeek | null;
   rate: string;
@@ -197,8 +199,28 @@ export async function getListingsFeed(
   if (take != null) params.set("take", String(take));
   if (cursor) params.set("cursor", cursor);
   const url = `${API_URL}/listings/feed${params.toString() ? `?${params}` : ""}`;
-  const res = await fetch(url);
+  const headers: HeadersInit = {};
+  const token = getToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const res = await fetch(url, { headers });
   if (!res.ok) throw new Error("Failed to fetch listings");
+  return res.json();
+}
+
+export async function publishListing(listingId: string): Promise<Listing> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+  const res = await fetch(`${API_URL}/listings/${listingId}/publish`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? "Failed to publish listing");
+  }
   return res.json();
 }
 

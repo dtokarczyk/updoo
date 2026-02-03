@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getListingsFeed, type Listing } from "@/lib/api";
+import { getListingsFeed, publishListing, getStoredUser, type Listing } from "@/lib/api";
 import {
   Card,
   CardContent,
@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 const BILLING_LABELS: Record<string, string> = {
   FIXED: "Ryczałt",
@@ -51,7 +52,19 @@ function formatRate(rate: string, currency: string, billingType: string) {
   return billingType === "HOURLY" ? `${formatted} ${currency}/h` : `${formatted} ${currency}`;
 }
 
-function ListingCard({ listing }: { listing: Listing }) {
+function ListingCard({
+  listing,
+  currentUserId,
+  isAdmin,
+  publishingId,
+  onPublish,
+}: {
+  listing: Listing;
+  currentUserId: string | null;
+  isAdmin: boolean;
+  publishingId: string | null;
+  onPublish: (id: string) => void;
+}) {
   const skills = listing.skills?.map((r) => r.skill.name) ?? [];
   const hasDetails =
     listing.billingType ||
@@ -61,9 +74,13 @@ function ListingCard({ listing }: { listing: Listing }) {
     listing.isRemote ||
     listing.projectType ||
     skills.length > 0;
+  const isDraft = listing.status === "DRAFT";
+  const canPublish = isAdmin && isDraft;
 
   return (
-    <Card className="overflow-hidden">
+    <Card
+      className={`overflow-hidden ${isDraft ? "border-amber-400 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-600" : ""}`}
+    >
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
           <CardTitle className="text-lg leading-tight">{listing.title}</CardTitle>
@@ -75,6 +92,22 @@ function ListingCard({ listing }: { listing: Listing }) {
           {listing.author.name || listing.author.email} ·{" "}
           {formatDate(listing.createdAt)}
         </CardDescription>
+        {isDraft && (
+          <p className="mt-2 rounded-md border border-amber-300 bg-amber-100 px-3 py-2 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-900/40 dark:text-amber-100">
+            Czeka na akceptację administratora. Widoczny tylko dla autora.
+          </p>
+        )}
+        {canPublish && (
+          <Button
+            size="sm"
+            variant="default"
+            className="mt-2"
+            onClick={() => onPublish(listing.id)}
+            disabled={publishingId === listing.id}
+          >
+            {publishingId === listing.id ? "Publikowanie…" : "Opublikuj"}
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-4">
@@ -124,13 +157,27 @@ export function ListingsFeed() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [publishingId, setPublishingId] = useState<string | null>(null);
+  const user = getStoredUser();
 
-  useEffect(() => {
+  const loadFeed = () => {
     getListingsFeed(50)
       .then((res) => setListings(res.items))
       .catch(() => setError("Nie udało się załadować ogłoszeń"))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadFeed();
   }, []);
+
+  const handlePublish = (listingId: string) => {
+    setPublishingId(listingId);
+    publishListing(listingId)
+      .then(() => loadFeed())
+      .catch(() => setError("Nie udało się opublikować ogłoszenia"))
+      .finally(() => setPublishingId(null));
+  };
 
   if (loading) {
     return (
@@ -157,7 +204,14 @@ export function ListingsFeed() {
   return (
     <div className="space-y-4">
       {listings.map((listing) => (
-        <ListingCard key={listing.id} listing={listing} />
+        <ListingCard
+          key={listing.id}
+          listing={listing}
+          currentUserId={user?.id ?? null}
+          isAdmin={user?.accountType === "ADMIN"}
+          publishingId={publishingId}
+          onPublish={handlePublish}
+        />
       ))}
     </div>
   );

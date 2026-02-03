@@ -12,6 +12,7 @@ datasource db {
 enum AccountType {
   CLIENT
   FREELANCER
+  ADMIN
 }
 
 enum BillingType {
@@ -35,6 +36,11 @@ enum ExperienceLevel {
 enum ProjectType {
   ONE_TIME
   CONTINUOUS
+}
+
+enum ListingStatus {
+  DRAFT
+  PUBLISHED
 }
 
 model User {
@@ -80,6 +86,7 @@ model Listing {
   description     String
   categoryId      String
   authorId        String
+  status          ListingStatus  @default(DRAFT)
   billingType     BillingType
   hoursPerWeek    HoursPerWeek?   // when HOURLY
   rate            Decimal        @db.Decimal(12, 2)
@@ -97,6 +104,7 @@ model Listing {
 
   @@index([categoryId])
   @@index([authorId])
+  @@index([status])
   @@index([createdAt])
   @@index([locationId])
 }

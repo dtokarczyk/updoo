@@ -28,6 +28,7 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(STEP_NAME);
   const [name, setName] = useState("");
+  const [surname, setSurname] = useState("");
   const [accountType, setAccountType] = useState<AccountType | "">("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -47,17 +48,23 @@ export default function OnboardingPage() {
       setName(user.name);
       setStep(STEP_ACCOUNT_TYPE);
     }
+    if (user.surname != null) {
+      setSurname(user.surname);
+    }
     if (user.accountType != null) {
       setAccountType(user.accountType);
     }
-  }, [user?.id, user?.name, user?.accountType, router]);
+  }, [user?.id, user?.name, user?.surname, user?.accountType, router]);
 
   async function handleNameSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      const { user: updated } = await updateProfile({ name: name.trim() || undefined });
+      const { user: updated } = await updateProfile({
+        name: name.trim() || undefined,
+        surname: surname.trim() || undefined,
+      });
       updateStoredUser(updated);
       setStep(STEP_ACCOUNT_TYPE);
     } catch (err) {
@@ -101,7 +108,7 @@ export default function OnboardingPage() {
             <CardHeader>
               <CardTitle>What should we call you?</CardTitle>
               <CardDescription>
-                Enter your name. You can change it later in settings.
+                Enter your name and surname. You can change them later in settings.
               </CardDescription>
             </CardHeader>
             <form onSubmit={handleNameSubmit}>
@@ -119,7 +126,19 @@ export default function OnboardingPage() {
                     placeholder="Your name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    autoComplete="name"
+                    autoComplete="given-name"
+                    disabled={loading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="surname">Surname</Label>
+                  <Input
+                    id="surname"
+                    type="text"
+                    placeholder="Your surname"
+                    value={surname}
+                    onChange={(e) => setSurname(e.target.value)}
+                    autoComplete="family-name"
                     disabled={loading}
                   />
                 </div>

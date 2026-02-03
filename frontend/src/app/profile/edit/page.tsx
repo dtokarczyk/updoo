@@ -27,6 +27,7 @@ export default function ProfileEditPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -39,6 +40,7 @@ export default function ProfileEditPage() {
     if (user) {
       setName(user.name ?? "");
       setSurname(user.surname ?? "");
+      setEmail(user.email ?? "");
     }
   }, []);
 
@@ -59,6 +61,7 @@ export default function ProfileEditPage() {
       const payload: Parameters<typeof updateProfile>[0] = {
         name: name.trim() || undefined,
         surname: surname.trim() || undefined,
+        email: email.trim() || undefined,
       };
       if (password.trim()) payload.password = password.trim();
       const { user: updated } = await updateProfile(payload);
@@ -98,7 +101,7 @@ export default function ProfileEditPage() {
           <CardHeader>
             <CardTitle>Edycja profilu</CardTitle>
             <CardDescription>
-              Zmień imię, nazwisko lub hasło. Po zmianie hasła zostaniesz wylogowany.
+              Zmień imię, nazwisko, adres e-mail lub hasło. Po zmianie hasła zostaniesz wylogowany.
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
@@ -134,6 +137,18 @@ export default function ProfileEditPage() {
                   value={surname}
                   onChange={(e) => setSurname(e.target.value)}
                   autoComplete="family-name"
+                  disabled={loading}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Adres e-mail</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Adres e-mail"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
                   disabled={loading}
                 />
               </div>

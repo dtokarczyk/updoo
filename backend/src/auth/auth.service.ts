@@ -64,10 +64,23 @@ export class AuthService {
     userId: string,
     dto: UpdateProfileDto,
   ): Promise<{ user: AuthResponse['user'] }> {
+    if (dto.email !== undefined && dto.email.trim()) {
+      const normalizedEmail = dto.email.trim().toLowerCase();
+      const existing = await this.prisma.user.findFirst({
+        where: {
+          email: normalizedEmail,
+          id: { not: userId },
+        },
+      });
+      if (existing) {
+        throw new ConflictException('User with this email already exists');
+      }
+    }
     const updateData: Parameters<typeof this.prisma.user.update>[0]['data'] = {
       ...(dto.name !== undefined && { name: dto.name || null }),
       ...(dto.surname !== undefined && { surname: dto.surname || null }),
       ...(dto.accountType !== undefined && { accountType: dto.accountType || null }),
+      ...(dto.email !== undefined && dto.email.trim() && { email: dto.email.trim().toLowerCase() }),
     };
     if (dto.password !== undefined && dto.password.trim()) {
       updateData.password = await bcrypt.hash(dto.password.trim(), this.saltRounds);

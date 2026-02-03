@@ -35,6 +35,7 @@ export async function register(
 export interface UpdateProfilePayload {
   name?: string;
   surname?: string;
+  email?: string;
   accountType?: AccountType;
   password?: string;
 }
@@ -47,6 +48,7 @@ export async function updateProfile(
   const body: Record<string, unknown> = {};
   if (payload.name !== undefined) body.name = payload.name;
   if (payload.surname !== undefined) body.surname = payload.surname;
+  if (payload.email !== undefined) body.email = payload.email;
   if (payload.accountType !== undefined) body.accountType = payload.accountType;
   if (payload.password !== undefined && payload.password.trim()) body.password = payload.password;
   const res = await fetch(`${API_URL}/auth/profile`, {

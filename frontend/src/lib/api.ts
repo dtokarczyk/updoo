@@ -6,6 +6,7 @@ export interface AuthUser {
   id: string;
   email: string;
   name: string | null;
+  surname: string | null;
   accountType: AccountType | null;
 }
 
@@ -31,19 +32,30 @@ export async function register(
   return res.json();
 }
 
+export interface UpdateProfilePayload {
+  name?: string;
+  surname?: string;
+  accountType?: AccountType;
+  password?: string;
+}
+
 export async function updateProfile(
-  name?: string,
-  accountType?: AccountType
+  payload: UpdateProfilePayload
 ): Promise<{ user: AuthUser }> {
   const token = getToken();
   if (!token) throw new Error("Not authenticated");
+  const body: Record<string, unknown> = {};
+  if (payload.name !== undefined) body.name = payload.name;
+  if (payload.surname !== undefined) body.surname = payload.surname;
+  if (payload.accountType !== undefined) body.accountType = payload.accountType;
+  if (payload.password !== undefined && payload.password.trim()) body.password = payload.password;
   const res = await fetch(`${API_URL}/auth/profile`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ name, accountType }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -140,6 +152,17 @@ export interface ListingAuthor {
   id: string;
   email: string;
   name: string | null;
+  surname: string | null;
+}
+
+/** Display "Name Surname" or fallback to name only or email. */
+export function authorDisplayName(author: ListingAuthor): string {
+  const n = author.name?.trim();
+  const s = author.surname?.trim();
+  if (n && s) return `${n} ${s}`;
+  if (n) return n;
+  if (s) return s;
+  return author.email || "";
 }
 
 export interface ListingSkillRelation {

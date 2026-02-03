@@ -18,7 +18,7 @@ import {
   Laptop,
   BarChart3,
 } from "lucide-react";
-import { getListing, getStoredUser, type Listing } from "@/lib/api";
+import { getListing, getStoredUser, authorDisplayName, type Listing } from "@/lib/api";
 import { HomeNav } from "@/app/components/HomeNav";
 import { Button } from "@/components/ui/button";
 import {
@@ -215,7 +215,7 @@ export default function ListingDetailPage() {
                 <CardDescription className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
                   <span className="flex items-center gap-1.5">
                     <User className="h-3.5 w-3.5" />
-                    {listing.author.name || listing.author.email}
+                    {authorDisplayName(listing.author) || listing.author.email}
                   </span>
                   <span className="flex items-center gap-1.5">
                     <Calendar className="h-3.5 w-3.5" />

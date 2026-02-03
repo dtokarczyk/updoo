@@ -57,7 +57,7 @@ export default function OnboardingPage() {
     setError("");
     setLoading(true);
     try {
-      const { user: updated } = await updateProfile(name.trim() || undefined);
+      const { user: updated } = await updateProfile({ name: name.trim() || undefined });
       updateStoredUser(updated);
       setStep(STEP_ACCOUNT_TYPE);
     } catch (err) {
@@ -72,10 +72,9 @@ export default function OnboardingPage() {
     setError("");
     setLoading(true);
     try {
-      const { user: updated } = await updateProfile(
-        undefined,
-        accountType || undefined
-      );
+      const { user: updated } = await updateProfile({
+        accountType: accountType || undefined,
+      });
       updateStoredUser(updated);
       router.push("/");
       router.refresh();

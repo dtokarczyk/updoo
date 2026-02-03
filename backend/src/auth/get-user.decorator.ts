@@ -4,6 +4,7 @@ export interface JwtUser {
   id: string;
   email: string;
   name: string | null;
+  surname: string | null;
   accountType: string | null;
 }
 

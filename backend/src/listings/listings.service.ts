@@ -171,7 +171,7 @@ export class ListingsService implements OnModuleInit {
       },
       include: {
         category: true,
-        author: { select: { id: true, email: true, name: true } },
+        author: { select: { id: true, email: true, name: true, surname: true } },
         location: true,
         skills: { include: { skill: true } },
       },
@@ -188,7 +188,7 @@ export class ListingsService implements OnModuleInit {
       where: { id: listing.id },
       include: {
         category: true,
-        author: { select: { id: true, email: true, name: true } },
+        author: { select: { id: true, email: true, name: true, surname: true } },
         location: true,
         skills: { include: { skill: true } },
       },
@@ -207,7 +207,7 @@ export class ListingsService implements OnModuleInit {
       orderBy: { createdAt: 'desc' },
       include: {
         category: true,
-        author: { select: { id: true, email: true, name: true } },
+        author: { select: { id: true, email: true, name: true, surname: true } },
         location: true,
         skills: { include: { skill: true } },
       },
@@ -224,7 +224,7 @@ export class ListingsService implements OnModuleInit {
       where: { id: listingId },
       include: {
         category: true,
-        author: { select: { id: true, email: true, name: true } },
+        author: { select: { id: true, email: true, name: true, surname: true } },
         location: true,
         skills: { include: { skill: true } },
       },
@@ -327,7 +327,7 @@ export class ListingsService implements OnModuleInit {
       },
       include: {
         category: true,
-        author: { select: { id: true, email: true, name: true } },
+        author: { select: { id: true, email: true, name: true, surname: true } },
         location: true,
         skills: { include: { skill: true } },
       },
@@ -344,7 +344,7 @@ export class ListingsService implements OnModuleInit {
       where: { id: listingId },
       include: {
         category: true,
-        author: { select: { id: true, email: true, name: true } },
+        author: { select: { id: true, email: true, name: true, surname: true } },
         location: true,
         skills: { include: { skill: true } },
       },
@@ -366,7 +366,7 @@ export class ListingsService implements OnModuleInit {
       data: { status: ListingStatus.PUBLISHED },
       include: {
         category: true,
-        author: { select: { id: true, email: true, name: true } },
+        author: { select: { id: true, email: true, name: true, surname: true } },
         location: true,
         skills: { include: { skill: true } },
       },

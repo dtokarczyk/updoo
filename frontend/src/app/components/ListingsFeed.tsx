@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getListingsFeed, publishListing, getStoredUser, type Listing } from "@/lib/api";
+import { getListingsFeed, publishListing, getStoredUser, authorDisplayName, type Listing } from "@/lib/api";
 import {
   Card,
   CardContent,
@@ -132,7 +132,7 @@ function ListingCard({
             </div>
           </div>
           <CardDescription className="text-xs">
-            {listing.author.name || listing.author.email} ·{" "}
+            {authorDisplayName(listing.author) || listing.author.email} ·{" "}
             {formatDate(listing.createdAt)}
             {listing.deadline && formatDeadlineRemaining(listing.deadline) && (
               <>

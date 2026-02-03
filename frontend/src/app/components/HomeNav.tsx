@@ -24,21 +24,22 @@ function accountTypeLabel(type: AccountType | null): string {
 }
 
 function initials(user: AuthUser): string {
-  if (user.name?.trim()) {
-    const parts = user.name.trim().split(/\s+/);
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-    }
-    return user.name.slice(0, 2).toUpperCase();
-  }
-  if (user.email) {
-    return user.email.slice(0, 2).toUpperCase();
-  }
+  const n = user.name?.trim();
+  const s = user.surname?.trim();
+  if (n && s) return (n[0] + s[0]).toUpperCase();
+  if (n) return n.slice(0, 2).toUpperCase();
+  if (user.email) return user.email.slice(0, 2).toUpperCase();
   return "?";
 }
 
+/** Full display name: "Name Surname" or fallback to email / "Profil". */
 function displayName(user: AuthUser): string {
-  return user.name?.trim() || user.email || "Profil";
+  const n = user.name?.trim();
+  const s = user.surname?.trim();
+  if (n && s) return `${n} ${s}`;
+  if (n) return n;
+  if (s) return s;
+  return user.email || "Profil";
 }
 
 interface HomeNavProps {
@@ -161,6 +162,14 @@ export function HomeNav({ showCreateOnly }: HomeNavProps) {
           className="absolute right-0 top-full z-50 mt-1 min-w-40 rounded-lg border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-900"
           role="menu"
         >
+          <Link
+            href="/profile/edit"
+            role="menuitem"
+            className="block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            onClick={() => setDropdownOpen(false)}
+          >
+            Edytuj profil
+          </Link>
           <button
             type="button"
             role="menuitem"

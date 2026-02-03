@@ -17,7 +17,7 @@ export interface JwtPayload {
 
 export interface AuthResponse {
   access_token: string;
-  user: { id: string; email: string; name: string | null; accountType: string | null };
+  user: { id: string; email: string; name: string | null; surname: string | null; accountType: string | null };
 }
 
 @Injectable()
@@ -64,14 +64,27 @@ export class AuthService {
     userId: string,
     dto: UpdateProfileDto,
   ): Promise<{ user: AuthResponse['user'] }> {
+    const updateData: Parameters<typeof this.prisma.user.update>[0]['data'] = {
+      ...(dto.name !== undefined && { name: dto.name || null }),
+      ...(dto.surname !== undefined && { surname: dto.surname || null }),
+      ...(dto.accountType !== undefined && { accountType: dto.accountType || null }),
+    };
+    if (dto.password !== undefined && dto.password.trim()) {
+      updateData.password = await bcrypt.hash(dto.password.trim(), this.saltRounds);
+    }
     const user = await this.prisma.user.update({
       where: { id: userId },
-      data: {
-        ...(dto.name !== undefined && { name: dto.name || null }),
-        ...(dto.accountType !== undefined && { accountType: dto.accountType || null }),
-      },
+      data: updateData,
     });
-    return { user: { id: user.id, email: user.email, name: user.name, accountType: user.accountType } };
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        surname: user.surname,
+        accountType: user.accountType,
+      },
+    };
   }
 
   async validateUser(payload: JwtPayload) {
@@ -79,20 +92,33 @@ export class AuthService {
       where: { id: payload.sub },
     });
     if (!user) return null;
-    return { id: user.id, email: user.email, name: user.name, accountType: user.accountType };
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      surname: user.surname,
+      accountType: user.accountType,
+    };
   }
 
   private buildAuthResponse(user: {
     id: string;
     email: string;
     name: string | null;
+    surname: string | null;
     accountType: string | null;
   }): AuthResponse {
     const payload: JwtPayload = { sub: user.id, email: user.email };
     const access_token = this.jwtService.sign(payload);
     return {
       access_token,
-      user: { id: user.id, email: user.email, name: user.name, accountType: user.accountType },
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        surname: user.surname,
+        accountType: user.accountType,
+      },
     };
   }
 }

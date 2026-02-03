@@ -110,3 +110,75 @@ export function clearAuth(): void {
 export function needsOnboarding(user: AuthUser | null): boolean {
   return user != null && (user.name == null || user.accountType == null);
 }
+
+// Listings & categories
+
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export interface ListingAuthor {
+  id: string;
+  email: string;
+  name: string | null;
+}
+
+export interface Listing {
+  id: string;
+  title: string;
+  description: string;
+  categoryId: string;
+  authorId: string;
+  createdAt: string;
+  category: Category;
+  author: ListingAuthor;
+}
+
+export interface ListingsFeedResponse {
+  items: Listing[];
+  nextCursor?: string;
+}
+
+export async function getCategories(): Promise<Category[]> {
+  const res = await fetch(`${API_URL}/listings/categories`);
+  if (!res.ok) throw new Error("Failed to fetch categories");
+  return res.json();
+}
+
+export async function getListingsFeed(
+  take?: number,
+  cursor?: string
+): Promise<ListingsFeedResponse> {
+  const params = new URLSearchParams();
+  if (take != null) params.set("take", String(take));
+  if (cursor) params.set("cursor", cursor);
+  const url = `${API_URL}/listings/feed${params.toString() ? `?${params}` : ""}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Failed to fetch listings");
+  return res.json();
+}
+
+export async function createListing(
+  title: string,
+  description: string,
+  categoryId: string
+): Promise<Listing> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+  const res = await fetch(`${API_URL}/listings`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ title, description, categoryId }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? "Failed to create listing");
+  }
+  return res.json();
+}

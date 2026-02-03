@@ -8,6 +8,7 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 export interface JwtPayload {
   sub: string;
@@ -16,7 +17,7 @@ export interface JwtPayload {
 
 export interface AuthResponse {
   access_token: string;
-  user: { id: string; email: string; name: string | null };
+  user: { id: string; email: string; name: string | null; accountType: string | null };
 }
 
 @Injectable()
@@ -40,7 +41,6 @@ export class AuthService {
       data: {
         email: dto.email.toLowerCase(),
         password: hashedPassword,
-        name: dto.name ?? null,
       },
     });
     return this.buildAuthResponse(user);
@@ -60,24 +60,39 @@ export class AuthService {
     return this.buildAuthResponse(user);
   }
 
+  async updateProfile(
+    userId: string,
+    dto: UpdateProfileDto,
+  ): Promise<{ user: AuthResponse['user'] }> {
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(dto.name !== undefined && { name: dto.name || null }),
+        ...(dto.accountType !== undefined && { accountType: dto.accountType || null }),
+      },
+    });
+    return { user: { id: user.id, email: user.email, name: user.name, accountType: user.accountType } };
+  }
+
   async validateUser(payload: JwtPayload) {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
     });
     if (!user) return null;
-    return { id: user.id, email: user.email, name: user.name };
+    return { id: user.id, email: user.email, name: user.name, accountType: user.accountType };
   }
 
   private buildAuthResponse(user: {
     id: string;
     email: string;
     name: string | null;
+    accountType: string | null;
   }): AuthResponse {
     const payload: JwtPayload = { sub: user.id, email: user.email };
     const access_token = this.jwtService.sign(payload);
     return {
       access_token,
-      user: { id: user.id, email: user.email, name: user.name },
+      user: { id: user.id, email: user.email, name: user.name, accountType: user.accountType },
     };
   }
 }

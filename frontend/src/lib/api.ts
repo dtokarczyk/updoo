@@ -1,9 +1,12 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
+export type AccountType = "CLIENT" | "FREELANCER";
+
 export interface AuthUser {
   id: string;
   email: string;
   name: string | null;
+  accountType: AccountType | null;
 }
 
 export interface AuthResponse {
@@ -13,18 +16,39 @@ export interface AuthResponse {
 
 export async function register(
   email: string,
-  password: string,
-  name?: string
+  password: string
 ): Promise<AuthResponse> {
   const res = await fetch(`${API_URL}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password, name }),
+    body: JSON.stringify({ email, password }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
     throw new Error(msg ?? "Registration failed");
+  }
+  return res.json();
+}
+
+export async function updateProfile(
+  name?: string,
+  accountType?: AccountType
+): Promise<{ user: AuthUser }> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+  const res = await fetch(`${API_URL}/auth/profile`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ name, accountType }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? "Update failed");
   }
   return res.json();
 }
@@ -71,8 +95,18 @@ export function getStoredUser(): AuthUser | null {
   }
 }
 
+export function updateStoredUser(user: AuthUser): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+}
+
 export function clearAuth(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(AUTH_TOKEN_KEY);
   localStorage.removeItem(AUTH_USER_KEY);
+}
+
+/** True if user has not completed onboarding (missing name or account type). */
+export function needsOnboarding(user: AuthUser | null): boolean {
+  return user != null && (user.name == null || user.accountType == null);
 }

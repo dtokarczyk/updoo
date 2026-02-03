@@ -20,7 +20,6 @@ export default function RegisterPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -29,9 +28,9 @@ export default function RegisterPage() {
     setError("");
     setLoading(true);
     try {
-      const data = await apiRegister(email, password, name || undefined);
+      const data = await apiRegister(email, password);
       setAuth(data);
-      router.push("/");
+      router.push("/onboarding");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
@@ -81,18 +80,6 @@ export default function RegisterPage() {
                 required
                 minLength={8}
                 autoComplete="new-password"
-                disabled={loading}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="name">Name (optional)</Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="Your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                autoComplete="name"
                 disabled={loading}
               />
             </div>

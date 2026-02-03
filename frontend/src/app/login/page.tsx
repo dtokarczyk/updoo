@@ -14,7 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { login as apiLogin, setAuth } from "@/lib/api";
+import { login as apiLogin, setAuth, needsOnboarding } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -30,7 +30,7 @@ export default function LoginPage() {
     try {
       const data = await apiLogin(email, password);
       setAuth(data);
-      router.push("/");
+      router.push(needsOnboarding(data.user) ? "/onboarding" : "/");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");

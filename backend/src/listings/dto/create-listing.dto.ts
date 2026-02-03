@@ -1,4 +1,40 @@
-import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  MaxLength,
+  MinLength,
+  IsEnum,
+  IsOptional,
+  IsBoolean,
+  IsNumber,
+  IsArray,
+  Min,
+  ValidateIf,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+
+export enum BillingTypeDto {
+  FIXED = 'FIXED',
+  HOURLY = 'HOURLY',
+}
+
+export enum HoursPerWeekDto {
+  LESS_THAN_10 = 'LESS_THAN_10',
+  FROM_11_TO_20 = 'FROM_11_TO_20',
+  FROM_21_TO_30 = 'FROM_21_TO_30',
+  MORE_THAN_30 = 'MORE_THAN_30',
+}
+
+export enum ExperienceLevelDto {
+  JUNIOR = 'JUNIOR',
+  MID = 'MID',
+  SENIOR = 'SENIOR',
+}
+
+export enum ProjectTypeDto {
+  ONE_TIME = 'ONE_TIME',
+  CONTINUOUS = 'CONTINUOUS',
+}
 
 export class CreateListingDto {
   @IsString()
@@ -14,4 +50,48 @@ export class CreateListingDto {
   @IsString()
   @IsNotEmpty()
   categoryId: string;
+
+  @IsEnum(BillingTypeDto)
+  billingType: BillingTypeDto;
+
+  @IsEnum(HoursPerWeekDto)
+  @ValidateIf((o) => o.billingType === BillingTypeDto.HOURLY)
+  @IsNotEmpty({ message: 'Hours per week is required when billing is hourly' })
+  hoursPerWeek?: HoursPerWeekDto;
+
+  @IsNumber()
+  @Min(0, { message: 'Rate must be non-negative' })
+  @Type(() => Number)
+  rate: number;
+
+  @IsString()
+  @MinLength(3, { message: 'Currency must be 3 characters (e.g. PLN, EUR)' })
+  @MaxLength(3)
+  currency: string;
+
+  @IsEnum(ExperienceLevelDto)
+  experienceLevel: ExperienceLevelDto;
+
+  @IsOptional()
+  @IsString()
+  locationId?: string | null;
+
+  @IsBoolean()
+  @Type(() => Boolean)
+  isRemote: boolean;
+
+  @IsEnum(ProjectTypeDto)
+  projectType: ProjectTypeDto;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  skillIds?: string[];
+
+  /** New skill names to create and attach (like tags). */
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @MaxLength(100, { each: true })
+  newSkillNames?: string[];
 }

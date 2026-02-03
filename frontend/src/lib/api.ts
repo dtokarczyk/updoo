@@ -119,10 +119,30 @@ export interface Category {
   slug: string;
 }
 
+export interface Location {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export interface Skill {
+  id: string;
+  name: string;
+}
+
+export type BillingType = "FIXED" | "HOURLY";
+export type HoursPerWeek = "LESS_THAN_10" | "FROM_11_TO_20" | "FROM_21_TO_30" | "MORE_THAN_30";
+export type ExperienceLevel = "JUNIOR" | "MID" | "SENIOR";
+export type ProjectType = "ONE_TIME" | "CONTINUOUS";
+
 export interface ListingAuthor {
   id: string;
   email: string;
   name: string | null;
+}
+
+export interface ListingSkillRelation {
+  skill: Skill;
 }
 
 export interface Listing {
@@ -131,9 +151,19 @@ export interface Listing {
   description: string;
   categoryId: string;
   authorId: string;
+  billingType: BillingType;
+  hoursPerWeek: HoursPerWeek | null;
+  rate: string;
+  currency: string;
+  experienceLevel: ExperienceLevel;
+  locationId: string | null;
+  isRemote: boolean;
+  projectType: ProjectType;
   createdAt: string;
   category: Category;
   author: ListingAuthor;
+  location: Location | null;
+  skills: ListingSkillRelation[];
 }
 
 export interface ListingsFeedResponse {
@@ -144,6 +174,18 @@ export interface ListingsFeedResponse {
 export async function getCategories(): Promise<Category[]> {
   const res = await fetch(`${API_URL}/listings/categories`);
   if (!res.ok) throw new Error("Failed to fetch categories");
+  return res.json();
+}
+
+export async function getLocations(): Promise<Location[]> {
+  const res = await fetch(`${API_URL}/listings/locations`);
+  if (!res.ok) throw new Error("Failed to fetch locations");
+  return res.json();
+}
+
+export async function getSkills(): Promise<Skill[]> {
+  const res = await fetch(`${API_URL}/listings/skills`);
+  if (!res.ok) throw new Error("Failed to fetch skills");
   return res.json();
 }
 
@@ -160,11 +202,23 @@ export async function getListingsFeed(
   return res.json();
 }
 
-export async function createListing(
-  title: string,
-  description: string,
-  categoryId: string
-): Promise<Listing> {
+export interface CreateListingPayload {
+  title: string;
+  description: string;
+  categoryId: string;
+  billingType: BillingType;
+  hoursPerWeek?: HoursPerWeek;
+  rate: number;
+  currency: string;
+  experienceLevel: ExperienceLevel;
+  locationId?: string | null;
+  isRemote: boolean;
+  projectType: ProjectType;
+  skillIds?: string[];
+  newSkillNames?: string[];
+}
+
+export async function createListing(payload: CreateListingPayload): Promise<Listing> {
   const token = getToken();
   if (!token) throw new Error("Not authenticated");
   const res = await fetch(`${API_URL}/listings`, {
@@ -173,7 +227,7 @@ export async function createListing(
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ title, description, categoryId }),
+    body: JSON.stringify(payload),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

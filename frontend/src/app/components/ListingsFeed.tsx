@@ -10,6 +10,29 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+const BILLING_LABELS: Record<string, string> = {
+  FIXED: "Ryczałt",
+  HOURLY: "Godzinowo",
+};
+
+const HOURS_LABELS: Record<string, string> = {
+  LESS_THAN_10: "< 10 h/tydz.",
+  FROM_11_TO_20: "11–20 h/tydz.",
+  FROM_21_TO_30: "21–30 h/tydz.",
+  MORE_THAN_30: "> 30 h/tydz.",
+};
+
+const EXPERIENCE_LABELS: Record<string, string> = {
+  JUNIOR: "Junior",
+  MID: "Mid",
+  SENIOR: "Senior",
+};
+
+const PROJECT_TYPE_LABELS: Record<string, string> = {
+  ONE_TIME: "Jednorazowy",
+  CONTINUOUS: "Ciągły",
+};
+
 function formatDate(iso: string) {
   const d = new Date(iso);
   return d.toLocaleDateString("pl-PL", {
@@ -21,7 +44,24 @@ function formatDate(iso: string) {
   });
 }
 
+function formatRate(rate: string, currency: string, billingType: string) {
+  const r = parseFloat(rate);
+  if (Number.isNaN(r)) return "";
+  const formatted = r.toLocaleString("pl-PL", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  return billingType === "HOURLY" ? `${formatted} ${currency}/h` : `${formatted} ${currency}`;
+}
+
 function ListingCard({ listing }: { listing: Listing }) {
+  const skills = listing.skills?.map((r) => r.skill.name) ?? [];
+  const hasDetails =
+    listing.billingType ||
+    listing.rate ||
+    listing.experienceLevel ||
+    listing.location ||
+    listing.isRemote ||
+    listing.projectType ||
+    skills.length > 0;
+
   return (
     <Card className="overflow-hidden">
       <CardHeader className="pb-2">
@@ -36,10 +76,45 @@ function ListingCard({ listing }: { listing: Listing }) {
           {formatDate(listing.createdAt)}
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-3">
         <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-4">
           {listing.description}
         </p>
+        {hasDetails && (
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground border-t pt-3">
+            {listing.billingType && (
+              <span>{BILLING_LABELS[listing.billingType] ?? listing.billingType}</span>
+            )}
+            {listing.billingType === "HOURLY" && listing.hoursPerWeek && (
+              <span>{HOURS_LABELS[listing.hoursPerWeek] ?? listing.hoursPerWeek}</span>
+            )}
+            {listing.rate && (
+              <span className="font-medium text-foreground">
+                {formatRate(listing.rate, listing.currency, listing.billingType)}
+              </span>
+            )}
+            {listing.experienceLevel && (
+              <span>{EXPERIENCE_LABELS[listing.experienceLevel] ?? listing.experienceLevel}</span>
+            )}
+            {listing.location && <span>{listing.location.name}</span>}
+            {listing.isRemote && <span>Remote</span>}
+            {listing.projectType && (
+              <span>{PROJECT_TYPE_LABELS[listing.projectType] ?? listing.projectType}</span>
+            )}
+            {skills.length > 0 && (
+              <span className="flex flex-wrap gap-1">
+                {skills.map((name) => (
+                  <span
+                    key={name}
+                    className="rounded-full bg-muted px-1.5 py-0.5 text-muted-foreground"
+                  >
+                    {name}
+                  </span>
+                ))}
+              </span>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

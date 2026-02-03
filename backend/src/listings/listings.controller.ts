@@ -14,6 +14,16 @@ export class ListingsController {
     return this.listingsService.getCategories();
   }
 
+  @Get('locations')
+  getLocations() {
+    return this.listingsService.getLocations();
+  }
+
+  @Get('skills')
+  getSkills() {
+    return this.listingsService.getSkills();
+  }
+
   @Get('feed')
   getFeed(@Query('take') take?: string, @Query('cursor') cursor?: string) {
     const takeNum = take ? Math.min(parseInt(take, 10) || 50, 100) : 50;

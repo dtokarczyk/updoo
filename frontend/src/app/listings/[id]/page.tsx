@@ -12,13 +12,22 @@ import {
   FileText,
   MapPin,
   Pencil,
+  Send,
   Tag,
   User,
+  Users,
   Wrench,
   Laptop,
   BarChart3,
 } from "lucide-react";
-import { getListing, getStoredUser, authorDisplayName, type Listing } from "@/lib/api";
+import {
+  getListing,
+  applyToListing,
+  getStoredUser,
+  authorDisplayName,
+  isApplicationFull,
+  type Listing,
+} from "@/lib/api";
 import { HomeNav } from "@/app/components/HomeNav";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +37,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
 
 const BILLING_LABELS: Record<string, string> = {
   FIXED: "Ryczałt",
@@ -124,6 +134,9 @@ export default function ListingDetailPage() {
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [applyMessage, setApplyMessage] = useState("");
+  const [applySubmitting, setApplySubmitting] = useState(false);
+  const [applyError, setApplyError] = useState<string | null>(null);
   const user = getStoredUser();
 
   useEffect(() => {
@@ -184,6 +197,33 @@ export default function ListingDetailPage() {
   const skills = listing.skills?.map((r) => r.skill.name) ?? [];
   const isOwnListing = user?.id === listing.authorId;
   const isDraft = listing.status === "DRAFT";
+  const deadlinePassed = listing.deadline
+    ? getDeadlineRemainingDays(listing.deadline) === 0
+    : false;
+  const canApply =
+    user?.accountType === "FREELANCER" &&
+    !isOwnListing &&
+    !isDraft &&
+    !deadlinePassed &&
+    !listing.currentUserApplied;
+  const applications = listing.applications ?? [];
+
+  async function handleApply(e: React.FormEvent) {
+    e.preventDefault();
+    if (!id || !canApply) return;
+    setApplySubmitting(true);
+    setApplyError(null);
+    try {
+      await applyToListing(id, applyMessage || undefined);
+      const updated = await getListing(id);
+      setListing(updated);
+      setApplyMessage("");
+    } catch (e) {
+      setApplyError(e instanceof Error ? e.message : "Błąd zgłoszenia");
+    } finally {
+      setApplySubmitting(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 font-sans">
@@ -357,6 +397,108 @@ export default function ListingDetailPage() {
                     </div>
                   </div>
                 </div>
+              </section>
+            )}
+
+            {/* Freelancer applications: full data for author, initials for others */}
+            {applications.length > 0 && (
+              <section>
+                <div className="flex gap-3 items-start">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                    <Users className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+                      Zgłoszenia ({applications.length})
+                    </p>
+                    {isOwnListing ? (
+                      <div className="space-y-4">
+                        {applications.map((app) =>
+                          isApplicationFull(app) ? (
+                            <div
+                              key={app.id}
+                              className="rounded-lg border bg-muted/30 p-3 space-y-1.5"
+                            >
+                              <p className="font-medium text-foreground">
+                                {authorDisplayName(app.freelancer) || app.freelancer.email}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {app.freelancer.email}
+                              </p>
+                              {app.message && (
+                                <p className="text-sm whitespace-pre-wrap pt-1 border-t mt-2">
+                                  {app.message}
+                                </p>
+                              )}
+                              <p className="text-xs text-muted-foreground">
+                                {formatDate(app.createdAt)}
+                              </p>
+                            </div>
+                          ) : null
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {applications.map((app) => (
+                          <span
+                            key={app.id}
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-foreground"
+                            title="Zgłoszony freelancer"
+                          >
+                            {"freelancerInitials" in app
+                              ? app.freelancerInitials || "?"
+                              : "?"}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* Apply form (freelancer, before deadline, not own listing) */}
+            {user?.accountType === "FREELANCER" && !isOwnListing && !isDraft && (
+              <section className="border-t pt-6">
+                {listing.currentUserApplied ? (
+                  <div className="rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200 px-3 py-2 text-sm">
+                    Zgłosiłeś się do tej oferty.
+                  </div>
+                ) : deadlinePassed ? (
+                  <p className="text-sm text-muted-foreground">
+                    Termin zgłoszeń minął. Nie można już się zgłosić.
+                  </p>
+                ) : (
+                  <form onSubmit={handleApply} className="space-y-3">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      Zgłoś się do oferty
+                    </p>
+                    <Textarea
+                      placeholder="Opcjonalna wiadomość do zleceniodawcy…"
+                      value={applyMessage}
+                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                        setApplyMessage(e.target.value)
+                      }
+                      maxLength={2000}
+                      rows={3}
+                      className="resize-none"
+                      disabled={applySubmitting}
+                    />
+                    {applyError && (
+                      <p className="text-sm text-destructive">{applyError}</p>
+                    )}
+                    <Button type="submit" disabled={applySubmitting}>
+                      {applySubmitting ? (
+                        "Wysyłanie…"
+                      ) : (
+                        <>
+                          <Send className="mr-1.5 h-3.5 w-3.5" />
+                          Zgłoś się
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                )}
               </section>
             )}
           </CardContent>

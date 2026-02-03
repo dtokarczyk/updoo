@@ -227,6 +227,11 @@ export class ListingsService implements OnModuleInit {
         author: { select: { id: true, email: true, name: true, surname: true } },
         location: true,
         skills: { include: { skill: true } },
+        applications: {
+          include: {
+            freelancer: { select: { id: true, email: true, name: true, surname: true } },
+          },
+        },
       },
     });
     if (!listing) {
@@ -236,7 +241,83 @@ export class ListingsService implements OnModuleInit {
     if (listing.status === ListingStatus.DRAFT && !isAuthor && !isAdmin) {
       throw new NotFoundException('Listing not found');
     }
-    return listing;
+    const isAuthorOrAdmin = isAuthor || isAdmin;
+    // Author/admin: full application data; others: only freelancer initials
+    const applicationsForResponse = listing.applications.map((app) => {
+      if (isAuthorOrAdmin) {
+        return {
+          id: app.id,
+          freelancer: {
+            id: app.freelancer.id,
+            email: app.freelancer.email,
+            name: app.freelancer.name,
+            surname: app.freelancer.surname,
+          },
+          message: app.message ?? undefined,
+          createdAt: app.createdAt,
+        };
+      }
+      return {
+        id: app.id,
+        freelancerInitials: this.getInitials(app.freelancer.name, app.freelancer.surname),
+        createdAt: app.createdAt,
+      };
+    });
+    const currentUserApplied = Boolean(
+      userId && listing.applications.some((a) => a.freelancerId === userId),
+    );
+    const { applications: _app, ...rest } = listing;
+    return { ...rest, applications: applicationsForResponse, currentUserApplied };
+  }
+
+  private getInitials(name: string | null, surname: string | null): string {
+    const n = (name?.trim() ?? '').charAt(0).toUpperCase();
+    const s = (surname?.trim() ?? '').charAt(0).toUpperCase();
+    if (n && s) return `${n}. ${s}.`;
+    if (n) return `${n}.`;
+    if (s) return `${s}.`;
+    return '';
+  }
+
+  /** Freelancer applies to a listing. Allowed only before deadline. */
+  async applyToListing(
+    listingId: string,
+    freelancerId: string,
+    accountType: string | null,
+    message?: string,
+  ) {
+    if (accountType !== 'FREELANCER') {
+      throw new ForbiddenException('Tylko freelancerzy mogą zgłaszać się do ogłoszeń');
+    }
+    const listing = await this.prisma.listing.findUnique({
+      where: { id: listingId },
+    });
+    if (!listing) {
+      throw new NotFoundException('Listing not found');
+    }
+    if (listing.status === ListingStatus.DRAFT) {
+      throw new NotFoundException('Listing not found');
+    }
+    if (listing.authorId === freelancerId) {
+      throw new ForbiddenException('Nie możesz zgłosić się do własnego ogłoszenia');
+    }
+    const now = new Date();
+    if (listing.deadline && listing.deadline < now) {
+      throw new ForbiddenException('Termin zgłoszeń minął');
+    }
+    const trimmedMessage = message?.trim() || undefined;
+    await this.prisma.listingApplication.upsert({
+      where: {
+        listingId_freelancerId: { listingId, freelancerId },
+      },
+      create: {
+        listingId,
+        freelancerId,
+        message: trimmedMessage,
+      },
+      update: { message: trimmedMessage },
+    });
+    return { ok: true };
   }
 
   /** Update listing. Only author can update; status is always set to DRAFT so admin can re-approve. */

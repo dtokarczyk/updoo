@@ -53,6 +53,7 @@ model User {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   listings    Listing[]
+  applications ListingApplication[]
 }
 
 model Category {
@@ -104,12 +105,27 @@ model Listing {
   author          User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
   location        Location?      @relation(fields: [locationId], references: [id], onDelete: SetNull)
   skills          ListingSkill[]
+  applications    ListingApplication[]
 
   @@index([categoryId])
   @@index([authorId])
   @@index([status])
   @@index([createdAt])
   @@index([locationId])
+}
+
+model ListingApplication {
+  id          String   @id @default(cuid())
+  listingId   String
+  freelancerId String
+  message     String?  @db.Text
+  createdAt   DateTime @default(now())
+  listing     Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  freelancer  User     @relation(fields: [freelancerId], references: [id], onDelete: Cascade)
+
+  @@unique([listingId, freelancerId])
+  @@index([listingId])
+  @@index([freelancerId])
 }
 
 model ListingSkill {

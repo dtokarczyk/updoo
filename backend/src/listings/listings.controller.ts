@@ -3,6 +3,7 @@ import { GetUser } from '../auth/get-user.decorator';
 import type { JwtUser } from '../auth/get-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
+import { ApplyToListingDto } from './dto/apply-to-listing.dto';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { ListingsService } from './listings.service';
 
@@ -43,6 +44,16 @@ export class ListingsController {
     @GetUser() user?: JwtUser,
   ) {
     return this.listingsService.getListing(id, user?.id, user?.accountType === 'ADMIN');
+  }
+
+  @Post(':id/apply')
+  @UseGuards(JwtAuthGuard)
+  applyToListing(
+    @Param('id') id: string,
+    @GetUser() user: JwtUser,
+    @Body() dto: ApplyToListingDto,
+  ) {
+    return this.listingsService.applyToListing(id, user.id, user.accountType, dto.message);
   }
 
   @Post()

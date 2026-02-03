@@ -169,6 +169,39 @@ export interface ListingSkillRelation {
   skill: Skill;
 }
 
+/** Freelancer data in application (visible only to listing author). */
+export interface ListingApplicationFreelancer {
+  id: string;
+  email: string;
+  name: string | null;
+  surname: string | null;
+}
+
+/** Application as seen by listing author: full data. */
+export interface ListingApplicationFull {
+  id: string;
+  freelancer: ListingApplicationFreelancer;
+  message?: string;
+  createdAt: string;
+}
+
+/** Application as seen by others: only initials. */
+export interface ListingApplicationDisplay {
+  id: string;
+  freelancerInitials: string;
+  createdAt: string;
+}
+
+export type ListingApplication =
+  | ListingApplicationFull
+  | ListingApplicationDisplay;
+
+export function isApplicationFull(
+  app: ListingApplication
+): app is ListingApplicationFull {
+  return "freelancer" in app;
+}
+
 export interface Listing {
   id: string;
   title: string;
@@ -191,6 +224,8 @@ export interface Listing {
   author: ListingAuthor;
   location: Location | null;
   skills: ListingSkillRelation[];
+  applications?: ListingApplication[];
+  currentUserApplied?: boolean;
 }
 
 export interface ListingsFeedResponse {
@@ -317,6 +352,28 @@ export async function updateListing(
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
     throw new Error(msg ?? "Failed to update listing");
+  }
+  return res.json();
+}
+
+export async function applyToListing(
+  listingId: string,
+  message?: string
+): Promise<{ ok: boolean }> {
+  const token = getToken();
+  if (!token) throw new Error("Zaloguj się, aby zgłosić się do oferty");
+  const res = await fetch(`${API_URL}/listings/${listingId}/apply`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ message: message?.trim() || undefined }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? "Nie udało się zgłosić do oferty");
   }
   return res.json();
 }

@@ -78,6 +78,9 @@ export function HomeNav({ showCreateOnly }: HomeNavProps) {
   const handleLogout = () => {
     setDropdownOpen(false);
     clearAuth();
+    setUser(null);
+    setIsLoggedIn(false);
+    setCanCreateListing(false);
     router.push("/");
     router.refresh();
   };

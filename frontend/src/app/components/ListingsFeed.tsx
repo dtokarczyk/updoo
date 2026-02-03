@@ -54,6 +54,13 @@ function formatRate(rate: string, currency: string, billingType: string) {
   return billingType === "HOURLY" ? `${formatted} ${currency}/h` : `${formatted} ${currency}`;
 }
 
+const LISTING_DESCRIPTION_MAX_LENGTH = 300;
+
+function truncateDescription(text: string, maxLength: number): string {
+  if (text.length <= maxLength) return text;
+  return text.slice(0, maxLength).trimEnd() + "…";
+}
+
 function ListingCard({
   listing,
   currentUserId,
@@ -80,6 +87,11 @@ function ListingCard({
   const canPublish = isAdmin && isDraft;
   const isOwnListing = currentUserId === listing.authorId;
 
+  const shortDescription = truncateDescription(
+    listing.description,
+    LISTING_DESCRIPTION_MAX_LENGTH
+  );
+
   return (
     <div className={`overflow-hidden shadow-sm ${isDraft ? "rounded-t-xl" : "rounded-xl"}`}>
       <Card
@@ -87,7 +99,14 @@ function ListingCard({
       >
         <CardHeader className="pb-2">
           <div className="flex items-start justify-between gap-2">
-            <CardTitle className="text-lg leading-tight flex-1 min-w-0">{listing.title}</CardTitle>
+            <CardTitle className="text-lg leading-tight flex-1 min-w-0">
+              <Link
+                href={`/listings/${listing.id}`}
+                className="hover:underline focus:outline-none focus:underline"
+              >
+                {listing.title}
+              </Link>
+            </CardTitle>
             <div className="flex items-center gap-2 shrink-0">
               <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                 {listing.category.name}
@@ -107,9 +126,12 @@ function ListingCard({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-4">
-            {listing.description}
-          </p>
+          <Link
+            href={`/listings/${listing.id}`}
+            className="block text-sm text-muted-foreground whitespace-pre-wrap line-clamp-4 hover:text-foreground transition-colors"
+          >
+            {shortDescription}
+          </Link>
           {hasDetails && (
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground border-t pt-3">
               {listing.billingType && (

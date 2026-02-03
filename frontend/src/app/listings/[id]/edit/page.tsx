@@ -76,6 +76,7 @@ export default function EditListingPage() {
   const [locationId, setLocationId] = useState("");
   const [isRemote, setIsRemote] = useState(false);
   const [projectType, setProjectType] = useState<ProjectType>("ONE_TIME");
+  const [offerDays, setOfferDays] = useState<number>(14);
   const [selectedSkills, setSelectedSkills] = useState<SelectedSkill[]>([]);
   const [skillInput, setSkillInput] = useState("");
   const [skillDropdownOpen, setSkillDropdownOpen] = useState(false);
@@ -126,6 +127,17 @@ export default function EditListingPage() {
         setLocationId(listing.locationId ?? "");
         setIsRemote(listing.isRemote);
         setProjectType(listing.projectType);
+        if (listing.deadline && listing.createdAt) {
+          const ms = new Date(listing.deadline).getTime() - new Date(listing.createdAt).getTime();
+          const days = Math.round(ms / (24 * 60 * 60 * 1000));
+          const allowed = [7, 14, 21, 30];
+          const closest = allowed.reduce((prev, curr) =>
+            Math.abs(curr - days) < Math.abs(prev - days) ? curr : prev
+          );
+          setOfferDays(closest);
+        } else {
+          setOfferDays(14);
+        }
         setSelectedSkills(
           listing.skills?.map((r) => ({ id: r.skill.id, name: r.skill.name })) ?? []
         );
@@ -185,6 +197,11 @@ export default function EditListingPage() {
       setError("Przy rozliczeniu godzinowym wybierz ilość godzin tygodniowo");
       return;
     }
+    const allowedOfferDays = [7, 14, 21, 30];
+    if (!allowedOfferDays.includes(offerDays)) {
+      setError("Ilość dni na zebranie ofert: wybierz 7, 14, 21 lub 30 dni");
+      return;
+    }
     setSubmitting(true);
     try {
       await updateListing(id, {
@@ -200,6 +217,7 @@ export default function EditListingPage() {
         locationId: locationId || undefined,
         isRemote,
         projectType,
+        offerDays,
         skillIds: selectedSkills.filter((s) => s.id != null).map((s) => s.id as string),
         newSkillNames: selectedSkills.filter((s) => s.id == null).map((s) => s.name),
       });
@@ -462,6 +480,26 @@ export default function EditListingPage() {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="offerDays">Ilość dni na zebranie ofert</Label>
+                <select
+                  id="offerDays"
+                  value={offerDays}
+                  onChange={(e) => setOfferDays(Number(e.target.value))}
+                  disabled={submitting}
+                  className={selectClass}
+                >
+                  {[7, 14, 21, 30].map((d) => (
+                    <option key={d} value={d}>
+                      {d} dni
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-muted-foreground">
+                  7, 14, 21 lub 30 dni na zbieranie ofert od daty utworzenia.
+                </p>
               </div>
 
               <div className="space-y-2">

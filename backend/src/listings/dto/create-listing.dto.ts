@@ -9,6 +9,7 @@ import {
   IsNumber,
   IsArray,
   Min,
+  IsIn,
   ValidateIf,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -87,6 +88,13 @@ export class CreateListingDto {
 
   @IsEnum(ProjectTypeDto)
   projectType: ProjectTypeDto;
+
+  /** Number of days to collect offers: 7, 14, 21 or 30. Sets deadline = createdAt + offerDays. */
+  @IsOptional()
+  @IsNumber()
+  @IsIn([7, 14, 21, 30], { message: 'Offer days must be 7, 14, 21 or 30' })
+  @Type(() => Number)
+  offerDays?: number;
 
   @IsOptional()
   @IsArray()

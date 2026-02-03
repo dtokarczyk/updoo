@@ -63,6 +63,24 @@ function formatDate(iso: string) {
   });
 }
 
+function getDeadlineRemainingDays(deadline: string | null): number | null {
+  if (!deadline) return null;
+  const end = new Date(deadline);
+  const now = new Date();
+  if (end <= now) return 0;
+  const ms = end.getTime() - now.getTime();
+  return Math.ceil(ms / (24 * 60 * 60 * 1000));
+}
+
+function formatDeadlineRemaining(deadline: string | null): string | null {
+  const days = getDeadlineRemainingDays(deadline);
+  if (days === null) return null;
+  if (days === 0) return "Termin zbierania ofert minął";
+  if (days === 1) return "Pozostał 1 dzień";
+  if (days < 5) return `Pozostały ${days} dni`;
+  return `Pozostało ${days} dni`;
+}
+
 function formatRate(rate: string, currency: string, billingType: string) {
   const r = parseFloat(rate);
   if (Number.isNaN(r)) return "";
@@ -203,6 +221,12 @@ export default function ListingDetailPage() {
                     <Calendar className="h-3.5 w-3.5" />
                     {formatDate(listing.createdAt)}
                   </span>
+                  {listing.deadline && formatDeadlineRemaining(listing.deadline) && (
+                    <span className="flex items-center gap-1.5 font-medium text-foreground">
+                      <Clock className="h-3.5 w-3.5" />
+                      {formatDeadlineRemaining(listing.deadline)}
+                    </span>
+                  )}
                 </CardDescription>
               </div>
               <div className="flex items-center gap-2 shrink-0">
@@ -299,6 +323,13 @@ export default function ListingDetailPage() {
                   icon={Laptop}
                   label="Praca zdalna"
                   value="Tak"
+                />
+              )}
+              {listing.deadline && (
+                <DetailRow
+                  icon={Clock}
+                  label="Termin zbierania ofert"
+                  value={formatDeadlineRemaining(listing.deadline) ?? undefined}
                 />
               )}
             </section>

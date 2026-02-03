@@ -73,6 +73,7 @@ export default function NewListingPage() {
   const [locationId, setLocationId] = useState("");
   const [isRemote, setIsRemote] = useState(false);
   const [projectType, setProjectType] = useState<ProjectType>("ONE_TIME");
+  const [offerDays, setOfferDays] = useState<number>(14);
   const [selectedSkills, setSelectedSkills] = useState<SelectedSkill[]>([]);
   const [skillInput, setSkillInput] = useState("");
   const [skillDropdownOpen, setSkillDropdownOpen] = useState(false);
@@ -153,6 +154,11 @@ export default function NewListingPage() {
       setError("Przy rozliczeniu godzinowym wybierz ilość godzin tygodniowo");
       return;
     }
+    const allowedOfferDays = [7, 14, 21, 30];
+    if (!allowedOfferDays.includes(offerDays)) {
+      setError("Ilość dni na zebranie ofert: wybierz 7, 14, 21 lub 30 dni");
+      return;
+    }
     setSubmitting(true);
     try {
       await createListing({
@@ -168,6 +174,7 @@ export default function NewListingPage() {
         locationId: locationId || undefined,
         isRemote,
         projectType,
+        offerDays,
         skillIds: selectedSkills.filter((s) => s.id != null).map((s) => s.id as string),
         newSkillNames: selectedSkills.filter((s) => s.id == null).map((s) => s.name),
       });
@@ -407,6 +414,26 @@ export default function NewListingPage() {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="offerDays">Ilość dni na zebranie ofert</Label>
+                <select
+                  id="offerDays"
+                  value={offerDays}
+                  onChange={(e) => setOfferDays(Number(e.target.value))}
+                  disabled={submitting}
+                  className={selectClass}
+                >
+                  {[7, 14, 21, 30].map((d) => (
+                    <option key={d} value={d}>
+                      {d} dni
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-muted-foreground">
+                  7, 14, 21 lub 30 dni na zbieranie ofert od daty utworzenia.
+                </p>
               </div>
 
               <div className="space-y-2">

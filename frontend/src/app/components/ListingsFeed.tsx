@@ -47,6 +47,17 @@ function formatDate(iso: string) {
   });
 }
 
+function formatDeadlineRemaining(deadline: string | null): string | null {
+  if (!deadline) return null;
+  const end = new Date(deadline);
+  const now = new Date();
+  if (end <= now) return "Termin minął";
+  const ms = end.getTime() - now.getTime();
+  const days = Math.ceil(ms / (24 * 60 * 60 * 1000));
+  if (days === 1) return "Pozostał 1 dzień";
+  return `Pozostało ${days} dni`;
+}
+
 function formatRate(rate: string, currency: string, billingType: string) {
   const r = parseFloat(rate);
   if (Number.isNaN(r)) return "";
@@ -123,6 +134,14 @@ function ListingCard({
           <CardDescription className="text-xs">
             {listing.author.name || listing.author.email} ·{" "}
             {formatDate(listing.createdAt)}
+            {listing.deadline && formatDeadlineRemaining(listing.deadline) && (
+              <>
+                {" · "}
+                <span className="font-medium text-foreground">
+                  {formatDeadlineRemaining(listing.deadline)}
+                </span>
+              </>
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">

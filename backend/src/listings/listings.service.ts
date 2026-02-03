@@ -143,6 +143,12 @@ export class ListingsService implements OnModuleInit {
         }
       }
     }
+    const now = new Date();
+    const allowedDays = [7, 14, 21, 30];
+    const deadline =
+      dto.offerDays != null && allowedDays.includes(dto.offerDays)
+        ? new Date(now.getTime() + dto.offerDays * 24 * 60 * 60 * 1000)
+        : null;
     const listing = await this.prisma.listing.create({
       data: {
         title: dto.title.trim(),
@@ -161,6 +167,7 @@ export class ListingsService implements OnModuleInit {
         locationId: dto.locationId || null,
         isRemote: dto.isRemote,
         projectType: dto.projectType as ProjectType,
+        deadline,
       },
       include: {
         category: true,
@@ -293,6 +300,11 @@ export class ListingsService implements OnModuleInit {
     await this.prisma.listingSkill.deleteMany({
       where: { listingId },
     });
+    const allowedDays = [7, 14, 21, 30];
+    const newDeadline =
+      dto.offerDays != null && allowedDays.includes(dto.offerDays)
+        ? new Date(listing.createdAt.getTime() + dto.offerDays * 24 * 60 * 60 * 1000)
+        : undefined;
     const updated = await this.prisma.listing.update({
       where: { id: listingId },
       data: {
@@ -311,6 +323,7 @@ export class ListingsService implements OnModuleInit {
         locationId: dto.locationId || null,
         isRemote: dto.isRemote,
         projectType: dto.projectType as ProjectType,
+        ...(newDeadline != null && { deadline: newDeadline }),
       },
       include: {
         category: true,

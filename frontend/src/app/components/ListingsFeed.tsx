@@ -213,7 +213,13 @@ function ListingCard({
   );
 }
 
-export function ListingsFeed({ categoryId }: { categoryId?: string }) {
+export function ListingsFeed({
+  categoryId,
+  onCountChange,
+}: {
+  categoryId?: string;
+  onCountChange?: (count: number) => void;
+}) {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -223,8 +229,14 @@ export function ListingsFeed({ categoryId }: { categoryId?: string }) {
   const loadFeed = () => {
     setLoading(true);
     getListingsFeed(50, undefined, categoryId)
-      .then((res) => setListings(res.items))
-      .catch(() => setError("Nie udało się załadować ogłoszeń"))
+      .then((res) => {
+        setListings(res.items);
+        onCountChange?.(res.items.length);
+      })
+      .catch(() => {
+        setError("Nie udało się załadować ogłoszeń");
+        onCountChange?.(0);
+      })
       .finally(() => setLoading(false));
   };
 

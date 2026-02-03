@@ -1,7 +1,8 @@
-import { ListingsFeed } from "@/app/components/ListingsFeed";
+import Link from "next/link";
 import { OnboardingRedirect } from "@/app/components/OnboardingRedirect";
-import { HomeNav } from "@/app/components/HomeNav";
 import { CategoriesSidebar } from "@/app/components/CategoriesSidebar";
+import { HomeNav } from "@/app/components/HomeNav";
+import { ListingsSectionHeader } from "@/app/components/ListingsSectionHeader";
 import { getCategories } from "@/lib/api";
 
 export default async function Home({
@@ -16,27 +17,28 @@ export default async function Home({
     ? categories.find((c) => c.slug === categorySlug)
     : undefined;
   const categoryId = selectedCategory?.id;
-  const sectionTitle = selectedCategory ? selectedCategory.name : "Ogłoszenia";
 
   return (
     <OnboardingRedirect>
-      <div className="max-w-4xl mx-auto px-4 py-8 sm:px-6">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
-          <aside className="shrink-0 lg:sticky lg:top-20 lg:w-52 lg:self-start">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6">
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-start">
+          <aside className="sticky top-0 z-10 shrink-0 bg-background lg:top-14 lg:w-52 lg:self-start">
+            <Link
+              href="/"
+              className="hidden text-xl font-semibold tracking-tight text-foreground hover:underline focus:outline-none focus:underline lg:block lg:pb-4"
+            >
+              Updoo
+            </Link>
             <CategoriesSidebar
               categories={categories}
               currentCategorySlug={categorySlug}
             />
+            <HomeNav placement="sidebar" />
           </aside>
-          <section className="flex-1 min-w-0 space-y-6 lg:max-w-2xl">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-medium text-foreground">
-                {sectionTitle}
-              </h2>
-              <HomeNav showCreateOnly />
-            </div>
-            <ListingsFeed categoryId={categoryId} />
-          </section>
+          <ListingsSectionHeader
+            sectionTitle="Ogłoszenia"
+            categoryId={categoryId}
+          />
         </div>
       </div>
     </OnboardingRedirect>

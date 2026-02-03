@@ -162,6 +162,7 @@ export interface Listing {
   locationId: string | null;
   isRemote: boolean;
   projectType: ProjectType;
+  deadline: string | null;
   createdAt: string;
   category: Category;
   author: ListingAuthor;
@@ -250,6 +251,8 @@ export interface CreateListingPayload {
   locationId?: string | null;
   isRemote: boolean;
   projectType: ProjectType;
+  /** Number of days to collect offers (7–30). */
+  offerDays?: number;
   skillIds?: string[];
   newSkillNames?: string[];
 }

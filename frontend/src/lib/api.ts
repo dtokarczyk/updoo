@@ -208,6 +208,18 @@ export async function getListingsFeed(
   return res.json();
 }
 
+export async function getListing(id: string): Promise<Listing> {
+  const headers: HeadersInit = {};
+  const token = getToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const res = await fetch(`${API_URL}/listings/${id}`, { headers });
+  if (!res.ok) {
+    if (res.status === 404) throw new Error("Ogłoszenie nie istnieje");
+    throw new Error("Failed to fetch listing");
+  }
+  return res.json();
+}
+
 export async function publishListing(listingId: string): Promise<Listing> {
   const token = getToken();
   if (!token) throw new Error("Not authenticated");
@@ -257,6 +269,28 @@ export async function createListing(payload: CreateListingPayload): Promise<List
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
     throw new Error(msg ?? "Failed to create listing");
+  }
+  return res.json();
+}
+
+export async function updateListing(
+  id: string,
+  payload: CreateListingPayload
+): Promise<Listing> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+  const res = await fetch(`${API_URL}/listings/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? "Failed to update listing");
   }
   return res.json();
 }

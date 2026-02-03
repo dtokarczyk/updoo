@@ -36,10 +36,29 @@ export class ListingsController {
     return this.listingsService.getFeed(takeNum, cursor, user?.id);
   }
 
+  @Get(':id')
+  @UseGuards(OptionalJwtAuthGuard)
+  getListing(
+    @Param('id') id: string,
+    @GetUser() user?: JwtUser,
+  ) {
+    return this.listingsService.getListing(id, user?.id, user?.accountType === 'ADMIN');
+  }
+
   @Post()
   @UseGuards(JwtAuthGuard)
   createListing(@GetUser() user: JwtUser, @Body() dto: CreateListingDto) {
     return this.listingsService.createListing(user.id, user.accountType, dto);
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  updateListing(
+    @Param('id') id: string,
+    @GetUser() user: JwtUser,
+    @Body() dto: CreateListingDto,
+  ) {
+    return this.listingsService.updateListing(id, user.id, user.accountType, dto);
   }
 
   @Patch(':id/publish')

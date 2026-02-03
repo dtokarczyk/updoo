@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getListingsFeed, publishListing, getStoredUser, type Listing } from "@/lib/api";
 import {
@@ -76,83 +78,97 @@ function ListingCard({
     skills.length > 0;
   const isDraft = listing.status === "DRAFT";
   const canPublish = isAdmin && isDraft;
+  const isOwnListing = currentUserId === listing.authorId;
 
   return (
-    <Card
-      className={`overflow-hidden ${isDraft ? "border-amber-400 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-600" : ""}`}
-    >
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between gap-2">
-          <CardTitle className="text-lg leading-tight">{listing.title}</CardTitle>
-          <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-            {listing.category.name}
-          </span>
-        </div>
-        <CardDescription className="text-xs">
-          {listing.author.name || listing.author.email} ·{" "}
-          {formatDate(listing.createdAt)}
-        </CardDescription>
-        {isDraft && (
-          <p className="mt-2 rounded-md border border-amber-300 bg-amber-100 px-3 py-2 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-900/40 dark:text-amber-100">
+    <div className={`overflow-hidden shadow-sm ${isDraft ? "rounded-t-xl" : "rounded-xl"}`}>
+      <Card
+        className={`overflow-hidden ${isDraft ? "rounded-t-xl rounded-b-none border-amber-400 border-b-0 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-600 dark:border-b-0" : "rounded-xl"}`}
+      >
+        <CardHeader className="pb-2">
+          <div className="flex items-start justify-between gap-2">
+            <CardTitle className="text-lg leading-tight flex-1 min-w-0">{listing.title}</CardTitle>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                {listing.category.name}
+              </span>
+              {isOwnListing && (
+                <Button size="icon" variant="ghost" className="h-8 w-8" asChild>
+                  <Link href={`/listings/${listing.id}/edit`} aria-label="Edytuj ogłoszenie">
+                    <Pencil className="h-4 w-4" />
+                  </Link>
+                </Button>
+              )}
+            </div>
+          </div>
+          <CardDescription className="text-xs">
+            {listing.author.name || listing.author.email} ·{" "}
+            {formatDate(listing.createdAt)}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-4">
+            {listing.description}
+          </p>
+          {hasDetails && (
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground border-t pt-3">
+              {listing.billingType && (
+                <span>{BILLING_LABELS[listing.billingType] ?? listing.billingType}</span>
+              )}
+              {listing.billingType === "HOURLY" && listing.hoursPerWeek && (
+                <span>{HOURS_LABELS[listing.hoursPerWeek] ?? listing.hoursPerWeek}</span>
+              )}
+              {listing.rate && (
+                <span className="font-medium text-foreground">
+                  {formatRate(listing.rate, listing.currency, listing.billingType)}
+                  {listing.rateNegotiable && (
+                    <span className="text-muted-foreground font-normal"> · do negocjacji</span>
+                  )}
+                </span>
+              )}
+              {listing.experienceLevel && (
+                <span>{EXPERIENCE_LABELS[listing.experienceLevel] ?? listing.experienceLevel}</span>
+              )}
+              {listing.location && <span>{listing.location.name}</span>}
+              {listing.isRemote && <span>Remote</span>}
+              {listing.projectType && (
+                <span>{PROJECT_TYPE_LABELS[listing.projectType] ?? listing.projectType}</span>
+              )}
+              {skills.length > 0 && (
+                <span className="flex flex-wrap gap-1">
+                  {skills.map((name) => (
+                    <span
+                      key={name}
+                      className="rounded-full bg-muted px-1.5 py-0.5 text-muted-foreground"
+                    >
+                      {name}
+                    </span>
+                  ))}
+                </span>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+      {isDraft && (
+        <div className="rounded-b-xl bg-amber-200/90 dark:bg-amber-900/50 text-amber-900 dark:text-amber-100 border-t border-amber-300/80 dark:border-amber-700/80 px-4 py-3 -mt-px flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm">
             Czeka na akceptację administratora. Widoczny tylko dla autora.
           </p>
-        )}
-        {canPublish && (
-          <Button
-            size="sm"
-            variant="default"
-            className="mt-2"
-            onClick={() => onPublish(listing.id)}
-            disabled={publishingId === listing.id}
-          >
-            {publishingId === listing.id ? "Publikowanie…" : "Opublikuj"}
-          </Button>
-        )}
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-4">
-          {listing.description}
-        </p>
-        {hasDetails && (
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground border-t pt-3">
-            {listing.billingType && (
-              <span>{BILLING_LABELS[listing.billingType] ?? listing.billingType}</span>
-            )}
-            {listing.billingType === "HOURLY" && listing.hoursPerWeek && (
-              <span>{HOURS_LABELS[listing.hoursPerWeek] ?? listing.hoursPerWeek}</span>
-            )}
-            {listing.rate && (
-              <span className="font-medium text-foreground">
-                {formatRate(listing.rate, listing.currency, listing.billingType)}
-                {listing.rateNegotiable && (
-                  <span className="text-muted-foreground font-normal"> · do negocjacji</span>
-                )}
-              </span>
-            )}
-            {listing.experienceLevel && (
-              <span>{EXPERIENCE_LABELS[listing.experienceLevel] ?? listing.experienceLevel}</span>
-            )}
-            {listing.location && <span>{listing.location.name}</span>}
-            {listing.isRemote && <span>Remote</span>}
-            {listing.projectType && (
-              <span>{PROJECT_TYPE_LABELS[listing.projectType] ?? listing.projectType}</span>
-            )}
-            {skills.length > 0 && (
-              <span className="flex flex-wrap gap-1">
-                {skills.map((name) => (
-                  <span
-                    key={name}
-                    className="rounded-full bg-muted px-1.5 py-0.5 text-muted-foreground"
-                  >
-                    {name}
-                  </span>
-                ))}
-              </span>
-            )}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          {canPublish && (
+            <Button
+              size="sm"
+              variant="secondary"
+              className="bg-amber-700 hover:bg-amber-800 text-amber-50 dark:bg-amber-600 dark:hover:bg-amber-700 shrink-0"
+              onClick={() => onPublish(listing.id)}
+              disabled={publishingId === listing.id}
+            >
+              {publishingId === listing.id ? "Publikowanie…" : "Opublikuj"}
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 

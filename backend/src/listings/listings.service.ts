@@ -211,6 +211,133 @@ export class ListingsService implements OnModuleInit {
     return { items, nextCursor };
   }
 
+  /** Get single listing by id. Author or ADMIN can read own/draft; others only published. */
+  async getListing(listingId: string, userId?: string, isAdmin?: boolean) {
+    const listing = await this.prisma.listing.findUnique({
+      where: { id: listingId },
+      include: {
+        category: true,
+        author: { select: { id: true, email: true, name: true } },
+        location: true,
+        skills: { include: { skill: true } },
+      },
+    });
+    if (!listing) {
+      throw new NotFoundException('Listing not found');
+    }
+    const isAuthor = userId && listing.authorId === userId;
+    if (listing.status === ListingStatus.DRAFT && !isAuthor && !isAdmin) {
+      throw new NotFoundException('Listing not found');
+    }
+    return listing;
+  }
+
+  /** Update listing. Only author can update; status is always set to DRAFT so admin can re-approve. */
+  async updateListing(listingId: string, userId: string, accountType: string | null, dto: CreateListingDto) {
+    const listing = await this.prisma.listing.findUnique({
+      where: { id: listingId },
+    });
+    if (!listing) {
+      throw new NotFoundException('Listing not found');
+    }
+    if (listing.authorId !== userId) {
+      throw new ForbiddenException('Możesz edytować tylko swoje ogłoszenia');
+    }
+    if (accountType !== 'CLIENT') {
+      throw new ForbiddenException('Tylko klienci mogą edytować ogłoszenia');
+    }
+    const category = await this.prisma.category.findUnique({
+      where: { id: dto.categoryId },
+    });
+    if (!category) {
+      throw new NotFoundException('Category not found');
+    }
+    if (dto.locationId) {
+      const location = await this.prisma.location.findUnique({
+        where: { id: dto.locationId },
+      });
+      if (!location) {
+        throw new NotFoundException('Location not found');
+      }
+    }
+    const skillIdsToLink = new Set<string>(dto.skillIds ?? []);
+    if (dto.newSkillNames?.length) {
+      for (const name of dto.newSkillNames) {
+        const trimmed = name.trim();
+        if (!trimmed) continue;
+        const existing = await this.prisma.skill.findUnique({
+          where: { name: trimmed },
+        });
+        if (existing) {
+          skillIdsToLink.add(existing.id);
+        } else {
+          const created = await this.prisma.skill.create({
+            data: { name: trimmed },
+          });
+          skillIdsToLink.add(created.id);
+        }
+      }
+    }
+    if (skillIdsToLink.size > 0) {
+      const skillsExist = await this.prisma.skill.findMany({
+        where: { id: { in: [...skillIdsToLink] } },
+        select: { id: true },
+      });
+      const foundIds = new Set(skillsExist.map((s) => s.id));
+      for (const id of skillIdsToLink) {
+        if (!foundIds.has(id)) {
+          throw new NotFoundException(`Skill not found: ${id}`);
+        }
+      }
+    }
+    await this.prisma.listingSkill.deleteMany({
+      where: { listingId },
+    });
+    const updated = await this.prisma.listing.update({
+      where: { id: listingId },
+      data: {
+        title: dto.title.trim(),
+        description: dto.description.trim(),
+        categoryId: dto.categoryId,
+        status: ListingStatus.DRAFT,
+        billingType: dto.billingType as BillingType,
+        hoursPerWeek: dto.billingType === 'HOURLY' && dto.hoursPerWeek
+          ? (dto.hoursPerWeek as HoursPerWeek)
+          : null,
+        rate: dto.rate,
+        rateNegotiable: dto.rateNegotiable ?? false,
+        currency: dto.currency.toUpperCase().slice(0, 3),
+        experienceLevel: dto.experienceLevel as ExperienceLevel,
+        locationId: dto.locationId || null,
+        isRemote: dto.isRemote,
+        projectType: dto.projectType as ProjectType,
+      },
+      include: {
+        category: true,
+        author: { select: { id: true, email: true, name: true } },
+        location: true,
+        skills: { include: { skill: true } },
+      },
+    });
+    if (skillIdsToLink.size > 0) {
+      await this.prisma.listingSkill.createMany({
+        data: [...skillIdsToLink].map((skillId) => ({
+          listingId: updated.id,
+          skillId,
+        })),
+      });
+    }
+    return this.prisma.listing.findUnique({
+      where: { id: listingId },
+      include: {
+        category: true,
+        author: { select: { id: true, email: true, name: true } },
+        location: true,
+        skills: { include: { skill: true } },
+      },
+    });
+  }
+
   async publishListing(listingId: string, adminUserId: string, isAdmin: boolean) {
     if (!isAdmin) {
       throw new ForbiddenException('Tylko użytkownik z typem konta ADMIN może publikować ogłoszenia');

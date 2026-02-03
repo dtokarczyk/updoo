@@ -255,11 +255,13 @@ export async function getSkills(): Promise<Skill[]> {
 
 export async function getListingsFeed(
   take?: number,
-  cursor?: string
+  cursor?: string,
+  categoryId?: string
 ): Promise<ListingsFeedResponse> {
   const params = new URLSearchParams();
   if (take != null) params.set("take", String(take));
   if (cursor) params.set("cursor", cursor);
+  if (categoryId) params.set("categoryId", categoryId);
   const url = `${API_URL}/listings/feed${params.toString() ? `?${params}` : ""}`;
   const headers: HeadersInit = {};
   const token = getToken();

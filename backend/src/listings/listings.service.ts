@@ -195,11 +195,14 @@ export class ListingsService implements OnModuleInit {
     });
   }
 
-  /** Feed: published for everyone; when userId is set, also include that user's draft listings. */
-  async getFeed(take = 50, cursor?: string, userId?: string) {
-    const where = userId
+  /** Feed: published for everyone; when userId is set, also include that user's draft listings. Optional categoryId filter. */
+  async getFeed(take = 50, cursor?: string, userId?: string, categoryId?: string) {
+    const statusWhere = userId
       ? { OR: [{ status: ListingStatus.PUBLISHED }, { status: ListingStatus.DRAFT, authorId: userId }] }
       : { status: ListingStatus.PUBLISHED };
+    const where = categoryId
+      ? { ...statusWhere, categoryId }
+      : statusWhere;
     const listings = await this.prisma.listing.findMany({
       take: take + 1,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),

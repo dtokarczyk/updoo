@@ -213,7 +213,7 @@ function ListingCard({
   );
 }
 
-export function ListingsFeed() {
+export function ListingsFeed({ categoryId }: { categoryId?: string }) {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -221,7 +221,8 @@ export function ListingsFeed() {
   const user = getStoredUser();
 
   const loadFeed = () => {
-    getListingsFeed(50)
+    setLoading(true);
+    getListingsFeed(50, undefined, categoryId)
       .then((res) => setListings(res.items))
       .catch(() => setError("Nie udało się załadować ogłoszeń"))
       .finally(() => setLoading(false));
@@ -229,7 +230,7 @@ export function ListingsFeed() {
 
   useEffect(() => {
     loadFeed();
-  }, []);
+  }, [categoryId]);
 
   const handlePublish = (listingId: string) => {
     setPublishingId(listingId);

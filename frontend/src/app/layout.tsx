@@ -4,6 +4,8 @@ import "./globals.css";
 import { ThemeScript } from "@/app/components/ThemeScript";
 import { ThemeProvider } from "@/lib/theme";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AppHeader } from "@/app/components/AppHeader";
+import { AppFooter } from "@/app/components/AppFooter";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,7 +37,11 @@ export default function RootLayout({
           <div className="fixed top-3 right-3 z-50 md:top-4 md:right-4">
             <ThemeToggle />
           </div>
-          {children}
+          <div className="flex min-h-screen flex-col bg-zinc-50 font-sans dark:bg-zinc-950">
+            <AppHeader />
+            <main className="flex-1">{children}</main>
+            <AppFooter />
+          </div>
         </ThemeProvider>
       </body>
     </html>

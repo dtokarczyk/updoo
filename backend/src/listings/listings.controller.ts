@@ -31,10 +31,11 @@ export class ListingsController {
   getFeed(
     @Query('take') take?: string,
     @Query('cursor') cursor?: string,
+    @Query('categoryId') categoryId?: string,
     @GetUser() user?: JwtUser,
   ) {
     const takeNum = take ? Math.min(parseInt(take, 10) || 50, 100) : 50;
-    return this.listingsService.getFeed(takeNum, cursor, user?.id);
+    return this.listingsService.getFeed(takeNum, cursor, user?.id, categoryId);
   }
 
   @Get(':id')

@@ -34,7 +34,7 @@ export function initials(user: AuthUser): string {
 }
 
 /** Full display name: "Name Surname" or fallback to email / "Profil". */
-function displayName(user: AuthUser, t: (key: string) => string): string {
+export function displayName(user: AuthUser, t: (key: string) => string): string {
   const n = user.name?.trim();
   const s = user.surname?.trim();
   if (n && s) return `${n} ${s}`;

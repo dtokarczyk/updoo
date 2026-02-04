@@ -51,63 +51,66 @@ function LoginForm() {
 
   return (
     <div className="flex justify-center p-4 pt-12">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-3xl">{t("auth.login")}</CardTitle>
-          <CardDescription>{t("auth.enterEmailPassword")}</CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            {error && (
-              <p className="text-sm text-destructive rounded-md bg-destructive/10 px-3 py-2">
-                {error}
-              </p>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="email">{t("auth.email")}</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder={t("auth.emailPlaceholder")}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-                disabled={loading}
-                className="h-12 text-base px-4"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">{t("auth.password")}</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder={t("auth.passwordPlaceholder")}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="current-password"
-                disabled={loading}
-                className="h-12 text-base px-4"
-              />
-            </div>
-          </CardContent>
-          <CardFooter className="mt-6 flex flex-col gap-4">
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? t("auth.signingIn") : t("auth.logIn")}
+      <div className="w-full max-w-md space-y-6">
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle className="text-3xl">{t("auth.login")}</CardTitle>
+            <CardDescription>{t("auth.enterEmailPassword")}</CardDescription>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-4">
+              {error && (
+                <p className="text-sm text-destructive rounded-md bg-destructive/10 px-3 py-2">
+                  {error}
+                </p>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="email">{t("auth.email")}</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder={t("auth.emailPlaceholder")}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoComplete="email"
+                  autoFocus
+                  disabled={loading}
+                  className="h-12 text-base px-4"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">{t("auth.password")}</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder={t("auth.passwordPlaceholder")}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  autoComplete="current-password"
+                  disabled={loading}
+                  className="h-12 text-base px-4"
+                />
+              </div>
+            </CardContent>
+            <CardFooter className="mt-6 flex flex-col gap-4">
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? t("auth.signingIn") : t("auth.logIn")}
+              </Button>
+            </CardFooter>
+          </form>
+        </Card>
+
+        <div className="rounded-2xl border border-zinc-200 bg-zinc-50/80 p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60">
+          <div className="mt-2 space-y-4">
+            <h2 className="text-xl font-semibold">{t("auth.dontHaveAccount")}</h2>
+            <Button asChild variant="secondary" size="lg" className="w-full">
+              <Link href="/register">{t("auth.register")}</Link>
             </Button>
-            <p className="text-sm text-muted-foreground text-center">
-              {t("auth.dontHaveAccount")}{" "}
-              <Link
-                href="/register"
-                className="text-primary underline-offset-4 hover:underline"
-              >
-                {t("auth.register")}
-              </Link>
-            </p>
-          </CardFooter>
-        </form>
-      </Card>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

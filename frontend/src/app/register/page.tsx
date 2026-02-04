@@ -78,6 +78,7 @@ export default function RegisterPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
+                autoFocus
                 disabled={loading}
                 className="h-12 text-base px-4"
               />

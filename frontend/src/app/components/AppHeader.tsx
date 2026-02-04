@@ -2,15 +2,17 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { ArrowLeft, Star } from "lucide-react";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { ArrowLeft, Star, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Logotype } from "@/app/components/Logotype";
-import { HomeNav, UserDropdown } from "@/app/components/HomeNav";
+import { HomeNav, UserDropdown, initials } from "@/app/components/HomeNav";
 import { getToken, getStoredUser, clearAuth, type AuthUser } from "@/lib/api";
 import { useTranslations } from "@/hooks/useTranslations";
 import type { Locale } from "@/lib/i18n";
+import { UserDrawerContent } from "@/app/components/UserDrawer";
+import { AuthDrawerContent } from "@/app/components/AuthDrawer";
+import { Drawer, DrawerTrigger } from "@/components/ui/drawer";
 
 export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
   const pathname = usePathname();
@@ -25,6 +27,8 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [mounted, setMounted] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [authDrawerOpen, setAuthDrawerOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -86,24 +90,70 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
 
         <div className="flex items-center gap-2">
           <HomeNav />
-          {mounted && isLoggedIn && (
+          {mounted && (
             <>
+              {isLoggedIn ? (
+                <>
+                  {/* Mobile: Drawer for logged in users */}
+                  <div className="lg:hidden">
+                    <Drawer open={drawerOpen} onOpenChange={setDrawerOpen} direction="right">
+                      <DrawerTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon-lg"
+                          className="rounded-full"
+                          aria-label="Open user menu"
+                        >
+                          <span className="flex shrink-0 items-center justify-center rounded-full bg-zinc-300 text-sm font-medium text-zinc-700 dark:bg-zinc-600 dark:text-zinc-200 h-8 w-8">
+                            {user ? initials(user) : "?"}
+                          </span>
+                        </Button>
+                      </DrawerTrigger>
+                      <UserDrawerContent
+                        initialLocale={initialLocale}
+                        onClose={() => setDrawerOpen(false)}
+                      />
+                    </Drawer>
+                  </div>
 
-              <div className="relative" ref={dropdownRef}>
-                <UserDropdown
-                  user={user}
-                  dropdownOpen={dropdownOpen}
-                  setDropdownOpen={setDropdownOpen}
-                  dropdownRef={dropdownRef}
-                  handleLogout={handleLogout}
-                  locale={locale}
-                  t={t}
-                  iconOnly
-                />
-              </div>
+                  {/* Desktop: Dropdown for logged in users */}
+                  <div className="hidden lg:block relative" ref={dropdownRef}>
+                    <UserDropdown
+                      user={user}
+                      dropdownOpen={dropdownOpen}
+                      setDropdownOpen={setDropdownOpen}
+                      dropdownRef={dropdownRef}
+                      handleLogout={handleLogout}
+                      locale={locale}
+                      t={t}
+                      iconOnly
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Mobile: Drawer for not logged in users */}
+                  <div className="lg:hidden">
+                    <Drawer open={authDrawerOpen} onOpenChange={setAuthDrawerOpen} direction="right">
+                      <DrawerTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon-lg"
+                          aria-label="Open login menu"
+                        >
+                          <User className="h-5 w-5" />
+                        </Button>
+                      </DrawerTrigger>
+                      <AuthDrawerContent
+                        initialLocale={initialLocale}
+                        onClose={() => setAuthDrawerOpen(false)}
+                      />
+                    </Drawer>
+                  </div>
+                </>
+              )}
             </>
           )}
-          <ThemeToggle size="icon-lg" />
         </div>
       </div>
     </header>

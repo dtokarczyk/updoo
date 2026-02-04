@@ -1,7 +1,4 @@
-"use client";
-
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
 
 function parsePage(raw: string | undefined): number {
   const n = raw ? Number.parseInt(raw, 10) : 1;
@@ -11,18 +8,10 @@ function parsePage(raw: string | undefined): number {
 export default function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string; page?: string }>;
+  searchParams: { category?: string; page?: string };
 }) {
-  const router = useRouter();
-
-  useEffect(() => {
-    searchParams.then((params) => {
-      const slug = params.category || "all";
-      const page = parsePage(params.page);
-      const target = `/offers/${encodeURIComponent(slug)}/${page}`;
-      router.replace(target);
-    });
-  }, [router, searchParams]);
-
-  return null;
+  const slug = searchParams?.category || "all";
+  const page = parsePage(searchParams?.page);
+  const target = `/offers/${encodeURIComponent(slug)}/${page}`;
+  redirect(target);
 }

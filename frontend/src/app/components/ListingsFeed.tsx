@@ -185,8 +185,38 @@ export function ListingsFeed({
 
   if (loading) {
     return (
-      <div className="py-8 text-center text-muted-foreground">
-        Ładowanie ogłoszeń...
+      <div className="space-y-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            className="overflow-hidden rounded-xl border bg-card shadow-sm animate-pulse"
+          >
+            <div className="border-b px-4 py-4 sm:px-6 sm:py-4">
+              <div className="h-5 w-3/4 rounded-md bg-zinc-200/80 dark:bg-zinc-800/80" />
+              <div className="mt-2 flex flex-wrap gap-2">
+                <div className="h-4 w-24 rounded-md bg-zinc-200/80 dark:bg-zinc-800/80" />
+                <div className="h-4 w-32 rounded-md bg-zinc-200/80 dark:bg-zinc-800/80" />
+              </div>
+            </div>
+            <div className="px-4 py-4 sm:px-6 sm:py-5 space-y-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="h-10 rounded-md bg-zinc-200/80 dark:bg-zinc-800/80" />
+                <div className="h-10 rounded-md bg-zinc-200/80 dark:bg-zinc-800/80" />
+              </div>
+              <div className="h-4 w-full rounded-md bg-zinc-200/80 dark:bg-zinc-800/80" />
+              <div className="h-4 w-3/4 rounded-md bg-zinc-200/80 dark:bg-zinc-800/80" />
+              <div className="flex flex-wrap gap-2">
+                {Array.from({ length: 3 }).map((__, j) => (
+                  <div
+                    key={j}
+                    className="h-7 w-16 rounded-full bg-zinc-200/80 dark:bg-zinc-800/80"
+                  />
+                ))}
+              </div>
+              <div className="h-10 w-32 rounded-md bg-zinc-200/80 dark:bg-zinc-800/80" />
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
@@ -229,7 +259,7 @@ export function ListingsFeed({
                 ? "overflow-hidden rounded-xl shadow-sm border border-yellow-400/80 dark:border-yellow-500/80"
                 : "",
               !isVisited && !isDraft && !isApplied && !isFavorite
-                ? "rounded-xl border-1 border-primary/80 dark:border-primary/90"
+                ? "rounded-xl border border-primary/80 dark:border-primary/90"
                 : "",
             ].filter(Boolean).join(" ")}
           >

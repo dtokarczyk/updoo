@@ -1,15 +1,19 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { GetUser } from '../auth/get-user.decorator';
 import type { JwtUser } from '../auth/get-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
 import { ApplyToListingDto } from './dto/apply-to-listing.dto';
 import { CreateListingDto } from './dto/create-listing.dto';
+import { FavoritesService } from './favorites.service';
 import { ListingsService } from './listings.service';
 
 @Controller('listings')
 export class ListingsController {
-  constructor(private readonly listingsService: ListingsService) { }
+  constructor(
+    private readonly listingsService: ListingsService,
+    private readonly favoritesService: FavoritesService,
+  ) { }
 
   @Get('categories')
   getCategories() {
@@ -32,10 +36,17 @@ export class ListingsController {
     @Query('take') take?: string,
     @Query('cursor') cursor?: string,
     @Query('categoryId') categoryId?: string,
+    @Query('language') language?: string,
     @GetUser() user?: JwtUser,
   ) {
     const takeNum = take ? Math.min(parseInt(take, 10) || 50, 100) : 50;
-    return this.listingsService.getFeed(takeNum, cursor, user?.id, categoryId);
+    return this.listingsService.getFeed(takeNum, cursor, user?.id, categoryId, language);
+  }
+
+  @Get('favorites')
+  @UseGuards(JwtAuthGuard)
+  getFavorites(@GetUser() user: JwtUser) {
+    return this.favoritesService.getFavoriteListings(user.id);
   }
 
   @Get(':id')
@@ -55,6 +66,18 @@ export class ListingsController {
     @Body() dto: ApplyToListingDto,
   ) {
     return this.listingsService.applyToListing(id, user.id, user.accountType, dto.message);
+  }
+
+  @Post(':id/favorite')
+  @UseGuards(JwtAuthGuard)
+  addFavorite(@Param('id') id: string, @GetUser() user: JwtUser) {
+    return this.favoritesService.addFavorite(user.id, id);
+  }
+
+  @Delete(':id/favorite')
+  @UseGuards(JwtAuthGuard)
+  removeFavorite(@Param('id') id: string, @GetUser() user: JwtUser) {
+    return this.favoritesService.removeFavorite(user.id, id);
   }
 
   @Post()

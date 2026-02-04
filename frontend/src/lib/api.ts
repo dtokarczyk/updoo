@@ -165,6 +165,7 @@ export interface Skill {
 }
 
 export type ListingStatus = "DRAFT" | "PUBLISHED";
+export type ListingLanguage = "ENGLISH" | "POLISH";
 export type BillingType = "FIXED" | "HOURLY";
 export type HoursPerWeek = "LESS_THAN_10" | "FROM_11_TO_20" | "FROM_21_TO_30" | "MORE_THAN_30";
 export type ExperienceLevel = "JUNIOR" | "MID" | "SENIOR";
@@ -231,6 +232,7 @@ export interface Listing {
   categoryId: string;
   authorId: string;
   status: ListingStatus;
+  language: ListingLanguage;
   billingType: BillingType;
   hoursPerWeek: HoursPerWeek | null;
   rate: string;
@@ -248,6 +250,7 @@ export interface Listing {
   skills: ListingSkillRelation[];
   applications?: ListingApplication[];
   currentUserApplied?: boolean;
+  isFavorite?: boolean;
 }
 
 export interface ListingsFeedResponse {
@@ -276,12 +279,14 @@ export async function getSkills(): Promise<Skill[]> {
 export async function getListingsFeed(
   take?: number,
   cursor?: string,
-  categoryId?: string
+  categoryId?: string,
+  language?: ListingLanguage | ""
 ): Promise<ListingsFeedResponse> {
   const params = new URLSearchParams();
   if (take != null) params.set("take", String(take));
   if (cursor) params.set("cursor", cursor);
   if (categoryId) params.set("categoryId", categoryId);
+  if (language && language !== "") params.set("language", language);
   const url = `${API_URL}/listings/feed${params.toString() ? `?${params}` : ""}`;
   const headers: HeadersInit = {};
   const token = getToken();
@@ -324,6 +329,7 @@ export interface CreateListingPayload {
   title: string;
   description: string;
   categoryId: string;
+  language?: ListingLanguage;
   billingType: BillingType;
   hoursPerWeek?: HoursPerWeek;
   rate: number;
@@ -399,5 +405,45 @@ export async function applyToListing(
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
     throw new Error(msg ?? "Nie udało się zgłosić do oferty");
   }
+  return res.json();
+}
+
+export async function addFavorite(listingId: string): Promise<{ ok: boolean }> {
+  const token = getToken();
+  if (!token) throw new Error("Zaloguj się, aby zapisać ogłoszenie");
+  const res = await fetch(`${API_URL}/listings/${listingId}/favorite`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? "Nie udało się dodać do ulubionych");
+  }
+  return res.json();
+}
+
+export async function removeFavorite(listingId: string): Promise<{ ok: boolean }> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+  const res = await fetch(`${API_URL}/listings/${listingId}/favorite`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? "Nie udało się usunąć z ulubionych");
+  }
+  return res.json();
+}
+
+export async function getFavoritesListings(): Promise<Listing[]> {
+  const token = getToken();
+  if (!token) throw new Error("Zaloguj się, aby zobaczyć ulubione");
+  const res = await fetch(`${API_URL}/listings/favorites`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Nie udało się załadować ulubionych");
   return res.json();
 }

@@ -240,6 +240,9 @@ export default function ListingDetailPage() {
                 <Tag className="h-3.5 w-3.5" />
                 {listing.category.name}
               </span>
+              <span className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
+                {listing.language === "ENGLISH" ? "English" : "Polish"}
+              </span>
               {isOwnListing && (
                 <Button size="sm" variant="outline" asChild>
                   <Link href={`/listings/${listing.id}/edit`}>

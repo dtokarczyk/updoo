@@ -17,6 +17,7 @@ import {
   type HoursPerWeek,
   type ExperienceLevel,
   type ProjectType,
+  type ListingLanguage,
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,6 +68,7 @@ export default function EditListingPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const [language, setLanguage] = useState<ListingLanguage>("POLISH");
   const [billingType, setBillingType] = useState<BillingType>("HOURLY");
   const [hoursPerWeek, setHoursPerWeek] = useState<HoursPerWeek | "">("");
   const [rate, setRate] = useState("");
@@ -118,6 +120,7 @@ export default function EditListingPage() {
         setTitle(listing.title);
         setDescription(listing.description);
         setCategoryId(listing.categoryId);
+        setLanguage(listing.language ?? "POLISH");
         setBillingType(listing.billingType);
         setHoursPerWeek(listing.hoursPerWeek ?? "");
         setRate(listing.rate ?? "");
@@ -208,6 +211,7 @@ export default function EditListingPage() {
         title: title.trim(),
         description: description.trim(),
         categoryId,
+        language,
         billingType,
         hoursPerWeek: billingType === "HOURLY" ? (hoursPerWeek as HoursPerWeek) : undefined,
         rate: rateNum,
@@ -326,6 +330,19 @@ export default function EditListingPage() {
                       {c.name}
                     </option>
                   ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="language">Język ogłoszenia</Label>
+                <select
+                  id="language"
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value as ListingLanguage)}
+                  disabled={submitting}
+                  className={selectClass}
+                >
+                  <option value="POLISH">Polish</option>
+                  <option value="ENGLISH">English</option>
                 </select>
               </div>
 

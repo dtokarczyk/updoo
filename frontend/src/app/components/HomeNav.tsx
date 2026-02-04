@@ -109,6 +109,14 @@ function UserDropdown({
           >
             Edytuj profil
           </Link>
+          <Link
+            href="/favorites"
+            role="menuitem"
+            className="block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            onClick={() => setDropdownOpen(false)}
+          >
+            Ulubione
+          </Link>
           <button
             type="button"
             role="menuitem"

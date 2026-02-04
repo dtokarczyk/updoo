@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { pl } from "date-fns/locale";
-import { Clock, Settings2 } from "lucide-react";
+import { Clock, Settings2, Star } from "lucide-react";
 import type { Listing } from "@/lib/api";
 import {
   Card,
@@ -47,11 +48,35 @@ export function ListingPost({
   listing,
   headerAction,
   isDraft,
+  onFavoriteToggle,
+  showFavorite,
 }: {
   listing: Listing;
   headerAction?: React.ReactNode;
   isDraft?: boolean;
+  /** Called after favorite add/remove; parent can refetch. */
+  onFavoriteToggle?: (listingId: string) => void;
+  /** When true, show star in top-right (e.g. when user is logged in). */
+  showFavorite?: boolean;
 }) {
+  const isFavorite = Boolean(listing.isFavorite);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
+  const handleFavoriteClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (favoriteLoading || !onFavoriteToggle) return;
+    setFavoriteLoading(true);
+    try {
+      const { addFavorite, removeFavorite } = await import("@/lib/api");
+      if (isFavorite) await removeFavorite(listing.id);
+      else await addFavorite(listing.id);
+      onFavoriteToggle(listing.id);
+    } catch {
+      // Error could be shown via toast; for now just ignore
+    } finally {
+      setFavoriteLoading(false);
+    }
+  };
   const skills = listing.skills?.map((r) => r.skill.name) ?? [];
   const shortDescription = truncateDescription(
     listing.description,
@@ -77,7 +102,7 @@ export function ListingPost({
       )}
     >
       <CardHeader className="pb-2">
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center justify-between gap-2">
           <div className="min-w-0 flex-1">
             <CardTitle className="text-xl font-bold leading-tight text-foreground">
               <Link
@@ -91,7 +116,27 @@ export function ListingPost({
               Opublikowano {metaPosted}
             </p>
           </div>
-          {headerAction && <div className="shrink-0">{headerAction}</div>}
+          <div className="flex shrink-0 items-center justify-center gap-2">
+            {headerAction}
+            {showFavorite && (
+              <button
+                type="button"
+                onClick={handleFavoriteClick}
+                disabled={favoriteLoading}
+                className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                aria-label={isFavorite ? "Usuń z ulubionych" : "Dodaj do ulubionych"}
+              >
+                <Star
+                  className={cn(
+                    "h-5 w-5",
+                    isFavorite
+                      ? "fill-yellow-500 text-yellow-500"
+                      : "fill-none text-muted-foreground"
+                  )}
+                />
+              </button>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">

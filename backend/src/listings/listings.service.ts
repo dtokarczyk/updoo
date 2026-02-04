@@ -1,7 +1,8 @@
 import { ForbiddenException, Injectable, OnModuleInit, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { FavoritesService } from './favorites.service';
 import { CreateListingDto } from './dto/create-listing.dto';
-import { BillingType, HoursPerWeek, ExperienceLevel, ProjectType, ListingStatus } from '@prisma/client';
+import { BillingType, HoursPerWeek, ExperienceLevel, ProjectType, ListingStatus, ListingLanguage } from '@prisma/client';
 
 const DEFAULT_CATEGORIES = [
   { name: 'Usługi', slug: 'uslugi' },
@@ -46,7 +47,10 @@ const DEFAULT_SKILLS = [
 
 @Injectable()
 export class ListingsService implements OnModuleInit {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly favoritesService: FavoritesService,
+  ) { }
 
   async onModuleInit() {
     await this.ensureCategories();
@@ -149,6 +153,7 @@ export class ListingsService implements OnModuleInit {
       dto.offerDays != null && allowedDays.includes(dto.offerDays)
         ? new Date(now.getTime() + dto.offerDays * 24 * 60 * 60 * 1000)
         : null;
+    const language = dto.language ? (dto.language as ListingLanguage) : ListingLanguage.POLISH;
     const listing = await this.prisma.listing.create({
       data: {
         title: dto.title.trim(),
@@ -156,6 +161,7 @@ export class ListingsService implements OnModuleInit {
         categoryId: dto.categoryId,
         authorId,
         status: ListingStatus.DRAFT,
+        language,
         billingType: dto.billingType as BillingType,
         hoursPerWeek: dto.billingType === 'HOURLY' && dto.hoursPerWeek
           ? (dto.hoursPerWeek as HoursPerWeek)
@@ -195,14 +201,17 @@ export class ListingsService implements OnModuleInit {
     });
   }
 
-  /** Feed: published for everyone; when userId is set, also include that user's draft listings. Optional categoryId filter. */
-  async getFeed(take = 50, cursor?: string, userId?: string, categoryId?: string) {
+  /** Feed: published for everyone; when userId is set, also include that user's draft listings. Optional categoryId and language filter. */
+  async getFeed(take = 50, cursor?: string, userId?: string, categoryId?: string, language?: string) {
     const statusWhere = userId
       ? { OR: [{ status: ListingStatus.PUBLISHED }, { status: ListingStatus.DRAFT, authorId: userId }] }
       : { status: ListingStatus.PUBLISHED };
-    const where = categoryId
+    let where: Record<string, unknown> = categoryId
       ? { ...statusWhere, categoryId }
       : statusWhere;
+    if (language && (language === 'ENGLISH' || language === 'POLISH')) {
+      where = { ...where, language: language as ListingLanguage };
+    }
     const listings = await this.prisma.listing.findMany({
       take: take + 1,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
@@ -216,8 +225,13 @@ export class ListingsService implements OnModuleInit {
       },
     });
     const hasMore = listings.length > take;
-    const items = hasMore ? listings.slice(0, take) : listings;
-    const nextCursor = hasMore ? items[items.length - 1].id : undefined;
+    const rawItems = hasMore ? listings.slice(0, take) : listings;
+    const nextCursor = hasMore ? rawItems[rawItems.length - 1].id : undefined;
+    const favoriteIds = userId ? await this.favoritesService.getFavoriteListingIds(userId) : new Set<string>();
+    const items = rawItems.map((item) => ({
+      ...item,
+      isFavorite: favoriteIds.has(item.id),
+    }));
     return { items, nextCursor };
   }
 
@@ -269,8 +283,11 @@ export class ListingsService implements OnModuleInit {
     const currentUserApplied = Boolean(
       userId && listing.applications.some((a) => a.freelancerId === userId),
     );
+    const isFavorite = userId
+      ? (await this.favoritesService.getFavoriteListingIds(userId)).has(listing.id)
+      : false;
     const { applications: _app, ...rest } = listing;
-    return { ...rest, applications: applicationsForResponse, currentUserApplied };
+    return { ...rest, applications: applicationsForResponse, currentUserApplied, isFavorite };
   }
 
   private getInitials(name: string | null, surname: string | null): string {
@@ -389,6 +406,7 @@ export class ListingsService implements OnModuleInit {
       dto.offerDays != null && allowedDays.includes(dto.offerDays)
         ? new Date(listing.createdAt.getTime() + dto.offerDays * 24 * 60 * 60 * 1000)
         : undefined;
+    const language = dto.language ? (dto.language as ListingLanguage) : listing.language;
     const updated = await this.prisma.listing.update({
       where: { id: listingId },
       data: {
@@ -396,6 +414,7 @@ export class ListingsService implements OnModuleInit {
         description: dto.description.trim(),
         categoryId: dto.categoryId,
         status: ListingStatus.DRAFT,
+        language,
         billingType: dto.billingType as BillingType,
         hoursPerWeek: dto.billingType === 'HOURLY' && dto.hoursPerWeek
           ? (dto.hoursPerWeek as HoursPerWeek)

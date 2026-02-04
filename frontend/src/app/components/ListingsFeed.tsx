@@ -3,15 +3,17 @@
 import Link from "next/link";
 import { Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getListingsFeed, publishListing, getStoredUser, type Listing } from "@/lib/api";
+import { getListingsFeed, publishListing, getStoredUser, type Listing, type ListingLanguage } from "@/lib/api";
 import { ListingPost } from "@/app/components/ListingPost";
 import { Button } from "@/components/ui/button";
 
 export function ListingsFeed({
   categoryId,
+  language,
   onCountChange,
 }: {
   categoryId?: string;
+  language?: ListingLanguage;
   onCountChange?: (count: number) => void;
 }) {
   const [listings, setListings] = useState<Listing[]>([]);
@@ -22,7 +24,7 @@ export function ListingsFeed({
 
   const loadFeed = () => {
     setLoading(true);
-    getListingsFeed(50, undefined, categoryId)
+    getListingsFeed(50, undefined, categoryId, language)
       .then((res) => {
         setListings(res.items);
         onCountChange?.(res.items.length);
@@ -36,7 +38,7 @@ export function ListingsFeed({
 
   useEffect(() => {
     loadFeed();
-  }, [categoryId]);
+  }, [categoryId, language]);
 
   const handlePublish = (listingId: string) => {
     setPublishingId(listingId);
@@ -82,10 +84,23 @@ export function ListingsFeed({
             <ListingPost
               listing={listing}
               isDraft={isDraft}
+              showFavorite={!!user}
+              onFavoriteToggle={(listingId) =>
+                setListings((prev) =>
+                  prev.map((l) =>
+                    l.id === listingId
+                      ? { ...l, isFavorite: !l.isFavorite }
+                      : l
+                  )
+                )
+              }
               headerAction={
                 <div className="flex items-center gap-2">
                   <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                     {listing.category.name}
+                  </span>
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                    {listing.language === "ENGLISH" ? "English" : "Polish"}
                   </span>
                   {isOwnListing && (
                     <Button size="icon" variant="ghost" className="h-8 w-8" asChild>

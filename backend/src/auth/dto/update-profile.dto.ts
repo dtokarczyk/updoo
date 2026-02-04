@@ -39,4 +39,8 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString({ each: true })
   skillIds?: string[];
+
+  @IsOptional()
+  @IsString()
+  defaultMessage?: string;
 }

@@ -67,7 +67,10 @@
     "tabPassword": "Password",
     "passwordBothRequired": "Enter the new password in both fields.",
     "passwordMismatch": "Passwords do not match.",
-    "newPasswordConfirm": "Repeat new password"
+    "newPasswordConfirm": "Repeat new password",
+    "defaultMessage": "Default welcome message",
+    "defaultMessageDesc": "Welcome message with portfolio links. You can personalize it during each submission.",
+    "defaultMessagePlaceholder": "Hello! I'm interested in this offer. Here are links to my portfolio:\n\n- Portfolio: https://example.com\n- GitHub: https://github.com/username\n\nI'm happy to answer any questions!"
   },
   "onboarding": {
     "whatShouldWeCallYou": "Enter your name and surname.",
@@ -86,7 +89,11 @@
     "freelancerSkillsDesc": "Select the skills you have so we can better match you with jobs.",
     "freelancerSkillsEmpty": "No skills available yet.",
     "freelancerSkillsSearchPlaceholder": "Search skills…",
-    "freelancerSkillsNoResults": "No skills match your search."
+    "freelancerSkillsNoResults": "No skills match your search.",
+    "freelancerDefaultMessageTitle": "Add default welcome message",
+    "freelancerDefaultMessageDesc": "Create a welcome message with portfolio links. You can personalize it during each submission.",
+    "freelancerDefaultMessagePlaceholder": "Hello! I'm interested in this offer. Here are links to my portfolio:\n\n- Portfolio: https://example.com\n- GitHub: https://github.com/username\n\nI'm happy to answer any questions!",
+    "freelancerDefaultMessageHint": "You can change this message later in profile settings."
   },
   "jobs": {
     "jobs": "Jobs",

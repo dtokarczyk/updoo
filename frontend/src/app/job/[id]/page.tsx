@@ -182,6 +182,35 @@ export default function JobDetailPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  // Fill default message when job loads and user is freelancer
+  useEffect(() => {
+    if (!job || !user) return;
+
+    const isOwnJob = user.id === job.authorId;
+    const isDraft = job.status === "DRAFT";
+    const deadlinePassed = job.deadline
+      ? getDeadlineRemainingDays(job.deadline) === 0
+      : false;
+    const canApply =
+      user.accountType === "FREELANCER" &&
+      !isOwnJob &&
+      !isDraft &&
+      !deadlinePassed &&
+      !job.currentUserApplied;
+
+    // Only fill default message if user can apply and hasn't already applied
+    // Set it only once when job loads (check if applyMessage is still empty)
+    if (canApply && user.defaultMessage && user.defaultMessage.trim().length > 0) {
+      setApplyMessage((prev) => {
+        // Only set if previous value is empty (don't overwrite user's edits)
+        if (prev.trim().length === 0) {
+          return user.defaultMessage || "";
+        }
+        return prev;
+      });
+    }
+  }, [job, user]);
+
   if (loading) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 animate-pulse">

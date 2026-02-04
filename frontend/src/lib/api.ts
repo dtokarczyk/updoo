@@ -11,6 +11,8 @@ export interface AuthUser {
   surname: string | null;
   accountType: AccountType | null;
   language: UserLanguage;
+  /** Default message for freelancer applications (with portfolio links). */
+  defaultMessage?: string | null;
   /** Skills directly attached to freelancer account. */
   skills?: Skill[];
 }
@@ -59,6 +61,8 @@ export interface UpdateProfilePayload {
   language?: UserLanguage;
   /** When provided, replaces freelancer skills on the account. */
   skillIds?: string[];
+  /** Default message for freelancer applications (with portfolio links). */
+  defaultMessage?: string;
 }
 
 export async function updateProfile(
@@ -77,6 +81,7 @@ export async function updateProfile(
     body.oldPassword = payload.oldPassword;
   if (payload.language !== undefined) body.language = payload.language;
   if (payload.skillIds !== undefined) body.skillIds = payload.skillIds;
+  if (payload.defaultMessage !== undefined) body.defaultMessage = payload.defaultMessage;
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",
@@ -171,7 +176,9 @@ export function needsOnboarding(user: AuthUser | null): boolean {
   if (user.name == null || user.accountType == null) return true;
   if (user.accountType === "FREELANCER") {
     const skillsCount = user.skills?.length ?? 0;
-    return skillsCount === 0;
+    if (skillsCount === 0) return true;
+    // Check if defaultMessage is missing (null or empty string)
+    if (user.defaultMessage == null || user.defaultMessage.trim() === "") return true;
   }
   return false;
 }

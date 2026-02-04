@@ -49,19 +49,20 @@ enum JobLanguage {
 }
 
 model User {
-  id          String          @id @default(cuid())
-  email       String          @unique
-  password    String
-  name        String?
-  surname     String?
-  accountType AccountType?
-  language    JobLanguage @default(POLISH)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  jobs        Job[]
-  applications JobApplication[]
-  favorites   Favorite[]
-  skills      UserSkill[]
+  id            String          @id @default(cuid())
+  email         String          @unique
+  password      String
+  name          String?
+  surname       String?
+  accountType   AccountType?
+  language      JobLanguage @default(POLISH)
+  defaultMessage String?        @db.Text
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  jobs          Job[]
+  applications  JobApplication[]
+  favorites     Favorite[]
+  skills        UserSkill[]
 }
 
 model Category {

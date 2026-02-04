@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -30,6 +31,7 @@ import { useTranslations } from "@/hooks/useTranslations";
 const STEP_NAME = 1;
 const STEP_ACCOUNT_TYPE = 2;
 const STEP_SKILLS = 3;
+const STEP_DEFAULT_MESSAGE = 4;
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -46,6 +48,7 @@ export default function OnboardingPage() {
   const [availableSkills, setAvailableSkills] = useState<Skill[]>([]);
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
   const [skillsSearch, setSkillsSearch] = useState("");
+  const [defaultMessage, setDefaultMessage] = useState("");
 
   useEffect(() => {
     const stored = getStoredUser();
@@ -68,8 +71,18 @@ export default function OnboardingPage() {
     if (stored.accountType != null) {
       setAccountType(stored.accountType);
     }
-    if (stored.accountType === "FREELANCER" && Array.isArray(stored.skills)) {
-      setSelectedSkillIds(stored.skills.map((skill) => skill.id));
+    if (stored.accountType === "FREELANCER") {
+      if (Array.isArray(stored.skills)) {
+        setSelectedSkillIds(stored.skills.map((skill) => skill.id));
+      }
+      if (stored.defaultMessage != null) {
+        setDefaultMessage(stored.defaultMessage);
+      }
+      // Check if we need to go to default message step
+      const skillsCount = stored.skills?.length ?? 0;
+      if (skillsCount > 0 && (stored.defaultMessage == null || stored.defaultMessage.trim() === "")) {
+        setStep(STEP_DEFAULT_MESSAGE);
+      }
     }
   }, [router]);
 
@@ -167,6 +180,25 @@ export default function OnboardingPage() {
     try {
       const { user: updated } = await updateProfile({
         skillIds: selectedSkillIds,
+      });
+      updateStoredUser(updated);
+      setStep(STEP_DEFAULT_MESSAGE);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : t("onboarding.saveFailed")
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleDefaultMessageSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const { user: updated } = await updateProfile({
+        defaultMessage: defaultMessage.trim() || undefined,
       });
       updateStoredUser(updated);
       router.push("/");
@@ -391,6 +423,59 @@ export default function OnboardingPage() {
                   className="flex-1"
                   disabled={loading}
                   onClick={() => setStep(STEP_ACCOUNT_TYPE)}
+                >
+                  {t("common.back")}
+                </Button>
+                <Button
+                  type="submit"
+                  className="flex-1"
+                  disabled={loading}
+                >
+                  {loading ? t("onboarding.saving") : t("common.continue")}
+                </Button>
+              </CardFooter>
+            </form>
+          </>
+        )}
+
+        {step === STEP_DEFAULT_MESSAGE && accountType === "FREELANCER" && (
+          <>
+            <CardHeader>
+              <CardTitle className="text-3xl">{t("onboarding.freelancerDefaultMessageTitle")}</CardTitle>
+              <CardDescription>
+                {t("onboarding.freelancerDefaultMessageDesc")}
+              </CardDescription>
+            </CardHeader>
+            <form onSubmit={handleDefaultMessageSubmit}>
+              <CardContent className="space-y-4">
+                {error && (
+                  <p className="text-sm text-destructive rounded-md bg-destructive/10 px-3 py-2">
+                    {error}
+                  </p>
+                )}
+                <div className="space-y-2">
+                  <Label htmlFor="defaultMessage">{t("profile.defaultMessage")}</Label>
+                  <Textarea
+                    id="defaultMessage"
+                    placeholder={t("onboarding.freelancerDefaultMessagePlaceholder")}
+                    value={defaultMessage}
+                    onChange={(e) => setDefaultMessage(e.target.value)}
+                    rows={8}
+                    disabled={loading}
+                    className="resize-none"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t("onboarding.freelancerDefaultMessageHint")}
+                  </p>
+                </div>
+              </CardContent>
+              <CardFooter className="mt-4 flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  disabled={loading}
+                  onClick={() => setStep(STEP_SKILLS)}
                 >
                   {t("common.back")}
                 </Button>

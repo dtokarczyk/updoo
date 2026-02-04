@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import {
   getStoredUser,
   updateProfile,
@@ -46,6 +47,8 @@ export default function ProfileEditPage() {
   const [skillsError, setSkillsError] = useState("");
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
   const [skillsSearch, setSkillsSearch] = useState("");
+  const [defaultMessage, setDefaultMessage] = useState("");
+  const [accountType, setAccountType] = useState<"CLIENT" | "FREELANCER" | "ADMIN" | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -55,8 +58,12 @@ export default function ProfileEditPage() {
       setSurname(user.surname ?? "");
       setEmail(user.email ?? "");
       setLanguage(user.language ?? "POLISH");
+      setAccountType(user.accountType);
       if (Array.isArray(user.skills)) {
         setSelectedSkillIds(user.skills.map((skill) => skill.id));
+      }
+      if (user.defaultMessage != null) {
+        setDefaultMessage(user.defaultMessage);
       }
     }
   }, []);
@@ -122,6 +129,7 @@ export default function ProfileEditPage() {
         surname: surname.trim() || undefined,
         email: email.trim() || undefined,
         language,
+        ...(accountType === "FREELANCER" && { defaultMessage: defaultMessage.trim() || undefined }),
       };
       const { user: updated } = await updateProfile(payload);
       updateStoredUser(updated);
@@ -280,8 +288,23 @@ export default function ProfileEditPage() {
                     {t("profile.languageDesc")}
                   </p>
                 </div>
-                <div className="space-y-2">
-                </div>
+                {accountType === "FREELANCER" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="defaultMessage">{t("profile.defaultMessage")}</Label>
+                    <Textarea
+                      id="defaultMessage"
+                      placeholder={t("profile.defaultMessagePlaceholder")}
+                      value={defaultMessage}
+                      onChange={(e) => setDefaultMessage(e.target.value)}
+                      rows={8}
+                      disabled={loading}
+                      className="resize-none"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {t("profile.defaultMessageDesc")}
+                    </p>
+                  </div>
+                )}
                 <CardFooter className="px-0">
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? t("common.saving") : t("common.save")}

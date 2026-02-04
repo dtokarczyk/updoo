@@ -23,6 +23,7 @@ export interface AuthResponseUser {
   surname: string | null;
   accountType: string | null;
   language: string;
+  defaultMessage: string | null;
   skills: { id: string; name: string }[];
 }
 
@@ -77,6 +78,7 @@ export class AuthService {
         surname: user.surname,
         accountType: user.accountType,
         language: user.language,
+        defaultMessage: user.defaultMessage,
         skills: [],
       });
     }
@@ -88,6 +90,7 @@ export class AuthService {
       surname: withRelations.surname,
       accountType: withRelations.accountType,
       language: withRelations.language,
+      defaultMessage: withRelations.defaultMessage,
       skills: skillsFromUser.map((relation) => ({
         id: relation.skill.id,
         name: relation.skill.name,
@@ -119,6 +122,7 @@ export class AuthService {
       surname: user.surname,
       accountType: user.accountType,
       language: user.language,
+      defaultMessage: user.defaultMessage,
       skills: skillsFromUser.map((relation) => ({
         id: relation.skill.id,
         name: relation.skill.name,
@@ -148,6 +152,7 @@ export class AuthService {
       ...(dto.accountType !== undefined && { accountType: dto.accountType || null }),
       ...(dto.email !== undefined && dto.email.trim() && { email: dto.email.trim().toLowerCase() }),
       ...(dto.language !== undefined && { language: dto.language }),
+      ...(dto.defaultMessage !== undefined && { defaultMessage: dto.defaultMessage || null }),
     };
     if (dto.password !== undefined && dto.password.trim()) {
       const existingUser = await this.prisma.user.findUnique({
@@ -193,6 +198,7 @@ export class AuthService {
         surname: user.surname,
         accountType: user.accountType,
         language: user.language,
+        defaultMessage: user.defaultMessage,
         skills: skillsFromUser.map((relation) => ({
           id: relation.skill.id,
           name: relation.skill.name,
@@ -219,6 +225,7 @@ export class AuthService {
       surname: user.surname,
       accountType: user.accountType,
       language: user.language,
+      defaultMessage: user.defaultMessage,
       skills: skillsFromUser.map((relation) => ({
         id: relation.skill.id,
         name: relation.skill.name,
@@ -238,6 +245,7 @@ export class AuthService {
         surname: user.surname,
         accountType: user.accountType,
         language: user.language,
+        defaultMessage: user.defaultMessage,
         skills: user.skills,
       },
     };

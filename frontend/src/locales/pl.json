@@ -67,7 +67,10 @@
     "tabPassword": "Hasło",
     "passwordBothRequired": "Wpisz nowe hasło w oba pola.",
     "passwordMismatch": "Hasła nie są takie same.",
-    "newPasswordConfirm": "Powtórz nowe hasło"
+    "newPasswordConfirm": "Powtórz nowe hasło",
+    "defaultMessage": "Domyślna wiadomość powitalna",
+    "defaultMessageDesc": "Wiadomość powitalna z linkami do portfolio. Możesz ją personalizować podczas każdej wysyłki.",
+    "defaultMessagePlaceholder": "Cześć! Jestem zainteresowany/a tą ofertą. Oto linki do mojego portfolio:\n\n- Portfolio: https://example.com\n- GitHub: https://github.com/username\n\nChętnie odpowiem na pytania!"
   },
   "onboarding": {
     "whatShouldWeCallYou": "Wpisz swoje imię i nazwisko.",
@@ -86,7 +89,11 @@
     "freelancerSkillsDesc": "Zaznacz posiadane przez Ciebie umiejętności, abyśmy mogli łatwiej dopasowywać do Ciebie oferty.",
     "freelancerSkillsEmpty": "Brak dostępnych umiejętności.",
     "freelancerSkillsSearchPlaceholder": "Szukaj umiejętności…",
-    "freelancerSkillsNoResults": "Brak umiejętności pasujących do wyszukiwania."
+    "freelancerSkillsNoResults": "Brak umiejętności pasujących do wyszukiwania.",
+    "freelancerDefaultMessageTitle": "Dodaj domyślną wiadomość powitalną",
+    "freelancerDefaultMessageDesc": "Utwórz wiadomość powitalną z linkami do portfolio. Będziesz mógł ją personalizować podczas każdej wysyłki.",
+    "freelancerDefaultMessagePlaceholder": "Cześć! Jestem zainteresowany/a tą ofertą. Oto linki do mojego portfolio:\n\n- Portfolio: https://example.com\n- GitHub: https://github.com/username\n\nChętnie odpowiem na pytania!",
+    "freelancerDefaultMessageHint": "Możesz zmienić tę wiadomość później w ustawieniach profilu."
   },
   "jobs": {
     "jobs": "Ogłoszenia",

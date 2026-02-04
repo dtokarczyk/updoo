@@ -456,6 +456,11 @@ export class JobsService implements OnModuleInit {
         author: { select: { id: true, email: true, name: true, surname: true } },
         location: true,
         skills: { include: { skill: true } },
+        _count: {
+          select: {
+            applications: true,
+          },
+        },
       },
     });
 
@@ -477,12 +482,16 @@ export class JobsService implements OnModuleInit {
       )
       : new Set<string>();
 
-    const items = jobs.map((item) => ({
-      ...item,
-      category: this.getCategoryWithTranslation(item.category, userLanguage),
-      isFavorite: favoriteIds.has(item.id),
-      currentUserApplied: appliedIds.has(item.id),
-    }));
+    const items = jobs.map((item) => {
+      const { _count, ...rest } = item;
+      return {
+        ...rest,
+        category: this.getCategoryWithTranslation(item.category, userLanguage),
+        isFavorite: favoriteIds.has(item.id),
+        currentUserApplied: appliedIds.has(item.id),
+        applicationsCount: _count?.applications ?? 0,
+      };
+    });
 
     const totalPages = Math.ceil(total / pageSize);
 

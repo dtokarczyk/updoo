@@ -296,6 +296,7 @@ export default function JobDetailPage() {
 
   const skills = job.skills?.map((r) => r.skill.name) ?? [];
   const isOwnJob = user?.id === job.authorId;
+  const isAdmin = user?.accountType === "ADMIN";
   const isDraft = job.status === "DRAFT";
   const deadlinePassed = job.deadline
     ? getDeadlineRemainingDays(job.deadline) === 0
@@ -307,6 +308,8 @@ export default function JobDetailPage() {
     !deadlinePassed &&
     !job.currentUserApplied;
   const applications = job.applications ?? [];
+  // Admin can see full application data even if not the author
+  const canSeeFullApplications = isOwnJob || isAdmin;
 
   async function handleApply(e: React.FormEvent) {
     e.preventDefault();
@@ -451,7 +454,7 @@ export default function JobDetailPage() {
             </div>
           </section>
 
-          {/* Freelancer applications: full data for author, initials for others */}
+          {/* Freelancer applications: full data for author and admin, initials for others */}
           {applications.length > 0 && (
             <section>
               <div className="flex gap-3 items-start">
@@ -462,7 +465,7 @@ export default function JobDetailPage() {
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
                     {t("jobs.applicationsCount", { count: applications.length })}
                   </p>
-                  {isOwnJob ? (
+                  {canSeeFullApplications ? (
                     <div className="space-y-4">
                       {applications.map((app) =>
                         isApplicationFull(app) ? (

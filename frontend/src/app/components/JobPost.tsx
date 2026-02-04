@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { formatDistanceToNow, formatDuration, intervalToDuration } from "date-fns";
 import { pl, enUS } from "date-fns/locale";
-import { Calendar, Clock, Settings2, Star } from "lucide-react";
+import { Calendar, Clock, Settings2, Star, Hand } from "lucide-react";
 import type { Job } from "@/lib/api";
 import {
   Card,
@@ -144,16 +144,24 @@ export function JobPost({
       <CardHeader className="pb-2">
         {(headerAction || showFavorite || headerRightAction) && (
           <div className="mb-2 flex items-center justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-2">{headerAction}</div>
+            <div className="flex flex-wrap items-center gap-2">
+              {typeof job.applicationsCount === "number" && (showFavorite || headerRightAction) && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                  <Hand className="h-3.5 w-3.5 stroke-2" aria-hidden />
+                  <span className="font-bold text-foreground">{job.applicationsCount}</span>
+                </span>
+              )}
+              {headerAction}
+            </div>
             {(showFavorite || headerRightAction) && (
               <div className="flex items-center gap-1">
                 {headerRightAction}
                 {showFavorite && (
-                  <button
-                    type="button"
+                  <Button
+                    variant="outline"
+                    size="icon-lg"
                     onClick={handleFavoriteClick}
                     disabled={favoriteLoading}
-                    className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
                     aria-label={isFavorite ? "Usuń z ulubionych" : "Dodaj do ulubionych"}
                   >
                     <Star
@@ -164,13 +172,13 @@ export function JobPost({
                           : "fill-none text-muted-foreground"
                       )}
                     />
-                  </button>
+                  </Button>
                 )}
               </div>
             )}
           </div>
         )}
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             <CardTitle className="text-xl font-bold leading-tight text-foreground">
               <Link
@@ -245,7 +253,7 @@ export function JobPost({
 
             <Button
               asChild
-              variant="default"
+              variant="outline"
               size="lg"
               className="mt-2 shrink-0"
             >
@@ -258,7 +266,7 @@ export function JobPost({
           <div className="flex justify-end">
             <Button
               asChild
-              variant="default"
+              variant="outline"
               size="lg"
               className="mt-2 shrink-0"
             >

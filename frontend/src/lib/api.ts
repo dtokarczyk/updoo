@@ -316,6 +316,8 @@ export interface Job {
   /** Optional message of the current user's application (if freelancer applied). */
   currentUserApplicationMessage?: string;
   isFavorite?: boolean;
+  /** Number of applications for this job */
+  applicationsCount?: number;
 }
 
 export interface PaginationInfo {

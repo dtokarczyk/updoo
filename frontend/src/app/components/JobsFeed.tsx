@@ -323,7 +323,7 @@ export function JobsFeed({
               }
               headerRightAction={
                 isOwnJob ? (
-                  <Button size="icon" variant="ghost" className="h-8 w-8" asChild>
+                  <Button variant="outline" size="icon-lg" asChild>
                     <Link
                       href={`/job/${job.id}/edit`}
                       aria-label={t("jobs.editJob")}

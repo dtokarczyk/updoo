@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 
 export function AppHeader() {
   const pathname = usePathname();
+  const router = useRouter();
   const isHomeListing =
     pathname === "/" || pathname.startsWith("/offers/");
   const showBack = !isHomeListing;
@@ -24,11 +25,18 @@ export function AppHeader() {
             <Button
               variant="outline"
               size="icon-lg"
-              asChild
+              aria-label="Powrót do listy"
+              onClick={() => {
+                // Try to go back in history to preserve scroll position.
+                if (typeof window !== "undefined" && window.history.length > 1) {
+                  router.back();
+                } else {
+                  // Fallback to default offers list when history is not available.
+                  router.push("/offers/all/1");
+                }
+              }}
             >
-              <Link href="/" aria-label="Powrót do listy">
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
+              <ArrowLeft className="h-5 w-5" />
             </Button>
           )}
         </div>

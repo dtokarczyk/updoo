@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/components/LanguageToggle";
+import { AuthButtons } from "@/app/components/AuthButtons";
 import { useTranslations } from "@/hooks/useTranslations";
 import { getUserLocale, type Locale } from "@/lib/i18n";
 import { t as translate } from "@/lib/translations";
@@ -33,25 +34,25 @@ export function AuthPromoSidebar({ initialLocale }: AuthPromoSidebarProps) {
   };
 
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-zinc-50/80 p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60">
-      <h2 className="text-lg font-semibold tracking-tight text-foreground">
-        {t("auth.promoTitle")}
-      </h2>
-      <p className="mt-2 text-sm text-muted-foreground">
-        {t("auth.promoDescription")}
-      </p>
-      <div className="mt-4 space-y-2">
-        <Button asChild className="w-full">
-          <Link href="/register">{t("auth.signUp")}</Link>
-        </Button>
-        <p className="text-center text-sm text-muted-foreground">
-          {t("auth.alreadyHaveAccountText")}
-        </p>
-        <Button asChild variant="outline" className="w-full">
-          <Link href="/login">{t("auth.signIn")}</Link>
-        </Button>
+    <>
+      {/* Theme and language toggles above the container */}
+      <div className="flex items-center justify-end gap-2 mb-4">
+        <LanguageToggle initialLocale={initialLocale} iconOnly className="h-[44px] w-[44px] px-0" />
+        <ThemeToggle className="h-[44px] w-[44px] px-0" />
       </div>
-    </div>
+
+      <div className="rounded-2xl border border-zinc-200 bg-zinc-50/80 p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60">
+        <h2 className="text-lg font-semibold tracking-tight text-foreground">
+          {t("auth.promoTitle")}
+        </h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {t("auth.promoDescription")}
+        </p>
+        <div className="mt-4">
+          <AuthButtons initialLocale={initialLocale} />
+        </div>
+      </div>
+    </>
   );
 }
 

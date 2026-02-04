@@ -261,5 +261,8 @@
     "noPendingJobs": "Brak ofert oczekujących na zatwierdzenie",
     "failedToLoadPending": "Nie udało się załadować ofert do zatwierdzenia",
     "approve": "Zatwierdź"
+  },
+  "footer": {
+    "copyright": "© {year} Updoo. Wszelkie prawa zastrzeżone."
   }
 }

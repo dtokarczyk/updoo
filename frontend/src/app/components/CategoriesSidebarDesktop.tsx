@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { type Category, getStoredUser, getToken } from "@/lib/api";
 import { CategoryIcon } from "@/components/CategoryIcon";
-import { LanguageToggle } from "@/components/LanguageToggle";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getUserLocale, type Locale } from "@/lib/i18n";
@@ -23,20 +22,16 @@ export function CategoriesSidebarDesktop({
   // Use initialLocale from server during SSR to avoid hydration mismatch
   // After hydration, use client locale which may differ if user preferences changed
   const [locale, setLocaleState] = useState<Locale>(initialLocale ?? getUserLocale());
-  const [mounted, setMounted] = useState(false);
   const [canCreateJob, setCanCreateJob] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Update locale after mount if client locale differs from initial locale
   useEffect(() => {
-    setMounted(true);
     const currentLocale = getUserLocale();
     if (currentLocale !== initialLocale) {
       setLocaleState(currentLocale);
     }
     const token = getToken();
     const user = getStoredUser();
-    setIsLoggedIn(!!token);
     setCanCreateJob(!!token && user?.accountType === "CLIENT");
   }, [initialLocale]);
 
@@ -93,12 +88,6 @@ export function CategoriesSidebarDesktop({
               {t("jobs.newJob")}
             </Link>
           </Button>
-        </div>
-      )}
-
-      {mounted && !isLoggedIn && (
-        <div className="mt-6">
-          <LanguageToggle size="default" className="w-full justify-center" showFullName initialLocale={initialLocale} />
         </div>
       )}
     </nav>

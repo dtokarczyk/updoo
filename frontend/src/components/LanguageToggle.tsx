@@ -13,6 +13,8 @@ interface LanguageToggleProps {
   size?: "default" | "sm" | "lg" | "icon" | "icon-sm" | "icon-lg";
   /** Show full language names (English/Polish) instead of codes (EN/PL) */
   showFullName?: boolean;
+  /** Show only flag icon without text */
+  iconOnly?: boolean;
   /** Initial locale from server to avoid hydration mismatch */
   initialLocale?: Locale;
 }
@@ -21,6 +23,7 @@ export function LanguageToggle({
   className,
   size = "icon-sm",
   showFullName = false,
+  iconOnly = false,
   initialLocale
 }: LanguageToggleProps) {
   const { locale: clientLocale, t: clientT } = useTranslations();
@@ -74,9 +77,11 @@ export function LanguageToggle({
         style={{ width: "1em", height: "1em" }}
         aria-hidden
       />
-      <span className={showFullName ? "text-sm font-medium" : "text-xs font-medium"} suppressHydrationWarning>
-        {displayText}
-      </span>
+      {!iconOnly && (
+        <span className={showFullName ? "text-sm font-medium" : "text-xs font-medium"} suppressHydrationWarning>
+          {displayText}
+        </span>
+      )}
     </Button>
   );
 }

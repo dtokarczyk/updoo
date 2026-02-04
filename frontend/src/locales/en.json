@@ -261,5 +261,8 @@
     "noPendingJobs": "No jobs awaiting approval",
     "failedToLoadPending": "Failed to load pending jobs",
     "approve": "Approve"
+  },
+  "footer": {
+    "copyright": "© {year} Updoo. All rights reserved."
   }
 }

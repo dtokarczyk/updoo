@@ -22,6 +22,7 @@ import {
   Laptop,
   BarChart3,
   X,
+  CheckCircle2,
 } from "lucide-react";
 import {
   getJob,
@@ -33,6 +34,7 @@ import {
   isApplicationFull,
   type Job,
   type JobPrevNext,
+  type JobApplication,
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -69,6 +71,29 @@ function formatDate(iso: string, locale: "pl" | "en"): string {
   const date = new Date(iso);
   const dateFormat = locale === "en" ? "d MMMM yyyy 'at' HH:mm" : "d MMMM yyyy 'o' HH:mm";
   return format(date, dateFormat, { locale: dateFnsLocale });
+}
+
+function formatApplicationDateTime(iso: string, locale: "pl" | "en"): string {
+  const dateFnsLocale = locale === "en" ? enUS : pl;
+  const date = new Date(iso);
+  const dateTimeFormat =
+    locale === "en" ? "d MMM yyyy, HH:mm" : "d MMM yyyy, HH:mm";
+  return format(date, dateTimeFormat, { locale: dateFnsLocale });
+}
+
+function applicationDisplayName(app: JobApplication): string {
+  if (isApplicationFull(app)) {
+    const { name, surname } = app.freelancer;
+    if (name && surname) return `${name} ${surname.charAt(0)}.`;
+    if (name) return name;
+    if (surname) return `${surname.charAt(0)}.`;
+    return app.freelancer.email ?? "?";
+  }
+  return "freelancerDisplayName" in app && app.freelancerDisplayName
+    ? app.freelancerDisplayName
+    : "freelancerInitials" in app
+      ? (app.freelancerInitials ?? "?")
+      : "?";
 }
 
 function getDeadlineRemainingDays(deadline: string | null): number | null {
@@ -410,10 +435,9 @@ export default function JobDetailPage() {
     !isClosed &&
     !deadlinePassed &&
     !job.currentUserApplied;
+
   const canClose = (isOwnJob || isAdmin) && !isClosed && !isDraft;
   const applications = job.applications ?? [];
-  // Admin can see full application data even if not the author
-  const canSeeFullApplications = isOwnJob || isAdmin;
 
   async function handleApply(e: React.FormEvent) {
     e.preventDefault();
@@ -494,6 +518,9 @@ export default function JobDetailPage() {
                 <span className="flex items-center gap-1.5">
                   <User className="h-3.5 w-3.5" />
                   {authorDisplayName(job.author) || job.author.email}
+                  {isOwnJob && (
+                    <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400 shrink-0" aria-hidden />
+                  )}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Calendar className="h-3.5 w-3.5" />
@@ -538,6 +565,72 @@ export default function JobDetailPage() {
             )}
           </div>
 
+          {/* Job details – mobile only: after title, before description */}
+          <section className="block lg:hidden space-y-6 border-t pt-6">
+            <DetailRow
+              icon={Banknote}
+              label={t("jobs.rate")}
+              value={
+                <>
+                  {formatRate(job.rate, job.currency, job.billingType)}
+                  {job.rateNegotiable && (
+                    <span className="text-muted-foreground font-normal">
+                      {" "}
+                      · {t("jobs.negotiable")}
+                    </span>
+                  )}
+                </>
+              }
+            />
+            <DetailRow
+              icon={Briefcase}
+              label={t("jobs.billingType")}
+              value={BILLING_LABELS[job.billingType] ?? job.billingType}
+            />
+            {job.billingType === "HOURLY" && job.hoursPerWeek && (
+              <DetailRow
+                icon={Clock}
+                label={t("jobs.hoursPerWeek")}
+                value={HOURS_LABELS[job.hoursPerWeek] ?? job.hoursPerWeek}
+              />
+            )}
+            <DetailRow
+              icon={BarChart3}
+              label={t("jobs.experienceLevel")}
+              value={
+                EXPERIENCE_LABELS[job.experienceLevel] ?? job.experienceLevel
+              }
+            />
+            <DetailRow
+              icon={Briefcase}
+              label={t("jobs.projectType")}
+              value={
+                PROJECT_TYPE_LABELS[job.projectType] ?? job.projectType
+              }
+            />
+            {job.deadline && (
+              <DetailRow
+                icon={Clock}
+                label={t("jobs.deadline")}
+                value={formatDeadlineRemaining(job.deadline, locale, t) ?? undefined}
+              />
+            )}
+            {job.location && (
+              <DetailRow
+                icon={MapPin}
+                label={t("jobs.location")}
+                value={job.location.name}
+              />
+            )}
+            {job.isRemote && (
+              <DetailRow
+                icon={Laptop}
+                label={t("jobs.remoteWork")}
+                value={t("common.yes")}
+              />
+            )}
+          </section>
+
           {/* Skills */}
           {skills.length > 0 && (
             <section>
@@ -581,104 +674,97 @@ export default function JobDetailPage() {
             </div>
           </section>
 
-          {/* Prev/Next Navigation */}
-          {(prevNext?.prev || prevNext?.next) && (
-            <section className="border-t pt-6">
-              <div className="flex gap-4">
-                {prevNext.prev ? (
-                  <Link
-                    href={`/job/${prevNext.prev.id}`}
-                    className="group flex-1 rounded-lg border bg-muted/30 p-4 transition-colors hover:bg-muted/50"
-                  >
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1.5">
-                      <ArrowLeft className="h-4 w-4" />
-                      <span>{t("jobs.previous")}</span>
-                    </div>
-                    <p className="font-medium text-foreground line-clamp-2 group-hover:text-primary transition-colors">
-                      {prevNext.prev.title}
-                    </p>
-                  </Link>
+          <section className="border-t pt-6 space-y-4 flex gap-3 items-start">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+              <Users className="h-4 w-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
+                {t("jobs.applicationsCount", { count: applications.length })}
+              </p>
+              <ul className="space-y-2 mb-6">
+                {applications.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-2">
+                    {t("jobs.noApplicationsYetBeFirst")}
+                  </p>
                 ) : (
-                  <div className="flex-1" />
+                  applications.map((app) => (
+                    <li
+                      key={app.id}
+                      className="flex items-center justify-between gap-3 py-2 border-b border-border last:border-0 text-sm"
+                    >
+                      <span className="font-medium text-foreground">
+                        {applicationDisplayName(app)}
+                      </span>
+                      <span className="text-muted-foreground tabular-nums">
+                        {formatApplicationDateTime(app.createdAt, locale)}
+                      </span>
+                    </li>
+                  ))
                 )}
-                {prevNext.next ? (
-                  <Link
-                    href={`/job/${prevNext.next.id}`}
-                    className="group flex-1 rounded-lg border bg-muted/30 p-4 transition-colors hover:bg-muted/50 text-right"
-                  >
-                    <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground mb-1.5">
-                      <span>{t("jobs.next")}</span>
-                      <ArrowRight className="h-4 w-4" />
-                    </div>
-                    <p className="font-medium text-foreground line-clamp-2 group-hover:text-primary transition-colors">
-                      {prevNext.next.title}
-                    </p>
-                  </Link>
-                ) : (
-                  <div className="flex-1" />
-                )}
-              </div>
-            </section>
-          )}
+              </ul>
 
-          {/* Apply form (freelancer, before deadline, not own listing) */}
-          {user?.accountType === "FREELANCER" && !isOwnJob && !isDraft && (
-            <section ref={applyFormRef} className="border-t pt-6">
-              {job.currentUserApplied ? (
-                <div className="space-y-3">
-                  {lastApplicationMessage && (
-                    <div className="rounded-lg border bg-muted/40 px-3 py-2">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
-                        {t("jobs.applicationMessageContent")}
-                      </p>
-                      <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                        {lastApplicationMessage}
-                      </p>
+              {user?.accountType === "FREELANCER" && !isOwnJob && !isDraft && (
+                <div ref={applyFormRef}>
+                  {job.currentUserApplied ? (
+                    <div className="space-y-3">
+                      {lastApplicationMessage && (
+                        <div className="rounded-lg border bg-muted/40 px-3 py-2">
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
+                            {t("jobs.applicationMessageContent")}
+                          </p>
+                          <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                            {lastApplicationMessage}
+                          </p>
+                        </div>
+                      )}
                     </div>
+                  ) : deadlinePassed ? (
+                    <p className="text-sm text-muted-foreground">
+                      {t("jobs.deadlinePassedMessage")}
+                    </p>
+                  ) : (
+                    <form onSubmit={handleApply} className="space-y-3">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
+                        {t("jobs.applyToJob")}
+                      </p>
+                      <Textarea
+                        placeholder={t("jobs.applyMessagePlaceholder")}
+                        value={applyMessage}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                          setApplyMessage(e.target.value)
+                        }
+                        maxLength={2000}
+                        rows={3}
+                        className="resize-none"
+                        disabled={applySubmitting}
+                      />
+                      {applyError && (
+                        <p className="text-sm text-destructive">{applyError}</p>
+                      )}
+                      <div className="flex justify-end">
+                        <Button type="submit" disabled={applySubmitting}>
+                          {applySubmitting ? (
+                            t("jobs.applying")
+                          ) : (
+                            <>
+                              <Send className="mr-1.5 h-3.5 w-3.5" />
+                              {t("common.submit")}
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </form>
                   )}
                 </div>
-              ) : deadlinePassed ? (
-                <p className="text-sm text-muted-foreground">
-                  {t("jobs.deadlinePassedMessage")}
-                </p>
-              ) : (
-                <form onSubmit={handleApply} className="space-y-3">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    {t("jobs.applyToJob")}
-                  </p>
-                  <Textarea
-                    placeholder={t("jobs.applyMessagePlaceholder")}
-                    value={applyMessage}
-                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                      setApplyMessage(e.target.value)
-                    }
-                    maxLength={2000}
-                    rows={3}
-                    className="resize-none"
-                    disabled={applySubmitting}
-                  />
-                  {applyError && (
-                    <p className="text-sm text-destructive">{applyError}</p>
-                  )}
-                  <Button type="submit" disabled={applySubmitting}>
-                    {applySubmitting ? (
-                      t("jobs.applying")
-                    ) : (
-                      <>
-                        <Send className="mr-1.5 h-3.5 w-3.5" />
-                        {t("jobs.apply")}
-                      </>
-                    )}
-                  </Button>
-                </form>
               )}
-            </section>
-          )}
+            </div>
+          </section>
         </div>
 
-        {/* Sidebar with job data */}
-        <aside className="lg:col-span-2">
-          <div className="lg:sticky lg:top-8 space-y-6">
+        {/* Sidebar with job data – hidden on mobile */}
+        <aside className="hidden lg:block lg:col-span-2 lg:self-start lg:sticky lg:top-8">
+          <div className="space-y-6">
             {/* CTA Button for desktop */}
             <div className="hidden lg:block">
               <JobActions
@@ -699,67 +785,6 @@ export default function JobDetailPage() {
                 layout="column"
               />
             </div>
-
-            {/* Freelancer applications: full data for author and admin, initials for others */}
-            {applications.length > 0 && (
-              <div className="space-y-3 pb-6 border-b">
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    {t("jobs.applicationsCount", { count: applications.length })}
-                  </p>
-                </div>
-                {canSeeFullApplications ? (
-                  <div className="space-y-3">
-                    {applications.map((app) =>
-                      isApplicationFull(app) ? (
-                        <div
-                          key={app.id}
-                          className="rounded-lg border bg-muted/30 p-3 space-y-1.5"
-                        >
-                          <p className="font-medium text-sm text-foreground">
-                            {authorDisplayName(app.freelancer) || app.freelancer.email}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {app.freelancer.email}
-                          </p>
-                          {app.message && (
-                            <p className="text-xs whitespace-pre-wrap pt-1 border-t mt-2 text-muted-foreground">
-                              {app.message}
-                            </p>
-                          )}
-                          <p className="text-xs text-muted-foreground">
-                            {formatDate(app.createdAt, locale)}
-                          </p>
-                        </div>
-                      ) : null
-                    )}
-                  </div>
-                ) : (
-                  <div className="flex flex-wrap gap-2">
-                    {applications.slice(0, 7).map((app) => (
-                      <span
-                        key={app.id}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-foreground"
-                        title={t("jobs.appliedFreelancer")}
-                      >
-                        {"freelancerInitials" in app
-                          ? app.freelancerInitials || "?"
-                          : "?"}
-                      </span>
-                    ))}
-                    {applications.length > 7 && (
-                      <span
-                        className="inline-flex h-8 items-center justify-center rounded-full bg-primary/10 px-3 text-sm font-medium text-foreground"
-                        title={t("jobs.appliedFreelancer")}
-                      >
-                        +{applications.length - 7}
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
 
             <DetailRow
               icon={Banknote}
@@ -827,8 +852,48 @@ export default function JobDetailPage() {
         </aside>
       </div>
 
+      {/* Prev/Next Navigation - at bottom below all content */}
+      {(prevNext?.prev || prevNext?.next) && (
+        <section className="mt-10 border-t pt-6">
+          <div className="flex gap-4">
+            {prevNext.prev ? (
+              <Link
+                href={`/job/${prevNext.prev.id}`}
+                className="group flex-1 rounded-lg border bg-muted/30 p-4 transition-colors hover:bg-muted/50"
+              >
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1.5">
+                  <ArrowLeft className="h-4 w-4" />
+                  <span>{t("jobs.previous")}</span>
+                </div>
+                <p className="font-medium text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+                  {prevNext.prev.title}
+                </p>
+              </Link>
+            ) : (
+              <div className="flex-1" />
+            )}
+            {prevNext.next ? (
+              <Link
+                href={`/job/${prevNext.next.id}`}
+                className="group flex-1 rounded-lg border bg-muted/30 p-4 transition-colors hover:bg-muted/50 text-right"
+              >
+                <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground mb-1.5">
+                  <span>{t("jobs.next")}</span>
+                  <ArrowRight className="h-4 w-4" />
+                </div>
+                <p className="font-medium text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+                  {prevNext.next.title}
+                </p>
+              </Link>
+            ) : (
+              <div className="flex-1" />
+            )}
+          </div>
+        </section>
+      )}
+
       {/* Sticky CTA button */}
-      {((isOwnJob || isAdmin) || (!isDraft && !isClosed && user?.accountType === "FREELANCER")) && (
+      {((isOwnJob || isAdmin) || canApply) && (
         <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
           <div className="mx-auto max-w-4xl">
             <JobActions

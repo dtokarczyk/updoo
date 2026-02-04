@@ -28,15 +28,15 @@ export default async function RootLayout({
   const locale = await getLocaleFromRequest();
 
   return (
-    <html lang={locale} suppressHydrationWarning className="w-full overflow-x-hidden">
+    <html lang={locale} suppressHydrationWarning className="w-full overflow-x-hidden lg:overflow-x-visible">
       <body
-        className={`${geistMono.variable} antialiased w-full overflow-x-hidden`}
+        className={`${geistMono.variable} antialiased w-full overflow-x-hidden lg:overflow-x-visible`}
       >
         <ThemeScript />
         <ThemeProvider>
-          <div className="flex min-h-screen flex-col font-sans w-full overflow-x-hidden">
+          <div className="flex min-h-screen flex-col font-sans w-full overflow-x-hidden lg:overflow-x-visible">
             <AppHeader initialLocale={locale} />
-            <main className="flex-1 w-full overflow-x-hidden">{children}</main>
+            <main className="flex-1 w-full overflow-x-hidden lg:overflow-x-visible">{children}</main>
             <AppFooter initialLocale={locale} />
           </div>
         </ThemeProvider>

@@ -199,6 +199,7 @@
     "jobsCount": "jobs",
     "recentApplications": "Recent applications",
     "noApplications": "No applications",
+    "noApplicationsYetBeFirst": "No applications yet, be the first!",
     "myJobs": "My jobs",
     "noJobs": "No jobs",
     "newJobForm": {

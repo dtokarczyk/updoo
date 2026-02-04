@@ -167,9 +167,8 @@
     @apply border-border outline-ring/50;
     box-sizing: border-box;
   }
-  /* Prevent horizontal scrolling and zoom gestures on mobile */
+  /* Prevent horizontal scrolling and zoom gestures on mobile only (desktop: no overflow-x so sticky works) */
   html {
-    overflow-x: hidden !important;
     width: 100%;
     max-width: 100vw;
     position: relative;
@@ -178,7 +177,6 @@
   }
   body {
     @apply bg-background text-foreground;
-    overflow-x: hidden !important;
     width: 100%;
     max-width: 100vw;
     position: relative;
@@ -191,7 +189,6 @@
   [data-nextjs-scroll-focus-boundary] {
     width: 100%;
     max-width: 100vw;
-    overflow-x: hidden;
   }
   /* Ensure media elements respect viewport width */
   img,
@@ -207,7 +204,6 @@
   header,
   footer {
     max-width: 100vw;
-    overflow-x: hidden;
   }
 }
 

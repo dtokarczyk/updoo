@@ -294,9 +294,11 @@ export interface JobApplicationFull {
   createdAt: string;
 }
 
-/** Application as seen by others: only initials. */
+/** Application as seen by others: display name (first name + first letter of surname) and/or initials. */
 export interface JobApplicationDisplay {
   id: string;
+  /** First name + first letter of surname (e.g. "Jan K."). */
+  freelancerDisplayName?: string;
   freelancerInitials: string;
   createdAt: string;
 }

@@ -198,6 +198,7 @@
     "jobsCount": "ogłoszeń",
     "recentApplications": "Ostatnie aplikacje",
     "noApplications": "Brak aplikacji",
+    "noApplicationsYetBeFirst": "Nie ma jeszcze zgłoszeń, bądź pierwszy!",
     "myJobs": "Moje oferty",
     "noJobs": "brak ofert",
     "newJobForm": {

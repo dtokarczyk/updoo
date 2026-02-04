@@ -198,7 +198,6 @@ export function JobPost({
             <CardTitle className="text-xl font-bold leading-tight text-foreground">
               <Link
                 href={`/job/${job.id}`}
-                scroll={false}
                 className="hover:underline focus:outline-none focus:underline"
                 onClick={onNavigate}
               >
@@ -277,7 +276,7 @@ export function JobPost({
               size="lg"
               className="mt-2 shrink-0"
             >
-              <Link href={`/job/${job.id}`} scroll={false} onClick={onNavigate}>
+              <Link href={`/job/${job.id}`} onClick={onNavigate}>
                 {t("jobs.seeMore")}
               </Link>
             </Button>
@@ -290,7 +289,7 @@ export function JobPost({
               size="lg"
               className="mt-2 shrink-0"
             >
-              <Link href={`/job/${job.id}`} scroll={false} onClick={onNavigate}>
+              <Link href={`/job/${job.id}`} onClick={onNavigate}>
                 {t("jobs.seeMore")}
               </Link>
             </Button>

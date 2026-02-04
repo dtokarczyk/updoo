@@ -574,6 +574,10 @@ export class JobsService implements OnModuleInit {
       }
       return {
         id: app.id,
+        freelancerDisplayName: this.getFirstNameAndSurnameInitial(
+          app.freelancer.name,
+          app.freelancer.surname,
+        ),
         freelancerInitials: this.getInitials(app.freelancer.name, app.freelancer.surname),
         createdAt: app.createdAt,
       };
@@ -605,6 +609,19 @@ export class JobsService implements OnModuleInit {
     if (n && s) return `${n}${s}`;
     if (n) return n;
     if (s) return s;
+    return '';
+  }
+
+  /** First name + first letter of surname (e.g. "Jan K."). */
+  private getFirstNameAndSurnameInitial(
+    name: string | null,
+    surname: string | null,
+  ): string {
+    const n = name?.trim() ?? '';
+    const s = (surname?.trim() ?? '').charAt(0);
+    if (n && s) return `${n} ${s}.`;
+    if (n) return n;
+    if (s) return `${s}.`;
     return '';
   }
 

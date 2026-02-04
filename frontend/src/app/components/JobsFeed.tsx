@@ -23,7 +23,6 @@ const FEED_STATE_KEY = "jobsFeedState";
 
 type FeedState = {
   page: number;
-  scrollY: number;
   categoryId?: string;
   language?: JobLanguage;
   skillIds?: string[];
@@ -57,10 +56,8 @@ function readFeedState(): FeedState | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<FeedState>;
     if (typeof parsed.page !== "number") return null;
-    if (typeof parsed.scrollY !== "number") return null;
     return {
       page: parsed.page,
-      scrollY: parsed.scrollY,
       categoryId:
         typeof parsed.categoryId === "string"
           ? parsed.categoryId
@@ -121,20 +118,13 @@ export function JobsFeed({
   const user = getStoredUser();
 
   const loadFeed = useCallback(
-    (currentPage: number = page, opts?: { restoreScrollY?: number }) => {
+    (currentPage: number = page) => {
       setLoading(true);
       getJobsFeed(currentPage, 15, categoryId, language, skillIds)
         .then((res) => {
           setJobs(res.items);
           setPagination(res.pagination);
           onCountChange?.(res.pagination.total);
-          if (opts?.restoreScrollY != null) {
-            // Wait for DOM paint before restoring scroll position
-            requestAnimationFrame(() => {
-              window.scrollTo({ top: opts.restoreScrollY ?? 0 });
-            });
-            clearFeedState();
-          }
         })
         .catch(() => {
           setError(t("jobs.failedToLoad"));
@@ -157,7 +147,8 @@ export function JobsFeed({
       restored.page === page;
 
     if (restored && matchesFilters) {
-      loadFeed(page, { restoreScrollY: restored.scrollY });
+      clearFeedState();
+      loadFeed(page);
       return;
     }
 
@@ -192,7 +183,6 @@ export function JobsFeed({
     markVisited(jobId);
     writeFeedState({
       page,
-      scrollY: typeof window !== "undefined" ? window.scrollY : 0,
       categoryId,
       language,
       skillIds,

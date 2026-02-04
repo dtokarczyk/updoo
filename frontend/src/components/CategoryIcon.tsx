@@ -31,8 +31,8 @@ const ICONS: Record<string, CategoryIconConfig> = {
   pisanie: { icon: PenLine, bgClass: "bg-emerald-500" },
   writing: { icon: PenLine, bgClass: "bg-emerald-500" },
 
-  "prace biurowe": { icon: Briefcase, bgClass: "bg-slate-500" },
-  "office work": { icon: Briefcase, bgClass: "bg-slate-500" },
+  "prace biurowe": { icon: Briefcase, bgClass: "bg-pink-500" },
+  "office work": { icon: Briefcase, bgClass: "bg-pink-500" },
 
   inne: { icon: Folder, bgClass: "bg-gray-500" },
   other: { icon: Folder, bgClass: "bg-gray-500" },

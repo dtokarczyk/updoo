@@ -35,6 +35,33 @@ import ReactCountryFlag from "react-country-flag";
 
 const CURRENCIES = ["PLN", "EUR", "USD", "GBP", "CHF"];
 
+/** Suggested hourly rates in PLN by category slug (backend slug, locale-independent). */
+const SUGGESTED_HOURLY_RATES_PLN: Record<
+  string,
+  { JUNIOR: number; MID: number; SENIOR: number }
+> = {
+  programming: { JUNIOR: 70, MID: 120, SENIOR: 180 },
+  design: { JUNIOR: 60, MID: 100, SENIOR: 150 },
+  marketing: { JUNIOR: 55, MID: 95, SENIOR: 140 },
+  writing: { JUNIOR: 50, MID: 85, SENIOR: 130 },
+  "office-working": { JUNIOR: 45, MID: 75, SENIOR: 110 },
+  other: { JUNIOR: 50, MID: 90, SENIOR: 130 },
+};
+
+const DEFAULT_SUGGESTED_HOURLY_PLN = 100;
+
+function getSuggestedHourlyRatePln(
+  categorySlug: string,
+  experienceLevel: ExperienceLevel
+): number {
+  const slug = categorySlug.trim().toLowerCase();
+  const byLevel = SUGGESTED_HOURLY_RATES_PLN[slug];
+  if (byLevel && byLevel[experienceLevel] != null) {
+    return byLevel[experienceLevel];
+  }
+  return DEFAULT_SUGGESTED_HOURLY_PLN;
+}
+
 type SelectedSkill = { id: string | null; name: string };
 
 export interface JobFormData {
@@ -226,6 +253,17 @@ export function JobForm({ initialData, onSubmit, mode, loading: externalLoading 
       .catch(() => setErrors({ general: t("jobs.failedToLoadData") }))
       .finally(() => setLoading(false));
   }, []);
+
+  // Suggest hourly rate from category × experience level matrix (create mode, HOURLY billing)
+  useEffect(() => {
+    if (mode !== "create" || !categoryId || !experienceLevel || billingType !== "HOURLY") {
+      return;
+    }
+    const category = categories.find((c) => c.id === categoryId);
+    if (!category) return;
+    const suggested = getSuggestedHourlyRatePln(category.slug, experienceLevel as ExperienceLevel);
+    setRate(String(suggested));
+  }, [mode, categoryId, experienceLevel, billingType, categories]);
 
   const addSkill = (skill: SelectedSkill) => {
     if (selectedSkills.some((s) => s.name.toLowerCase() === skill.name.toLowerCase())) return;
@@ -791,13 +829,10 @@ export function JobForm({ initialData, onSubmit, mode, loading: externalLoading 
           {errors.offerDays && (
             <p className="text-sm text-red-600 dark:text-red-400">{errors.offerDays}</p>
           )}
-          <p className="text-xs text-muted-foreground">
-            {t("jobs.newJobForm.offerDaysDescription")}
-          </p>
         </div>
       </div>
 
-      <Button type="submit" disabled={submitting} className="w-full">
+      <Button type="submit" disabled={submitting} size="lg" className="w-full">
         {submitting
           ? t("jobs.newJobForm.submitting")
           : mode === "create"

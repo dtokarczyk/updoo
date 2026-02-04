@@ -58,7 +58,7 @@ export function CategoriesSidebarMobile({
           onClick={() => setOpen((o) => !o)}
           className={cn(
             "flex w-full items-center justify-between gap-2 text-xl font-semibold text-foreground",
-            "rounded-md border border-input bg-background px-3 shadow-sm",
+            "rounded-md border border-input bg-background px-3",
             "py-2.5",
             "hover:bg-accent hover:text-accent-foreground",
             "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"

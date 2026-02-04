@@ -3,10 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Plus } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { pl, enUS } from "date-fns/locale";
 import { getUserApplications, getUserJobs, getToken, getStoredUser, clearAuth, type AuthUser, type UserApplication, type Job } from "@/lib/api";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Button } from "@/components/ui/button";
 import { useTranslations } from "@/hooks/useTranslations";
 import { UserDropdown } from "@/app/components/HomeNav";
 import type { Locale } from "@/lib/i18n";
@@ -102,7 +104,7 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
   }
 
   return (
-    <aside className="sticky top-0 z-10 hidden shrink-0 lg:top-14 lg:block lg:self-start lg:w-1/5">
+    <>
       {/* User section with dropdown and theme toggle */}
       <div className="mb-4 pb-4 border-b border-border">
         <div className="flex items-center gap-2">
@@ -121,6 +123,17 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
           <ThemeToggle className="h-[44px] w-[44px] px-0" />
         </div>
       </div>
+
+      {user?.accountType === "CLIENT" && (
+        <div className="mb-4">
+          <Button asChild variant="default" size="lg" className="w-full justify-start">
+            <Link href="/job/new">
+              <Plus className="size-5 shrink-0" aria-hidden />
+              {t("jobs.newJob")}
+            </Link>
+          </Button>
+        </div>
+      )}
 
       {/* Recent applications (for freelancer) or jobs (for client) */}
       {user?.accountType && (
@@ -191,6 +204,6 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
           ) : null}
         </div>
       )}
-    </aside>
+    </>
   );
 }

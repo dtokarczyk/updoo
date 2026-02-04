@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function ListingDetailLoading() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
-      <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
+      <div className="overflow-hidden rounded-xl border bg-card">
         <div className="border-b px-4 py-4 sm:px-6 sm:py-5 space-y-3">
           <Skeleton className="h-6 w-2/3 rounded-md" />
           <div className="flex flex-wrap items-center gap-3">

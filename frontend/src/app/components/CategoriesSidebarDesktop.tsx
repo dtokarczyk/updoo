@@ -79,17 +79,6 @@ export function CategoriesSidebarDesktop({
           </li>
         ))}
       </ul>
-
-      {canCreateJob && (
-        <div className="mt-6">
-          <Button asChild variant="default" size="lg" className="w-full justify-start">
-            <Link href="/job/new">
-              <Plus className="size-5 shrink-0" aria-hidden />
-              {t("jobs.newJob")}
-            </Link>
-          </Button>
-        </div>
-      )}
     </nav>
   );
 }

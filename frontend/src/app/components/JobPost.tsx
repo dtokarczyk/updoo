@@ -9,6 +9,7 @@ import type { Job } from "@/lib/api";
 import {
   Card,
   CardContent,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -51,30 +52,19 @@ function formatTimeLeftUntil(iso: string, locale: "pl" | "en", t: (key: string, 
   const msLeft = d.getTime() - Date.now();
   if (msLeft <= 0) return t("jobs.deadlinePassed");
 
+  const dateFnsLocale = locale === "en" ? enUS : pl;
   const duration = intervalToDuration({
     start: Date.now(),
     end: d.getTime(),
   });
-
-  const daysLeft = duration.days ?? 0;
-  if (daysLeft === 0) {
-    const hoursLeft = duration.hours ?? 0;
-    if (hoursLeft === 0) {
-      const minutesLeft = duration.minutes ?? 0;
-      return t("jobs.deadlineRemainingMinutes", { minutes: minutesLeft });
-    }
-    return t("jobs.deadlineRemainingHours", { hours: hoursLeft });
-  }
-
-  if (daysLeft === 1) {
-    return t("jobs.deadlineRemaining1");
-  }
-
-  if (daysLeft < 5) {
-    return t("jobs.deadlineRemainingFew", { days: daysLeft });
-  }
-
-  return t("jobs.deadlineRemainingMany", { days: daysLeft });
+  const format: (keyof typeof duration)[] =
+    (duration.days ?? 0) > 0
+      ? ["days"]
+      : (duration.hours ?? 0) > 0
+        ? ["hours"]
+        : ["minutes"];
+  const durationStr = formatDuration(duration, { locale: dateFnsLocale, format });
+  return t("jobs.deadlineRemaining", { duration: durationStr });
 }
 
 export function JobPost({
@@ -83,23 +73,42 @@ export function JobPost({
   headerRightAction,
   isDraft,
   isClosed,
+  isApplied,
+  isVisited = true,
   onFavoriteToggle,
   onNavigate,
   showFavorite,
+  className,
+  footer,
 }: {
   job: Job;
   headerAction?: React.ReactNode;
   headerRightAction?: React.ReactNode;
   isDraft?: boolean;
   isClosed?: boolean;
+  /** User has applied to this job (feed border state). */
+  isApplied?: boolean;
+  /** User has already visited this job (unvisited = highlight border). */
+  isVisited?: boolean;
   /** Called after favorite add/remove; parent can refetch. */
   onFavoriteToggle?: (jobId: string) => void;
   /** Called when user navigates to job details. */
   onNavigate?: () => void;
   /** When true, show star in top-right (e.g. when user is logged in). */
   showFavorite?: boolean;
+  /** Optional class names for the card wrapper. */
+  className?: string;
+  /** Optional footer content (e.g. draft admin bar, actions). */
+  footer?: React.ReactNode;
 }) {
   const isFavorite = Boolean(job.isFavorite);
+
+  const borderStateClass = [
+    isDraft ? "border-alert" : "",
+    isApplied && !isDraft ? "border-success" : "",
+    !isVisited && !isDraft && !isApplied ? "border-primary" : "",
+  ].filter(Boolean).join(" ");
+
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const handleFavoriteClick = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -132,22 +141,22 @@ export function JobPost({
     job.currency,
     job.billingType
   );
-  const secondFieldSub = job.billingType === "HOURLY" ? t("jobs.hourlyRate") : t("jobs.rate");
+  const rateLabel = job.billingType === "HOURLY" ? t("jobs.hourlyRate") : t("jobs.rate");
+  const secondFieldSub = job.rateNegotiable
+    ? `${rateLabel} (${t("jobs.negotiable")})`
+    : rateLabel;
 
   return (
     <Card
       className={cn(
-        "overflow-hidden shadow-sm",
-        isDraft
-          ? "rounded-t-xl rounded-b-none border-0 bg-amber-50 dark:bg-amber-950/30"
-          : isClosed
-            ? "rounded-xl opacity-75"
-            : "rounded-xl"
+        className,
+        "overflow-hidden",
+        borderStateClass
       )}
     >
       <CardHeader className="pb-2">
         {(headerAction || showFavorite || headerRightAction) && (
-          <div className="mb-2 flex items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-2">
             <div className="flex flex-wrap items-center gap-2">
               {typeof job.applicationsCount === "number" && (showFavorite || headerRightAction) && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
@@ -157,6 +166,7 @@ export function JobPost({
               )}
               {headerAction}
             </div>
+
             {(showFavorite || headerRightAction) && (
               <div className="flex items-center gap-1">
                 {headerRightAction}
@@ -182,6 +192,7 @@ export function JobPost({
             )}
           </div>
         )}
+
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             <CardTitle className="text-xl font-bold leading-tight text-foreground">
@@ -214,6 +225,7 @@ export function JobPost({
           </div>
         </div>
       </CardHeader>
+
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="flex gap-3">
@@ -238,7 +250,6 @@ export function JobPost({
                   {job.currency}
                   {job.billingType === "HOURLY" ? "/h" : ""}
                 </span>
-                {job.rateNegotiable && ` (${t("jobs.negotiable")})`}
               </p>
               <p className="text-sm text-muted-foreground">{secondFieldSub}</p>
             </div>
@@ -286,6 +297,12 @@ export function JobPost({
           </div>
         )}
       </CardContent>
+
+      {footer != null && (
+        <CardFooter className="border-t">
+          {footer}
+        </CardFooter>
+      )}
     </Card>
   );
 }

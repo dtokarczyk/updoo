@@ -41,7 +41,7 @@ export function AuthPromoSidebar({ initialLocale }: AuthPromoSidebarProps) {
         <ThemeToggle className="h-[44px] w-[44px] px-0" />
       </div>
 
-      <div className="rounded-2xl border p-6 shadow-sm ">
+      <div className="rounded-2xl border p-6">
         <h2 className="text-lg font-semibold tracking-tight text-foreground">
           {t("auth.promoTitle")}
         </h2>

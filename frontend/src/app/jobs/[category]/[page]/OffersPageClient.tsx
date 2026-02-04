@@ -202,7 +202,9 @@ export function OffersPageClient({
             </aside>
           )}
           {isLoggedIn && (
-            <UserSidebar initialLocale={initialLocale} />
+            <aside className="sticky top-0 z-10 hidden shrink-0 lg:top-14 lg:block lg:self-start lg:w-1/5">
+              <UserSidebar initialLocale={initialLocale} />
+            </aside>
           )}
         </div>
       </div>

@@ -14,6 +14,7 @@ import {
   type PaginationInfo,
 } from "@/lib/api";
 import { JobPost } from "@/app/components/JobPost";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "@/hooks/useTranslations";
 
@@ -212,7 +213,7 @@ export function JobsFeed({
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className="overflow-hidden rounded-xl border bg-card shadow-sm animate-pulse"
+            className="overflow-hidden rounded-xl border bg-card animate-pulse"
           >
             <div className="border-b px-4 py-4 sm:px-6 sm:py-4">
               <div className="h-5 w-3/4 rounded-md bg-muted/80" />
@@ -271,93 +272,77 @@ export function JobsFeed({
           !!job.currentUserApplied && user?.accountType === "FREELANCER";
         const isFavorite = !!job.isFavorite;
         return (
-          <div
+          <JobPost
             key={job.id}
-            className={[
-              isDraft
-                ? "overflow-hidden rounded-xl shadow-sm border border-amber-300/80 dark:border-amber-700/80"
-                : "",
-              isClosed && !isDraft
-                ? "overflow-hidden rounded-xl shadow-sm border border-red-300/80 dark:border-red-700/80 opacity-75"
-                : "",
-              isApplied && !isDraft && !isClosed
-                ? "overflow-hidden rounded-xl shadow-sm border border-emerald-500/80 dark:border-emerald-500/80"
-                : "",
-              isFavorite && !isDraft && !isClosed
-                ? "overflow-hidden rounded-xl shadow-sm border border-yellow-400/80 dark:border-yellow-500/80"
-                : "",
-              !isVisited && !isDraft && !isClosed && !isApplied && !isFavorite
-                ? "rounded-xl border border-primary/80 dark:border-primary/90"
-                : "",
-            ].filter(Boolean).join(" ")}
-          >
-            <JobPost
-              job={job}
-              isDraft={isDraft}
-              isClosed={isClosed}
-              showFavorite={!!user}
-              onNavigate={() => handleNavigateToJob(job.id)}
-              onFavoriteToggle={(jobId) =>
-                setJobs((prev) =>
-                  prev.map((j) =>
-                    j.id === jobId
-                      ? { ...j, isFavorite: !j.isFavorite }
-                      : j
-                  )
+            job={job}
+            isDraft={isDraft}
+            isClosed={isClosed}
+            isVisited={isVisited}
+            isApplied={isApplied}
+            showFavorite={!!user}
+            onNavigate={() => handleNavigateToJob(job.id)}
+            onFavoriteToggle={(jobId) =>
+              setJobs((prev) =>
+                prev.map((j) =>
+                  j.id === jobId
+                    ? { ...j, isFavorite: !j.isFavorite }
+                    : j
                 )
-              }
-              headerAction={
-                <div className="flex items-center gap-2">
-                  {isApplied && (
-                    <span className="rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-100 px-2 py-0.5 text-xs font-medium">
-                      {t("jobs.appliedShort")}
-                    </span>
-                  )}
-                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                    {job.category.name}
+              )
+            }
+            headerAction={
+              <div className="flex items-center gap-2">
+                {isApplied && (
+                  <span className="rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-100 px-2 py-0.5 text-xs font-medium">
+                    {t("jobs.appliedShort")}
                   </span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                    <ReactCountryFlag
-                      svg
-                      countryCode={job.language === "ENGLISH" ? "GB" : "PL"}
-                      style={{ width: "1em", height: "1em" }}
-                    />
-                    {job.language === "ENGLISH" ? t("jobs.english") : t("jobs.polish")}
-                  </span>
-                </div>
-              }
-              headerRightAction={
-                isOwnJob ? (
-                  <Button variant="outline" size="icon-lg" asChild>
-                    <Link
-                      href={`/job/${job.id}/edit`}
-                      aria-label={t("jobs.editJob")}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                ) : undefined
-              }
-            />
-            {isDraft && (
-              <div className="bg-amber-200/90 dark:bg-amber-900/50 text-amber-900 dark:text-amber-100 border-t border-amber-300/80 dark:border-amber-700/80 px-4 py-3 flex flex-wrap items-center justify-between gap-2">
-                <p className="text-sm">
-                  {t("jobs.waitingForAdmin")}
-                </p>
-                {canPublish && (
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    className="bg-amber-700 hover:bg-amber-800 text-amber-50 dark:bg-amber-600 dark:hover:bg-amber-700 shrink-0"
-                    onClick={() => handlePublish(job.id)}
-                    disabled={publishingId === job.id}
-                  >
-                    {publishingId === job.id ? t("jobs.publishing") : t("jobs.publish")}
-                  </Button>
                 )}
+                <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                  {job.category.name}
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                  <ReactCountryFlag
+                    svg
+                    countryCode={job.language === "ENGLISH" ? "GB" : "PL"}
+                    style={{ width: "1em", height: "1em" }}
+                  />
+                  {job.language === "ENGLISH" ? t("jobs.english") : t("jobs.polish")}
+                </span>
               </div>
-            )}
-          </div>
+            }
+            headerRightAction={
+              isOwnJob ? (
+                <Button variant="outline" size="icon-lg" asChild>
+                  <Link
+                    href={`/job/${job.id}/edit`}
+                    aria-label={t("jobs.editJob")}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Link>
+                </Button>
+              ) : undefined
+            }
+            footer={
+              isDraft ? (
+                <Alert className="border-alert text-alert">
+                  <AlertDescription className="m-0 min-h-0 shrink text-current col-start-2">
+                    {t("jobs.waitingForAdmin")}
+                  </AlertDescription>
+                  {canPublish && (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="bg-amber-700 hover:bg-amber-800 text-amber-50 dark:bg-amber-600 dark:hover:bg-amber-700 shrink-0"
+                      onClick={() => handlePublish(job.id)}
+                      disabled={publishingId === job.id}
+                    >
+                      {publishingId === job.id ? t("jobs.publishing") : t("jobs.publish")}
+                    </Button>
+                  )}
+                </Alert>
+              ) : undefined
+            }
+          />
         );
       })}
 

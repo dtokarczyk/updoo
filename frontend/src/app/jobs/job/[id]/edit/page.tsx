@@ -495,9 +495,6 @@ export default function EditListingPage() {
                     </option>
                   ))}
                 </select>
-                <p className="text-xs text-muted-foreground">
-                  7, 14, 21 lub 30 dni na zbieranie ofert od daty utworzenia.
-                </p>
               </div>
 
               <div className="space-y-2">

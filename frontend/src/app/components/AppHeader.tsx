@@ -70,7 +70,7 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
             <Button
               variant="outline"
               size="icon-lg"
-              aria-label="Powrót do listy"
+              aria-label={t("backToList")}
               onClick={() => {
                 // Try to go back in history to preserve scroll position.
                 if (typeof window !== "undefined" && window.history.length > 1) {
@@ -92,66 +92,25 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
           <HomeNav />
           {mounted && (
             <>
-              {isLoggedIn ? (
-                <>
-                  {/* Mobile: Drawer for logged in users */}
-                  <div className="lg:hidden">
-                    <Drawer open={drawerOpen} onOpenChange={setDrawerOpen} direction="right">
-                      <DrawerTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon-lg"
-                          className="rounded-full"
-                          aria-label="Open user menu"
-                        >
-                          <span className="flex shrink-0 items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground h-8 w-8">
-                            {user ? initials(user) : "?"}
-                          </span>
-                        </Button>
-                      </DrawerTrigger>
-                      <UserDrawerContent
-                        initialLocale={initialLocale}
-                        onClose={() => setDrawerOpen(false)}
-                      />
-                    </Drawer>
-                  </div>
+              <Drawer open={authDrawerOpen} onOpenChange={setAuthDrawerOpen} direction="right">
+                <DrawerTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon-lg"
+                    aria-label="Open login menu"
+                  >
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DrawerTrigger>
 
-                  {/* Desktop: Dropdown for logged in users */}
-                  <div className="hidden lg:block relative" ref={dropdownRef}>
-                    <UserDropdown
-                      user={user}
-                      dropdownOpen={dropdownOpen}
-                      setDropdownOpen={setDropdownOpen}
-                      dropdownRef={dropdownRef}
-                      handleLogout={handleLogout}
-                      locale={locale}
-                      t={t}
-                      iconOnly
-                    />
-                  </div>
-                </>
-              ) : (
-                <>
-                  {/* Mobile: Drawer for not logged in users */}
-                  <div className="lg:hidden">
-                    <Drawer open={authDrawerOpen} onOpenChange={setAuthDrawerOpen} direction="right">
-                      <DrawerTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="icon-lg"
-                          aria-label="Open login menu"
-                        >
-                          <User className="h-5 w-5" />
-                        </Button>
-                      </DrawerTrigger>
-                      <AuthDrawerContent
-                        initialLocale={initialLocale}
-                        onClose={() => setAuthDrawerOpen(false)}
-                      />
-                    </Drawer>
-                  </div>
-                </>
-              )}
+                {isLoggedIn ? <UserDrawerContent
+                  initialLocale={initialLocale}
+                  onClose={() => setDrawerOpen(false)}
+                /> : <AuthDrawerContent
+                  initialLocale={initialLocale}
+                  onClose={() => setAuthDrawerOpen(false)}
+                />}
+              </Drawer>
             </>
           )}
         </div>

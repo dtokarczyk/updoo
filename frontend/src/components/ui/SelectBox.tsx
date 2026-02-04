@@ -28,12 +28,12 @@ export function SelectBox({
       disabled={disabled}
       className={cn(
         "relative w-full rounded-lg border-2 p-4 text-left transition-all",
-        "hover:border-ring hover:bg-accent/50",
+        "hover:border-ring hover:bg-input/50",
         "focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
-        "disabled:cursor-not-allowed disabled:opacity-50",
+        "disabled:cursor-not-allowed disabled:opacity-50 bg-transparent dark:bg-input/30",
         selected
-          ? "border-primary bg-primary/5 dark:bg-primary/10"
-          : "border-input bg-background",
+          ? "border-primary"
+          : "border-input",
         className
       )}
     >

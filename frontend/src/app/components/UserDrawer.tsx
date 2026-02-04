@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { UserSidebar } from "./UserSidebar";
 
 interface UserDrawerContentProps {
   /** Initial locale from server to avoid hydration mismatch */
@@ -126,97 +127,9 @@ export function UserDrawerContent({ initialLocale, onClose }: UserDrawerContentP
         </div>
       </DrawerHeader>
 
-      <div className="flex-1 overflow-y-auto p-4">
-        {/* User section with dropdown and theme toggle */}
-        <div className="mb-4 pb-4 border-b border-border">
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1" ref={dropdownRef}>
-              <UserDropdown
-                user={user}
-                dropdownOpen={dropdownOpen}
-                setDropdownOpen={setDropdownOpen}
-                dropdownRef={dropdownRef}
-                handleLogout={handleLogout}
-                locale={locale}
-                t={t}
-                fullWidth
-              />
-            </div>
-            <ThemeToggle className="h-[44px] w-[44px] px-0" />
-          </div>
-        </div>
+      <div className="p-4">
 
-        {/* Recent applications (for freelancer) or jobs (for client) */}
-        {user?.accountType && (
-          <div>
-            <h3 className="text-sm font-semibold text-foreground mb-3">
-              {user.accountType === "FREELANCER"
-                ? t("jobs.recentApplications")
-                : t("jobs.myJobs")}
-            </h3>
-            {loading ? (
-              <div className="text-sm text-muted-foreground">{t("common.loading")}</div>
-            ) : user.accountType === "FREELANCER" ? (
-              applications.length === 0 ? (
-                <div className="text-sm text-muted-foreground">
-                  {t("jobs.noApplications")}
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {applications.map((app) => (
-                    <Link
-                      key={app.id}
-                      href={`/job/${app.job.id}`}
-                      className="block p-3 rounded-lg border transition-colors"
-                      onClick={() => onClose()}
-                    >
-                      <h4 className="text-sm font-medium text-foreground line-clamp-2 mb-1">
-                        {app.job.title}
-                      </h4>
-                      <p className="text-xs text-muted-foreground">
-                        {formatPostedAgo(app.createdAt)}
-                      </p>
-                      {app.job.category && (
-                        <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">
-                          {app.job.category.name}
-                        </span>
-                      )}
-                    </Link>
-                  ))}
-                </div>
-              )
-            ) : user.accountType === "CLIENT" ? (
-              jobs.length === 0 ? (
-                <div className="text-sm text-muted-foreground">
-                  {t("jobs.noJobs")}
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {jobs.map((job) => (
-                    <Link
-                      key={job.id}
-                      href={`/job/${job.id}`}
-                      className="block p-3 rounded-lg border border-border bg-card hover:bg-muted transition-colors"
-                      onClick={() => onClose()}
-                    >
-                      <h4 className="text-sm font-medium text-foreground line-clamp-2 mb-1">
-                        {job.title}
-                      </h4>
-                      <p className="text-xs text-muted-foreground">
-                        {formatPostedAgo(job.createdAt)}
-                      </p>
-                      {job.category && (
-                        <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">
-                          {job.category.name}
-                        </span>
-                      )}
-                    </Link>
-                  ))}
-                </div>
-              )
-            ) : null}
-          </div>
-        )}
+        <UserSidebar initialLocale={initialLocale} />
       </div>
     </DrawerContent>
   );

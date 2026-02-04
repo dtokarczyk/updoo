@@ -296,7 +296,7 @@ export class ListingsService implements OnModuleInit {
   }
 
   /** Feed: published for everyone; when userId is set, also include that user's draft listings. Optional categoryId and language filter. */
-  async getFeed(take = 50, cursor?: string, userId?: string, categoryId?: string, language?: string, userLanguage: ListingLanguage = ListingLanguage.POLISH) {
+  async getFeed(page = 1, pageSize = 15, userId?: string, categoryId?: string, language?: string, userLanguage: ListingLanguage = ListingLanguage.POLISH) {
     const statusWhere = userId
       ? { OR: [{ status: ListingStatus.PUBLISHED }, { status: ListingStatus.DRAFT, authorId: userId }] }
       : { status: ListingStatus.PUBLISHED };
@@ -306,9 +306,15 @@ export class ListingsService implements OnModuleInit {
     if (language && (language === 'ENGLISH' || language === 'POLISH')) {
       where = { ...where, language: language as ListingLanguage };
     }
+
+    const skip = (page - 1) * pageSize;
+
+    // Get total count for pagination metadata
+    const total = await this.prisma.listing.count({ where });
+
     const listings = await this.prisma.listing.findMany({
-      take: take + 1,
-      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      skip,
+      take: pageSize,
       where,
       orderBy: { createdAt: 'desc' },
       include: {
@@ -324,16 +330,27 @@ export class ListingsService implements OnModuleInit {
         skills: { include: { skill: true } },
       },
     });
-    const hasMore = listings.length > take;
-    const rawItems = hasMore ? listings.slice(0, take) : listings;
-    const nextCursor = hasMore ? rawItems[rawItems.length - 1].id : undefined;
+
     const favoriteIds = userId ? await this.favoritesService.getFavoriteListingIds(userId) : new Set<string>();
-    const items = rawItems.map((item) => ({
+    const items = listings.map((item) => ({
       ...item,
       category: this.getCategoryWithTranslation(item.category, userLanguage),
       isFavorite: favoriteIds.has(item.id),
     }));
-    return { items, nextCursor };
+
+    const totalPages = Math.ceil(total / pageSize);
+
+    return {
+      items,
+      pagination: {
+        page,
+        pageSize,
+        total,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      }
+    };
   }
 
   /** Get single listing by id. Author or ADMIN can read own/draft; others only published. */

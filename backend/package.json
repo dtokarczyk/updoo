@@ -21,7 +21,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "prisma:push": "prisma db push"
+    "prisma:push": "prisma db push",
+    "script:generate-listings": "ts-node --project tsconfig.json scripts/generate-random-listings.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

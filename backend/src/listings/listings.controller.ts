@@ -36,15 +36,16 @@ export class ListingsController {
   @Get('feed')
   @UseGuards(OptionalJwtAuthGuard)
   getFeed(
-    @Query('take') take?: string,
-    @Query('cursor') cursor?: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
     @Query('categoryId') categoryId?: string,
     @Query('language') language?: string,
     @GetUser() user?: JwtUser,
   ) {
-    const takeNum = take ? Math.min(parseInt(take, 10) || 50, 100) : 50;
+    const pageNum = page ? Math.max(1, parseInt(page, 10) || 1) : 1;
+    const pageSizeNum = pageSize ? Math.min(Math.max(1, parseInt(pageSize, 10) || 15), 100) : 15;
     const userLanguage = (user?.language || 'POLISH') as ListingLanguage;
-    return this.listingsService.getFeed(takeNum, cursor, user?.id, categoryId, language, userLanguage);
+    return this.listingsService.getFeed(pageNum, pageSizeNum, user?.id, categoryId, language, userLanguage);
   }
 
   @Get('favorites')

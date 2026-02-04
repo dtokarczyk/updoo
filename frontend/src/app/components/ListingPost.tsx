@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { pl } from "date-fns/locale";
-import { Clock, Settings2, Star } from "lucide-react";
+import { Calendar, Clock, Settings2, Star } from "lucide-react";
 import type { Listing } from "@/lib/api";
 import {
   Card,
@@ -42,6 +42,21 @@ function formatRate(rate: string, currency: string, billingType: string): string
 
 function formatPostedAgo(iso: string): string {
   return formatDistanceToNow(new Date(iso), { addSuffix: true, locale: pl });
+}
+
+function pluralizeDays(n: number): string {
+  if (n === 1) return "dzień";
+  // Polish: 2-4 days -> "dni", 5+ -> "dni" (same form), but keep logic for readability/future.
+  return "dni";
+}
+
+function formatTimeLeftUntil(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const msLeft = d.getTime() - Date.now();
+  if (msLeft <= 0) return "Zakończone";
+  const daysLeft = Math.max(1, Math.ceil(msLeft / (24 * 60 * 60 * 1000)));
+  return `Pozostało ${daysLeft} ${pluralizeDays(daysLeft)}`;
 }
 
 export function ListingPost({
@@ -86,6 +101,7 @@ export function ListingPost({
     LISTING_DESCRIPTION_MAX_LENGTH
   );
   const metaPosted = formatPostedAgo(listing.createdAt);
+  const metaDeadlineLeft = listing.deadline ? formatTimeLeftUntil(listing.deadline) : "";
   const firstFieldLabel = EXPERIENCE_LABELS[listing.experienceLevel] ?? listing.experienceLevel;
   const firstFieldSub = "Poziom doświadczenia";
   const secondFieldLabel = formatRate(
@@ -110,15 +126,25 @@ export function ListingPost({
             <CardTitle className="text-xl font-bold leading-tight text-foreground">
               <Link
                 href={`/listings/${listing.id}`}
+                scroll={false}
                 className="hover:underline focus:outline-none focus:underline"
                 onClick={onNavigate}
               >
                 {listing.title}
               </Link>
             </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Opublikowano {metaPosted}
-            </p>
+            <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5">
+                <Calendar className="h-4 w-4" aria-hidden />
+                Opublikowano {metaPosted}
+              </span>
+              {metaDeadlineLeft && (
+                <span className="inline-flex items-center gap-1.5">
+                  <Clock className="h-4 w-4" aria-hidden />
+                  {metaDeadlineLeft}
+                </span>
+              )}
+            </div>
           </div>
           <div className="flex shrink-0 items-center justify-center gap-2">
             {headerAction}
@@ -184,7 +210,7 @@ export function ListingPost({
         )}
 
         <Button asChild variant="default" size="lg" className="mt-2">
-          <Link href={`/listings/${listing.id}`} onClick={onNavigate}>
+          <Link href={`/listings/${listing.id}`} scroll={false} onClick={onNavigate}>
             Zobacz więcej
           </Link>
         </Button>

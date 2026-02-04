@@ -258,9 +258,18 @@ export interface Listing {
   isFavorite?: boolean;
 }
 
+export interface PaginationInfo {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
 export interface ListingsFeedResponse {
   items: Listing[];
-  nextCursor?: string;
+  pagination: PaginationInfo;
 }
 
 export async function getCategories(): Promise<Category[]> {
@@ -285,19 +294,19 @@ export async function getSkills(): Promise<Skill[]> {
 }
 
 export async function getListingsFeed(
-  take?: number,
-  cursor?: string,
+  page: number = 1,
+  pageSize: number = 15,
   categoryId?: string,
   language?: ListingLanguage | "" | undefined
 ): Promise<ListingsFeedResponse> {
   const params = new URLSearchParams();
-  if (take != null) params.set("take", String(take));
-  if (cursor) params.set("cursor", cursor);
+  params.set("page", String(page));
+  params.set("pageSize", String(pageSize));
   if (categoryId) params.set("categoryId", categoryId);
   if (language === "POLISH" || language === "ENGLISH") {
     params.set("language", language as ListingLanguage);
   }
-  const url = `${API_URL}/listings/feed${params.toString() ? `?${params}` : ""}`;
+  const url = `${API_URL}/listings/feed?${params.toString()}`;
   const headers: HeadersInit = {};
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;

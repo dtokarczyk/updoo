@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ListingsFeed } from "@/app/components/ListingsFeed";
 import type { ListingLanguage } from "@/lib/api";
 import { useTranslations } from "@/hooks/useTranslations";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export function ListingsSectionHeader({
   sectionTitle,
@@ -13,6 +14,8 @@ export function ListingsSectionHeader({
   categoryId?: string;
 }) {
   const { t } = useTranslations();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [count, setCount] = useState<number | null>(null);
   const [language, setLanguage] = useState<"" | ListingLanguage>("");
 
@@ -34,7 +37,12 @@ export function ListingsSectionHeader({
         <div className="flex items-center gap-2">
           <select
             value={language}
-            onChange={(e) => setLanguage((e.target.value || "") as "" | ListingLanguage)}
+            onChange={(e) => {
+              setLanguage((e.target.value || "") as "" | ListingLanguage);
+              const params = new URLSearchParams(searchParams.toString());
+              params.set("page", "1");
+              router.replace(`/?${params.toString()}`, { scroll: false });
+            }}
             className="rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
             aria-label={t("listings.filterByLanguage")}
           >

@@ -15,9 +15,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { login as apiLogin, setAuth, needsOnboarding } from "@/lib/api";
+import { useTranslations } from "@/hooks/useTranslations";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { t } = useTranslations();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -33,7 +35,7 @@ export default function LoginPage() {
       router.push(needsOnboarding(data.user) ? "/onboarding" : "/");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(err instanceof Error ? err.message : t("auth.loginFailed"));
     } finally {
       setLoading(false);
     }
@@ -43,10 +45,8 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Log in</CardTitle>
-          <CardDescription>
-            Enter your email and password to sign in.
-          </CardDescription>
+          <CardTitle>{t("auth.login")}</CardTitle>
+          <CardDescription>{t("auth.enterEmailPassword")}</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
@@ -56,11 +56,11 @@ export default function LoginPage() {
               </p>
             )}
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("auth.email")}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder={t("auth.emailPlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -69,11 +69,11 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("auth.password")}</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Your password"
+                placeholder={t("auth.passwordPlaceholder")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -82,14 +82,17 @@ export default function LoginPage() {
               />
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col gap-4">
+          <CardFooter className="mt-6 flex flex-col gap-4">
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Signing in…" : "Log in"}
+              {loading ? t("auth.signingIn") : t("auth.logIn")}
             </Button>
             <p className="text-sm text-muted-foreground text-center">
-              Don&apos;t have an account?{" "}
-              <Link href="/register" className="text-primary underline-offset-4 hover:underline">
-                Register
+              {t("auth.dontHaveAccount")}{" "}
+              <Link
+                href="/register"
+                className="text-primary underline-offset-4 hover:underline"
+              >
+                {t("auth.register")}
               </Link>
             </p>
           </CardFooter>

@@ -15,9 +15,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { register as apiRegister, setAuth } from "@/lib/api";
+import { useTranslations } from "@/hooks/useTranslations";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { t } = useTranslations();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -33,7 +35,9 @@ export default function RegisterPage() {
       router.push("/onboarding");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Registration failed");
+      setError(
+        err instanceof Error ? err.message : t("auth.registrationFailed")
+      );
     } finally {
       setLoading(false);
     }
@@ -43,11 +47,8 @@ export default function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Create an account</CardTitle>
-          <CardDescription>
-            Enter your details to register. You will be logged in after
-            registration.
-          </CardDescription>
+          <CardTitle>{t("auth.register")}</CardTitle>
+          <CardDescription>{t("auth.enterDetails")}</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
@@ -57,11 +58,11 @@ export default function RegisterPage() {
               </p>
             )}
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("auth.email")}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder={t("auth.emailPlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -70,11 +71,11 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("auth.password")}</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="At least 8 characters"
+                placeholder={t("auth.passwordMinLengthPlaceholder")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -84,14 +85,17 @@ export default function RegisterPage() {
               />
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col gap-4">
+          <CardFooter className="mt-6 flex flex-col gap-4">
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Registering…" : "Register"}
+              {loading ? t("auth.registering") : t("auth.register")}
             </Button>
             <p className="text-sm text-muted-foreground text-center">
-              Already have an account?{" "}
-              <Link href="/login" className="text-primary underline-offset-4 hover:underline">
-                Log in
+              {t("auth.alreadyHaveAccount")}{" "}
+              <Link
+                href="/login"
+                className="text-primary underline-offset-4 hover:underline"
+              >
+                {t("auth.logIn")}
               </Link>
             </p>
           </CardFooter>

@@ -25,6 +25,9 @@
     "registering": "Registering…",
     "email": "Email",
     "password": "Password",
+    "emailPlaceholder": "you@example.com",
+    "passwordPlaceholder": "Your password",
+    "passwordMinLengthPlaceholder": "At least 8 characters",
     "name": "Name",
     "surname": "Surname",
     "enterEmailPassword": "Enter your email and password to sign in.",
@@ -32,7 +35,12 @@
     "dontHaveAccount": "Don't have an account?",
     "alreadyHaveAccount": "Already have an account?",
     "loginFailed": "Login failed",
-    "registrationFailed": "Registration failed"
+    "registrationFailed": "Registration failed",
+    "promoTitle": "New to Updoo?",
+    "promoDescription": "Create an account to quickly find listings perfectly matched to you.",
+    "promoCtaRegister": "Create account",
+    "promoCtaLogin": "I already have an account – log in",
+    "promoBarText": "Do you have or want to create an Updoo account?"
   },
   "profile": {
     "editProfile": "Edit profile",

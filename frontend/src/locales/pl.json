@@ -25,6 +25,9 @@
     "registering": "Rejestrowanie…",
     "email": "Adres e-mail",
     "password": "Hasło",
+    "emailPlaceholder": "ty@przyklad.com",
+    "passwordPlaceholder": "Twoje hasło",
+    "passwordMinLengthPlaceholder": "Minimum 8 znaków",
     "name": "Imię",
     "surname": "Nazwisko",
     "enterEmailPassword": "Wprowadź adres e-mail i hasło, aby się zalogować.",
@@ -32,7 +35,12 @@
     "dontHaveAccount": "Nie masz konta?",
     "alreadyHaveAccount": "Masz już konto?",
     "loginFailed": "Logowanie nie powiodło się",
-    "registrationFailed": "Rejestracja nie powiodła się"
+    "registrationFailed": "Rejestracja nie powiodła się",
+    "promoTitle": "Dopiero zaczynasz korzystać z Updoo?",
+    "promoDescription": "Załóż konto, aby szybciej znajdować oferty idealnie dopasowane do Ciebie.",
+    "promoCtaRegister": "Utwórz konto",
+    "promoCtaLogin": "Mam już konto – zaloguj się",
+    "promoBarText": "Masz lub chcesz założyć konto w Updoo?"
   },
   "profile": {
     "editProfile": "Edycja profilu",

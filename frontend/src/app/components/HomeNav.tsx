@@ -11,7 +11,6 @@ import {
   type AccountType,
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "@/hooks/useTranslations";
 
@@ -99,13 +98,6 @@ function UserDropdown({
           )}
           role="menu"
         >
-          <div
-            className="flex items-center justify-between gap-2 px-3 py-2 text-sm text-foreground border-b border-zinc-200 dark:border-zinc-700"
-            role="none"
-          >
-            <span className="text-muted-foreground">{t("common.theme")}</span>
-            <ThemeToggle size="icon-sm" />
-          </div>
           <Link
             href="/profile/edit"
             role="menuitem"

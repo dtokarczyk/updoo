@@ -29,7 +29,7 @@ export function ListingsSectionHeader({
     count !== null ? `${sectionTitle} (${count})` : sectionTitle;
 
   return (
-    <section className="flex-1 min-w-0 space-y-6 lg:max-w-2xl">
+    <section className="flex-1 min-w-0 space-y-6 pt-0 lg:pt-14 lg:basis-3/5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-lg font-medium text-foreground">
           {titleWithCount}

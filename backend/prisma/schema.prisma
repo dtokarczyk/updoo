@@ -41,6 +41,7 @@ enum ProjectType {
 enum JobStatus {
   DRAFT
   PUBLISHED
+  CLOSED
 }
 
 enum JobLanguage {
@@ -124,6 +125,7 @@ model Job {
   isRemote        Boolean        @default(false)
   projectType     ProjectType
   deadline        DateTime?      // last day to submit offers (createdAt + offerDays)
+  closedAt        DateTime?      // when job was closed (manually or automatically)
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   category        Category       @relation(fields: [categoryId], references: [id], onDelete: Restrict)

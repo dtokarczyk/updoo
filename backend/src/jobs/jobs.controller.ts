@@ -103,6 +103,49 @@ export class JobsController {
     return this.favoritesService.getFavoriteJobs(user.id, finalLanguage);
   }
 
+  @Get('my-applications')
+  @UseGuards(JwtAuthGuard)
+  getMyApplications(
+    @GetUser() user: JwtUser,
+    @Headers('accept-language') acceptLanguage?: string,
+  ) {
+    // Priority: Accept-Language header > user language > default POLISH
+    const headerLanguage = acceptLanguage ? parseLanguageFromHeader(acceptLanguage) : null;
+    const userLanguage = (user.language || 'POLISH') as JobLanguage;
+    const finalLanguage = headerLanguage || userLanguage;
+    return this.jobsService.getUserApplications(user.id, finalLanguage, 5);
+  }
+
+  @Get('my-jobs')
+  @UseGuards(JwtAuthGuard)
+  getMyJobs(
+    @GetUser() user: JwtUser,
+    @Headers('accept-language') acceptLanguage?: string,
+  ) {
+    // Priority: Accept-Language header > user language > default POLISH
+    const headerLanguage = acceptLanguage ? parseLanguageFromHeader(acceptLanguage) : null;
+    const userLanguage = (user.language || 'POLISH') as JobLanguage;
+    const finalLanguage = headerLanguage || userLanguage;
+    return this.jobsService.getUserJobs(user.id, finalLanguage, 5);
+  }
+
+  @Get('pending')
+  @UseGuards(JwtAuthGuard)
+  getPendingJobs(
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+    @Headers('accept-language') acceptLanguage?: string,
+    @GetUser() user?: JwtUser,
+  ) {
+    const pageNum = page ? Math.max(1, parseInt(page, 10) || 1) : 1;
+    const pageSizeNum = pageSize ? Math.min(Math.max(1, parseInt(pageSize, 10) || 15), 100) : 15;
+    // Priority: Accept-Language header > user language > default POLISH
+    const headerLanguage = acceptLanguage ? parseLanguageFromHeader(acceptLanguage) : null;
+    const userLanguage = (user?.language || 'POLISH') as JobLanguage;
+    const finalLanguage = headerLanguage || userLanguage;
+    return this.jobsService.getPendingJobs(pageNum, pageSizeNum, user!.id, user!.accountType === 'ADMIN', finalLanguage);
+  }
+
   @Get(':id')
   @UseGuards(OptionalJwtAuthGuard)
   getJob(
@@ -178,20 +221,11 @@ export class JobsController {
     return this.jobsService.publishJob(id, user.id, user.accountType === 'ADMIN', userLanguage);
   }
 
-  @Get('pending')
+  @Patch(':id/close')
   @UseGuards(JwtAuthGuard)
-  getPendingJobs(
-    @Query('page') page?: string,
-    @Query('pageSize') pageSize?: string,
-    @Headers('accept-language') acceptLanguage?: string,
-    @GetUser() user?: JwtUser,
-  ) {
-    const pageNum = page ? Math.max(1, parseInt(page, 10) || 1) : 1;
-    const pageSizeNum = pageSize ? Math.min(Math.max(1, parseInt(pageSize, 10) || 15), 100) : 15;
-    // Priority: Accept-Language header > user language > default POLISH
-    const headerLanguage = acceptLanguage ? parseLanguageFromHeader(acceptLanguage) : null;
-    const userLanguage = (user?.language || 'POLISH') as JobLanguage;
-    const finalLanguage = headerLanguage || userLanguage;
-    return this.jobsService.getPendingJobs(pageNum, pageSizeNum, user!.id, user!.accountType === 'ADMIN', finalLanguage);
+  closeJob(@Param('id') id: string, @GetUser() user: JwtUser) {
+    const userLanguage = (user.language || 'POLISH') as JobLanguage;
+    return this.jobsService.closeJob(id, user.id, user.accountType, userLanguage);
   }
+
 }

@@ -1,4 +1,5 @@
 import { ForbiddenException, Injectable, OnModuleInit, NotFoundException } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { FavoritesService } from './favorites.service';
 import { CreateJobDto } from './dto/create-job.dto';
@@ -402,14 +403,31 @@ export class JobsService implements OnModuleInit {
   ) {
     let statusWhere: Record<string, unknown>;
     if (isAdmin) {
-      // Admin sees all jobs (published + all drafts)
-      statusWhere = { OR: [{ status: JobStatus.PUBLISHED }, { status: JobStatus.DRAFT }] };
+      // Admin sees all jobs (published + closed + all drafts)
+      statusWhere = {
+        OR: [
+          { status: JobStatus.PUBLISHED },
+          { status: JobStatus.CLOSED },
+          { status: JobStatus.DRAFT }
+        ]
+      };
     } else if (userId) {
-      // Regular user sees published + own drafts
-      statusWhere = { OR: [{ status: JobStatus.PUBLISHED }, { status: JobStatus.DRAFT, authorId: userId }] };
+      // Regular user sees published + closed + own drafts
+      statusWhere = {
+        OR: [
+          { status: JobStatus.PUBLISHED },
+          { status: JobStatus.CLOSED },
+          { status: JobStatus.DRAFT, authorId: userId }
+        ]
+      };
     } else {
-      // Not logged in: only published
-      statusWhere = { status: JobStatus.PUBLISHED };
+      // Not logged in: only published and closed
+      statusWhere = {
+        OR: [
+          { status: JobStatus.PUBLISHED },
+          { status: JobStatus.CLOSED }
+        ]
+      };
     }
     let where: Record<string, unknown> = categoryId
       ? { ...statusWhere, categoryId }
@@ -442,7 +460,7 @@ export class JobsService implements OnModuleInit {
       take: pageSize,
       where,
       orderBy: [
-        { status: 'asc' }, // DRAFT comes before PUBLISHED alphabetically
+        { status: 'asc' }, // DRAFT comes before PUBLISHED/CLOSED alphabetically
         { createdAt: 'desc' },
       ],
       include: {
@@ -537,6 +555,7 @@ export class JobsService implements OnModuleInit {
     if (job.status === JobStatus.DRAFT && !isAuthor && !isAdmin) {
       throw new NotFoundException('Job not found');
     }
+    // CLOSED jobs are visible to everyone (like PUBLISHED)
     const isAuthorOrAdmin = isAuthor || isAdmin;
     // Author/admin: full application data; others: only freelancer initials
     const applicationsForResponse = job.applications.map((app) => {
@@ -614,11 +633,28 @@ export class JobsService implements OnModuleInit {
     // Build status filter - same logic as getFeed
     let statusWhere: Record<string, unknown>;
     if (isAdmin) {
-      statusWhere = { OR: [{ status: JobStatus.PUBLISHED }, { status: JobStatus.DRAFT }] };
+      statusWhere = {
+        OR: [
+          { status: JobStatus.PUBLISHED },
+          { status: JobStatus.CLOSED },
+          { status: JobStatus.DRAFT }
+        ]
+      };
     } else if (userId) {
-      statusWhere = { OR: [{ status: JobStatus.PUBLISHED }, { status: JobStatus.DRAFT, authorId: userId }] };
+      statusWhere = {
+        OR: [
+          { status: JobStatus.PUBLISHED },
+          { status: JobStatus.CLOSED },
+          { status: JobStatus.DRAFT, authorId: userId }
+        ]
+      };
     } else {
-      statusWhere = { status: JobStatus.PUBLISHED };
+      statusWhere = {
+        OR: [
+          { status: JobStatus.PUBLISHED },
+          { status: JobStatus.CLOSED }
+        ]
+      };
     }
 
     const baseWhere = {
@@ -741,6 +777,9 @@ export class JobsService implements OnModuleInit {
     if (job.status === JobStatus.DRAFT) {
       throw new NotFoundException('Job not found');
     }
+    if (job.status === JobStatus.CLOSED) {
+      throw new ForbiddenException('Ogłoszenie jest zamknięte');
+    }
     if (job.authorId === freelancerId) {
       throw new ForbiddenException('Nie możesz zgłosić się do własnej oferty');
     }
@@ -761,6 +800,76 @@ export class JobsService implements OnModuleInit {
       update: { message: trimmedMessage },
     });
     return { ok: true };
+  }
+
+  /** Get user's recent job applications (last 5). */
+  async getUserApplications(freelancerId: string, userLanguage: JobLanguage = JobLanguage.POLISH, limit = 5) {
+    const applications = await this.prisma.jobApplication.findMany({
+      where: { freelancerId },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      include: {
+        job: {
+          include: {
+            category: {
+              include: {
+                translations: {
+                  where: { language: userLanguage },
+                },
+              },
+            },
+            author: { select: { id: true, email: true, name: true, surname: true } },
+            location: true,
+            skills: { include: { skill: true } },
+          },
+        },
+      },
+    });
+
+    return applications.map((app) => ({
+      id: app.id,
+      createdAt: app.createdAt,
+      message: app.message ?? undefined,
+      job: {
+        ...app.job,
+        category: this.getCategoryWithTranslation(app.job.category, userLanguage),
+      },
+    }));
+  }
+
+  /** Get user's recent jobs (last 5) created by client. */
+  async getUserJobs(clientId: string, userLanguage: JobLanguage = JobLanguage.POLISH, limit = 5) {
+    const jobs = await this.prisma.job.findMany({
+      where: { authorId: clientId },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      include: {
+        category: {
+          include: {
+            translations: {
+              where: { language: userLanguage },
+            },
+          },
+        },
+        author: { select: { id: true, email: true, name: true, surname: true } },
+        location: true,
+        skills: { include: { skill: true } },
+        _count: {
+          select: {
+            applications: true,
+          },
+        },
+      },
+    });
+
+    return jobs.map((job) => {
+      const { _count, ...rest } = job;
+      return {
+        ...rest,
+        category: this.getCategoryWithTranslation(job.category, userLanguage),
+        applicationsCount: _count?.applications ?? 0,
+      };
+    });
   }
 
   /** Update job. Only author can update (or admin can update any); status is always set to DRAFT so admin can re-approve. */
@@ -930,6 +1039,68 @@ export class JobsService implements OnModuleInit {
       ...result,
       category: this.getCategoryWithTranslation(result.category, userLanguage),
     };
+  }
+
+  /** Close a job. Only author or admin can close. */
+  async closeJob(jobId: string, userId: string, accountType: string | null, userLanguage: JobLanguage = JobLanguage.POLISH) {
+    const job = await this.prisma.job.findUnique({
+      where: { id: jobId },
+    });
+    if (!job) {
+      throw new NotFoundException('Job not found');
+    }
+    const isAdmin = accountType === 'ADMIN';
+    if (!isAdmin && job.authorId !== userId) {
+      throw new ForbiddenException('Możesz zamykać tylko swoje oferty');
+    }
+    if (job.status === JobStatus.CLOSED) {
+      throw new ForbiddenException('Ogłoszenie jest już zamknięte');
+    }
+    const now = new Date();
+    const result = await this.prisma.job.update({
+      where: { id: jobId },
+      data: {
+        status: JobStatus.CLOSED,
+        closedAt: now,
+      },
+      include: {
+        category: {
+          include: {
+            translations: {
+              where: { language: userLanguage },
+            },
+          },
+        },
+        author: { select: { id: true, email: true, name: true, surname: true } },
+        location: true,
+        skills: { include: { skill: true } },
+      },
+    });
+    return {
+      ...result,
+      category: this.getCategoryWithTranslation(result.category, userLanguage),
+    };
+  }
+
+  /** Cron job: automatically close jobs that have passed their deadline. Runs every minute. */
+  @Cron(CronExpression.EVERY_MINUTE)
+  async autoCloseExpiredJobs() {
+    const now = new Date();
+    const result = await this.prisma.job.updateMany({
+      where: {
+        status: JobStatus.PUBLISHED,
+        deadline: {
+          lt: now,
+        },
+      },
+      data: {
+        status: JobStatus.CLOSED,
+        closedAt: now,
+      },
+    });
+    if (result.count > 0) {
+      console.log(`Auto-closed ${result.count} expired job(s)`);
+    }
   }
 
   /** Get all DRAFT jobs for admin approval. Only accessible by ADMIN users. */

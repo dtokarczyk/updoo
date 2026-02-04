@@ -119,17 +119,11 @@ export function UserDrawerContent({ initialLocale, onClose }: UserDrawerContentP
     return null;
   }
 
-  const dateFnsLocale = locale === "en" ? enUS : pl;
-
-  function formatPostedAgo(iso: string): string {
-    return formatDistanceToNow(new Date(iso), { addSuffix: true, locale: dateFnsLocale });
-  }
-
   return (
-    <DrawerContent className="h-full max-w-sm">
+    <DrawerContent className="h-full max-w-sm overflow-y-auto">
       <DrawerHeader className="border-b border-border">
         <div className="flex items-center justify-between">
-          <DrawerTitle>{user ? displayName(user, t) : t("profile.editProfile")}</DrawerTitle>
+          <DrawerTitle>{t("profile.editProfile")}</DrawerTitle>
           <DrawerClose asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8">
               <X className="h-4 w-4" />

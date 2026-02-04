@@ -35,13 +35,10 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [showDraftModal, setShowDraftModal] = useState(false);
   const [showDraftAfterLoginModal, setShowDraftAfterLoginModal] = useState(false);
-  const [hasDraft, setHasDraft] = useState(false);
 
   useEffect(() => {
     const draft = getDraftJob();
     if (draft) {
-      setHasDraft(true);
-      // Show modal when there's a draft in localStorage
       setShowDraftModal(true);
     }
   }, []);
@@ -141,7 +138,7 @@ function LoginForm() {
         </div>
       </div>
 
-      {/* Modal informing about draft job before login */}
+      {/* Modal informing about draft job (only on login when draft in localStorage) */}
       <Dialog open={showDraftModal} onOpenChange={setShowDraftModal}>
         <DialogContent>
           <DialogHeader>

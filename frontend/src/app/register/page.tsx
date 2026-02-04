@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -15,15 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { register as apiRegister, setAuth, getDraftJob } from "@/lib/api";
+import { register as apiRegister, setAuth } from "@/lib/api";
 import { useTranslations } from "@/hooks/useTranslations";
 
 export default function RegisterPage() {
@@ -35,14 +27,6 @@ export default function RegisterPage() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showDraftModal, setShowDraftModal] = useState(false);
-
-  useEffect(() => {
-    const draft = getDraftJob();
-    if (draft) {
-      setShowDraftModal(true);
-    }
-  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -163,26 +147,6 @@ export default function RegisterPage() {
           </form>
         </Card>
       </div>
-
-      {/* Modal informing about draft job before registration */}
-      <Dialog open={showDraftModal} onOpenChange={setShowDraftModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("jobs.draftModal.beforeLoginTitle")}</DialogTitle>
-            <DialogDescription>
-              {t("jobs.draftModal.beforeLoginDescription")}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button
-              onClick={() => setShowDraftModal(false)}
-              className="w-full sm:w-auto"
-            >
-              {t("common.continue")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }

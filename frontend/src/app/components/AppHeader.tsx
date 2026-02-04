@@ -1,11 +1,14 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Logotype } from "@/app/components/Logotype";
-import { HomeNav } from "@/app/components/HomeNav";
+import { HomeNav, UserDropdown } from "@/app/components/HomeNav";
+import { getToken, getStoredUser, clearAuth, type AuthUser } from "@/lib/api";
+import { useTranslations } from "@/hooks/useTranslations";
 import type { Locale } from "@/lib/i18n";
 
 export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
@@ -14,6 +17,40 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
   const isHome = pathname === "/";
   const isListing = pathname.startsWith("/offers/");
   const showBack = !isHome && !isListing;
+  const { t, locale } = useTranslations();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    const token = getToken();
+    const u = getStoredUser();
+    setUser(u);
+    setIsLoggedIn(!!token);
+  }, []);
+
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [dropdownOpen]);
+
+  const handleLogout = () => {
+    setDropdownOpen(false);
+    clearAuth();
+    setUser(null);
+    setIsLoggedIn(false);
+    router.push("/");
+    router.refresh();
+  };
 
   return (
     <header className={`bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 ${isListing ? "lg:hidden" : ""}`}>
@@ -45,6 +82,20 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
 
         <div className="flex items-center gap-2">
           <HomeNav />
+          {mounted && isLoggedIn && (
+            <div className="relative" ref={dropdownRef}>
+              <UserDropdown
+                user={user}
+                dropdownOpen={dropdownOpen}
+                setDropdownOpen={setDropdownOpen}
+                dropdownRef={dropdownRef}
+                handleLogout={handleLogout}
+                locale={locale}
+                t={t}
+                iconOnly
+              />
+            </div>
+          )}
           <ThemeToggle size="icon-lg" />
         </div>
       </div>

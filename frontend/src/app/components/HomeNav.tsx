@@ -24,7 +24,7 @@ function accountTypeLabel(type: AccountType | null, t: (key: string) => string):
   return labels[type];
 }
 
-function initials(user: AuthUser): string {
+export function initials(user: AuthUser): string {
   const n = user.name?.trim();
   const s = user.surname?.trim();
   if (n && s) return (n[0] + s[0]).toUpperCase();
@@ -43,7 +43,7 @@ function displayName(user: AuthUser, t: (key: string) => string): string {
   return user.email || t("profile.editProfile");
 }
 
-function UserDropdown({
+export function UserDropdown({
   user,
   dropdownOpen,
   setDropdownOpen,
@@ -52,6 +52,7 @@ function UserDropdown({
   openUp,
   locale,
   t,
+  iconOnly,
 }: {
   user: AuthUser | null;
   dropdownOpen: boolean;
@@ -61,6 +62,7 @@ function UserDropdown({
   openUp?: boolean;
   locale: string;
   t: (key: string) => string;
+  iconOnly?: boolean;
 }) {
   return (
     <div className="relative" ref={dropdownRef}>
@@ -68,7 +70,9 @@ function UserDropdown({
         type="button"
         onClick={() => setDropdownOpen(!dropdownOpen)}
         className={cn(
-          "flex w-full shrink-0 items-center gap-2 rounded-lg border border-transparent px-2 py-1.5",
+          iconOnly
+            ? "flex shrink-0 items-center justify-center rounded-full border border-transparent p-0"
+            : "flex w-full shrink-0 items-center gap-2 rounded-lg border border-transparent px-2 py-1.5",
           "hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700",
           "focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 dark:focus-visible:ring-zinc-500"
         )}
@@ -76,19 +80,24 @@ function UserDropdown({
         aria-haspopup="true"
       >
         <span
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-300 text-sm font-medium text-zinc-700 dark:bg-zinc-600 dark:text-zinc-200"
+          className={cn(
+            "flex shrink-0 items-center justify-center rounded-full bg-zinc-300 text-sm font-medium text-zinc-700 dark:bg-zinc-600 dark:text-zinc-200",
+            iconOnly ? "h-8 w-8" : "h-8 w-8"
+          )}
           aria-hidden
         >
           {user ? initials(user) : "?"}
         </span>
-        <span className="hidden min-w-0 flex-col items-start text-left sm:flex">
-          <span className="truncate text-sm font-medium text-foreground leading-tight">
-            {user ? displayName(user, t) : t("profile.editProfile")}
+        {!iconOnly && (
+          <span className="hidden min-w-0 flex-col items-start text-left sm:flex">
+            <span className="truncate text-sm font-medium text-foreground leading-tight">
+              {user ? displayName(user, t) : t("profile.editProfile")}
+            </span>
+            <span className="truncate text-xs text-muted-foreground leading-tight">
+              {user ? accountTypeLabel(user.accountType, t) : ""}
+            </span>
           </span>
-          <span className="truncate text-xs text-muted-foreground leading-tight">
-            {user ? accountTypeLabel(user.accountType, t) : ""}
-          </span>
-        </span>
+        )}
       </button>
       {dropdownOpen && (
         <div
@@ -216,20 +225,7 @@ export function HomeNav({ showCreateOnly, placement = "header" }: HomeNavProps) 
     return null;
   }
 
-  // Header: profile button with dropdown; hide on desktop when on home (profile is in sidebar)
-  const hideInHeaderOnDesktop = pathname === "/";
-
-  return (
-    <div className={cn("relative", hideInHeaderOnDesktop && "lg:hidden")} ref={dropdownRef}>
-      <UserDropdown
-        user={user}
-        dropdownOpen={dropdownOpen}
-        setDropdownOpen={setDropdownOpen}
-        dropdownRef={dropdownRef}
-        handleLogout={handleLogout}
-        locale={locale}
-        t={t}
-      />
-    </div>
-  );
+  // Header: user dropdown is now handled separately in AppHeader (icon only)
+  // Don't show dropdown here to avoid duplication
+  return null;
 }

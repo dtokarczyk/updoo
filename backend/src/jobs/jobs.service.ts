@@ -1,50 +1,50 @@
 import { ForbiddenException, Injectable, OnModuleInit, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { FavoritesService } from './favorites.service';
-import { CreateListingDto } from './dto/create-listing.dto';
-import { BillingType, HoursPerWeek, ExperienceLevel, ProjectType, ListingStatus, ListingLanguage } from '@prisma/client';
+import { CreateJobDto } from './dto/create-job.dto';
+import { BillingType, HoursPerWeek, ExperienceLevel, ProjectType, JobStatus, JobLanguage } from '@prisma/client';
 
 const DEFAULT_CATEGORIES = [
   {
     slug: 'programming',
     translations: [
-      { language: ListingLanguage.POLISH, name: 'Programowanie' },
-      { language: ListingLanguage.ENGLISH, name: 'Programming' },
+      { language: JobLanguage.POLISH, name: 'Programowanie' },
+      { language: JobLanguage.ENGLISH, name: 'Programming' },
     ],
   },
   {
     slug: 'design',
     translations: [
-      { language: ListingLanguage.POLISH, name: 'Design' },
-      { language: ListingLanguage.ENGLISH, name: 'Design' },
+      { language: JobLanguage.POLISH, name: 'Design' },
+      { language: JobLanguage.ENGLISH, name: 'Design' },
     ],
   },
   {
     slug: 'marketing',
     translations: [
-      { language: ListingLanguage.POLISH, name: 'Marketing' },
-      { language: ListingLanguage.ENGLISH, name: 'Marketing' },
+      { language: JobLanguage.POLISH, name: 'Marketing' },
+      { language: JobLanguage.ENGLISH, name: 'Marketing' },
     ],
   },
   {
     slug: 'writing',
     translations: [
-      { language: ListingLanguage.POLISH, name: 'Pisanie' },
-      { language: ListingLanguage.ENGLISH, name: 'Writing' },
+      { language: JobLanguage.POLISH, name: 'Pisanie' },
+      { language: JobLanguage.ENGLISH, name: 'Writing' },
     ],
   },
   {
     slug: 'office-working',
     translations: [
-      { language: ListingLanguage.POLISH, name: 'Prace biurowe' },
-      { language: ListingLanguage.ENGLISH, name: 'Office Work' },
+      { language: JobLanguage.POLISH, name: 'Prace biurowe' },
+      { language: JobLanguage.ENGLISH, name: 'Office Work' },
     ],
   },
   {
     slug: 'other',
     translations: [
-      { language: ListingLanguage.POLISH, name: 'Inne' },
-      { language: ListingLanguage.ENGLISH, name: 'Other' },
+      { language: JobLanguage.POLISH, name: 'Inne' },
+      { language: JobLanguage.ENGLISH, name: 'Other' },
     ],
   },
 ];
@@ -84,7 +84,7 @@ const DEFAULT_SKILLS = [
 ];
 
 @Injectable()
-export class ListingsService implements OnModuleInit {
+export class JobsService implements OnModuleInit {
   constructor(
     private readonly prisma: PrismaService,
     private readonly favoritesService: FavoritesService,
@@ -171,7 +171,7 @@ export class ListingsService implements OnModuleInit {
     }
   }
 
-  async getCategories(userLanguage: ListingLanguage = ListingLanguage.POLISH) {
+  async getCategories(userLanguage: JobLanguage = JobLanguage.POLISH) {
     const categories = await this.prisma.category.findMany({
       where: {
         slug: {
@@ -194,7 +194,7 @@ export class ListingsService implements OnModuleInit {
       .sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  private getCategoryWithTranslation(category: any, userLanguage: ListingLanguage = ListingLanguage.POLISH) {
+  private getCategoryWithTranslation(category: any, userLanguage: JobLanguage = JobLanguage.POLISH) {
     if (!category) return null;
     const translation = category.translations?.find((t: any) => t.language === userLanguage);
     return {
@@ -216,18 +216,18 @@ export class ListingsService implements OnModuleInit {
     });
   }
 
-  /** Return up to 10 most frequently used skills for listings in given category. Only published listings are taken into account. */
+  /** Return up to 10 most frequently used skills for jobs in given category. Only published jobs are taken into account. */
   async getPopularSkillsForCategory(categoryId: string, limit = 10) {
-    // Group listing skills within a category and count how many times they are used.
-    const grouped = await this.prisma.listingSkill.groupBy({
+    // Group job skills within a category and count how many times they are used.
+    const grouped = await this.prisma.jobSkill.groupBy({
       by: ['skillId'],
       _count: {
         skillId: true,
       },
       where: {
-        listing: {
+        job: {
           categoryId,
-          status: ListingStatus.PUBLISHED,
+          status: JobStatus.PUBLISHED,
         },
       },
       orderBy: [
@@ -262,7 +262,7 @@ export class ListingsService implements OnModuleInit {
     }).filter((s) => s.name);
   }
 
-  async createListing(authorId: string, accountType: string | null, dto: CreateListingDto, userLanguage: ListingLanguage = ListingLanguage.POLISH) {
+  async createJob(authorId: string, accountType: string | null, dto: CreateJobDto, userLanguage: JobLanguage = JobLanguage.POLISH) {
     if (accountType !== 'CLIENT') {
       throw new ForbiddenException('Tylko klienci mogą tworzyć ogłoszenia');
     }
@@ -321,14 +321,14 @@ export class ListingsService implements OnModuleInit {
       dto.offerDays != null && allowedDays.includes(dto.offerDays)
         ? new Date(now.getTime() + dto.offerDays * 24 * 60 * 60 * 1000)
         : null;
-    const language = dto.language ? (dto.language as ListingLanguage) : ListingLanguage.POLISH;
-    const listing = await this.prisma.listing.create({
+    const language = dto.language ? (dto.language as JobLanguage) : JobLanguage.POLISH;
+    const job = await this.prisma.job.create({
       data: {
         title: dto.title.trim(),
         description: dto.description.trim(),
         categoryId: dto.categoryId,
         authorId,
-        status: ListingStatus.DRAFT,
+        status: JobStatus.DRAFT,
         language,
         billingType: dto.billingType as BillingType,
         hoursPerWeek: dto.billingType === 'HOURLY' && dto.hoursPerWeek
@@ -357,15 +357,15 @@ export class ListingsService implements OnModuleInit {
       },
     });
     if (skillIdsToLink.size > 0) {
-      await this.prisma.listingSkill.createMany({
+      await this.prisma.jobSkill.createMany({
         data: [...skillIdsToLink].map((skillId) => ({
-          listingId: listing.id,
+          jobId: job.id,
           skillId,
         })),
       });
     }
-    const result = await this.prisma.listing.findUnique({
-      where: { id: listing.id },
+    const result = await this.prisma.job.findUnique({
+      where: { id: job.id },
       include: {
         category: {
           include: {
@@ -386,8 +386,8 @@ export class ListingsService implements OnModuleInit {
     };
   }
 
-  /** Feed: published for everyone; when userId is set, also include that user's draft listings.
-   * Optional filters: categoryId, language and skills (at least one of the listing skills must match).
+  /** Feed: published for everyone; when userId is set, also include that user's draft jobs.
+   * Optional filters: categoryId, language and skills (at least one of the job skills must match).
    */
   async getFeed(
     page = 1,
@@ -396,19 +396,19 @@ export class ListingsService implements OnModuleInit {
     categoryId?: string,
     language?: string,
     skillIds?: string[],
-    userLanguage: ListingLanguage = ListingLanguage.POLISH,
+    userLanguage: JobLanguage = JobLanguage.POLISH,
   ) {
     const statusWhere = userId
-      ? { OR: [{ status: ListingStatus.PUBLISHED }, { status: ListingStatus.DRAFT, authorId: userId }] }
-      : { status: ListingStatus.PUBLISHED };
+      ? { OR: [{ status: JobStatus.PUBLISHED }, { status: JobStatus.DRAFT, authorId: userId }] }
+      : { status: JobStatus.PUBLISHED };
     let where: Record<string, unknown> = categoryId
       ? { ...statusWhere, categoryId }
       : statusWhere;
     if (language && (language === 'ENGLISH' || language === 'POLISH')) {
-      where = { ...where, language: language as ListingLanguage };
+      where = { ...where, language: language as JobLanguage };
     }
     if (skillIds && skillIds.length > 0) {
-      // At least one of the selected skills must be attached to the listing.
+      // At least one of the selected skills must be attached to the job.
       where = {
         ...where,
         skills: {
@@ -424,9 +424,9 @@ export class ListingsService implements OnModuleInit {
     const skip = (page - 1) * pageSize;
 
     // Get total count for pagination metadata
-    const total = await this.prisma.listing.count({ where });
+    const total = await this.prisma.job.count({ where });
 
-    const listings = await this.prisma.listing.findMany({
+    const jobs = await this.prisma.job.findMany({
       skip,
       take: pageSize,
       where,
@@ -445,25 +445,25 @@ export class ListingsService implements OnModuleInit {
       },
     });
 
-    const favoriteIds = userId ? await this.favoritesService.getFavoriteListingIds(userId) : new Set<string>();
+    const favoriteIds = userId ? await this.favoritesService.getFavoriteJobIds(userId) : new Set<string>();
 
-    const appliedIds = userId && listings.length
+    const appliedIds = userId && jobs.length
       ? new Set(
         (
-          await this.prisma.listingApplication.findMany({
+          await this.prisma.jobApplication.findMany({
             where: {
               freelancerId: userId,
-              listingId: {
-                in: listings.map((l) => l.id),
+              jobId: {
+                in: jobs.map((j) => j.id),
               },
             },
-            select: { listingId: true },
+            select: { jobId: true },
           })
-        ).map((a) => a.listingId),
+        ).map((a) => a.jobId),
       )
       : new Set<string>();
 
-    const items = listings.map((item) => ({
+    const items = jobs.map((item) => ({
       ...item,
       category: this.getCategoryWithTranslation(item.category, userLanguage),
       isFavorite: favoriteIds.has(item.id),
@@ -485,10 +485,10 @@ export class ListingsService implements OnModuleInit {
     };
   }
 
-  /** Get single listing by id. Author or ADMIN can read own/draft; others only published. */
-  async getListing(listingId: string, userId?: string, isAdmin?: boolean, userLanguage: ListingLanguage = ListingLanguage.POLISH) {
-    const listing = await this.prisma.listing.findUnique({
-      where: { id: listingId },
+  /** Get single job by id. Author or ADMIN can read own/draft; others only published. */
+  async getJob(jobId: string, userId?: string, isAdmin?: boolean, userLanguage: JobLanguage = JobLanguage.POLISH) {
+    const job = await this.prisma.job.findUnique({
+      where: { id: jobId },
       include: {
         category: {
           include: {
@@ -507,16 +507,16 @@ export class ListingsService implements OnModuleInit {
         },
       },
     });
-    if (!listing) {
-      throw new NotFoundException('Listing not found');
+    if (!job) {
+      throw new NotFoundException('Job not found');
     }
-    const isAuthor = userId && listing.authorId === userId;
-    if (listing.status === ListingStatus.DRAFT && !isAuthor && !isAdmin) {
-      throw new NotFoundException('Listing not found');
+    const isAuthor = userId && job.authorId === userId;
+    if (job.status === JobStatus.DRAFT && !isAuthor && !isAdmin) {
+      throw new NotFoundException('Job not found');
     }
     const isAuthorOrAdmin = isAuthor || isAdmin;
     // Author/admin: full application data; others: only freelancer initials
-    const applicationsForResponse = listing.applications.map((app) => {
+    const applicationsForResponse = job.applications.map((app) => {
       if (isAuthorOrAdmin) {
         return {
           id: app.id,
@@ -537,19 +537,19 @@ export class ListingsService implements OnModuleInit {
       };
     });
     const currentUserApplied = Boolean(
-      userId && listing.applications.some((a) => a.freelancerId === userId),
+      userId && job.applications.some((a) => a.freelancerId === userId),
     );
     const currentUserApplication = userId
-      ? listing.applications.find((a) => a.freelancerId === userId)
+      ? job.applications.find((a) => a.freelancerId === userId)
       : undefined;
     const currentUserApplicationMessage = currentUserApplication?.message ?? undefined;
     const isFavorite = userId
-      ? (await this.favoritesService.getFavoriteListingIds(userId)).has(listing.id)
+      ? (await this.favoritesService.getFavoriteJobIds(userId)).has(job.id)
       : false;
-    const { applications: _app, ...rest } = listing;
+    const { applications: _app, ...rest } = job;
     return {
       ...rest,
-      category: this.getCategoryWithTranslation(listing.category, userLanguage),
+      category: this.getCategoryWithTranslation(job.category, userLanguage),
       applications: applicationsForResponse,
       currentUserApplied,
       currentUserApplicationMessage,
@@ -566,39 +566,39 @@ export class ListingsService implements OnModuleInit {
     return '';
   }
 
-  /** Freelancer applies to a listing. Allowed only before deadline. */
-  async applyToListing(
-    listingId: string,
+  /** Freelancer applies to a job. Allowed only before deadline. */
+  async applyToJob(
+    jobId: string,
     freelancerId: string,
     accountType: string | null,
     message?: string,
   ) {
     if (accountType !== 'FREELANCER') {
-      throw new ForbiddenException('Tylko freelancerzy mogą zgłaszać się do ogłoszeń');
+      throw new ForbiddenException('Tylko freelancerzy mogą zgłaszać się do ofert');
     }
-    const listing = await this.prisma.listing.findUnique({
-      where: { id: listingId },
+    const job = await this.prisma.job.findUnique({
+      where: { id: jobId },
     });
-    if (!listing) {
-      throw new NotFoundException('Listing not found');
+    if (!job) {
+      throw new NotFoundException('Job not found');
     }
-    if (listing.status === ListingStatus.DRAFT) {
-      throw new NotFoundException('Listing not found');
+    if (job.status === JobStatus.DRAFT) {
+      throw new NotFoundException('Job not found');
     }
-    if (listing.authorId === freelancerId) {
-      throw new ForbiddenException('Nie możesz zgłosić się do własnego ogłoszenia');
+    if (job.authorId === freelancerId) {
+      throw new ForbiddenException('Nie możesz zgłosić się do własnej oferty');
     }
     const now = new Date();
-    if (listing.deadline && listing.deadline < now) {
+    if (job.deadline && job.deadline < now) {
       throw new ForbiddenException('Termin zgłoszeń minął');
     }
     const trimmedMessage = message?.trim() || undefined;
-    await this.prisma.listingApplication.upsert({
+    await this.prisma.jobApplication.upsert({
       where: {
-        listingId_freelancerId: { listingId, freelancerId },
+        jobId_freelancerId: { jobId, freelancerId },
       },
       create: {
-        listingId,
+        jobId,
         freelancerId,
         message: trimmedMessage,
       },
@@ -607,19 +607,19 @@ export class ListingsService implements OnModuleInit {
     return { ok: true };
   }
 
-  /** Update listing. Only author can update; status is always set to DRAFT so admin can re-approve. */
-  async updateListing(listingId: string, userId: string, accountType: string | null, dto: CreateListingDto, userLanguage: ListingLanguage = ListingLanguage.POLISH) {
-    const listing = await this.prisma.listing.findUnique({
-      where: { id: listingId },
+  /** Update job. Only author can update; status is always set to DRAFT so admin can re-approve. */
+  async updateJob(jobId: string, userId: string, accountType: string | null, dto: CreateJobDto, userLanguage: JobLanguage = JobLanguage.POLISH) {
+    const job = await this.prisma.job.findUnique({
+      where: { id: jobId },
     });
-    if (!listing) {
-      throw new NotFoundException('Listing not found');
+    if (!job) {
+      throw new NotFoundException('Job not found');
     }
-    if (listing.authorId !== userId) {
-      throw new ForbiddenException('Możesz edytować tylko swoje ogłoszenia');
+    if (job.authorId !== userId) {
+      throw new ForbiddenException('Możesz edytować tylko swoje oferty');
     }
     if (accountType !== 'CLIENT') {
-      throw new ForbiddenException('Tylko klienci mogą edytować ogłoszenia');
+      throw new ForbiddenException('Tylko klienci mogą edytować oferty');
     }
     const category = await this.prisma.category.findUnique({
       where: { id: dto.categoryId },
@@ -670,22 +670,22 @@ export class ListingsService implements OnModuleInit {
         }
       }
     }
-    await this.prisma.listingSkill.deleteMany({
-      where: { listingId },
+    await this.prisma.jobSkill.deleteMany({
+      where: { jobId },
     });
     const allowedDays = [7, 14, 21, 30];
     const newDeadline =
       dto.offerDays != null && allowedDays.includes(dto.offerDays)
-        ? new Date(listing.createdAt.getTime() + dto.offerDays * 24 * 60 * 60 * 1000)
+        ? new Date(job.createdAt.getTime() + dto.offerDays * 24 * 60 * 60 * 1000)
         : undefined;
-    const language = dto.language ? (dto.language as ListingLanguage) : listing.language;
-    const updated = await this.prisma.listing.update({
-      where: { id: listingId },
+    const language = dto.language ? (dto.language as JobLanguage) : job.language;
+    const updated = await this.prisma.job.update({
+      where: { id: jobId },
       data: {
         title: dto.title.trim(),
         description: dto.description.trim(),
         categoryId: dto.categoryId,
-        status: ListingStatus.DRAFT,
+        status: JobStatus.DRAFT,
         language,
         billingType: dto.billingType as BillingType,
         hoursPerWeek: dto.billingType === 'HOURLY' && dto.hoursPerWeek
@@ -714,15 +714,15 @@ export class ListingsService implements OnModuleInit {
       },
     });
     if (skillIdsToLink.size > 0) {
-      await this.prisma.listingSkill.createMany({
+      await this.prisma.jobSkill.createMany({
         data: [...skillIdsToLink].map((skillId) => ({
-          listingId: updated.id,
+          jobId: updated.id,
           skillId,
         })),
       });
     }
-    const result = await this.prisma.listing.findUnique({
-      where: { id: listingId },
+    const result = await this.prisma.job.findUnique({
+      where: { id: jobId },
       include: {
         category: {
           include: {
@@ -743,19 +743,19 @@ export class ListingsService implements OnModuleInit {
     };
   }
 
-  async publishListing(listingId: string, adminUserId: string, isAdmin: boolean, userLanguage: ListingLanguage = ListingLanguage.POLISH) {
+  async publishJob(jobId: string, adminUserId: string, isAdmin: boolean, userLanguage: JobLanguage = JobLanguage.POLISH) {
     if (!isAdmin) {
-      throw new ForbiddenException('Tylko użytkownik z typem konta ADMIN może publikować ogłoszenia');
+      throw new ForbiddenException('Tylko użytkownik z typem konta ADMIN może publikować oferty');
     }
-    const listing = await this.prisma.listing.findUnique({
-      where: { id: listingId },
+    const job = await this.prisma.job.findUnique({
+      where: { id: jobId },
     });
-    if (!listing) {
-      throw new NotFoundException('Listing not found');
+    if (!job) {
+      throw new NotFoundException('Job not found');
     }
-    const result = await this.prisma.listing.update({
-      where: { id: listingId },
-      data: { status: ListingStatus.PUBLISHED },
+    const result = await this.prisma.job.update({
+      where: { id: jobId },
+      data: { status: JobStatus.PUBLISHED },
       include: {
         category: {
           include: {

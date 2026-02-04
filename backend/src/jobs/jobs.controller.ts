@@ -3,33 +3,33 @@ import { GetUser } from '../auth/get-user.decorator';
 import type { JwtUser } from '../auth/get-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
-import { ApplyToListingDto } from './dto/apply-to-listing.dto';
-import { CreateListingDto } from './dto/create-listing.dto';
+import { ApplyToJobDto } from './dto/apply-to-job.dto';
+import { CreateJobDto } from './dto/create-job.dto';
 import { FavoritesService } from './favorites.service';
-import { ListingsService } from './listings.service';
-import { ListingLanguage } from '@prisma/client';
+import { JobsService } from './jobs.service';
+import { JobLanguage } from '@prisma/client';
 
 /**
- * Parses Accept-Language header and returns ListingLanguage.
+ * Parses Accept-Language header and returns JobLanguage.
  * Accepts "pl", "en", "pl-PL", "en-US", etc.
  * Returns POLISH for "pl", ENGLISH for "en", default POLISH otherwise.
  */
-function parseLanguageFromHeader(acceptLanguage?: string): ListingLanguage {
-  if (!acceptLanguage) return ListingLanguage.POLISH;
+function parseLanguageFromHeader(acceptLanguage?: string): JobLanguage {
+  if (!acceptLanguage) return JobLanguage.POLISH;
 
   const normalized = acceptLanguage.toLowerCase().trim();
   const langCode = normalized.split('-')[0];
 
-  if (langCode === 'en') return ListingLanguage.ENGLISH;
-  if (langCode === 'pl') return ListingLanguage.POLISH;
+  if (langCode === 'en') return JobLanguage.ENGLISH;
+  if (langCode === 'pl') return JobLanguage.POLISH;
 
-  return ListingLanguage.POLISH;
+  return JobLanguage.POLISH;
 }
 
-@Controller('listings')
-export class ListingsController {
+@Controller('jobs')
+export class JobsController {
   constructor(
-    private readonly listingsService: ListingsService,
+    private readonly jobsService: JobsService,
     private readonly favoritesService: FavoritesService,
   ) { }
 
@@ -41,19 +41,19 @@ export class ListingsController {
   ) {
     // Priority: Accept-Language header > user language > default POLISH
     const headerLanguage = acceptLanguage ? parseLanguageFromHeader(acceptLanguage) : null;
-    const userLanguage = (user?.language || 'POLISH') as ListingLanguage;
+    const userLanguage = (user?.language || 'POLISH') as JobLanguage;
     const finalLanguage = headerLanguage || userLanguage;
-    return this.listingsService.getCategories(finalLanguage);
+    return this.jobsService.getCategories(finalLanguage);
   }
 
   @Get('locations')
   getLocations() {
-    return this.listingsService.getLocations();
+    return this.jobsService.getLocations();
   }
 
   @Get('skills')
   getSkills() {
-    return this.listingsService.getSkills();
+    return this.jobsService.getSkills();
   }
 
   @Get('feed')
@@ -71,12 +71,12 @@ export class ListingsController {
     const pageSizeNum = pageSize ? Math.min(Math.max(1, parseInt(pageSize, 10) || 15), 100) : 15;
     // Priority: Accept-Language header > user language > default POLISH
     const headerLanguage = acceptLanguage ? parseLanguageFromHeader(acceptLanguage) : null;
-    const userLanguage = (user?.language || 'POLISH') as ListingLanguage;
+    const userLanguage = (user?.language || 'POLISH') as JobLanguage;
     const finalLanguage = headerLanguage || userLanguage;
     const parsedSkillIds = skillIds
       ? skillIds.split(',').map((id) => id.trim()).filter(Boolean)
       : undefined;
-    return this.listingsService.getFeed(pageNum, pageSizeNum, user?.id, categoryId, language, parsedSkillIds, finalLanguage);
+    return this.jobsService.getFeed(pageNum, pageSizeNum, user?.id, categoryId, language, parsedSkillIds, finalLanguage);
   }
 
   @Get('popular-skills')
@@ -87,7 +87,7 @@ export class ListingsController {
       // Without category context "popular skills" would not be meaningful, return empty list.
       return [];
     }
-    return this.listingsService.getPopularSkillsForCategory(categoryId);
+    return this.jobsService.getPopularSkillsForCategory(categoryId);
   }
 
   @Get('favorites')
@@ -98,33 +98,33 @@ export class ListingsController {
   ) {
     // Priority: Accept-Language header > user language > default POLISH
     const headerLanguage = acceptLanguage ? parseLanguageFromHeader(acceptLanguage) : null;
-    const userLanguage = (user.language || 'POLISH') as ListingLanguage;
+    const userLanguage = (user.language || 'POLISH') as JobLanguage;
     const finalLanguage = headerLanguage || userLanguage;
-    return this.favoritesService.getFavoriteListings(user.id, finalLanguage);
+    return this.favoritesService.getFavoriteJobs(user.id, finalLanguage);
   }
 
   @Get(':id')
   @UseGuards(OptionalJwtAuthGuard)
-  getListing(
+  getJob(
     @Param('id') id: string,
     @Headers('accept-language') acceptLanguage?: string,
     @GetUser() user?: JwtUser,
   ) {
     // Priority: Accept-Language header > user language > default POLISH
     const headerLanguage = acceptLanguage ? parseLanguageFromHeader(acceptLanguage) : null;
-    const userLanguage = (user?.language || 'POLISH') as ListingLanguage;
+    const userLanguage = (user?.language || 'POLISH') as JobLanguage;
     const finalLanguage = headerLanguage || userLanguage;
-    return this.listingsService.getListing(id, user?.id, user?.accountType === 'ADMIN', finalLanguage);
+    return this.jobsService.getJob(id, user?.id, user?.accountType === 'ADMIN', finalLanguage);
   }
 
   @Post(':id/apply')
   @UseGuards(JwtAuthGuard)
-  applyToListing(
+  applyToJob(
     @Param('id') id: string,
     @GetUser() user: JwtUser,
-    @Body() dto: ApplyToListingDto,
+    @Body() dto: ApplyToJobDto,
   ) {
-    return this.listingsService.applyToListing(id, user.id, user.accountType, dto.message);
+    return this.jobsService.applyToJob(id, user.id, user.accountType, dto.message);
   }
 
   @Post(':id/favorite')
@@ -141,26 +141,26 @@ export class ListingsController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  createListing(@GetUser() user: JwtUser, @Body() dto: CreateListingDto) {
-    const userLanguage = (user.language || 'POLISH') as ListingLanguage;
-    return this.listingsService.createListing(user.id, user.accountType, dto, userLanguage);
+  createJob(@GetUser() user: JwtUser, @Body() dto: CreateJobDto) {
+    const userLanguage = (user.language || 'POLISH') as JobLanguage;
+    return this.jobsService.createJob(user.id, user.accountType, dto, userLanguage);
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
-  updateListing(
+  updateJob(
     @Param('id') id: string,
     @GetUser() user: JwtUser,
-    @Body() dto: CreateListingDto,
+    @Body() dto: CreateJobDto,
   ) {
-    const userLanguage = (user.language || 'POLISH') as ListingLanguage;
-    return this.listingsService.updateListing(id, user.id, user.accountType, dto, userLanguage);
+    const userLanguage = (user.language || 'POLISH') as JobLanguage;
+    return this.jobsService.updateJob(id, user.id, user.accountType, dto, userLanguage);
   }
 
   @Patch(':id/publish')
   @UseGuards(JwtAuthGuard)
-  publishListing(@Param('id') id: string, @GetUser() user: JwtUser) {
-    const userLanguage = (user.language || 'POLISH') as ListingLanguage;
-    return this.listingsService.publishListing(id, user.id, user.accountType === 'ADMIN', userLanguage);
+  publishJob(@Param('id') id: string, @GetUser() user: JwtUser) {
+    const userLanguage = (user.language || 'POLISH') as JobLanguage;
+    return this.jobsService.publishJob(id, user.id, user.accountType === 'ADMIN', userLanguage);
   }
 }

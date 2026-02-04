@@ -4,13 +4,13 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { getFavoritesListings, getToken, type Listing } from "@/lib/api";
-import { ListingPost } from "@/app/components/ListingPost";
+import { getFavoritesJobs, getToken, type Job } from "@/lib/api";
+import { JobPost } from "@/app/components/JobPost";
 import { Button } from "@/components/ui/button";
 
 export default function FavoritesPage() {
   const router = useRouter();
-  const [listings, setListings] = useState<Listing[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,8 +21,8 @@ export default function FavoritesPage() {
     }
     setLoading(true);
     setError(null);
-    getFavoritesListings()
-      .then(setListings)
+    getFavoritesJobs()
+      .then(setJobs)
       .catch(() => setError("Nie udało się załadować ulubionych"))
       .finally(() => setLoading(false));
   };
@@ -59,7 +59,7 @@ export default function FavoritesPage() {
     );
   }
 
-  if (listings.length === 0) {
+  if (jobs.length === 0) {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
         <div className="mb-6 flex flex-wrap items-center gap-2">
@@ -89,21 +89,21 @@ export default function FavoritesPage() {
       </div>
       <h1 className="text-2xl font-bold text-foreground mb-6">Ulubione ogłoszenia</h1>
       <div className="space-y-4">
-        {listings.map((listing) => (
-          <ListingPost
-            key={listing.id}
-            listing={listing}
+        {jobs.map((job) => (
+          <JobPost
+            key={job.id}
+            job={job}
             showFavorite
-            onFavoriteToggle={(listingId) =>
-              setListings((prev) => prev.filter((l) => l.id !== listingId))
+            onFavoriteToggle={(jobId) =>
+              setJobs((prev) => prev.filter((j) => j.id !== jobId))
             }
             headerAction={
               <div className="flex items-center gap-2">
                 <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                  {listing.category.name}
+                  {job.category.name}
                 </span>
                 <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                  {listing.language === "ENGLISH" ? "English" : "Polish"}
+                  {job.language === "ENGLISH" ? "English" : "Polish"}
                 </span>
               </div>
             }

@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ListingsFeed } from "@/app/components/ListingsFeed";
-import type { ListingLanguage, PopularSkill } from "@/lib/api";
+import { JobsFeed } from "@/app/components/JobsFeed";
+import type { JobLanguage, PopularSkill } from "@/lib/api";
 import { getPopularSkillsForCategory } from "@/lib/api";
 import { useTranslations } from "@/hooks/useTranslations";
 import { useRouter } from "next/navigation";
 import ReactCountryFlag from "react-country-flag";
 import { Button } from "@/components/ui/button";
 
-export function ListingsSectionHeader({
+export function JobsSectionHeader({
   sectionTitle,
   categoryId,
   categorySlugForRouting,
@@ -23,13 +23,13 @@ export function ListingsSectionHeader({
   categorySlugForRouting: string;
   page: number;
   categoryName?: string;
-  initialLanguage?: ListingLanguage;
+  initialLanguage?: JobLanguage;
   initialSkillIds?: string[];
 }) {
   const { t } = useTranslations();
   const router = useRouter();
   const [count, setCount] = useState<number | null>(null);
-  const [language, setLanguage] = useState<"" | ListingLanguage>(
+  const [language, setLanguage] = useState<"" | JobLanguage>(
     initialLanguage ?? ""
   );
   const [popularSkills, setPopularSkills] = useState<PopularSkill[]>([]);
@@ -39,7 +39,7 @@ export function ListingsSectionHeader({
 
   const buildUrl = (opts?: {
     page?: number;
-    language?: "" | ListingLanguage;
+    language?: "" | JobLanguage;
     skillIds?: string[];
   }) => {
     const nextPage = opts?.page ?? 1;
@@ -86,13 +86,13 @@ export function ListingsSectionHeader({
   }, [categoryId]);
 
   const LANGUAGE_OPTIONS: {
-    value: "" | ListingLanguage;
+    value: "" | JobLanguage;
     label: string;
     countryCode?: string;
   }[] = [
-      { value: "", label: t("listings.allLanguages") },
-      { value: "ENGLISH", label: t("listings.english"), countryCode: "GB" },
-      { value: "POLISH", label: t("listings.polish"), countryCode: "PL" },
+      { value: "", label: t("jobs.allLanguages") },
+      { value: "ENGLISH", label: t("jobs.english"), countryCode: "GB" },
+      { value: "POLISH", label: t("jobs.polish"), countryCode: "PL" },
     ];
 
   return (
@@ -104,11 +104,11 @@ export function ListingsSectionHeader({
         {count !== null && (
           <h2 className="text-2xl font-semibold tracking-tight text-foreground">
             {categoryName
-              ? t("listings.headerSampleWithCategory", {
+              ? t("jobs.headerSampleWithCategory", {
                 category: categoryName,
                 count,
               })
-              : t("listings.headerSampleWithoutCategory", { count })}
+              : t("jobs.headerSampleWithoutCategory", { count })}
           </h2>
         )}
 
@@ -143,11 +143,11 @@ export function ListingsSectionHeader({
                   className="rounded-full px-3 py-1 text-xs flex items-center gap-1 cursor-pointer"
                   onClick={() => {
                     const nextValue =
-                      language === opt.value ? "" : (opt.value as ListingLanguage);
-                    setLanguage(nextValue as "" | ListingLanguage);
+                      language === opt.value ? "" : (opt.value as JobLanguage);
+                    setLanguage(nextValue as "" | JobLanguage);
                     const target = buildUrl({
                       page: 1,
-                      language: nextValue as "" | ListingLanguage,
+                      language: nextValue as "" | JobLanguage,
                       skillIds: selectedSkillIds,
                     });
                     router.replace(target, { scroll: false });
@@ -203,7 +203,7 @@ export function ListingsSectionHeader({
           </div>
         )}
       </div>
-      <ListingsFeed
+      <JobsFeed
         categoryId={categoryId}
         categorySlug={categorySlugForRouting}
         page={page}

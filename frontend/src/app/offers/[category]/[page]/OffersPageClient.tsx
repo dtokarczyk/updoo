@@ -6,11 +6,11 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { OnboardingRedirect } from "@/app/components/OnboardingRedirect";
 import { CategoriesSidebar } from "@/app/components/CategoriesSidebar";
 import { HomeNav } from "@/app/components/HomeNav";
-import { ListingsSectionHeader } from "@/app/components/ListingsSectionHeader";
+import { JobsSectionHeader } from "@/app/components/JobsSectionHeader";
 import { AuthPromoSidebar } from "@/app/components/AuthPromoSidebar";
 import { AuthBottomBar } from "@/app/components/AuthBottomBar";
 import { Logotype } from "@/app/components/Logotype";
-import { getToken, getStoredUser, type Category, type ListingLanguage } from "@/lib/api";
+import { getToken, getStoredUser, type Category, type JobLanguage } from "@/lib/api";
 import { useTranslations } from "@/hooks/useTranslations";
 import { type Locale } from "@/lib/i18n";
 import Image from "next/image";
@@ -49,7 +49,7 @@ function OffersPageContent({
 
     const normalizedLanguage =
       languageParam === "ENGLISH" || languageParam === "POLISH"
-        ? (languageParam as ListingLanguage)
+        ? (languageParam as JobLanguage)
         : undefined;
 
     const skillIds = rawSkills
@@ -90,7 +90,7 @@ function OffersPageContent({
           </div>
         </div>
       )}
-      <ListingsSectionHeader
+      <JobsSectionHeader
         sectionTitle={t("listings.listings")}
         categoryId={categoryId}
         categorySlugForRouting={routingCategorySlug}

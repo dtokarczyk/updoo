@@ -184,7 +184,39 @@
     "next": "Następna",
     "page": "Strona",
     "of": "z",
-    "listingsCount": "ogłoszeń"
+    "listingsCount": "ogłoszeń",
+    "newListingForm": {
+      "title": "Nowe ogłoszenie",
+      "description": "Wypełnij szczegóły ogłoszenia. Pola rozliczenia i skille pomogą dopasować ofertę.",
+      "titlePlaceholder": "np. Szukam developera React",
+      "descriptionPlaceholder": "Opisz szczegóły ogłoszenia...",
+      "selectCategory": "Wybierz kategorię",
+      "selectInterval": "Wybierz przedział",
+      "notSelected": "Nie wybrano",
+      "hourlyRate": "Stawka godzinowa",
+      "fixedRate": "Stawka (ryczałt)",
+      "expectedSkills": "Oczekiwane skille",
+      "skillsDescription": "Wybierz z listy lub wpisz nazwę i naciśnij Enter, aby dodać (w tym nowy skill).",
+      "addSkillPlaceholder": "Dodaj skill...",
+      "addNewSkill": "+ Dodaj „{name}” jako nowy skill",
+      "remove": "Usuń",
+      "days": "dni",
+      "offerDaysDescription": "7, 14, 21 lub 30 dni na zbieranie ofert od daty utworzenia.",
+      "submitting": "Dodawanie...",
+      "submit": "Dodaj ogłoszenie"
+    }
+  },
+  "jobs": {
+    "allLanguages": "Wszystkie języki",
+    "english": "English",
+    "polish": "Polish",
+    "headerSampleWithCategory": "Zobacz {count} ofert {category} opublikowanych na Updoo",
+    "headerSampleWithoutCategory": "Zobacz {count} ofert opublikowanych na Updoo",
+    "appliedShort": "Zgłosiłeś się",
+    "editJob": "Edytuj ofertę",
+    "page": "Strona",
+    "of": "z",
+    "jobsCount": "ofert"
   },
   "branding": {
     "logotypeTagline": "Publikuj i szukaj ofert dla freelancerów"

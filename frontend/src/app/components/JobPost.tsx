@@ -5,7 +5,7 @@ import Link from "next/link";
 import { formatDistanceToNow, formatDuration, intervalToDuration } from "date-fns";
 import { pl, enUS } from "date-fns/locale";
 import { Calendar, Clock, Settings2, Star } from "lucide-react";
-import type { Listing } from "@/lib/api";
+import type { Job } from "@/lib/api";
 import {
   Card,
   CardContent,
@@ -77,25 +77,25 @@ function formatTimeLeftUntil(iso: string, locale: "pl" | "en", t: (key: string, 
   return t("listings.deadlineRemainingMany", { days: daysLeft });
 }
 
-export function ListingPost({
-  listing,
+export function JobPost({
+  job,
   headerAction,
   isDraft,
   onFavoriteToggle,
   onNavigate,
   showFavorite,
 }: {
-  listing: Listing;
+  job: Job;
   headerAction?: React.ReactNode;
   isDraft?: boolean;
   /** Called after favorite add/remove; parent can refetch. */
-  onFavoriteToggle?: (listingId: string) => void;
-  /** Called when user navigates to listing details. */
+  onFavoriteToggle?: (jobId: string) => void;
+  /** Called when user navigates to job details. */
   onNavigate?: () => void;
   /** When true, show star in top-right (e.g. when user is logged in). */
   showFavorite?: boolean;
 }) {
-  const isFavorite = Boolean(listing.isFavorite);
+  const isFavorite = Boolean(job.isFavorite);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const handleFavoriteClick = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -104,9 +104,9 @@ export function ListingPost({
     setFavoriteLoading(true);
     try {
       const { addFavorite, removeFavorite } = await import("@/lib/api");
-      if (isFavorite) await removeFavorite(listing.id);
-      else await addFavorite(listing.id);
-      onFavoriteToggle(listing.id);
+      if (isFavorite) await removeFavorite(job.id);
+      else await addFavorite(job.id);
+      onFavoriteToggle(job.id);
     } catch {
       // Error could be shown via toast; for now just ignore
     } finally {
@@ -114,21 +114,21 @@ export function ListingPost({
     }
   };
   const { t, locale } = useTranslations();
-  const skills = listing.skills?.map((r) => r.skill.name) ?? [];
+  const skills = job.skills?.map((r) => r.skill.name) ?? [];
   const shortDescription = truncateDescription(
-    listing.description,
+    job.description,
     LISTING_DESCRIPTION_MAX_LENGTH
   );
-  const metaPosted = formatPostedAgo(listing.createdAt, locale);
-  const metaDeadlineLeft = listing.deadline ? formatTimeLeftUntil(listing.deadline, locale, t) : "";
-  const firstFieldLabel = EXPERIENCE_LABELS[listing.experienceLevel] ?? listing.experienceLevel;
+  const metaPosted = formatPostedAgo(job.createdAt, locale);
+  const metaDeadlineLeft = job.deadline ? formatTimeLeftUntil(job.deadline, locale, t) : "";
+  const firstFieldLabel = EXPERIENCE_LABELS[job.experienceLevel] ?? job.experienceLevel;
   const firstFieldSub = t("listings.experienceLevel");
   const secondFieldLabel = formatRate(
-    listing.rate,
-    listing.currency,
-    listing.billingType
+    job.rate,
+    job.currency,
+    job.billingType
   );
-  const secondFieldSub = listing.billingType === "HOURLY" ? t("listings.hourlyRate") : t("listings.rate");
+  const secondFieldSub = job.billingType === "HOURLY" ? t("listings.hourlyRate") : t("listings.rate");
 
   return (
     <Card
@@ -167,12 +167,12 @@ export function ListingPost({
           <div className="min-w-0 flex-1">
             <CardTitle className="text-xl font-bold leading-tight text-foreground">
               <Link
-                href={`/listings/${listing.id}`}
+                href={`/jobs/${job.id}`}
                 scroll={false}
                 className="hover:underline focus:outline-none focus:underline"
                 onClick={onNavigate}
               >
-                {listing.title}
+                {job.title}
               </Link>
             </CardTitle>
             <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
@@ -211,10 +211,10 @@ export function ListingPost({
                   {secondFieldLabel}
                 </span>
                 <span className="ml-1">
-                  {listing.currency}
-                  {listing.billingType === "HOURLY" ? "/h" : ""}
+                  {job.currency}
+                  {job.billingType === "HOURLY" ? "/h" : ""}
                 </span>
-                {listing.rateNegotiable && ` (${t("listings.negotiable")})`}
+                {job.rateNegotiable && ` (${t("listings.negotiable")})`}
               </p>
               <p className="text-sm text-muted-foreground">{secondFieldSub}</p>
             </div>
@@ -242,7 +242,7 @@ export function ListingPost({
               size="lg"
               className="mt-2 shrink-0"
             >
-              <Link href={`/listings/${listing.id}`} scroll={false} onClick={onNavigate}>
+              <Link href={`/jobs/${job.id}`} scroll={false} onClick={onNavigate}>
                 {t("listings.seeMore")}
               </Link>
             </Button>
@@ -255,7 +255,7 @@ export function ListingPost({
               size="lg"
               className="mt-2 shrink-0"
             >
-              <Link href={`/listings/${listing.id}`} scroll={false} onClick={onNavigate}>
+              <Link href={`/jobs/${job.id}`} scroll={false} onClick={onNavigate}>
                 {t("listings.seeMore")}
               </Link>
             </Button>

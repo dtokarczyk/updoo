@@ -1,7 +1,7 @@
 import { IsOptional, IsString, MaxLength } from 'class-validator';
 
-export class ApplyToListingDto {
-  /** Optional message from freelancer to listing author. */
+export class ApplyToJobDto {
+  /** Optional message from freelancer to job author. */
   @IsOptional()
   @IsString()
   @MaxLength(2000)

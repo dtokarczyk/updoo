@@ -38,12 +38,12 @@ enum ProjectType {
   CONTINUOUS
 }
 
-enum ListingStatus {
+enum JobStatus {
   DRAFT
   PUBLISHED
 }
 
-enum ListingLanguage {
+enum JobLanguage {
   ENGLISH
   POLISH
 }
@@ -55,11 +55,11 @@ model User {
   name        String?
   surname     String?
   accountType AccountType?
-  language    ListingLanguage @default(POLISH)
+  language    JobLanguage @default(POLISH)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
-  listings    Listing[]
-  applications ListingApplication[]
+  jobs        Job[]
+  applications JobApplication[]
   favorites   Favorite[]
   skills      UserSkill[]
 }
@@ -69,14 +69,14 @@ model Category {
   slug         String               @unique
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
-  listings     Listing[]
+  jobs         Job[]
   translations CategoryTranslation[]
 }
 
 model CategoryTranslation {
   id         String          @id @default(cuid())
   categoryId String
-  language   ListingLanguage
+  language   JobLanguage
   name       String
   category   Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   createdAt  DateTime        @default(now())
@@ -93,7 +93,7 @@ model Location {
   slug      String    @unique
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  listings  Listing[] // reverse relation from Listing.locationId
+  jobs      Job[] // reverse relation from Job.locationId
 }
 
 model Skill {
@@ -101,18 +101,18 @@ model Skill {
   name          String        @unique
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
-  listingSkills ListingSkill[]
+  jobSkills     JobSkill[]
   userSkills    UserSkill[]
 }
 
-model Listing {
+model Job {
   id              String          @id @default(cuid())
   title           String
   description     String
   categoryId      String
   authorId        String
-  status          ListingStatus  @default(DRAFT)
-  language        ListingLanguage @default(POLISH)
+  status          JobStatus  @default(DRAFT)
+  language        JobLanguage @default(POLISH)
   billingType     BillingType
   hoursPerWeek    HoursPerWeek?   // when HOURLY
   rate            Decimal        @db.Decimal(12, 2)
@@ -128,8 +128,8 @@ model Listing {
   category        Category       @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   author          User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
   location        Location?      @relation(fields: [locationId], references: [id], onDelete: SetNull)
-  skills          ListingSkill[]
-  applications    ListingApplication[]
+  skills          JobSkill[]
+  applications    JobApplication[]
   favoritedBy     Favorite[]
 
   @@index([categoryId])
@@ -140,42 +140,42 @@ model Listing {
   @@index([locationId])
 }
 
-model ListingApplication {
+model JobApplication {
   id          String   @id @default(cuid())
-  listingId   String
+  jobId       String
   freelancerId String
   message     String?  @db.Text
   createdAt   DateTime @default(now())
-  listing     Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
   freelancer  User     @relation(fields: [freelancerId], references: [id], onDelete: Cascade)
 
-  @@unique([listingId, freelancerId])
-  @@index([listingId])
+  @@unique([jobId, freelancerId])
+  @@index([jobId])
   @@index([freelancerId])
 }
 
 model Favorite {
   id        String   @id @default(cuid())
   userId    String
-  listingId String
+  jobId     String
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, listingId])
+  @@unique([userId, jobId])
   @@index([userId])
-  @@index([listingId])
+  @@index([jobId])
 }
 
-model ListingSkill {
+model JobSkill {
   id        String   @id @default(cuid())
-  listingId String
+  jobId     String
   skillId   String
-  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
   skill     Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
 
-  @@unique([listingId, skillId])
-  @@index([listingId])
+  @@unique([jobId, skillId])
+  @@index([jobId])
   @@index([skillId])
 }
 

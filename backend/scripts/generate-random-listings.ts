@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { PrismaClient, BillingType, HoursPerWeek, ExperienceLevel, ProjectType, ListingStatus, ListingLanguage, AccountType } from '@prisma/client';
+import { PrismaClient, BillingType, HoursPerWeek, ExperienceLevel, ProjectType, JobStatus, JobLanguage, AccountType } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
 import bcrypt from 'bcrypt';
@@ -26,7 +26,7 @@ const DEFAULT_CLIENT_USERS = [
   },
 ];
 
-// Sample data for generating random listings
+// Sample data for generating random jobs
 const TITLES_PL = [
   'Potrzebuję programisty React',
   'Szukam grafika do projektu',
@@ -89,7 +89,7 @@ const HOURS_PER_WEEK: HoursPerWeek[] = [
 ];
 const EXPERIENCE_LEVELS: ExperienceLevel[] = [ExperienceLevel.JUNIOR, ExperienceLevel.MID, ExperienceLevel.SENIOR];
 const PROJECT_TYPES: ProjectType[] = [ProjectType.ONE_TIME, ProjectType.CONTINUOUS];
-const LANGUAGES: ListingLanguage[] = [ListingLanguage.POLISH, ListingLanguage.ENGLISH];
+const LANGUAGES: JobLanguage[] = [JobLanguage.POLISH, JobLanguage.ENGLISH];
 const OFFER_DAYS = [7, 14, 21, 30];
 
 function randomElement<T>(array: T[]): T {
@@ -105,7 +105,7 @@ function randomDecimal(min: number, max: number): number {
 }
 
 async function main() {
-  console.log('Starting generation of 100 random listings...');
+  console.log('Starting generation of 100 random jobs...');
 
   // Get required data
   const categories = await prisma.category.findMany();
@@ -145,8 +145,8 @@ async function main() {
 
   for (let i = 0; i < 100; i++) {
     const language = randomElement(LANGUAGES);
-    const titles = language === ListingLanguage.POLISH ? TITLES_PL : TITLES_EN;
-    const descriptions = language === ListingLanguage.POLISH ? DESCRIPTIONS_PL : DESCRIPTIONS_EN;
+    const titles = language === JobLanguage.POLISH ? TITLES_PL : TITLES_EN;
+    const descriptions = language === JobLanguage.POLISH ? DESCRIPTIONS_PL : DESCRIPTIONS_EN;
 
     const billingType = randomElement(BILLING_TYPES);
     const hoursPerWeek = billingType === BillingType.HOURLY ? randomElement(HOURS_PER_WEEK) : null;
@@ -164,7 +164,7 @@ async function main() {
     const locationId = hasLocation && locations.length > 0 ? randomElement(locations).id : null;
     const isRemote = !hasLocation || Math.random() > 0.5;
 
-    // Random skills (1-5 skills per listing)
+    // Random skills (1-5 skills per job)
     const numSkills = randomInt(1, Math.min(5, skills.length));
     const selectedSkills = skills.sort(() => Math.random() - 0.5).slice(0, numSkills);
 
@@ -177,7 +177,7 @@ async function main() {
       description: randomElement(descriptions),
       categoryId: randomElement(categories).id,
       authorId: randomElement(users).id,
-      status: ListingStatus.PUBLISHED, // All generated listings are published
+      status: JobStatus.PUBLISHED, // All generated jobs are published
       language,
       billingType,
       hoursPerWeek,
@@ -195,21 +195,21 @@ async function main() {
     });
   }
 
-  console.log(`\nCreating ${listingsToCreate.length} listings...`);
+  console.log(`\nCreating ${listingsToCreate.length} jobs...`);
 
-  // Create listings in batches
+  // Create jobs in batches
   const batchSize = 10;
   let created = 0;
 
   for (let i = 0; i < listingsToCreate.length; i += batchSize) {
     const batch = listingsToCreate.slice(i, i + batchSize);
 
-    for (const listingData of batch) {
-      const { skills, ...listingFields } = listingData;
+    for (const jobData of batch) {
+      const { skills, ...jobFields } = jobData;
 
-      const listing = await prisma.listing.create({
+      const job = await prisma.job.create({
         data: {
-          ...listingFields,
+          ...jobFields,
           skills: {
             create: skills.map((s: { skillId: string }) => ({
               skillId: s.skillId,
@@ -220,17 +220,17 @@ async function main() {
 
       created++;
       if (created % 10 === 0) {
-        console.log(`Created ${created}/${listingsToCreate.length} listings...`);
+        console.log(`Created ${created}/${listingsToCreate.length} jobs...`);
       }
     }
   }
 
-  console.log(`\n✅ Successfully created ${created} listings!`);
+  console.log(`\n✅ Successfully created ${created} jobs!`);
 }
 
 main()
   .catch((e) => {
-    console.error('Error generating listings:', e);
+    console.error('Error generating jobs:', e);
     process.exit(1);
   })
   .finally(async () => {

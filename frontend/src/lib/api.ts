@@ -176,7 +176,7 @@ export function needsOnboarding(user: AuthUser | null): boolean {
   return false;
 }
 
-// Listings & categories
+// Jobs & categories
 
 /** Display order: 1. Wszystkie (link only), 2. Programowanie, 3. Design, 4. Marketing, 5. Pisanie, 6. Prace biurowe, 7. Inne */
 const CATEGORY_ORDER = [
@@ -216,18 +216,18 @@ export interface Skill {
 }
 
 export interface PopularSkill extends Skill {
-  /** How many listings in given category use this skill. */
+  /** How many jobs in given category use this skill. */
   count: number;
 }
 
-export type ListingStatus = "DRAFT" | "PUBLISHED";
-export type ListingLanguage = "ENGLISH" | "POLISH";
+export type JobStatus = "DRAFT" | "PUBLISHED";
+export type JobLanguage = "ENGLISH" | "POLISH";
 export type BillingType = "FIXED" | "HOURLY";
 export type HoursPerWeek = "LESS_THAN_10" | "FROM_11_TO_20" | "FROM_21_TO_30" | "MORE_THAN_30";
 export type ExperienceLevel = "JUNIOR" | "MID" | "SENIOR";
 export type ProjectType = "ONE_TIME" | "CONTINUOUS";
 
-export interface ListingAuthor {
+export interface JobAuthor {
   id: string;
   email: string;
   name: string | null;
@@ -235,7 +235,7 @@ export interface ListingAuthor {
 }
 
 /** Display "Name Surname" or fallback to name only or email. */
-export function authorDisplayName(author: ListingAuthor): string {
+export function authorDisplayName(author: JobAuthor): string {
   const n = author.name?.trim();
   const s = author.surname?.trim();
   if (n && s) return `${n} ${s}`;
@@ -244,51 +244,51 @@ export function authorDisplayName(author: ListingAuthor): string {
   return author.email || "";
 }
 
-export interface ListingSkillRelation {
+export interface JobSkillRelation {
   skill: Skill;
 }
 
-/** Freelancer data in application (visible only to listing author). */
-export interface ListingApplicationFreelancer {
+/** Freelancer data in application (visible only to job author). */
+export interface JobApplicationFreelancer {
   id: string;
   email: string;
   name: string | null;
   surname: string | null;
 }
 
-/** Application as seen by listing author: full data. */
-export interface ListingApplicationFull {
+/** Application as seen by job author: full data. */
+export interface JobApplicationFull {
   id: string;
-  freelancer: ListingApplicationFreelancer;
+  freelancer: JobApplicationFreelancer;
   message?: string;
   createdAt: string;
 }
 
 /** Application as seen by others: only initials. */
-export interface ListingApplicationDisplay {
+export interface JobApplicationDisplay {
   id: string;
   freelancerInitials: string;
   createdAt: string;
 }
 
-export type ListingApplication =
-  | ListingApplicationFull
-  | ListingApplicationDisplay;
+export type JobApplication =
+  | JobApplicationFull
+  | JobApplicationDisplay;
 
 export function isApplicationFull(
-  app: ListingApplication
-): app is ListingApplicationFull {
+  app: JobApplication
+): app is JobApplicationFull {
   return "freelancer" in app;
 }
 
-export interface Listing {
+export interface Job {
   id: string;
   title: string;
   description: string;
   categoryId: string;
   authorId: string;
-  status: ListingStatus;
-  language: ListingLanguage;
+  status: JobStatus;
+  language: JobLanguage;
   billingType: BillingType;
   hoursPerWeek: HoursPerWeek | null;
   rate: string;
@@ -301,10 +301,10 @@ export interface Listing {
   deadline: string | null;
   createdAt: string;
   category: Category;
-  author: ListingAuthor;
+  author: JobAuthor;
   location: Location | null;
-  skills: ListingSkillRelation[];
-  applications?: ListingApplication[];
+  skills: JobSkillRelation[];
+  applications?: JobApplication[];
   currentUserApplied?: boolean;
   /** Optional message of the current user's application (if freelancer applied). */
   currentUserApplicationMessage?: string;
@@ -320,8 +320,8 @@ export interface PaginationInfo {
   hasPreviousPage: boolean;
 }
 
-export interface ListingsFeedResponse {
-  items: Listing[];
+export interface JobsFeedResponse {
+  items: Job[];
   pagination: PaginationInfo;
 }
 
@@ -331,7 +331,7 @@ export async function getPopularSkillsForCategory(
   const params = new URLSearchParams();
   params.set("categoryId", categoryId);
   const res = await fetch(
-    `${API_URL}/listings/popular-skills?${params.toString()}`
+    `${API_URL}/jobs/popular-skills?${params.toString()}`
   );
   if (!res.ok) throw new Error("Failed to fetch popular skills");
   return res.json();
@@ -349,41 +349,41 @@ export async function getCategories(): Promise<Category[]> {
     headers["Accept-Language"] = locale;
   }
 
-  const res = await fetch(`${API_URL}/listings/categories`, { headers });
+  const res = await fetch(`${API_URL}/jobs/categories`, { headers });
   if (!res.ok) throw new Error("Failed to fetch categories");
   return res.json();
 }
 
 export async function getLocations(): Promise<Location[]> {
-  const res = await fetch(`${API_URL}/listings/locations`);
+  const res = await fetch(`${API_URL}/jobs/locations`);
   if (!res.ok) throw new Error("Failed to fetch locations");
   return res.json();
 }
 
 export async function getSkills(): Promise<Skill[]> {
-  const res = await fetch(`${API_URL}/listings/skills`);
+  const res = await fetch(`${API_URL}/jobs/skills`);
   if (!res.ok) throw new Error("Failed to fetch skills");
   return res.json();
 }
 
-export async function getListingsFeed(
+export async function getJobsFeed(
   page: number = 1,
   pageSize: number = 15,
   categoryId?: string,
-  language?: ListingLanguage | "" | undefined,
+  language?: JobLanguage | "" | undefined,
   skillIds?: string[]
-): Promise<ListingsFeedResponse> {
+): Promise<JobsFeedResponse> {
   const params = new URLSearchParams();
   params.set("page", String(page));
   params.set("pageSize", String(pageSize));
   if (categoryId) params.set("categoryId", categoryId);
   if (language === "POLISH" || language === "ENGLISH") {
-    params.set("language", language as ListingLanguage);
+    params.set("language", language as JobLanguage);
   }
   if (skillIds && skillIds.length > 0) {
     params.set("skillIds", skillIds.join(","));
   }
-  const url = `${API_URL}/listings/feed?${params.toString()}`;
+  const url = `${API_URL}/jobs/feed?${params.toString()}`;
   const headers: HeadersInit = {};
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
@@ -396,11 +396,11 @@ export async function getListingsFeed(
   }
 
   const res = await fetch(url, { headers });
-  if (!res.ok) throw new Error("Failed to fetch listings");
+  if (!res.ok) throw new Error("Failed to fetch jobs");
   return res.json();
 }
 
-export async function getListing(id: string): Promise<Listing> {
+export async function getJob(id: string): Promise<Job> {
   const headers: HeadersInit = {};
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
@@ -412,18 +412,18 @@ export async function getListing(id: string): Promise<Listing> {
     headers["Accept-Language"] = locale;
   }
 
-  const res = await fetch(`${API_URL}/listings/${id}`, { headers });
+  const res = await fetch(`${API_URL}/jobs/${id}`, { headers });
   if (!res.ok) {
-    if (res.status === 404) throw new Error("Ogłoszenie nie istnieje");
-    throw new Error("Failed to fetch listing");
+    if (res.status === 404) throw new Error("Oferta nie istnieje");
+    throw new Error("Failed to fetch job");
   }
   return res.json();
 }
 
-export async function publishListing(listingId: string): Promise<Listing> {
+export async function publishJob(jobId: string): Promise<Job> {
   const token = getToken();
   if (!token) throw new Error("Not authenticated");
-  const res = await fetch(`${API_URL}/listings/${listingId}/publish`, {
+  const res = await fetch(`${API_URL}/jobs/${jobId}/publish`, {
     method: "PATCH",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -432,16 +432,16 @@ export async function publishListing(listingId: string): Promise<Listing> {
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
-    throw new Error(msg ?? "Failed to publish listing");
+    throw new Error(msg ?? "Failed to publish job");
   }
   return res.json();
 }
 
-export interface CreateListingPayload {
+export interface CreateJobPayload {
   title: string;
   description: string;
   categoryId: string;
-  language?: ListingLanguage;
+  language?: JobLanguage;
   billingType: BillingType;
   hoursPerWeek?: HoursPerWeek;
   rate: number;
@@ -457,7 +457,7 @@ export interface CreateListingPayload {
   newSkillNames?: string[];
 }
 
-export async function createListing(payload: CreateListingPayload): Promise<Listing> {
+export async function createJob(payload: CreateJobPayload): Promise<Job> {
   const token = getToken();
   if (!token) throw new Error("Not authenticated");
 
@@ -473,7 +473,7 @@ export async function createListing(payload: CreateListingPayload): Promise<List
     headers["Accept-Language"] = locale;
   }
 
-  const res = await fetch(`${API_URL}/listings`, {
+  const res = await fetch(`${API_URL}/jobs`, {
     method: "POST",
     headers,
     body: JSON.stringify(payload),
@@ -481,15 +481,15 @@ export async function createListing(payload: CreateListingPayload): Promise<List
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
-    throw new Error(msg ?? "Failed to create listing");
+    throw new Error(msg ?? "Failed to create job");
   }
   return res.json();
 }
 
-export async function updateListing(
+export async function updateJob(
   id: string,
-  payload: CreateListingPayload
-): Promise<Listing> {
+  payload: CreateJobPayload
+): Promise<Job> {
   const token = getToken();
   if (!token) throw new Error("Not authenticated");
 
@@ -505,7 +505,7 @@ export async function updateListing(
     headers["Accept-Language"] = locale;
   }
 
-  const res = await fetch(`${API_URL}/listings/${id}`, {
+  const res = await fetch(`${API_URL}/jobs/${id}`, {
     method: "PATCH",
     headers,
     body: JSON.stringify(payload),
@@ -513,13 +513,13 @@ export async function updateListing(
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
-    throw new Error(msg ?? "Failed to update listing");
+    throw new Error(msg ?? "Failed to update job");
   }
   return res.json();
 }
 
-export async function applyToListing(
-  listingId: string,
+export async function applyToJob(
+  jobId: string,
   message?: string
 ): Promise<{ ok: boolean }> {
   const token = getToken();
@@ -537,7 +537,7 @@ export async function applyToListing(
     headers["Accept-Language"] = locale;
   }
 
-  const res = await fetch(`${API_URL}/listings/${listingId}/apply`, {
+  const res = await fetch(`${API_URL}/jobs/${jobId}/apply`, {
     method: "POST",
     headers,
     body: JSON.stringify({ message: message?.trim() || undefined }),
@@ -550,10 +550,10 @@ export async function applyToListing(
   return res.json();
 }
 
-export async function addFavorite(listingId: string): Promise<{ ok: boolean }> {
+export async function addFavorite(jobId: string): Promise<{ ok: boolean }> {
   const token = getToken();
-  if (!token) throw new Error("Zaloguj się, aby zapisać ogłoszenie");
-  const res = await fetch(`${API_URL}/listings/${listingId}/favorite`, {
+  if (!token) throw new Error("Zaloguj się, aby zapisać ofertę");
+  const res = await fetch(`${API_URL}/jobs/${jobId}/favorite`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -565,10 +565,10 @@ export async function addFavorite(listingId: string): Promise<{ ok: boolean }> {
   return res.json();
 }
 
-export async function removeFavorite(listingId: string): Promise<{ ok: boolean }> {
+export async function removeFavorite(jobId: string): Promise<{ ok: boolean }> {
   const token = getToken();
   if (!token) throw new Error("Not authenticated");
-  const res = await fetch(`${API_URL}/listings/${listingId}/favorite`, {
+  const res = await fetch(`${API_URL}/jobs/${jobId}/favorite`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -580,7 +580,7 @@ export async function removeFavorite(listingId: string): Promise<{ ok: boolean }
   return res.json();
 }
 
-export async function getFavoritesListings(): Promise<Listing[]> {
+export async function getFavoritesJobs(): Promise<Job[]> {
   const token = getToken();
   if (!token) throw new Error("Zaloguj się, aby zobaczyć ulubione");
   const headers: HeadersInit = { Authorization: `Bearer ${token}` };
@@ -592,7 +592,7 @@ export async function getFavoritesListings(): Promise<Listing[]> {
     headers["Accept-Language"] = locale;
   }
 
-  const res = await fetch(`${API_URL}/listings/favorites`, { headers });
+  const res = await fetch(`${API_URL}/jobs/favorites`, { headers });
   if (!res.ok) throw new Error("Nie udało się załadować ulubionych");
   return res.json();
 }

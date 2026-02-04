@@ -1,54 +1,54 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { ListingStatus } from '@prisma/client';
+import { JobStatus } from '@prisma/client';
 
 @Injectable()
 export class FavoritesService {
   constructor(private readonly prisma: PrismaService) { }
 
-  /** Add listing to user's favorites. Idempotent. */
-  async addFavorite(userId: string, listingId: string): Promise<{ ok: boolean }> {
-    const listing = await this.prisma.listing.findUnique({
-      where: { id: listingId },
+  /** Add job to user's favorites. Idempotent. */
+  async addFavorite(userId: string, jobId: string): Promise<{ ok: boolean }> {
+    const job = await this.prisma.job.findUnique({
+      where: { id: jobId },
       select: { id: true, status: true },
     });
-    if (!listing || listing.status !== ListingStatus.PUBLISHED) {
-      throw new NotFoundException('Listing not found');
+    if (!job || job.status !== JobStatus.PUBLISHED) {
+      throw new NotFoundException('Job not found');
     }
     await this.prisma.favorite.upsert({
       where: {
-        userId_listingId: { userId, listingId },
+        userId_jobId: { userId, jobId },
       },
-      create: { userId, listingId },
+      create: { userId, jobId },
       update: {},
     });
     return { ok: true };
   }
 
-  /** Remove listing from user's favorites. Idempotent. */
-  async removeFavorite(userId: string, listingId: string): Promise<{ ok: boolean }> {
+  /** Remove job from user's favorites. Idempotent. */
+  async removeFavorite(userId: string, jobId: string): Promise<{ ok: boolean }> {
     await this.prisma.favorite.deleteMany({
-      where: { userId, listingId },
+      where: { userId, jobId },
     });
     return { ok: true };
   }
 
-  /** Get set of listing IDs that the user has favorited. */
-  async getFavoriteListingIds(userId: string): Promise<Set<string>> {
+  /** Get set of job IDs that the user has favorited. */
+  async getFavoriteJobIds(userId: string): Promise<Set<string>> {
     const rows = await this.prisma.favorite.findMany({
       where: { userId },
-      select: { listingId: true },
+      select: { jobId: true },
     });
-    return new Set(rows.map((r) => r.listingId));
+    return new Set(rows.map((r) => r.jobId));
   }
 
-  /** Get full listings that the user has favorited (for favorites page). Only published. */
-  async getFavoriteListings(userId: string, userLanguage: any) {
+  /** Get full jobs that the user has favorited (for favorites page). Only published. */
+  async getFavoriteJobs(userId: string, userLanguage: any) {
     const favorites = await this.prisma.favorite.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
       include: {
-        listing: {
+        job: {
           include: {
             category: {
               include: {
@@ -65,8 +65,8 @@ export class FavoritesService {
       },
     });
     return favorites
-      .map((f) => f.listing)
-      .filter((l) => l.status === ListingStatus.PUBLISHED)
+      .map((f) => f.job)
+      .filter((j) => j.status === JobStatus.PUBLISHED)
       .map((l) => ({
         ...l,
         category: {

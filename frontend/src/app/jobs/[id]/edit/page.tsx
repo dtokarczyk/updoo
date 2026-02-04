@@ -17,7 +17,7 @@ import {
   type HoursPerWeek,
   type ExperienceLevel,
   type ProjectType,
-  type ListingLanguage,
+  type JobLanguage,
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,7 +68,7 @@ export default function EditListingPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
-  const [language, setLanguage] = useState<ListingLanguage>("POLISH");
+  const [language, setLanguage] = useState<JobLanguage>("POLISH");
   const [billingType, setBillingType] = useState<BillingType>("HOURLY");
   const [hoursPerWeek, setHoursPerWeek] = useState<HoursPerWeek | "">("");
   const [rate, setRate] = useState("");
@@ -337,7 +337,7 @@ export default function EditListingPage() {
                 <select
                   id="language"
                   value={language}
-                  onChange={(e) => setLanguage(e.target.value as ListingLanguage)}
+                  onChange={(e) => setLanguage(e.target.value as JobLanguage)}
                   disabled={submitting}
                   className={selectClass}
                 >

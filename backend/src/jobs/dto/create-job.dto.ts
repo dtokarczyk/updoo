@@ -37,12 +37,12 @@ export enum ProjectTypeDto {
   CONTINUOUS = 'CONTINUOUS',
 }
 
-export enum ListingLanguageDto {
+export enum JobLanguageDto {
   ENGLISH = 'ENGLISH',
   POLISH = 'POLISH',
 }
 
-export class CreateListingDto {
+export class CreateJobDto {
   @IsString()
   @MinLength(1, { message: 'validation.titleRequired' })
   @MaxLength(200)
@@ -58,8 +58,8 @@ export class CreateListingDto {
   categoryId: string;
 
   @IsOptional()
-  @IsEnum(ListingLanguageDto)
-  language?: ListingLanguageDto;
+  @IsEnum(JobLanguageDto)
+  language?: JobLanguageDto;
 
   @IsEnum(BillingTypeDto)
   billingType: BillingTypeDto;

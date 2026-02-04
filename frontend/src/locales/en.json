@@ -184,7 +184,39 @@
     "next": "Next",
     "page": "Page",
     "of": "of",
-    "listingsCount": "listings"
+    "listingsCount": "listings",
+    "newListingForm": {
+      "title": "New listing",
+      "description": "Fill in the listing details. Billing fields and skills will help match the offer.",
+      "titlePlaceholder": "e.g. Looking for React developer",
+      "descriptionPlaceholder": "Describe the listing details...",
+      "selectCategory": "Select category",
+      "selectInterval": "Select interval",
+      "notSelected": "Not selected",
+      "hourlyRate": "Hourly rate",
+      "fixedRate": "Fixed rate",
+      "expectedSkills": "Expected skills",
+      "skillsDescription": "Select from list or type name and press Enter to add (including new skill).",
+      "addSkillPlaceholder": "Add skill...",
+      "addNewSkill": "+ Add \"{name}\" as a new skill",
+      "remove": "Remove",
+      "days": "days",
+      "offerDaysDescription": "7, 14, 21 or 30 days to collect offers from creation date.",
+      "submitting": "Adding...",
+      "submit": "Add listing"
+    }
+  },
+  "jobs": {
+    "allLanguages": "All languages",
+    "english": "English",
+    "polish": "Polish",
+    "headerSampleWithCategory": "Check out a sample of the {count} {category} jobs posted on Updoo",
+    "headerSampleWithoutCategory": "Check out a sample of the {count} jobs posted on Updoo",
+    "appliedShort": "Applied",
+    "editJob": "Edit job",
+    "page": "Page",
+    "of": "of",
+    "jobsCount": "jobs"
   },
   "branding": {
     "logotypeTagline": "Publish and search offers for freelancers"

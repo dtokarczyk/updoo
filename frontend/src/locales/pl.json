@@ -40,7 +40,11 @@
     "promoDescription": "Załóż konto, aby szybciej znajdować oferty idealnie dopasowane do Ciebie.",
     "promoCtaRegister": "Utwórz konto",
     "promoCtaLogin": "Mam już konto – zaloguj się",
-    "promoBarText": "Masz lub chcesz założyć konto w Updoo?"
+    "promoBarText": "Masz lub chcesz założyć konto w Updoo?",
+    "confirmPassword": "Powtórz hasło",
+    "passwordsMustMatch": "Hasła muszą być takie same.",
+    "mustAcceptTerms": "Musisz zaakceptować regulamin i politykę prywatności.",
+    "termsLabel": "Akceptuję regulamin i politykę prywatności"
   },
   "profile": {
     "editProfile": "Edycja profilu",

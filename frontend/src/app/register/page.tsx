@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -22,15 +23,25 @@ export default function RegisterPage() {
   const { t } = useTranslations();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    if (password !== confirmPassword) {
+      setError(t("auth.passwordsMustMatch"));
+      return;
+    }
+    if (!termsAccepted) {
+      setError(t("auth.mustAcceptTerms"));
+      return;
+    }
     setLoading(true);
     try {
-      const data = await apiRegister(email, password);
+      const data = await apiRegister(email, password, confirmPassword, termsAccepted);
       setAuth(data);
       router.push("/onboarding");
       router.refresh();
@@ -44,7 +55,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
+    <div className="flex justify-center p-4 pt-12">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>{t("auth.register")}</CardTitle>
@@ -83,6 +94,35 @@ export default function RegisterPage() {
                 autoComplete="new-password"
                 disabled={loading}
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">
+                {t("auth.confirmPassword")}
+              </Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                placeholder={t("auth.passwordMinLengthPlaceholder")}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={8}
+                autoComplete="new-password"
+                disabled={loading}
+              />
+            </div>
+            <div className="flex items-start gap-2">
+              <Checkbox
+                id="terms"
+                checked={termsAccepted}
+                onCheckedChange={(checked) =>
+                  setTermsAccepted(Boolean(checked))
+                }
+                disabled={loading}
+              />
+              <Label htmlFor="terms" className="text-sm font-normal">
+                {t("auth.termsLabel")}
+              </Label>
             </div>
           </CardContent>
           <CardFooter className="mt-6 flex flex-col gap-4">

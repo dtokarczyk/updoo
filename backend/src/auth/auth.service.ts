@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
@@ -40,6 +41,12 @@ export class AuthService {
   ) { }
 
   async register(dto: RegisterDto): Promise<AuthResponse> {
+    if (dto.password !== dto.confirmPassword) {
+      throw new BadRequestException('Passwords do not match');
+    }
+    if (!dto.termsAccepted) {
+      throw new BadRequestException('Terms and privacy policy must be accepted');
+    }
     const existing = await this.prisma.user.findUnique({
       where: { email: dto.email.toLowerCase() },
     });

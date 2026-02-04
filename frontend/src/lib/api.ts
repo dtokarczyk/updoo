@@ -22,12 +22,14 @@ export interface AuthResponse {
 
 export async function register(
   email: string,
-  password: string
+  password: string,
+  confirmPassword: string,
+  termsAccepted: boolean
 ): Promise<AuthResponse> {
   const res = await fetch(`${API_URL}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password, confirmPassword, termsAccepted }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

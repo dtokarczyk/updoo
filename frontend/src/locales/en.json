@@ -40,7 +40,11 @@
     "promoDescription": "Create an account to quickly find listings perfectly matched to you.",
     "promoCtaRegister": "Create account",
     "promoCtaLogin": "I already have an account – log in",
-    "promoBarText": "Do you have or want to create an Updoo account?"
+    "promoBarText": "Do you have or want to create an Updoo account?",
+    "confirmPassword": "Repeat password",
+    "passwordsMustMatch": "Passwords must match.",
+    "mustAcceptTerms": "You must accept the terms and privacy policy.",
+    "termsLabel": "I accept the Terms and Privacy Policy"
   },
   "profile": {
     "editProfile": "Edit profile",

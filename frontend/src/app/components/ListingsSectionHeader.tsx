@@ -182,19 +182,17 @@ export function ListingsSectionHeader({
                   variant={isActive ? "default" : "outline"}
                   className="rounded-full px-3 py-1 text-xs cursor-pointer"
                   onClick={() => {
-                    setSelectedSkillIds((prev) => {
-                      const exists = prev.includes(skill.id);
-                      const nextSkillIds = exists
-                        ? prev.filter((id) => id !== skill.id)
-                        : [...prev, skill.id];
-                      const target = buildUrl({
-                        page: 1,
-                        language,
-                        skillIds: nextSkillIds,
-                      });
-                      router.replace(target, { scroll: false });
-                      return nextSkillIds;
+                    const exists = selectedSkillIds.includes(skill.id);
+                    const nextSkillIds = exists
+                      ? selectedSkillIds.filter((id) => id !== skill.id)
+                      : [...selectedSkillIds, skill.id];
+                    setSelectedSkillIds(nextSkillIds);
+                    const target = buildUrl({
+                      page: 1,
+                      language,
+                      skillIds: nextSkillIds,
                     });
+                    router.replace(target, { scroll: false });
                   }}
                   aria-pressed={isActive}
                 >

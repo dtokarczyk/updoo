@@ -70,8 +70,8 @@
     "newPasswordConfirm": "Powtórz nowe hasło"
   },
   "onboarding": {
-    "whatShouldWeCallYou": "Jak mamy Cię nazywać?",
-    "enterNameSurname": "Wprowadź imię i nazwisko. Możesz je później zmienić w ustawieniach.",
+    "whatShouldWeCallYou": "Wpisz swoje imię i nazwisko.",
+    "enterNameSurname": "Dane nie będą publicznie widoczne. Pod zgłoszeniem widoczne będą tylko Twoje imię i pierwsza litera nazwiska.",
     "chooseAccountType": "Wybierz typ konta",
     "chooseAccountTypeDesc": "Wybierz, czy jesteś klientem szukającym freelancera, czy freelancerem szukającym pracy.",
     "client": "Klient",

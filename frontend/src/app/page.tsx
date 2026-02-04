@@ -5,13 +5,14 @@ function parsePage(raw: string | undefined): number {
   return Number.isFinite(n) && n > 0 ? n : 1;
 }
 
-export default function Home({
+export default async function Home({
   searchParams,
 }: {
-  searchParams: { category?: string; page?: string };
+  searchParams: Promise<{ category?: string; page?: string }>;
 }) {
-  const slug = searchParams?.category || "all";
-  const page = parsePage(searchParams?.page);
+  const params = await searchParams;
+  const slug = params?.category || "all";
+  const page = parsePage(params?.page);
   const target = `/offers/${encodeURIComponent(slug)}/${page}`;
   redirect(target);
 }

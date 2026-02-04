@@ -26,9 +26,18 @@ export async function register(
   confirmPassword: string,
   termsAccepted: boolean
 ): Promise<AuthResponse> {
+  const headers: HeadersInit = { "Content-Type": "application/json" };
+
+  // Add Accept-Language header based on user locale
+  if (typeof window !== "undefined") {
+    const { getUserLocale } = await import("./i18n");
+    const locale = getUserLocale();
+    headers["Accept-Language"] = locale;
+  }
+
   const res = await fetch(`${API_URL}/auth/register`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify({ email, password, confirmPassword, termsAccepted }),
   });
   if (!res.ok) {
@@ -68,12 +77,22 @@ export async function updateProfile(
     body.oldPassword = payload.oldPassword;
   if (payload.language !== undefined) body.language = payload.language;
   if (payload.skillIds !== undefined) body.skillIds = payload.skillIds;
+
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
+
+  // Add Accept-Language header based on user locale
+  if (typeof window !== "undefined") {
+    const { getUserLocale } = await import("./i18n");
+    const locale = getUserLocale();
+    headers["Accept-Language"] = locale;
+  }
+
   const res = await fetch(`${API_URL}/auth/profile`, {
     method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
+    headers,
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -88,9 +107,18 @@ export async function login(
   email: string,
   password: string
 ): Promise<AuthResponse> {
+  const headers: HeadersInit = { "Content-Type": "application/json" };
+
+  // Add Accept-Language header based on user locale
+  if (typeof window !== "undefined") {
+    const { getUserLocale } = await import("./i18n");
+    const locale = getUserLocale();
+    headers["Accept-Language"] = locale;
+  }
+
   const res = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify({ email, password }),
   });
   if (!res.ok) {
@@ -432,12 +460,22 @@ export interface CreateListingPayload {
 export async function createListing(payload: CreateListingPayload): Promise<Listing> {
   const token = getToken();
   if (!token) throw new Error("Not authenticated");
+
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
+
+  // Add Accept-Language header based on user locale
+  if (typeof window !== "undefined") {
+    const { getUserLocale } = await import("./i18n");
+    const locale = getUserLocale();
+    headers["Accept-Language"] = locale;
+  }
+
   const res = await fetch(`${API_URL}/listings`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
+    headers,
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
@@ -454,12 +492,22 @@ export async function updateListing(
 ): Promise<Listing> {
   const token = getToken();
   if (!token) throw new Error("Not authenticated");
+
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
+
+  // Add Accept-Language header based on user locale
+  if (typeof window !== "undefined") {
+    const { getUserLocale } = await import("./i18n");
+    const locale = getUserLocale();
+    headers["Accept-Language"] = locale;
+  }
+
   const res = await fetch(`${API_URL}/listings/${id}`, {
     method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
+    headers,
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
@@ -476,12 +524,22 @@ export async function applyToListing(
 ): Promise<{ ok: boolean }> {
   const token = getToken();
   if (!token) throw new Error("Zaloguj się, aby zgłosić się do oferty");
+
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
+
+  // Add Accept-Language header based on user locale
+  if (typeof window !== "undefined") {
+    const { getUserLocale } = await import("./i18n");
+    const locale = getUserLocale();
+    headers["Accept-Language"] = locale;
+  }
+
   const res = await fetch(`${API_URL}/listings/${listingId}/apply`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
+    headers,
     body: JSON.stringify({ message: message?.trim() || undefined }),
   });
   if (!res.ok) {

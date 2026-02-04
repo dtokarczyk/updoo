@@ -1,0 +1,35 @@
+{
+  "validation": {
+    "isNotEmpty": "{property} jest wymagane",
+    "isString": "{property} musi być tekstem",
+    "isEmail": "{property} musi być poprawnym adresem e-mail",
+    "isBoolean": "{property} musi być wartością logiczną",
+    "isNumber": "{property} musi być liczbą",
+    "isEnum": "{property} musi być jedną z dozwolonych wartości",
+    "isArray": "{property} musi być tablicą",
+    "isIn": "{property} musi być jedną z: {constraint}",
+    "minLength": "{property} musi mieć co najmniej {constraint} znaków",
+    "maxLength": "{property} może mieć maksymalnie {constraint} znaków",
+    "min": "{property} musi być co najmniej {constraint}",
+    "max": "{property} może być maksymalnie {constraint}",
+    "passwordMinLength": "Hasło musi mieć co najmniej {constraint} znaków",
+    "passwordRequired": "Hasło jest wymagane",
+    "titleRequired": "Tytuł jest wymagany",
+    "descriptionRequired": "Opis jest wymagany",
+    "hoursPerWeekRequired": "Ilość godzin tygodniowo jest wymagana przy rozliczeniu godzinowym",
+    "rateNonNegative": "Stawka musi być nieujemna",
+    "currencyLength": "Waluta musi mieć 3 znaki (np. PLN, EUR)",
+    "offerDaysInvalid": "Ilość dni na zebranie ofert musi być 7, 14, 21 lub 30",
+    "accountTypeInvalid": "accountType musi być CLIENT lub FREELANCER",
+    "languageInvalid": "language musi być POLISH lub ENGLISH"
+  },
+  "errors": {
+    "passwordsDoNotMatch": "Hasła nie są takie same",
+    "termsMustBeAccepted": "Musisz zaakceptować regulamin i politykę prywatności",
+    "userEmailExists": "Użytkownik z tym adresem e-mail już istnieje",
+    "invalidEmailOrPassword": "Nieprawidłowy adres e-mail lub hasło",
+    "currentPasswordRequired": "Aktualne hasło jest wymagane",
+    "currentPasswordIncorrect": "Aktualne hasło jest nieprawidłowe",
+    "invalidUser": "Nieprawidłowy użytkownik"
+  }
+}

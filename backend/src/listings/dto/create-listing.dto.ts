@@ -44,12 +44,12 @@ export enum ListingLanguageDto {
 
 export class CreateListingDto {
   @IsString()
-  @MinLength(1, { message: 'Title is required' })
+  @MinLength(1, { message: 'validation.titleRequired' })
   @MaxLength(200)
   title: string;
 
   @IsString()
-  @MinLength(1, { message: 'Description is required' })
+  @MinLength(1, { message: 'validation.descriptionRequired' })
   @MaxLength(5000)
   description: string;
 
@@ -66,11 +66,11 @@ export class CreateListingDto {
 
   @IsEnum(HoursPerWeekDto)
   @ValidateIf((o) => o.billingType === BillingTypeDto.HOURLY)
-  @IsNotEmpty({ message: 'Hours per week is required when billing is hourly' })
+  @IsNotEmpty({ message: 'validation.hoursPerWeekRequired' })
   hoursPerWeek?: HoursPerWeekDto;
 
   @IsNumber()
-  @Min(0, { message: 'Rate must be non-negative' })
+  @Min(0, { message: 'validation.rateNonNegative' })
   @Type(() => Number)
   rate: number;
 
@@ -80,7 +80,7 @@ export class CreateListingDto {
   rateNegotiable?: boolean;
 
   @IsString()
-  @MinLength(3, { message: 'Currency must be 3 characters (e.g. PLN, EUR)' })
+  @MinLength(3, { message: 'validation.currencyLength' })
   @MaxLength(3)
   currency: string;
 
@@ -101,7 +101,7 @@ export class CreateListingDto {
   /** Number of days to collect offers: 7, 14, 21 or 30. Sets deadline = createdAt + offerDays. */
   @IsOptional()
   @IsNumber()
-  @IsIn([7, 14, 21, 30], { message: 'Offer days must be 7, 14, 21 or 30' })
+  @IsIn([7, 14, 21, 30], { message: 'validation.offerDaysInvalid' })
   @Type(() => Number)
   offerDays?: number;
 

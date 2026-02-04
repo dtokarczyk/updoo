@@ -70,8 +70,8 @@
     "newPasswordConfirm": "Repeat new password"
   },
   "onboarding": {
-    "whatShouldWeCallYou": "What should we call you?",
-    "enterNameSurname": "Enter your name and surname. You can change them later in settings.",
+    "whatShouldWeCallYou": "Enter your name and surname.",
+    "enterNameSurname": "Your data will not be publicly visible. Under the application, only your first name and the first letter of your surname will be visible.",
     "chooseAccountType": "Choose account type",
     "chooseAccountTypeDesc": "Choose whether you are a client looking for a freelancer or a freelancer looking for work.",
     "client": "Client",

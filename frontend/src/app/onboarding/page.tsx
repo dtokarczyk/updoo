@@ -194,7 +194,7 @@ export default function OnboardingPage() {
         {step === STEP_NAME && (
           <>
             <CardHeader>
-              <CardTitle>{t("onboarding.whatShouldWeCallYou")}</CardTitle>
+              <CardTitle className="text-3xl">{t("onboarding.whatShouldWeCallYou")}</CardTitle>
               <CardDescription>
                 {t("onboarding.enterNameSurname")}
               </CardDescription>
@@ -243,7 +243,7 @@ export default function OnboardingPage() {
         {step === STEP_ACCOUNT_TYPE && (
           <>
             <CardHeader>
-              <CardTitle>{t("onboarding.chooseAccountType")}</CardTitle>
+              <CardTitle className="text-3xl">{t("onboarding.chooseAccountType")}</CardTitle>
               <CardDescription>
                 {t("onboarding.chooseAccountTypeDesc")}
               </CardDescription>
@@ -326,7 +326,7 @@ export default function OnboardingPage() {
         {step === STEP_SKILLS && accountType === "FREELANCER" && (
           <>
             <CardHeader>
-              <CardTitle>{t("onboarding.freelancerSkillsTitle")}</CardTitle>
+              <CardTitle className="text-3xl">{t("onboarding.freelancerSkillsTitle")}</CardTitle>
               <CardDescription>
                 {t("onboarding.freelancerSkillsDesc")}
               </CardDescription>

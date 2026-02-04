@@ -45,7 +45,7 @@ export default function LoginPage() {
     <div className="flex justify-center p-4 pt-12">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>{t("auth.login")}</CardTitle>
+          <CardTitle className="text-3xl">{t("auth.login")}</CardTitle>
           <CardDescription>{t("auth.enterEmailPassword")}</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -66,6 +66,7 @@ export default function LoginPage() {
                 required
                 autoComplete="email"
                 disabled={loading}
+                className="h-12 text-base px-4"
               />
             </div>
             <div className="space-y-2">
@@ -79,6 +80,7 @@ export default function LoginPage() {
                 required
                 autoComplete="current-password"
                 disabled={loading}
+                className="h-12 text-base px-4"
               />
             </div>
           </CardContent>

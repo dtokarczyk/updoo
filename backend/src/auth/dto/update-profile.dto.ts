@@ -21,7 +21,7 @@ export class UpdateProfileDto {
 
   @IsOptional()
   @IsString()
-  @MinLength(6, { message: 'Password must be at least 6 characters' })
+  @MinLength(6, { message: 'validation.passwordMinLength' })
   password?: string;
 
   @IsOptional()
@@ -29,11 +29,11 @@ export class UpdateProfileDto {
   oldPassword?: string;
 
   @IsOptional()
-  @IsIn(ACCOUNT_TYPES, { message: 'accountType must be CLIENT or FREELANCER' })
+  @IsIn(ACCOUNT_TYPES, { message: 'validation.accountTypeInvalid' })
   accountType?: UpdateProfileAccountType;
 
   @IsOptional()
-  @IsIn(LANGUAGES, { message: 'language must be POLISH or ENGLISH' })
+  @IsIn(LANGUAGES, { message: 'validation.languageInvalid' })
   language?: UserLanguage;
 
   @IsOptional()

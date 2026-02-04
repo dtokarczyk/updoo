@@ -1,0 +1,35 @@
+{
+  "validation": {
+    "isNotEmpty": "{property} is required",
+    "isString": "{property} must be a string",
+    "isEmail": "{property} must be a valid email address",
+    "isBoolean": "{property} must be a boolean",
+    "isNumber": "{property} must be a number",
+    "isEnum": "{property} must be one of the allowed values",
+    "isArray": "{property} must be an array",
+    "isIn": "{property} must be one of: {constraint}",
+    "minLength": "{property} must be at least {constraint} characters",
+    "maxLength": "{property} must be at most {constraint} characters",
+    "min": "{property} must be at least {constraint}",
+    "max": "{property} must be at most {constraint}",
+    "passwordMinLength": "Password must be at least {constraint} characters",
+    "passwordRequired": "Password is required",
+    "titleRequired": "Title is required",
+    "descriptionRequired": "Description is required",
+    "hoursPerWeekRequired": "Hours per week is required when billing is hourly",
+    "rateNonNegative": "Rate must be non-negative",
+    "currencyLength": "Currency must be 3 characters (e.g. PLN, EUR)",
+    "offerDaysInvalid": "Offer days must be 7, 14, 21 or 30",
+    "accountTypeInvalid": "accountType must be CLIENT or FREELANCER",
+    "languageInvalid": "language must be POLISH or ENGLISH"
+  },
+  "errors": {
+    "passwordsDoNotMatch": "Passwords do not match",
+    "termsMustBeAccepted": "Terms and privacy policy must be accepted",
+    "userEmailExists": "User with this email already exists",
+    "invalidEmailOrPassword": "Invalid email or password",
+    "currentPasswordRequired": "Current password is required",
+    "currentPasswordIncorrect": "Current password is incorrect",
+    "invalidUser": "Invalid user"
+  }
+}

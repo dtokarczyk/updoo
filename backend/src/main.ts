@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { I18nValidationPipe } from './i18n/i18n-validation.pipe';
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -11,9 +11,7 @@ async function bootstrap() {
       ? ['log', 'error', 'warn', 'debug', 'verbose']
       : ['log', 'error', 'warn'],
   });
-  app.useGlobalPipes(
-    new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
-  );
+  app.useGlobalPipes(new I18nValidationPipe());
   const frontendOrigin = process.env.FRONTEND_URL ?? 'http://localhost:3000';
   const allowedOrigins = [
     frontendOrigin,
@@ -29,7 +27,7 @@ async function bootstrap() {
       }
     },
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Accept-Language'],
     credentials: true,
   });
   const port = process.env.PORT ?? 3001;

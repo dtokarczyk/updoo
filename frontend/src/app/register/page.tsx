@@ -58,7 +58,7 @@ export default function RegisterPage() {
     <div className="flex justify-center p-4 pt-12">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>{t("auth.register")}</CardTitle>
+          <CardTitle className="text-3xl">{t("auth.register")}</CardTitle>
           <CardDescription>{t("auth.enterDetails")}</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -79,6 +79,7 @@ export default function RegisterPage() {
                 required
                 autoComplete="email"
                 disabled={loading}
+                className="h-12 text-base px-4"
               />
             </div>
             <div className="space-y-2">
@@ -93,6 +94,7 @@ export default function RegisterPage() {
                 minLength={8}
                 autoComplete="new-password"
                 disabled={loading}
+                className="h-12 text-base px-4"
               />
             </div>
             <div className="space-y-2">
@@ -109,6 +111,7 @@ export default function RegisterPage() {
                 minLength={8}
                 autoComplete="new-password"
                 disabled={loading}
+                className="h-12 text-base px-4"
               />
             </div>
             <div className="flex items-start gap-2">

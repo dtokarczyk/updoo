@@ -20,12 +20,14 @@ import {
   needsOnboarding,
   type AccountType,
 } from "@/lib/api";
+import { useTranslations } from "@/hooks/useTranslations";
 
 const STEP_NAME = 1;
 const STEP_ACCOUNT_TYPE = 2;
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const { t } = useTranslations();
   const [step, setStep] = useState(STEP_NAME);
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
@@ -68,7 +70,9 @@ export default function OnboardingPage() {
       updateStoredUser(updated);
       setStep(STEP_ACCOUNT_TYPE);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save");
+      setError(
+        err instanceof Error ? err.message : t("onboarding.saveFailed")
+      );
     } finally {
       setLoading(false);
     }
@@ -86,7 +90,9 @@ export default function OnboardingPage() {
       router.push("/");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save");
+      setError(
+        err instanceof Error ? err.message : t("onboarding.saveFailed")
+      );
     } finally {
       setLoading(false);
     }
@@ -106,9 +112,9 @@ export default function OnboardingPage() {
         {step === STEP_NAME && (
           <>
             <CardHeader>
-              <CardTitle>What should we call you?</CardTitle>
+              <CardTitle>{t("onboarding.whatShouldWeCallYou")}</CardTitle>
               <CardDescription>
-                Enter your name and surname. You can change them later in settings.
+                {t("onboarding.enterNameSurname")}
               </CardDescription>
             </CardHeader>
             <form onSubmit={handleNameSubmit}>
@@ -119,11 +125,11 @@ export default function OnboardingPage() {
                   </p>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="name">Name</Label>
+                  <Label htmlFor="name">{t("auth.name")}</Label>
                   <Input
                     id="name"
                     type="text"
-                    placeholder="Your name"
+                    placeholder={t("auth.name")}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     autoComplete="given-name"
@@ -131,11 +137,11 @@ export default function OnboardingPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="surname">Surname</Label>
+                  <Label htmlFor="surname">{t("auth.surname")}</Label>
                   <Input
                     id="surname"
                     type="text"
-                    placeholder="Your surname"
+                    placeholder={t("auth.surname")}
                     value={surname}
                     onChange={(e) => setSurname(e.target.value)}
                     autoComplete="family-name"
@@ -143,9 +149,9 @@ export default function OnboardingPage() {
                   />
                 </div>
               </CardContent>
-              <CardFooter>
+              <CardFooter className="mt-4">
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Saving…" : "Continue"}
+                  {loading ? t("onboarding.saving") : t("common.continue")}
                 </Button>
               </CardFooter>
             </form>
@@ -155,9 +161,9 @@ export default function OnboardingPage() {
         {step === STEP_ACCOUNT_TYPE && (
           <>
             <CardHeader>
-              <CardTitle>Account type</CardTitle>
+              <CardTitle>{t("onboarding.chooseAccountType")}</CardTitle>
               <CardDescription>
-                Choose how you will use the app. You can change this later.
+                {t("onboarding.chooseAccountTypeDesc")}
               </CardDescription>
             </CardHeader>
             <form onSubmit={handleAccountTypeSubmit}>
@@ -168,7 +174,9 @@ export default function OnboardingPage() {
                   </p>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="accountType">Account type</Label>
+                  <Label htmlFor="accountType">
+                    {t("onboarding.chooseAccountType")}
+                  </Label>
                   <select
                     id="accountType"
                     value={accountType}
@@ -178,13 +186,17 @@ export default function OnboardingPage() {
                     disabled={loading}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <option value="">— Select —</option>
-                    <option value="CLIENT">Client</option>
-                    <option value="FREELANCER">Freelancer</option>
+                    <option value="">
+                      — {t("common.select") ?? "Select"} —
+                    </option>
+                    <option value="CLIENT">{t("onboarding.client")}</option>
+                    <option value="FREELANCER">
+                      {t("onboarding.freelancer")}
+                    </option>
                   </select>
                 </div>
               </CardContent>
-              <CardFooter className="flex gap-2">
+              <CardFooter className="mt-4 flex gap-2">
                 <Button
                   type="button"
                   variant="outline"
@@ -192,10 +204,10 @@ export default function OnboardingPage() {
                   disabled={loading}
                   onClick={() => setStep(STEP_NAME)}
                 >
-                  Back
+                  {t("common.back")}
                 </Button>
                 <Button type="submit" className="flex-1" disabled={loading}>
-                  {loading ? "Saving…" : "Finish"}
+                  {loading ? t("onboarding.saving") : t("common.continue")}
                 </Button>
               </CardFooter>
             </form>

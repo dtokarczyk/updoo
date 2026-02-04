@@ -76,16 +76,16 @@ export function UserDropdown({
             ? "flex shrink-0 items-center justify-center rounded-full border border-transparent p-0"
             : "flex w-full shrink-0 items-center gap-2 rounded-lg px-2 py-1.5",
           fullWidth
-            ? "border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600"
-            : "border border-transparent hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700",
-          "focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 dark:focus-visible:ring-zinc-500"
+            ? "border border-border hover:bg-muted hover:border-border"
+            : "border border-transparent hover:bg-muted hover:border-border",
+          "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         )}
         aria-expanded={dropdownOpen}
         aria-haspopup="true"
       >
         <span
           className={cn(
-            "flex shrink-0 items-center justify-center rounded-full bg-zinc-300 text-sm font-medium text-zinc-700 dark:bg-zinc-600 dark:text-zinc-200",
+            "flex shrink-0 items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground",
             iconOnly ? "h-8 w-8" : "h-8 w-8"
           )}
           aria-hidden
@@ -106,7 +106,7 @@ export function UserDropdown({
       {dropdownOpen && (
         <div
           className={cn(
-            "absolute z-50 min-w-40 rounded-lg border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-900",
+            "absolute z-50 min-w-40 rounded-lg border border-border bg-card py-1 shadow-lg",
             openUp ? "bottom-full left-0 mb-1" : "right-0 top-full mt-1"
           )}
           role="menu"
@@ -114,7 +114,7 @@ export function UserDropdown({
           <Link
             href="/profile/edit"
             role="menuitem"
-            className="block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            className="block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted"
             onClick={() => setDropdownOpen(false)}
           >
             {t("profile.editProfile")}
@@ -122,7 +122,7 @@ export function UserDropdown({
           <Link
             href="/favorites"
             role="menuitem"
-            className="block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            className="block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted"
             onClick={() => setDropdownOpen(false)}
           >
             {t("jobs.favorites")}
@@ -131,7 +131,7 @@ export function UserDropdown({
             type="button"
             role="menuitem"
             onClick={handleLogout}
-            className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted"
           >
             {t("common.logout")}
           </button>

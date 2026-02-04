@@ -65,7 +65,7 @@ export default function OffersLoading() {
 
         {/* Right sidebar promo skeleton (only on desktop, when not logged in) */}
         <aside className="sticky top-0 z-10 hidden shrink-0 lg:top-14 lg:block lg:self-start lg:w-1/5">
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-50/80 p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60 space-y-3">
+          <div className="rounded-2xl border border-border bg-muted/80 p-5 shadow-sm space-y-3">
             <Skeleton className="h-5 w-40 rounded-md" />
             <Skeleton className="h-4 w-full rounded-md" />
             <Skeleton className="h-4 w-3/4 rounded-md" />

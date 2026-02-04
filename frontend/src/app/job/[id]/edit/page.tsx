@@ -64,7 +64,7 @@ export default function EditListingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 py-12 px-4">
+      <div className="min-h-screen bg-background py-12 px-4">
         <main className="max-w-4xl mx-auto text-center text-muted-foreground">
           {t("common.loading")}
         </main>
@@ -74,7 +74,7 @@ export default function EditListingPage() {
 
   if (error || !job) {
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 py-12 px-4">
+      <div className="min-h-screen bg-background py-12 px-4">
         <main className="max-w-4xl mx-auto text-center text-red-600 dark:text-red-400">
           {error || "Nie udało się załadować ogłoszenia"}
         </main>
@@ -83,7 +83,7 @@ export default function EditListingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 py-12 px-4">
+    <div className="min-h-screen bg-background py-12 px-4">
       <main className="max-w-4xl mx-auto">
         <Card>
           <CardHeader>

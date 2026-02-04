@@ -8,7 +8,7 @@ import { t } from "@/lib/translations";
 export function AppFooter({ initialLocale }: { initialLocale: Locale }) {
   const year = new Date().getFullYear();
   return (
-    <footer className="bg-zinc-50 dark:bg-zinc-950">
+    <footer>
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
         <div className="flex flex-col items-center justify-between gap-4 sm:flex-row sm:gap-0">
           <div className="flex items-center gap-4">

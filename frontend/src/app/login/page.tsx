@@ -130,7 +130,7 @@ function LoginForm() {
             </form>
           </Card>
 
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-50/80 p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60">
+          <div className="rounded-2xl border border-border bg-muted/80 p-6 shadow-sm">
             <div className="mt-2 space-y-4">
               <h2 className="text-xl font-semibold">{t("auth.dontHaveAccount")}</h2>
               <Button asChild variant="secondary" size="lg" className="w-full">

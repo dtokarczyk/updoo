@@ -18,8 +18,8 @@ type CategoryIconConfig = {
 };
 
 const ICONS: Record<string, CategoryIconConfig> = {
-  wszystkie: { icon: LayoutGrid, bgClass: "bg-zinc-500" },
-  all: { icon: LayoutGrid, bgClass: "bg-zinc-500" },
+  wszystkie: { icon: LayoutGrid, bgClass: "bg-muted-foreground" },
+  all: { icon: LayoutGrid, bgClass: "bg-muted-foreground" },
 
   programowanie: { icon: Code, bgClass: "bg-sky-500" },
   programming: { icon: Code, bgClass: "bg-sky-500" },

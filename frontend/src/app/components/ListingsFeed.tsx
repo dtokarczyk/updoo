@@ -215,28 +215,28 @@ export function JobsFeed({
             className="overflow-hidden rounded-xl border bg-card shadow-sm animate-pulse"
           >
             <div className="border-b px-4 py-4 sm:px-6 sm:py-4">
-              <div className="h-5 w-3/4 rounded-md bg-zinc-200/80 dark:bg-zinc-800/80" />
+              <div className="h-5 w-3/4 rounded-md bg-muted/80" />
               <div className="mt-2 flex flex-wrap gap-2">
-                <div className="h-4 w-24 rounded-md bg-zinc-200/80 dark:bg-zinc-800/80" />
-                <div className="h-4 w-32 rounded-md bg-zinc-200/80 dark:bg-zinc-800/80" />
+                <div className="h-4 w-24 rounded-md bg-muted/80" />
+                <div className="h-4 w-32 rounded-md bg-muted/80" />
               </div>
             </div>
             <div className="px-4 py-4 sm:px-6 sm:py-5 space-y-3">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="h-10 rounded-md bg-zinc-200/80 dark:bg-zinc-800/80" />
-                <div className="h-10 rounded-md bg-zinc-200/80 dark:bg-zinc-800/80" />
+                <div className="h-10 rounded-md bg-muted/80" />
+                <div className="h-10 rounded-md bg-muted/80" />
               </div>
-              <div className="h-4 w-full rounded-md bg-zinc-200/80 dark:bg-zinc-800/80" />
-              <div className="h-4 w-3/4 rounded-md bg-zinc-200/80 dark:bg-zinc-800/80" />
+              <div className="h-4 w-full rounded-md bg-muted/80" />
+              <div className="h-4 w-3/4 rounded-md bg-muted/80" />
               <div className="flex flex-wrap gap-2">
                 {Array.from({ length: 3 }).map((__, j) => (
                   <div
                     key={j}
-                    className="h-7 w-16 rounded-full bg-zinc-200/80 dark:bg-zinc-800/80"
+                    className="h-7 w-16 rounded-full bg-muted/80"
                   />
                 ))}
               </div>
-              <div className="h-10 w-32 rounded-md bg-zinc-200/80 dark:bg-zinc-800/80" />
+              <div className="h-10 w-32 rounded-md bg-muted/80" />
             </div>
           </div>
         ))}

@@ -29,7 +29,7 @@ export function AuthBottomBar({ initialLocale }: { initialLocale: Locale }) {
   };
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 bg-background/95 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden dark:border-zinc-800">
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
       <div className="mx-auto flex max-w-4xl items-center gap-3">
         <p className="flex-1 text-xs text-muted-foreground">
           {t("auth.promoBarText")}

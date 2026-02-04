@@ -104,7 +104,7 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
   return (
     <aside className="sticky top-0 z-10 hidden shrink-0 lg:top-14 lg:block lg:self-start lg:w-1/5">
       {/* User section with dropdown and theme toggle */}
-      <div className="mb-4 pb-4 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="mb-4 pb-4 border-b border-border">
         <div className="flex items-center gap-2">
           <div className="relative flex-1" ref={dropdownRef}>
             <UserDropdown
@@ -143,7 +143,7 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
                   <Link
                     key={app.id}
                     href={`/job/${app.job.id}`}
-                    className="block p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                    className="block p-3 rounded-lg border border-border bg-card hover:bg-muted transition-colors"
                   >
                     <h4 className="text-sm font-medium text-foreground line-clamp-2 mb-1">
                       {app.job.title}
@@ -152,7 +152,7 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
                       {formatPostedAgo(app.createdAt)}
                     </p>
                     {app.job.category && (
-                      <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-muted-foreground">
+                      <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">
                         {app.job.category.name}
                       </span>
                     )}
@@ -171,7 +171,7 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
                   <Link
                     key={job.id}
                     href={`/job/${job.id}`}
-                    className="block p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                    className="block p-3 rounded-lg border border-border bg-card hover:bg-muted transition-colors"
                   >
                     <h4 className="text-sm font-medium text-foreground line-clamp-2 mb-1">
                       {job.title}
@@ -180,7 +180,7 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
                       {formatPostedAgo(job.createdAt)}
                     </p>
                     {job.category && (
-                      <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-muted-foreground">
+                      <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">
                         {job.category.name}
                       </span>
                     )}

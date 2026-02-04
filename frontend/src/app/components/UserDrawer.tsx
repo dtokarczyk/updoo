@@ -114,7 +114,7 @@ export function UserDrawerContent({ initialLocale, onClose }: UserDrawerContentP
 
   return (
     <DrawerContent className="h-full max-w-sm">
-      <DrawerHeader className="border-b border-zinc-200 dark:border-zinc-800">
+      <DrawerHeader className="border-b border-border">
         <div className="flex items-center justify-between">
           <DrawerTitle>{user ? displayName(user, t) : t("profile.editProfile")}</DrawerTitle>
           <DrawerClose asChild>
@@ -128,7 +128,7 @@ export function UserDrawerContent({ initialLocale, onClose }: UserDrawerContentP
 
       <div className="flex-1 overflow-y-auto p-4">
         {/* User section with dropdown and theme toggle */}
-        <div className="mb-4 pb-4 border-b border-zinc-200 dark:border-zinc-800">
+        <div className="mb-4 pb-4 border-b border-border">
           <div className="flex items-center gap-2">
             <div className="relative flex-1" ref={dropdownRef}>
               <UserDropdown
@@ -167,7 +167,7 @@ export function UserDrawerContent({ initialLocale, onClose }: UserDrawerContentP
                     <Link
                       key={app.id}
                       href={`/job/${app.job.id}`}
-                      className="block p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                      className="block p-3 rounded-lg border transition-colors"
                       onClick={() => onClose()}
                     >
                       <h4 className="text-sm font-medium text-foreground line-clamp-2 mb-1">
@@ -177,7 +177,7 @@ export function UserDrawerContent({ initialLocale, onClose }: UserDrawerContentP
                         {formatPostedAgo(app.createdAt)}
                       </p>
                       {app.job.category && (
-                        <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-muted-foreground">
+                        <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">
                           {app.job.category.name}
                         </span>
                       )}
@@ -196,7 +196,7 @@ export function UserDrawerContent({ initialLocale, onClose }: UserDrawerContentP
                     <Link
                       key={job.id}
                       href={`/job/${job.id}`}
-                      className="block p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                      className="block p-3 rounded-lg border border-border bg-card hover:bg-muted transition-colors"
                       onClick={() => onClose()}
                     >
                       <h4 className="text-sm font-medium text-foreground line-clamp-2 mb-1">
@@ -206,7 +206,7 @@ export function UserDrawerContent({ initialLocale, onClose }: UserDrawerContentP
                         {formatPostedAgo(job.createdAt)}
                       </p>
                       {job.category && (
-                        <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-muted-foreground">
+                        <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">
                           {job.category.name}
                         </span>
                       )}

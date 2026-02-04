@@ -768,7 +768,7 @@ export default function JobDetailPage() {
 
       {/* Sticky CTA button */}
       {!isOwnJob && !isDraft && !isClosed && (
-        <div className="fixed inset-x-0 bottom-0 z-50 border-t border-zinc-200 bg-background/95 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] backdrop-blur dark:border-zinc-800 lg:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
           <div className="mx-auto max-w-4xl">
             {canApply ? (
               <Button onClick={handleApplyClick} className="w-full" size="lg">

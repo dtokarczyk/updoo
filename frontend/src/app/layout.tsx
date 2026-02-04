@@ -27,7 +27,7 @@ export default async function RootLayout({
       >
         <ThemeScript />
         <ThemeProvider>
-          <div className="flex min-h-screen flex-col bg-zinc-50 font-sans dark:bg-zinc-950">
+          <div className="flex min-h-screen flex-col font-sans">
             <AppHeader initialLocale={locale} />
             <main className="flex-1">{children}</main>
             <AppFooter initialLocale={locale} />

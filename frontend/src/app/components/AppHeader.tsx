@@ -61,7 +61,7 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
 
 
   return (
-    <header className={`bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 ${!topBarVisible ? "lg:hidden" : ""}`}>
+    <header className={`border-b border-border ${!topBarVisible ? "lg:hidden" : ""}`}>
       <div
         className={`relative mx-auto flex max-w-6xl flex-row items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-4`}
       >
@@ -104,7 +104,7 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
                           className="rounded-full"
                           aria-label="Open user menu"
                         >
-                          <span className="flex shrink-0 items-center justify-center rounded-full bg-zinc-300 text-sm font-medium text-zinc-700 dark:bg-zinc-600 dark:text-zinc-200 h-8 w-8">
+                          <span className="flex shrink-0 items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground h-8 w-8">
                             {user ? initials(user) : "?"}
                           </span>
                         </Button>

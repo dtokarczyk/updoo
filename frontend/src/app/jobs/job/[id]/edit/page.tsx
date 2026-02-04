@@ -242,7 +242,7 @@ export default function EditListingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 py-12 px-4">
+      <div className="min-h-screen bg-background py-12 px-4">
         <main className="max-w-xl mx-auto text-center text-muted-foreground">
           Ładowanie ogłoszenia...
         </main>
@@ -252,7 +252,7 @@ export default function EditListingPage() {
 
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 py-12 px-4">
+    <div className="min-h-screen bg-background py-12 px-4">
       <main className="max-w-xl mx-auto">
         <Card>
           <CardHeader>

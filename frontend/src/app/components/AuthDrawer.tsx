@@ -43,7 +43,7 @@ export function AuthDrawerContent({ initialLocale, onClose }: AuthDrawerContentP
 
   return (
     <DrawerContent className="h-full max-w-sm">
-      <DrawerHeader className="border-b border-zinc-200 dark:border-zinc-800">
+      <DrawerHeader className="border-b">
         <div className="flex items-center justify-end">
           <DrawerClose asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -60,7 +60,7 @@ export function AuthDrawerContent({ initialLocale, onClose }: AuthDrawerContentP
           <LanguageToggle initialLocale={initialLocale} iconOnly className="h-[44px] w-[44px] px-0" />
           <ThemeToggle className="h-[44px] w-[44px] px-0" />
         </div>
-        <div className="rounded-2xl border border-zinc-200 bg-zinc-50/80 p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60">
+        <div className="rounded-2xl border  p-6 shadow-sm  ">
           <h2 className="text-lg font-semibold tracking-tight text-foreground">
             {t("auth.promoTitle")}
           </h2>

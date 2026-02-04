@@ -53,6 +53,7 @@ export function UserDropdown({
   locale,
   t,
   iconOnly,
+  fullWidth,
 }: {
   user: AuthUser | null;
   dropdownOpen: boolean;
@@ -63,17 +64,20 @@ export function UserDropdown({
   locale: string;
   t: (key: string) => string;
   iconOnly?: boolean;
+  fullWidth?: boolean;
 }) {
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className={cn("relative", fullWidth && "w-full")} ref={dropdownRef}>
       <button
         type="button"
         onClick={() => setDropdownOpen(!dropdownOpen)}
         className={cn(
           iconOnly
             ? "flex shrink-0 items-center justify-center rounded-full border border-transparent p-0"
-            : "flex w-full shrink-0 items-center gap-2 rounded-lg border border-transparent px-2 py-1.5",
-          "hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700",
+            : "flex w-full shrink-0 items-center gap-2 rounded-lg px-2 py-1.5",
+          fullWidth
+            ? "border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600"
+            : "border border-transparent hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700",
           "focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 dark:focus-visible:ring-zinc-500"
         )}
         aria-expanded={dropdownOpen}
@@ -188,18 +192,16 @@ export function HomeNav({ showCreateOnly, placement = "header" }: HomeNavProps) 
   if (placement === "sidebar") {
     if (!mounted || !isLoggedIn) return null;
     return (
-      <div className="hidden lg:block pt-4 mt-4 border-t border-zinc-200 dark:border-zinc-800">
-        <UserDropdown
-          user={user}
-          dropdownOpen={dropdownOpen}
-          setDropdownOpen={setDropdownOpen}
-          dropdownRef={dropdownRef}
-          handleLogout={handleLogout}
-          openUp
-          locale={locale}
-          t={t}
-        />
-      </div>
+      <UserDropdown
+        user={user}
+        dropdownOpen={dropdownOpen}
+        setDropdownOpen={setDropdownOpen}
+        dropdownRef={dropdownRef}
+        handleLogout={handleLogout}
+        locale={locale}
+        t={t}
+        fullWidth
+      />
     );
   }
 

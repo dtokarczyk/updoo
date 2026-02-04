@@ -49,6 +49,7 @@ export function ListingPost({
   headerAction,
   isDraft,
   onFavoriteToggle,
+  onNavigate,
   showFavorite,
 }: {
   listing: Listing;
@@ -56,6 +57,8 @@ export function ListingPost({
   isDraft?: boolean;
   /** Called after favorite add/remove; parent can refetch. */
   onFavoriteToggle?: (listingId: string) => void;
+  /** Called when user navigates to listing details. */
+  onNavigate?: () => void;
   /** When true, show star in top-right (e.g. when user is logged in). */
   showFavorite?: boolean;
 }) {
@@ -97,7 +100,7 @@ export function ListingPost({
       className={cn(
         "overflow-hidden shadow-sm",
         isDraft
-          ? "rounded-t-xl rounded-b-none border-amber-400 border-b-0 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-600 dark:border-b-0"
+          ? "rounded-t-xl rounded-b-none border-0 bg-amber-50 dark:bg-amber-950/30"
           : "rounded-xl"
       )}
     >
@@ -108,6 +111,7 @@ export function ListingPost({
               <Link
                 href={`/listings/${listing.id}`}
                 className="hover:underline focus:outline-none focus:underline"
+                onClick={onNavigate}
               >
                 {listing.title}
               </Link>
@@ -180,7 +184,9 @@ export function ListingPost({
         )}
 
         <Button asChild variant="default" size="lg" className="mt-2">
-          <Link href={`/listings/${listing.id}`}>Zobacz więcej</Link>
+          <Link href={`/listings/${listing.id}`} onClick={onNavigate}>
+            Zobacz więcej
+          </Link>
         </Button>
       </CardContent>
     </Card>

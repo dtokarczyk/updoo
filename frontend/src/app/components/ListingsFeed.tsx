@@ -7,6 +7,29 @@ import { getListingsFeed, publishListing, getStoredUser, type Listing, type List
 import { ListingPost } from "@/app/components/ListingPost";
 import { Button } from "@/components/ui/button";
 
+const VISITED_LISTINGS_KEY = "visitedListings";
+
+function readVisitedListings(): Set<string> {
+  if (typeof window === "undefined") return new Set();
+  try {
+    const raw = window.localStorage.getItem(VISITED_LISTINGS_KEY);
+    if (!raw) return new Set();
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return new Set();
+    return new Set(parsed.filter((v) => typeof v === "string"));
+  } catch {
+    return new Set();
+  }
+}
+
+function writeVisitedListings(ids: Set<string>) {
+  try {
+    window.localStorage.setItem(VISITED_LISTINGS_KEY, JSON.stringify(Array.from(ids)));
+  } catch {
+    // Ignore storage errors (e.g. private mode / quota)
+  }
+}
+
 export function ListingsFeed({
   categoryId,
   language,
@@ -20,6 +43,7 @@ export function ListingsFeed({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [publishingId, setPublishingId] = useState<string | null>(null);
+  const [visitedIds, setVisitedIds] = useState<Set<string>>(new Set());
   const user = getStoredUser();
 
   const loadFeed = () => {
@@ -37,8 +61,18 @@ export function ListingsFeed({
   };
 
   useEffect(() => {
+    setVisitedIds(readVisitedListings());
     loadFeed();
   }, [categoryId, language]);
+
+  const markVisited = (listingId: string) => {
+    setVisitedIds((prev) => {
+      const next = new Set(prev);
+      next.add(listingId);
+      writeVisitedListings(next);
+      return next;
+    });
+  };
 
   const handlePublish = (listingId: string) => {
     setPublishingId(listingId);
@@ -76,15 +110,22 @@ export function ListingsFeed({
         const isDraft = listing.status === "DRAFT";
         const canPublish = user?.accountType === "ADMIN" && isDraft;
         const isOwnListing = user?.id === listing.authorId;
+        const isVisited = visitedIds.has(listing.id);
         return (
           <div
             key={listing.id}
-            className={isDraft ? "overflow-hidden rounded-t-xl shadow-sm" : ""}
+            className={[
+              isDraft
+                ? "overflow-hidden rounded-xl shadow-sm border border-amber-300/80 dark:border-amber-700/80"
+                : "",
+              isVisited ? "opacity-70" : "",
+            ].filter(Boolean).join(" ")}
           >
             <ListingPost
               listing={listing}
               isDraft={isDraft}
               showFavorite={!!user}
+              onNavigate={() => markVisited(listing.id)}
               onFavoriteToggle={(listingId) =>
                 setListings((prev) =>
                   prev.map((l) =>
@@ -116,7 +157,7 @@ export function ListingsFeed({
               }
             />
             {isDraft && (
-              <div className="rounded-b-xl bg-amber-200/90 dark:bg-amber-900/50 text-amber-900 dark:text-amber-100 border border-amber-300/80 dark:border-amber-700/80 border-t-0 px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+              <div className="bg-amber-200/90 dark:bg-amber-900/50 text-amber-900 dark:text-amber-100 border-t border-amber-300/80 dark:border-amber-700/80 px-4 py-3 flex flex-wrap items-center justify-between gap-2">
                 <p className="text-sm">
                   Czeka na akceptację administratora. Widoczny tylko dla autora.
                 </p>

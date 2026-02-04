@@ -15,19 +15,49 @@ export function ListingsSectionHeader({
   categorySlugForRouting,
   page,
   categoryName,
+  initialLanguage,
+  initialSkillIds,
 }: {
   sectionTitle: string;
   categoryId?: string;
   categorySlugForRouting: string;
   page: number;
   categoryName?: string;
+  initialLanguage?: ListingLanguage;
+  initialSkillIds?: string[];
 }) {
   const { t } = useTranslations();
   const router = useRouter();
   const [count, setCount] = useState<number | null>(null);
-  const [language, setLanguage] = useState<"" | ListingLanguage>("");
+  const [language, setLanguage] = useState<"" | ListingLanguage>(
+    initialLanguage ?? ""
+  );
   const [popularSkills, setPopularSkills] = useState<PopularSkill[]>([]);
-  const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
+  const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>(
+    initialSkillIds ?? []
+  );
+
+  const buildUrl = (opts?: {
+    page?: number;
+    language?: "" | ListingLanguage;
+    skillIds?: string[];
+  }) => {
+    const nextPage = opts?.page ?? 1;
+    const nextLanguage = opts?.language ?? language;
+    const nextSkillIds = opts?.skillIds ?? selectedSkillIds;
+
+    const searchParams = new URLSearchParams();
+    if (nextLanguage && (nextLanguage === "ENGLISH" || nextLanguage === "POLISH")) {
+      searchParams.set("language", nextLanguage);
+    }
+    if (nextSkillIds.length > 0) {
+      searchParams.set("skills", nextSkillIds.join(","));
+    }
+
+    const search = searchParams.toString();
+    return `/offers/${encodeURIComponent(categorySlugForRouting)}/${nextPage}${search ? `?${search}` : ""
+      }`;
+  };
 
   useEffect(() => {
     if (!categoryId) {
@@ -96,9 +126,7 @@ export function ListingsSectionHeader({
                     className="rounded-full px-3 py-1 text-xs cursor-pointer"
                     onClick={() => {
                       setLanguage("");
-                      const target = `/offers/${encodeURIComponent(
-                        categorySlugForRouting
-                      )}/1`;
+                      const target = buildUrl({ page: 1, language: "", skillIds: selectedSkillIds });
                       router.replace(target, { scroll: false });
                     }}
                   >
@@ -117,9 +145,11 @@ export function ListingsSectionHeader({
                     const nextValue =
                       language === opt.value ? "" : (opt.value as ListingLanguage);
                     setLanguage(nextValue as "" | ListingLanguage);
-                    const target = `/offers/${encodeURIComponent(
-                      categorySlugForRouting
-                    )}/1`;
+                    const target = buildUrl({
+                      page: 1,
+                      language: nextValue as "" | ListingLanguage,
+                      skillIds: selectedSkillIds,
+                    });
                     router.replace(target, { scroll: false });
                   }}
                   aria-pressed={isActive}
@@ -154,14 +184,16 @@ export function ListingsSectionHeader({
                   onClick={() => {
                     setSelectedSkillIds((prev) => {
                       const exists = prev.includes(skill.id);
-                      const next = exists
+                      const nextSkillIds = exists
                         ? prev.filter((id) => id !== skill.id)
                         : [...prev, skill.id];
-                      const target = `/offers/${encodeURIComponent(
-                        categorySlugForRouting
-                      )}/1`;
+                      const target = buildUrl({
+                        page: 1,
+                        language,
+                        skillIds: nextSkillIds,
+                      });
                       router.replace(target, { scroll: false });
-                      return next;
+                      return nextSkillIds;
                     });
                   }}
                   aria-pressed={isActive}

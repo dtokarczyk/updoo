@@ -163,7 +163,17 @@ export function ListingsFeed({
 
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || (pagination && newPage > pagination.totalPages)) return;
-    router.replace(`/offers/${encodeURIComponent(categorySlug)}/${newPage}`);
+    const searchParams = new URLSearchParams();
+    if (language && (language === "ENGLISH" || language === "POLISH")) {
+      searchParams.set("language", language);
+    }
+    if (skillIds && skillIds.length > 0) {
+      searchParams.set("skills", skillIds.join(","));
+    }
+    const search = searchParams.toString();
+    const target = `/offers/${encodeURIComponent(categorySlug)}/${newPage}${search ? `?${search}` : ""
+      }`;
+    router.replace(target);
   };
 
   const markVisited = (listingId: string) => {

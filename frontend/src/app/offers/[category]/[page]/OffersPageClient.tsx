@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { OnboardingRedirect } from "@/app/components/OnboardingRedirect";
 import { CategoriesSidebar } from "@/app/components/CategoriesSidebar";
@@ -10,7 +10,7 @@ import { HomeNav } from "@/app/components/HomeNav";
 import { ListingsSectionHeader } from "@/app/components/ListingsSectionHeader";
 import { AuthPromoSidebar } from "@/app/components/AuthPromoSidebar";
 import { AuthBottomBar } from "@/app/components/AuthBottomBar";
-import { getToken, type Category } from "@/lib/api";
+import { getToken, type Category, type ListingLanguage } from "@/lib/api";
 import { useTranslations } from "@/hooks/useTranslations";
 
 function parsePageParam(raw: string | undefined): number {
@@ -25,6 +25,7 @@ export function OffersPageClient({
 }) {
   const { t } = useTranslations();
   const params = useParams<{ category: string; page: string }>();
+  const searchParams = useSearchParams();
   const categoryParam =
     typeof params.category === "string" && params.category.length > 0
       ? params.category
@@ -59,6 +60,28 @@ export function OffersPageClient({
 
   const routingCategorySlug = resolvedCategorySlug ?? "all";
 
+  const { initialLanguage, initialSkillIds } = useMemo(() => {
+    const languageParam = searchParams.get("language");
+    const rawSkills = searchParams.get("skills");
+
+    const normalizedLanguage =
+      languageParam === "ENGLISH" || languageParam === "POLISH"
+        ? (languageParam as ListingLanguage)
+        : undefined;
+
+    const skillIds = rawSkills
+      ? rawSkills
+        .split(",")
+        .map((id) => id.trim())
+        .filter(Boolean)
+      : [];
+
+    return {
+      initialLanguage: normalizedLanguage,
+      initialSkillIds: skillIds,
+    };
+  }, [searchParams]);
+
   return (
     <OnboardingRedirect>
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
@@ -85,6 +108,8 @@ export function OffersPageClient({
             categorySlugForRouting={routingCategorySlug}
             page={page}
             categoryName={categoryNameForHeader}
+            initialLanguage={initialLanguage}
+            initialSkillIds={initialSkillIds}
           />
           {!isLoggedIn && (
             <aside className="sticky top-0 z-10 hidden shrink-0 lg:top-14 lg:block lg:self-start lg:basis-1/5">

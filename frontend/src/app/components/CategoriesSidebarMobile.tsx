@@ -6,8 +6,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { type Category } from "@/lib/api";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { cn } from "@/lib/utils";
-
-const ALL_LABEL = "Wszystkie";
+import { useTranslations } from "@/hooks/useTranslations";
 
 export function CategoriesSidebarMobile({
   categories,
@@ -16,11 +15,13 @@ export function CategoriesSidebarMobile({
   categories: Category[];
   currentCategorySlug?: string;
 }) {
+  const { t } = useTranslations();
+  const allLabel = t("common.all");
   const [open, setOpen] = useState(false);
 
   const currentLabel = currentCategorySlug
-    ? categories.find((c) => c.slug === currentCategorySlug)?.name ?? ALL_LABEL
-    : ALL_LABEL;
+    ? categories.find((c) => c.slug === currentCategorySlug)?.name ?? allLabel
+    : allLabel;
 
   return (
     <nav className="lg:hidden py-3">
@@ -31,7 +32,11 @@ export function CategoriesSidebarMobile({
         aria-expanded={open}
       >
         <span className="flex min-w-0 flex-1 items-center gap-2">
-          <CategoryIcon categoryName={currentLabel} className="size-5 shrink-0" />
+          <CategoryIcon
+            categorySlug={currentCategorySlug}
+            categoryName={currentLabel}
+            className="size-5 shrink-0"
+          />
           {currentLabel}
         </span>
         {open ? (
@@ -57,8 +62,8 @@ export function CategoriesSidebarMobile({
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <CategoryIcon categoryName="Wszystkie" className="size-5 shrink-0" />
-            {ALL_LABEL}
+            <CategoryIcon categorySlug="" categoryName={allLabel} className="size-5 shrink-0" />
+            {allLabel}
           </Link>
         </li>
         {categories.map((cat) => (
@@ -74,6 +79,7 @@ export function CategoriesSidebarMobile({
               )}
             >
               <CategoryIcon
+                categorySlug={cat.slug}
                 categoryName={cat.name}
                 className="size-5 shrink-0"
               />

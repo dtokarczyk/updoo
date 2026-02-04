@@ -7,6 +7,7 @@ import { ApplyToListingDto } from './dto/apply-to-listing.dto';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { FavoritesService } from './favorites.service';
 import { ListingsService } from './listings.service';
+import { ListingLanguage } from '@prisma/client';
 
 @Controller('listings')
 export class ListingsController {
@@ -16,8 +17,10 @@ export class ListingsController {
   ) { }
 
   @Get('categories')
-  getCategories() {
-    return this.listingsService.getCategories();
+  @UseGuards(OptionalJwtAuthGuard)
+  getCategories(@GetUser() user?: JwtUser) {
+    const userLanguage = (user?.language || 'POLISH') as ListingLanguage;
+    return this.listingsService.getCategories(userLanguage);
   }
 
   @Get('locations')
@@ -40,13 +43,15 @@ export class ListingsController {
     @GetUser() user?: JwtUser,
   ) {
     const takeNum = take ? Math.min(parseInt(take, 10) || 50, 100) : 50;
-    return this.listingsService.getFeed(takeNum, cursor, user?.id, categoryId, language);
+    const userLanguage = (user?.language || 'POLISH') as ListingLanguage;
+    return this.listingsService.getFeed(takeNum, cursor, user?.id, categoryId, language, userLanguage);
   }
 
   @Get('favorites')
   @UseGuards(JwtAuthGuard)
   getFavorites(@GetUser() user: JwtUser) {
-    return this.favoritesService.getFavoriteListings(user.id);
+    const userLanguage = (user.language || 'POLISH') as ListingLanguage;
+    return this.favoritesService.getFavoriteListings(user.id, userLanguage);
   }
 
   @Get(':id')
@@ -55,7 +60,8 @@ export class ListingsController {
     @Param('id') id: string,
     @GetUser() user?: JwtUser,
   ) {
-    return this.listingsService.getListing(id, user?.id, user?.accountType === 'ADMIN');
+    const userLanguage = (user?.language || 'POLISH') as ListingLanguage;
+    return this.listingsService.getListing(id, user?.id, user?.accountType === 'ADMIN', userLanguage);
   }
 
   @Post(':id/apply')
@@ -83,7 +89,8 @@ export class ListingsController {
   @Post()
   @UseGuards(JwtAuthGuard)
   createListing(@GetUser() user: JwtUser, @Body() dto: CreateListingDto) {
-    return this.listingsService.createListing(user.id, user.accountType, dto);
+    const userLanguage = (user.language || 'POLISH') as ListingLanguage;
+    return this.listingsService.createListing(user.id, user.accountType, dto, userLanguage);
   }
 
   @Patch(':id')
@@ -93,12 +100,14 @@ export class ListingsController {
     @GetUser() user: JwtUser,
     @Body() dto: CreateListingDto,
   ) {
-    return this.listingsService.updateListing(id, user.id, user.accountType, dto);
+    const userLanguage = (user.language || 'POLISH') as ListingLanguage;
+    return this.listingsService.updateListing(id, user.id, user.accountType, dto, userLanguage);
   }
 
   @Patch(':id/publish')
   @UseGuards(JwtAuthGuard)
   publishListing(@Param('id') id: string, @GetUser() user: JwtUser) {
-    return this.listingsService.publishListing(id, user.id, user.accountType === 'ADMIN');
+    const userLanguage = (user.language || 'POLISH') as ListingLanguage;
+    return this.listingsService.publishListing(id, user.id, user.accountType === 'ADMIN', userLanguage);
   }
 }

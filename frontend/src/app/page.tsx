@@ -1,18 +1,33 @@
+"use client";
+
 import Link from "next/link";
 import { OnboardingRedirect } from "@/app/components/OnboardingRedirect";
 import { CategoriesSidebar } from "@/app/components/CategoriesSidebar";
 import { HomeNav } from "@/app/components/HomeNav";
 import { ListingsSectionHeader } from "@/app/components/ListingsSectionHeader";
 import { getCategories, sortCategoriesByOrder } from "@/lib/api";
+import { useTranslations } from "@/hooks/useTranslations";
+import { useEffect, useState } from "react";
+import type { Category } from "@/lib/api";
 
-export default async function Home({
+export default function Home({
   searchParams,
 }: {
   searchParams: Promise<{ category?: string }>;
 }) {
-  const params = await searchParams;
-  const categorySlug = params.category ?? undefined;
-  const categories = sortCategoriesByOrder(await getCategories());
+  const { t } = useTranslations();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categorySlug, setCategorySlug] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    searchParams.then((params) => {
+      setCategorySlug(params.category);
+    });
+    getCategories().then((cats) => {
+      setCategories(sortCategoriesByOrder(cats));
+    });
+  }, [searchParams]);
+
   const selectedCategory = categorySlug
     ? categories.find((c) => c.slug === categorySlug)
     : undefined;
@@ -36,7 +51,7 @@ export default async function Home({
             <HomeNav placement="sidebar" />
           </aside>
           <ListingsSectionHeader
-            sectionTitle="Ogłoszenia"
+            sectionTitle={t("listings.listings")}
             categoryId={categoryId}
           />
         </div>

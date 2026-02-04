@@ -19,13 +19,18 @@ import {
   updateStoredUser,
   getToken,
   clearAuth,
+  type UserLanguage,
 } from "@/lib/api";
+import { useTranslations } from "@/hooks/useTranslations";
+
 export default function ProfileEditPage() {
   const router = useRouter();
+  const { t } = useTranslations();
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [language, setLanguage] = useState<UserLanguage>("POLISH");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -38,6 +43,7 @@ export default function ProfileEditPage() {
       setName(user.name ?? "");
       setSurname(user.surname ?? "");
       setEmail(user.email ?? "");
+      setLanguage(user.language ?? "POLISH");
     }
   }, []);
 
@@ -59,12 +65,14 @@ export default function ProfileEditPage() {
         name: name.trim() || undefined,
         surname: surname.trim() || undefined,
         email: email.trim() || undefined,
+        language,
       };
       if (password.trim()) payload.password = password.trim();
       const { user: updated } = await updateProfile(payload);
       updateStoredUser(updated);
       setPassword("");
       setSuccess(true);
+
       if (password.trim()) {
         clearAuth();
         router.push("/login");
@@ -73,7 +81,7 @@ export default function ProfileEditPage() {
       }
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Zapisywanie nie powiodło się");
+      setError(err instanceof Error ? err.message : t("profile.saveFailed"));
     } finally {
       setLoading(false);
     }
@@ -87,9 +95,9 @@ export default function ProfileEditPage() {
     <div className="flex min-h-full flex-1 items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Edycja profilu</CardTitle>
+          <CardTitle>{t("profile.editProfile")}</CardTitle>
           <CardDescription>
-            Zmień imię, nazwisko, adres e-mail lub hasło. Po zmianie hasła zostaniesz wylogowany.
+            {t("profile.editProfileDesc")}
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -101,15 +109,15 @@ export default function ProfileEditPage() {
             )}
             {success && (
               <p className="text-sm text-green-600 dark:text-green-400 rounded-md bg-green-500/10 px-3 py-2">
-                Profil zapisany.
+                {t("profile.profileSaved")}
               </p>
             )}
             <div className="space-y-2">
-              <Label htmlFor="name">Imię</Label>
+              <Label htmlFor="name">{t("auth.name")}</Label>
               <Input
                 id="name"
                 type="text"
-                placeholder="Imię"
+                placeholder={t("auth.name")}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 autoComplete="given-name"
@@ -117,11 +125,11 @@ export default function ProfileEditPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="surname">Nazwisko</Label>
+              <Label htmlFor="surname">{t("auth.surname")}</Label>
               <Input
                 id="surname"
                 type="text"
-                placeholder="Nazwisko"
+                placeholder={t("auth.surname")}
                 value={surname}
                 onChange={(e) => setSurname(e.target.value)}
                 autoComplete="family-name"
@@ -129,11 +137,11 @@ export default function ProfileEditPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Adres e-mail</Label>
+              <Label htmlFor="email">{t("auth.email")}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Adres e-mail"
+                placeholder={t("auth.email")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
@@ -141,24 +149,40 @@ export default function ProfileEditPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Nowe hasło (opcjonalnie)</Label>
+              <Label htmlFor="language">{t("profile.language")}</Label>
+              <select
+                id="language"
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as UserLanguage)}
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none disabled:opacity-50 md:text-sm"
+                disabled={loading}
+              >
+                <option value="POLISH">{t("listings.polish")}</option>
+                <option value="ENGLISH">{t("listings.english")}</option>
+              </select>
+              <p className="text-xs text-muted-foreground">
+                {t("profile.languageDesc")}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">{t("profile.newPassword")}</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Zostaw puste, aby nie zmieniać"
+                placeholder={t("profile.passwordPlaceholder")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="new-password"
                 disabled={loading}
               />
               <p className="text-xs text-muted-foreground">
-                Min. 6 znaków. Po zmianie hasła zostaniesz wylogowany.
+                {t("profile.passwordMinLength")}
               </p>
             </div>
           </CardContent>
           <CardFooter>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Zapisywanie…" : "Zapisz"}
+              {loading ? t("common.saving") : t("common.save")}
             </Button>
           </CardFooter>
         </form>

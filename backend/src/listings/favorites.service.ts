@@ -43,14 +43,20 @@ export class FavoritesService {
   }
 
   /** Get full listings that the user has favorited (for favorites page). Only published. */
-  async getFavoriteListings(userId: string) {
+  async getFavoriteListings(userId: string, userLanguage: any) {
     const favorites = await this.prisma.favorite.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
       include: {
         listing: {
           include: {
-            category: true,
+            category: {
+              include: {
+                translations: {
+                  where: { language: userLanguage },
+                },
+              },
+            },
             author: { select: { id: true, email: true, name: true, surname: true } },
             location: true,
             skills: { include: { skill: true } },
@@ -61,6 +67,14 @@ export class FavoritesService {
     return favorites
       .map((f) => f.listing)
       .filter((l) => l.status === ListingStatus.PUBLISHED)
-      .map((l) => ({ ...l, isFavorite: true }));
+      .map((l) => ({
+        ...l,
+        category: {
+          id: l.category.id,
+          slug: l.category.slug,
+          name: l.category.translations[0]?.name || l.category.slug,
+        },
+        isFavorite: true,
+      }));
   }
 }

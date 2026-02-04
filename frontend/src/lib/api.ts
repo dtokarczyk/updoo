@@ -2,12 +2,15 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
 export type AccountType = "CLIENT" | "FREELANCER" | "ADMIN";
 
+export type UserLanguage = "POLISH" | "ENGLISH";
+
 export interface AuthUser {
   id: string;
   email: string;
   name: string | null;
   surname: string | null;
   accountType: AccountType | null;
+  language: UserLanguage;
 }
 
 export interface AuthResponse {
@@ -38,6 +41,7 @@ export interface UpdateProfilePayload {
   email?: string;
   accountType?: AccountType;
   password?: string;
+  language?: UserLanguage;
 }
 
 export async function updateProfile(
@@ -51,6 +55,7 @@ export async function updateProfile(
   if (payload.email !== undefined) body.email = payload.email;
   if (payload.accountType !== undefined) body.accountType = payload.accountType;
   if (payload.password !== undefined && payload.password.trim()) body.password = payload.password;
+  if (payload.language !== undefined) body.language = payload.language;
   const res = await fetch(`${API_URL}/auth/profile`, {
     method: "PATCH",
     headers: {
@@ -133,14 +138,14 @@ const CATEGORY_ORDER = [
   "design",
   "marketing",
   "pisanie",
-  "prace biurowe",
+  "prace-biurowe",
   "inne",
 ];
 
 export function sortCategoriesByOrder(categories: Category[]): Category[] {
   return [...categories].sort((a, b) => {
-    const indexA = CATEGORY_ORDER.indexOf(a.name.trim().toLowerCase());
-    const indexB = CATEGORY_ORDER.indexOf(b.name.trim().toLowerCase());
+    const indexA = CATEGORY_ORDER.indexOf(a.slug);
+    const indexB = CATEGORY_ORDER.indexOf(b.slug);
     const orderA = indexA === -1 ? CATEGORY_ORDER.length : indexA;
     const orderB = indexB === -1 ? CATEGORY_ORDER.length : indexB;
     return orderA - orderB;
@@ -259,7 +264,10 @@ export interface ListingsFeedResponse {
 }
 
 export async function getCategories(): Promise<Category[]> {
-  const res = await fetch(`${API_URL}/listings/categories`);
+  const headers: HeadersInit = {};
+  const token = getToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const res = await fetch(`${API_URL}/listings/categories`, { headers });
   if (!res.ok) throw new Error("Failed to fetch categories");
   return res.json();
 }
@@ -280,13 +288,15 @@ export async function getListingsFeed(
   take?: number,
   cursor?: string,
   categoryId?: string,
-  language?: ListingLanguage | ""
+  language?: ListingLanguage | "" | undefined
 ): Promise<ListingsFeedResponse> {
   const params = new URLSearchParams();
   if (take != null) params.set("take", String(take));
   if (cursor) params.set("cursor", cursor);
   if (categoryId) params.set("categoryId", categoryId);
-  if (language && language !== "") params.set("language", language);
+  if (language === "POLISH" || language === "ENGLISH") {
+    params.set("language", language as ListingLanguage);
+  }
   const url = `${API_URL}/listings/feed${params.toString() ? `?${params}` : ""}`;
   const headers: HeadersInit = {};
   const token = getToken();

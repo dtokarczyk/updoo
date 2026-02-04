@@ -4,6 +4,7 @@ import Link from "next/link";
 import { type Category } from "@/lib/api";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "@/hooks/useTranslations";
 
 export function CategoriesSidebarDesktop({
   categories,
@@ -12,6 +13,9 @@ export function CategoriesSidebarDesktop({
   categories: Category[];
   currentCategorySlug?: string;
 }) {
+  const { t } = useTranslations();
+  const allLabel = t("common.all");
+
   return (
     <nav className="hidden lg:block">
       <ul className="space-y-2">
@@ -25,8 +29,8 @@ export function CategoriesSidebarDesktop({
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <CategoryIcon categoryName="Wszystkie" className="size-5 shrink-0" />
-            Wszystkie
+            <CategoryIcon categorySlug="" categoryName={allLabel} className="size-5 shrink-0" />
+            {allLabel}
           </Link>
         </li>
         {categories.map((cat) => (
@@ -41,6 +45,7 @@ export function CategoriesSidebarDesktop({
               )}
             >
               <CategoryIcon
+                categorySlug={cat.slug}
                 categoryName={cat.name}
                 className="size-5 shrink-0"
               />

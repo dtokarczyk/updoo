@@ -4,12 +4,7 @@ import { useState } from "react";
 import { HomeNav } from "@/app/components/HomeNav";
 import { ListingsFeed } from "@/app/components/ListingsFeed";
 import type { ListingLanguage } from "@/lib/api";
-
-const LANGUAGE_OPTIONS: { value: "" | ListingLanguage; label: string }[] = [
-  { value: "", label: "Wszystkie" },
-  { value: "ENGLISH", label: "English" },
-  { value: "POLISH", label: "Polish" },
-];
+import { useTranslations } from "@/hooks/useTranslations";
 
 export function ListingsSectionHeader({
   sectionTitle,
@@ -18,8 +13,15 @@ export function ListingsSectionHeader({
   sectionTitle: string;
   categoryId?: string;
 }) {
+  const { t } = useTranslations();
   const [count, setCount] = useState<number | null>(null);
   const [language, setLanguage] = useState<"" | ListingLanguage>("");
+
+  const LANGUAGE_OPTIONS: { value: "" | ListingLanguage; label: string }[] = [
+    { value: "", label: t("listings.allLanguages") },
+    { value: "ENGLISH", label: t("listings.english") },
+    { value: "POLISH", label: t("listings.polish") },
+  ];
 
   const titleWithCount =
     count !== null ? `${sectionTitle} (${count})` : sectionTitle;
@@ -35,7 +37,7 @@ export function ListingsSectionHeader({
             value={language}
             onChange={(e) => setLanguage((e.target.value || "") as "" | ListingLanguage)}
             className="rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            aria-label="Filtruj po języku ogłoszenia"
+            aria-label={t("listings.filterByLanguage")}
           >
             {LANGUAGE_OPTIONS.map((opt) => (
               <option key={opt.value || "all"} value={opt.value}>

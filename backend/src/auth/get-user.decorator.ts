@@ -6,6 +6,7 @@ export interface JwtUser {
   name: string | null;
   surname: string | null;
   accountType: string | null;
+  language: string;
 }
 
 export const GetUser = createParamDecorator(

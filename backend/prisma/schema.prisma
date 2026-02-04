@@ -49,26 +49,41 @@ enum ListingLanguage {
 }
 
 model User {
-  id          String      @id @default(cuid())
-  email       String      @unique
+  id          String          @id @default(cuid())
+  email       String          @unique
   password    String
   name        String?
   surname     String?
   accountType AccountType?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  language    ListingLanguage @default(POLISH)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
   listings    Listing[]
   applications ListingApplication[]
   favorites   Favorite[]
 }
 
 model Category {
-  id        String    @id @default(cuid())
-  name      String    @unique
-  slug      String    @unique
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  listings  Listing[]
+  id           String               @id @default(cuid())
+  slug         String               @unique
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  listings     Listing[]
+  translations CategoryTranslation[]
+}
+
+model CategoryTranslation {
+  id         String          @id @default(cuid())
+  categoryId String
+  language   ListingLanguage
+  name       String
+  category   Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  @@unique([categoryId, language])
+  @@index([categoryId])
+  @@index([language])
 }
 
 model Location {

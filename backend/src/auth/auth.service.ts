@@ -17,7 +17,7 @@ export interface JwtPayload {
 
 export interface AuthResponse {
   access_token: string;
-  user: { id: string; email: string; name: string | null; surname: string | null; accountType: string | null };
+  user: { id: string; email: string; name: string | null; surname: string | null; accountType: string | null; language: string };
 }
 
 @Injectable()
@@ -43,7 +43,14 @@ export class AuthService {
         password: hashedPassword,
       },
     });
-    return this.buildAuthResponse(user);
+    return this.buildAuthResponse({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      surname: user.surname,
+      accountType: user.accountType,
+      language: user.language,
+    });
   }
 
   async login(dto: LoginDto): Promise<AuthResponse> {
@@ -57,7 +64,14 @@ export class AuthService {
     if (!isMatch) {
       throw new UnauthorizedException('Invalid email or password');
     }
-    return this.buildAuthResponse(user);
+    return this.buildAuthResponse({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      surname: user.surname,
+      accountType: user.accountType,
+      language: user.language,
+    });
   }
 
   async updateProfile(
@@ -81,6 +95,7 @@ export class AuthService {
       ...(dto.surname !== undefined && { surname: dto.surname || null }),
       ...(dto.accountType !== undefined && { accountType: dto.accountType || null }),
       ...(dto.email !== undefined && dto.email.trim() && { email: dto.email.trim().toLowerCase() }),
+      ...(dto.language !== undefined && { language: dto.language }),
     };
     if (dto.password !== undefined && dto.password.trim()) {
       updateData.password = await bcrypt.hash(dto.password.trim(), this.saltRounds);
@@ -96,6 +111,7 @@ export class AuthService {
         name: user.name,
         surname: user.surname,
         accountType: user.accountType,
+        language: user.language,
       },
     };
   }
@@ -111,6 +127,7 @@ export class AuthService {
       name: user.name,
       surname: user.surname,
       accountType: user.accountType,
+      language: user.language,
     };
   }
 
@@ -120,6 +137,7 @@ export class AuthService {
     name: string | null;
     surname: string | null;
     accountType: string | null;
+    language: string;
   }): AuthResponse {
     const payload: JwtPayload = { sub: user.id, email: user.email };
     const access_token = this.jwtService.sign(payload);
@@ -131,6 +149,7 @@ export class AuthService {
         name: user.name,
         surname: user.surname,
         accountType: user.accountType,
+        language: user.language,
       },
     };
   }

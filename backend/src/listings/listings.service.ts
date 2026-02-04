@@ -5,12 +5,12 @@ import { CreateListingDto } from './dto/create-listing.dto';
 import { BillingType, HoursPerWeek, ExperienceLevel, ProjectType, ListingStatus, ListingLanguage } from '@prisma/client';
 
 const DEFAULT_CATEGORIES = [
-  { name: 'Usługi', slug: 'uslugi' },
-  { name: 'Sprzedaż', slug: 'sprzedaz' },
-  { name: 'Praca', slug: 'praca' },
-  { name: 'Nieruchomości', slug: 'nieruchomosci' },
-  { name: 'Motoryzacja', slug: 'motoryzacja' },
-  { name: 'Inne', slug: 'inne' },
+  { slug: 'programowanie', translations: [{ language: ListingLanguage.POLISH, name: 'Programowanie' }, { language: ListingLanguage.ENGLISH, name: 'Programming' }] },
+  { slug: 'design', translations: [{ language: ListingLanguage.POLISH, name: 'Design' }, { language: ListingLanguage.ENGLISH, name: 'Design' }] },
+  { slug: 'marketing', translations: [{ language: ListingLanguage.POLISH, name: 'Marketing' }, { language: ListingLanguage.ENGLISH, name: 'Marketing' }] },
+  { slug: 'pisanie', translations: [{ language: ListingLanguage.POLISH, name: 'Pisanie' }, { language: ListingLanguage.ENGLISH, name: 'Writing' }] },
+  { slug: 'prace-biurowe', translations: [{ language: ListingLanguage.POLISH, name: 'Prace biurowe' }, { language: ListingLanguage.ENGLISH, name: 'Office Work' }] },
+  { slug: 'inne', translations: [{ language: ListingLanguage.POLISH, name: 'Inne' }, { language: ListingLanguage.ENGLISH, name: 'Other' }] },
 ];
 
 const DEFAULT_LOCATIONS = [
@@ -61,7 +61,59 @@ export class ListingsService implements OnModuleInit {
   private async ensureCategories() {
     const count = await this.prisma.category.count();
     if (count === 0) {
-      await this.prisma.category.createMany({ data: DEFAULT_CATEGORIES });
+      for (const cat of DEFAULT_CATEGORIES) {
+        await this.prisma.category.create({
+          data: {
+            slug: cat.slug,
+            translations: {
+              create: cat.translations,
+            },
+          },
+        });
+      }
+    } else {
+      // Ensure all categories exist and have translations
+      for (const cat of DEFAULT_CATEGORIES) {
+        let existing = await this.prisma.category.findUnique({
+          where: { slug: cat.slug },
+          include: { translations: true },
+        });
+
+        // Create category if it doesn't exist
+        if (!existing) {
+          existing = await this.prisma.category.create({
+            data: {
+              slug: cat.slug,
+              translations: {
+                create: cat.translations,
+              },
+            },
+            include: { translations: true },
+          });
+        } else {
+          // Ensure all translations exist for existing categories
+          for (const trans of cat.translations) {
+            const existingTrans = existing.translations.find(
+              (t) => t.language === trans.language
+            );
+            if (!existingTrans) {
+              await this.prisma.categoryTranslation.create({
+                data: {
+                  categoryId: existing.id,
+                  language: trans.language,
+                  name: trans.name,
+                },
+              });
+            } else if (existingTrans.name !== trans.name) {
+              // Update translation if name changed
+              await this.prisma.categoryTranslation.update({
+                where: { id: existingTrans.id },
+                data: { name: trans.name },
+              });
+            }
+          }
+        }
+      }
     }
   }
 
@@ -81,10 +133,30 @@ export class ListingsService implements OnModuleInit {
     }
   }
 
-  async getCategories() {
-    return this.prisma.category.findMany({
-      orderBy: { name: 'asc' },
+  async getCategories(userLanguage: ListingLanguage = ListingLanguage.POLISH) {
+    const categories = await this.prisma.category.findMany({
+      include: {
+        translations: {
+          where: { language: userLanguage },
+        },
+      },
     });
+
+    return categories.map((cat) => ({
+      id: cat.id,
+      slug: cat.slug,
+      name: cat.translations[0]?.name || cat.slug,
+    })).sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  private getCategoryWithTranslation(category: any, userLanguage: ListingLanguage = ListingLanguage.POLISH) {
+    if (!category) return null;
+    const translation = category.translations?.find((t: any) => t.language === userLanguage);
+    return {
+      id: category.id,
+      slug: category.slug,
+      name: translation?.name || category.slug,
+    };
   }
 
   async getLocations() {
@@ -99,12 +171,17 @@ export class ListingsService implements OnModuleInit {
     });
   }
 
-  async createListing(authorId: string, accountType: string | null, dto: CreateListingDto) {
+  async createListing(authorId: string, accountType: string | null, dto: CreateListingDto, userLanguage: ListingLanguage = ListingLanguage.POLISH) {
     if (accountType !== 'CLIENT') {
       throw new ForbiddenException('Tylko klienci mogą tworzyć ogłoszenia');
     }
     const category = await this.prisma.category.findUnique({
       where: { id: dto.categoryId },
+      include: {
+        translations: {
+          where: { language: userLanguage },
+        },
+      },
     });
     if (!category) {
       throw new NotFoundException('Category not found');
@@ -176,7 +253,13 @@ export class ListingsService implements OnModuleInit {
         deadline,
       },
       include: {
-        category: true,
+        category: {
+          include: {
+            translations: {
+              where: { language: userLanguage },
+            },
+          },
+        },
         author: { select: { id: true, email: true, name: true, surname: true } },
         location: true,
         skills: { include: { skill: true } },
@@ -190,19 +273,30 @@ export class ListingsService implements OnModuleInit {
         })),
       });
     }
-    return this.prisma.listing.findUnique({
+    const result = await this.prisma.listing.findUnique({
       where: { id: listing.id },
       include: {
-        category: true,
+        category: {
+          include: {
+            translations: {
+              where: { language: userLanguage },
+            },
+          },
+        },
         author: { select: { id: true, email: true, name: true, surname: true } },
         location: true,
         skills: { include: { skill: true } },
       },
     });
+    if (!result) return null;
+    return {
+      ...result,
+      category: this.getCategoryWithTranslation(result.category, userLanguage),
+    };
   }
 
   /** Feed: published for everyone; when userId is set, also include that user's draft listings. Optional categoryId and language filter. */
-  async getFeed(take = 50, cursor?: string, userId?: string, categoryId?: string, language?: string) {
+  async getFeed(take = 50, cursor?: string, userId?: string, categoryId?: string, language?: string, userLanguage: ListingLanguage = ListingLanguage.POLISH) {
     const statusWhere = userId
       ? { OR: [{ status: ListingStatus.PUBLISHED }, { status: ListingStatus.DRAFT, authorId: userId }] }
       : { status: ListingStatus.PUBLISHED };
@@ -218,7 +312,13 @@ export class ListingsService implements OnModuleInit {
       where,
       orderBy: { createdAt: 'desc' },
       include: {
-        category: true,
+        category: {
+          include: {
+            translations: {
+              where: { language: userLanguage },
+            },
+          },
+        },
         author: { select: { id: true, email: true, name: true, surname: true } },
         location: true,
         skills: { include: { skill: true } },
@@ -230,17 +330,24 @@ export class ListingsService implements OnModuleInit {
     const favoriteIds = userId ? await this.favoritesService.getFavoriteListingIds(userId) : new Set<string>();
     const items = rawItems.map((item) => ({
       ...item,
+      category: this.getCategoryWithTranslation(item.category, userLanguage),
       isFavorite: favoriteIds.has(item.id),
     }));
     return { items, nextCursor };
   }
 
   /** Get single listing by id. Author or ADMIN can read own/draft; others only published. */
-  async getListing(listingId: string, userId?: string, isAdmin?: boolean) {
+  async getListing(listingId: string, userId?: string, isAdmin?: boolean, userLanguage: ListingLanguage = ListingLanguage.POLISH) {
     const listing = await this.prisma.listing.findUnique({
       where: { id: listingId },
       include: {
-        category: true,
+        category: {
+          include: {
+            translations: {
+              where: { language: userLanguage },
+            },
+          },
+        },
         author: { select: { id: true, email: true, name: true, surname: true } },
         location: true,
         skills: { include: { skill: true } },
@@ -287,7 +394,13 @@ export class ListingsService implements OnModuleInit {
       ? (await this.favoritesService.getFavoriteListingIds(userId)).has(listing.id)
       : false;
     const { applications: _app, ...rest } = listing;
-    return { ...rest, applications: applicationsForResponse, currentUserApplied, isFavorite };
+    return {
+      ...rest,
+      category: this.getCategoryWithTranslation(listing.category, userLanguage),
+      applications: applicationsForResponse,
+      currentUserApplied,
+      isFavorite,
+    };
   }
 
   private getInitials(name: string | null, surname: string | null): string {
@@ -341,7 +454,7 @@ export class ListingsService implements OnModuleInit {
   }
 
   /** Update listing. Only author can update; status is always set to DRAFT so admin can re-approve. */
-  async updateListing(listingId: string, userId: string, accountType: string | null, dto: CreateListingDto) {
+  async updateListing(listingId: string, userId: string, accountType: string | null, dto: CreateListingDto, userLanguage: ListingLanguage = ListingLanguage.POLISH) {
     const listing = await this.prisma.listing.findUnique({
       where: { id: listingId },
     });
@@ -356,6 +469,11 @@ export class ListingsService implements OnModuleInit {
     }
     const category = await this.prisma.category.findUnique({
       where: { id: dto.categoryId },
+      include: {
+        translations: {
+          where: { language: userLanguage },
+        },
+      },
     });
     if (!category) {
       throw new NotFoundException('Category not found');
@@ -429,7 +547,13 @@ export class ListingsService implements OnModuleInit {
         ...(newDeadline != null && { deadline: newDeadline }),
       },
       include: {
-        category: true,
+        category: {
+          include: {
+            translations: {
+              where: { language: userLanguage },
+            },
+          },
+        },
         author: { select: { id: true, email: true, name: true, surname: true } },
         location: true,
         skills: { include: { skill: true } },
@@ -443,18 +567,29 @@ export class ListingsService implements OnModuleInit {
         })),
       });
     }
-    return this.prisma.listing.findUnique({
+    const result = await this.prisma.listing.findUnique({
       where: { id: listingId },
       include: {
-        category: true,
+        category: {
+          include: {
+            translations: {
+              where: { language: userLanguage },
+            },
+          },
+        },
         author: { select: { id: true, email: true, name: true, surname: true } },
         location: true,
         skills: { include: { skill: true } },
       },
     });
+    if (!result) return null;
+    return {
+      ...result,
+      category: this.getCategoryWithTranslation(result.category, userLanguage),
+    };
   }
 
-  async publishListing(listingId: string, adminUserId: string, isAdmin: boolean) {
+  async publishListing(listingId: string, adminUserId: string, isAdmin: boolean, userLanguage: ListingLanguage = ListingLanguage.POLISH) {
     if (!isAdmin) {
       throw new ForbiddenException('Tylko użytkownik z typem konta ADMIN może publikować ogłoszenia');
     }
@@ -464,15 +599,25 @@ export class ListingsService implements OnModuleInit {
     if (!listing) {
       throw new NotFoundException('Listing not found');
     }
-    return this.prisma.listing.update({
+    const result = await this.prisma.listing.update({
       where: { id: listingId },
       data: { status: ListingStatus.PUBLISHED },
       include: {
-        category: true,
+        category: {
+          include: {
+            translations: {
+              where: { language: userLanguage },
+            },
+          },
+        },
         author: { select: { id: true, email: true, name: true, surname: true } },
         location: true,
         skills: { include: { skill: true } },
       },
     });
+    return {
+      ...result,
+      category: this.getCategoryWithTranslation(result.category, userLanguage),
+    };
   }
 }

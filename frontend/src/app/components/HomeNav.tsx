@@ -13,13 +13,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "@/hooks/useTranslations";
 
-function accountTypeLabel(type: AccountType | null): string {
+function accountTypeLabel(type: AccountType | null, t: (key: string) => string): string {
   if (!type) return "";
   const labels: Record<AccountType, string> = {
-    CLIENT: "Klient",
-    FREELANCER: "Freelancer",
-    ADMIN: "Admin",
+    CLIENT: t("accountTypes.client"),
+    FREELANCER: t("accountTypes.freelancer"),
+    ADMIN: t("accountTypes.admin"),
   };
   return labels[type];
 }
@@ -34,13 +35,13 @@ function initials(user: AuthUser): string {
 }
 
 /** Full display name: "Name Surname" or fallback to email / "Profil". */
-function displayName(user: AuthUser): string {
+function displayName(user: AuthUser, t: (key: string) => string): string {
   const n = user.name?.trim();
   const s = user.surname?.trim();
   if (n && s) return `${n} ${s}`;
   if (n) return n;
   if (s) return s;
-  return user.email || "Profil";
+  return user.email || t("profile.editProfile");
 }
 
 function UserDropdown({
@@ -50,6 +51,8 @@ function UserDropdown({
   dropdownRef,
   handleLogout,
   openUp,
+  locale,
+  t,
 }: {
   user: AuthUser | null;
   dropdownOpen: boolean;
@@ -57,6 +60,8 @@ function UserDropdown({
   dropdownRef: React.RefObject<HTMLDivElement | null>;
   handleLogout: () => void;
   openUp?: boolean;
+  locale: string;
+  t: (key: string) => string;
 }) {
   return (
     <div className="relative" ref={dropdownRef}>
@@ -79,10 +84,10 @@ function UserDropdown({
         </span>
         <span className="hidden min-w-0 flex-col items-start text-left sm:flex">
           <span className="truncate text-sm font-medium text-foreground leading-tight">
-            {user ? displayName(user) : "Profil"}
+            {user ? displayName(user, t) : t("profile.editProfile")}
           </span>
           <span className="truncate text-xs text-muted-foreground leading-tight">
-            {user ? accountTypeLabel(user.accountType) : ""}
+            {user ? accountTypeLabel(user.accountType, t) : ""}
           </span>
         </span>
       </button>
@@ -98,7 +103,7 @@ function UserDropdown({
             className="flex items-center justify-between gap-2 px-3 py-2 text-sm text-foreground border-b border-zinc-200 dark:border-zinc-700"
             role="none"
           >
-            <span className="text-muted-foreground">Motyw</span>
+            <span className="text-muted-foreground">{t("common.theme")}</span>
             <ThemeToggle size="icon-sm" />
           </div>
           <Link
@@ -107,7 +112,7 @@ function UserDropdown({
             className="block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800"
             onClick={() => setDropdownOpen(false)}
           >
-            Edytuj profil
+            {t("profile.editProfile")}
           </Link>
           <Link
             href="/favorites"
@@ -115,7 +120,7 @@ function UserDropdown({
             className="block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800"
             onClick={() => setDropdownOpen(false)}
           >
-            Ulubione
+            {t("listings.favorites")}
           </Link>
           <button
             type="button"
@@ -123,7 +128,7 @@ function UserDropdown({
             onClick={handleLogout}
             className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800"
           >
-            Wyloguj
+            {t("common.logout")}
           </button>
         </div>
       )}
@@ -141,6 +146,7 @@ interface HomeNavProps {
 export function HomeNav({ showCreateOnly, placement = "header" }: HomeNavProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const { t, locale } = useTranslations();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [canCreateListing, setCanCreateListing] = useState(false);
@@ -189,6 +195,8 @@ export function HomeNav({ showCreateOnly, placement = "header" }: HomeNavProps) 
           dropdownRef={dropdownRef}
           handleLogout={handleLogout}
           openUp
+          locale={locale}
+          t={t}
         />
       </div>
     );
@@ -200,11 +208,11 @@ export function HomeNav({ showCreateOnly, placement = "header" }: HomeNavProps) 
       <div className="flex shrink-0 flex-nowrap items-center gap-2">
         <Link href="/register">
           <Button variant="ghost" size="sm" className="shrink-0">
-            Rejestracja
+            {t("auth.register")}
           </Button>
         </Link>
         <Link href="/login">
-          <Button size="sm" className="shrink-0">Logowanie</Button>
+          <Button size="sm" className="shrink-0">{t("auth.login")}</Button>
         </Link>
       </div>
     );
@@ -215,7 +223,7 @@ export function HomeNav({ showCreateOnly, placement = "header" }: HomeNavProps) 
     return (
       <Link href="/listings/new">
         <Button variant="outline" size="sm">
-          Nowe ogłoszenie
+          {t("listings.newListing")}
         </Button>
       </Link>
     );
@@ -226,11 +234,11 @@ export function HomeNav({ showCreateOnly, placement = "header" }: HomeNavProps) 
       <div className="flex shrink-0 flex-nowrap items-center gap-2">
         <Link href="/register">
           <Button variant="ghost" size="sm" className="shrink-0">
-            Rejestracja
+            {t("auth.register")}
           </Button>
         </Link>
         <Link href="/login">
-          <Button size="sm" className="shrink-0">Logowanie</Button>
+          <Button size="sm" className="shrink-0">{t("auth.login")}</Button>
         </Link>
       </div>
     );
@@ -247,6 +255,8 @@ export function HomeNav({ showCreateOnly, placement = "header" }: HomeNavProps) 
         setDropdownOpen={setDropdownOpen}
         dropdownRef={dropdownRef}
         handleLogout={handleLogout}
+        locale={locale}
+        t={t}
       />
     </div>
   );

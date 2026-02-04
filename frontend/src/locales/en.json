@@ -248,7 +248,10 @@
     "logotypeTagline": "Publish and search offers for freelancers"
   },
   "homepage": {
-    "heroText": "The easiest way to connect businesses and top freelancers"
+    "heroText": "The easiest way to connect businesses and top freelancers",
+    "welcomeTitle": "The easiest way to connect companies and the best freelancers",
+    "betaTitle": "Beta version",
+    "welcomeBody": "We're launching in beta and inviting the first freelancers. Job listings will be added gradually. People who create an account now will be among the first users and will get early access to new jobs plus notifications when they are published."
   },
   "accountTypes": {
     "client": "Client",

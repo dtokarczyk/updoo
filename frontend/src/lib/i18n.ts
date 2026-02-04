@@ -1,5 +1,3 @@
-import { getStoredUser, updateStoredUser, getToken, updateProfile } from "./api";
-
 export type Locale = "pl" | "en";
 
 export const locales: Locale[] = ["pl", "en"];
@@ -45,12 +43,7 @@ function setStoredBrowserLocale(locale: Locale): void {
 export function getUserLocale(): Locale {
   if (typeof window === "undefined") return defaultLocale;
 
-  // First check if user is logged in and has language preference
-  const user = getStoredUser();
-  if (user?.language === "ENGLISH") return "en";
-  if (user?.language === "POLISH") return "pl";
-
-  // Then check if we've stored browser locale preference
+  // Use only site-set preference (cookie/localStorage), not profile
   const storedBrowserLocale = getStoredBrowserLocale();
   if (storedBrowserLocale) return storedBrowserLocale;
 
@@ -61,34 +54,16 @@ export function getUserLocale(): Locale {
 }
 
 /**
- * Sets the locale preference. Updates user profile if logged in, otherwise stores browser preference.
- * Also sets a cookie for server-side rendering.
+ * Sets the locale preference. Stored only by the site (cookie + localStorage), not in user profile.
+ * Cookie is used for server-side rendering.
  */
 export async function setLocale(locale: Locale): Promise<void> {
   if (typeof window === "undefined") return;
 
-  const user = getStoredUser();
-  const token = getToken();
-  const language = getUserLanguageFromLocale(locale);
-
   // Set cookie for server-side rendering (expires in 1 year)
   document.cookie = `locale=${locale}; path=/; max-age=${365 * 24 * 60 * 60}; SameSite=Lax`;
-
-  // If user is logged in, update their profile
-  if (user && token) {
-    try {
-      const updated = await updateProfile({ language });
-      updateStoredUser(updated.user);
-    } catch (error) {
-      // If API call fails, still update local storage
-      console.error("Failed to update user language:", error);
-      const updatedUser = { ...user, language };
-      updateStoredUser(updatedUser);
-    }
-  } else {
-    // For non-logged-in users, store browser preference
-    setStoredBrowserLocale(locale);
-  }
+  // Store in localStorage so client-side getUserLocale() uses it
+  setStoredBrowserLocale(locale);
 }
 
 export function getLocaleFromUserLanguage(language: "POLISH" | "ENGLISH"): Locale {

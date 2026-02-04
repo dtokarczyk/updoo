@@ -247,7 +247,10 @@
     "logotypeTagline": "Publikuj i szukaj ofert dla freelancerów"
   },
   "homepage": {
-    "heroText": "Najłatwiejszy sposób na połączenie firm i najlepszych freelancerów"
+    "heroText": "Najłatwiejszy sposób na połączenie firm i najlepszych freelancerów",
+    "welcomeTitle": "Najłatwiejszy sposób na połączenie firm i najlepszych freelancerów",
+    "betaTitle": "Wersja beta",
+    "welcomeBody": "Startujemy w wersji beta i zapraszamy pierwszych wykonawców. Ogłoszenia będą dodawane stopniowo, a osoby, które założą konto już teraz, znajdą się w gronie pierwszych użytkowników i jako pierwsze otrzymają dostęp do nowych zleceń oraz powiadomienia o ich publikacji."
   },
   "accountTypes": {
     "client": "Klient",

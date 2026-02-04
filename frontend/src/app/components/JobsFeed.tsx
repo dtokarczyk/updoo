@@ -14,7 +14,6 @@ import {
   type PaginationInfo,
 } from "@/lib/api";
 import { JobPost } from "@/app/components/JobPost";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "@/hooks/useTranslations";
 
@@ -314,22 +313,22 @@ export function JobsFeed({
             }
             footer={
               isDraft ? (
-                <Alert className="border-alert text-alert">
-                  <AlertDescription className="m-0 min-h-0 shrink text-current col-start-2">
+                <div className="flex w-full flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 dark:border-amber-400/30 dark:bg-amber-500/15">
+                  <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
                     {t("jobs.waitingForAdmin")}
-                  </AlertDescription>
+                  </p>
                   {canPublish && (
                     <Button
                       size="sm"
-                      variant="secondary"
-                      className="bg-amber-700 hover:bg-amber-800 text-amber-50 dark:bg-amber-600 dark:hover:bg-amber-700 shrink-0"
+                      variant="outline"
+                      className="shrink-0 border-amber-600 bg-amber-50 text-amber-800 hover:bg-amber-100 hover:text-amber-900 dark:border-amber-500 dark:bg-amber-950/50 dark:text-amber-200 dark:hover:bg-amber-900/40 dark:hover:text-amber-100"
                       onClick={() => handlePublish(job.id)}
                       disabled={publishingId === job.id}
                     >
                       {publishingId === job.id ? t("jobs.publishing") : t("jobs.publish")}
                     </Button>
                   )}
-                </Alert>
+                </div>
               ) : undefined
             }
           />

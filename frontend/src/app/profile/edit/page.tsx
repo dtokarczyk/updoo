@@ -23,7 +23,6 @@ import {
   getToken,
   clearAuth,
   getSkills,
-  type UserLanguage,
   type Skill,
 } from "@/lib/api";
 import { useTranslations } from "@/hooks/useTranslations";
@@ -37,7 +36,6 @@ export default function ProfileEditPage() {
   const [oldPassword, setOldPassword] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
-  const [language, setLanguage] = useState<UserLanguage>("POLISH");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -57,7 +55,6 @@ export default function ProfileEditPage() {
       setName(user.name ?? "");
       setSurname(user.surname ?? "");
       setEmail(user.email ?? "");
-      setLanguage(user.language ?? "POLISH");
       setAccountType(user.accountType);
       if (Array.isArray(user.skills)) {
         setSelectedSkillIds(user.skills.map((skill) => skill.id));
@@ -128,7 +125,6 @@ export default function ProfileEditPage() {
         name: name.trim() || undefined,
         surname: surname.trim() || undefined,
         email: email.trim() || undefined,
-        language,
         ...(accountType === "FREELANCER" && { defaultMessage: defaultMessage.trim() || undefined }),
       };
       const { user: updated } = await updateProfile(payload);
@@ -269,24 +265,6 @@ export default function ProfileEditPage() {
                     autoComplete="email"
                     disabled={loading}
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="language">{t("profile.language")}</Label>
-                  <select
-                    id="language"
-                    value={language}
-                    onChange={(e) =>
-                      setLanguage(e.target.value as UserLanguage)
-                    }
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none disabled:opacity-50 md:text-sm"
-                    disabled={loading}
-                  >
-                    <option value="POLISH">{t("jobs.polish")}</option>
-                    <option value="ENGLISH">{t("jobs.english")}</option>
-                  </select>
-                  <p className="text-xs text-muted-foreground">
-                    {t("profile.languageDesc")}
-                  </p>
                 </div>
                 {accountType === "FREELANCER" && (
                   <div className="space-y-2">

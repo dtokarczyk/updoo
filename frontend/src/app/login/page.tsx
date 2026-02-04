@@ -127,9 +127,9 @@ function LoginForm() {
             </form>
           </Card>
 
-          <div className="rounded-2xl border border-border bg-muted/80 p-6">
+          <div className="rounded-2xl border border-border bg-card p-6">
             <div className="mt-2 space-y-4">
-              <h2 className="text-xl font-semibold">{t("auth.dontHaveAccount")}</h2>
+              <h2 className="text-2xl font-semibold">{t("auth.dontHaveAccount")}</h2>
               <Button asChild variant="secondary" size="lg" className="w-full">
                 <Link href="/register">{t("auth.register")}</Link>
               </Button>

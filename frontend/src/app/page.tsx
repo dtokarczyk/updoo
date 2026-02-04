@@ -36,8 +36,8 @@ export default function Home({
   return (
     <OnboardingRedirect>
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
-        <div className="flex flex-col gap-2 lg:flex-row lg:items-start">
-          <aside className="sticky top-0 z-10 shrink-0 bg-background lg:top-14 lg:w-52 lg:self-start">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-10">
+          <aside className="sticky top-0 z-10 shrink-0 lg:top-14 lg:w-52 lg:self-start">
             <Link
               href="/"
               className="hidden text-xl font-semibold tracking-tight text-foreground hover:underline focus:outline-none focus:underline lg:block lg:pb-4"

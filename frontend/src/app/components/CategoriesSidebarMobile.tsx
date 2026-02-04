@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronDown, ChevronUp } from "lucide-react";
-import { type Category } from "@/lib/api";
+import { ChevronDown, ChevronUp, Plus } from "lucide-react";
+import { type Category, getStoredUser, getToken } from "@/lib/api";
 import { CategoryIcon } from "@/components/CategoryIcon";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "@/hooks/useTranslations";
 
@@ -18,6 +19,13 @@ export function CategoriesSidebarMobile({
   const { t } = useTranslations();
   const allLabel = t("common.all");
   const [open, setOpen] = useState(false);
+  const [canCreateListing, setCanCreateListing] = useState(false);
+
+  useEffect(() => {
+    const token = getToken();
+    const user = getStoredUser();
+    setCanCreateListing(!!token && user?.accountType === "CLIENT");
+  }, []);
 
   const currentLabel = currentCategorySlug
     ? categories.find((c) => c.slug === currentCategorySlug)?.name ?? allLabel
@@ -25,26 +33,41 @@ export function CategoriesSidebarMobile({
 
   return (
     <nav className="lg:hidden py-3">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between gap-2 py-2.5 text-xl font-semibold text-foreground"
-        aria-expanded={open}
-      >
-        <span className="flex min-w-0 flex-1 items-center gap-2">
-          <CategoryIcon
-            categorySlug={currentCategorySlug}
-            categoryName={currentLabel}
-            className="size-5 shrink-0"
-          />
-          {currentLabel}
-        </span>
-        {open ? (
-          <ChevronUp className="size-6 shrink-0" aria-hidden />
-        ) : (
-          <ChevronDown className="size-6 shrink-0" aria-hidden />
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          className={cn(
+            "flex h-11 w-full items-center justify-between gap-2 text-xl font-semibold text-foreground",
+            "rounded-md border border-input bg-background px-3 shadow-sm",
+            "hover:bg-accent hover:text-accent-foreground",
+            "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          )}
+          aria-expanded={open}
+        >
+          <span className="flex min-w-0 flex-1 items-center gap-2">
+            <CategoryIcon categoryName={currentLabel} className="size-5 shrink-0" />
+            {currentLabel}
+          </span>
+          {open ? (
+            <ChevronUp className="size-6 shrink-0" aria-hidden />
+          ) : (
+            <ChevronDown className="size-6 shrink-0" aria-hidden />
+          )}
+        </button>
+        {canCreateListing && (
+          <Link href="/listings/new" onClick={() => setOpen(false)} className="shrink-0">
+            <Button
+              type="button"
+              size="icon"
+              className="size-11 rounded-md"
+              aria-label={t("listings.newListing")}
+            >
+              <Plus className="size-5" aria-hidden />
+            </Button>
+          </Link>
         )}
-      </button>
+      </div>
       <ul
         className={cn(
           "space-y-1 overflow-hidden transition-[max-height] duration-200 ease-in-out pt-1",
@@ -62,7 +85,7 @@ export function CategoriesSidebarMobile({
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <CategoryIcon categorySlug="" categoryName={allLabel} className="size-5 shrink-0" />
+            <CategoryIcon categoryName={allLabel} className="size-5 shrink-0" />
             {allLabel}
           </Link>
         </li>
@@ -79,7 +102,6 @@ export function CategoriesSidebarMobile({
               )}
             >
               <CategoryIcon
-                categorySlug={cat.slug}
                 categoryName={cat.name}
                 className="size-5 shrink-0"
               />

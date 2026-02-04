@@ -1,8 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { type Category } from "@/lib/api";
+import { Plus } from "lucide-react";
+import { type Category, getStoredUser, getToken } from "@/lib/api";
 import { CategoryIcon } from "@/components/CategoryIcon";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "@/hooks/useTranslations";
 
@@ -15,6 +18,13 @@ export function CategoriesSidebarDesktop({
 }) {
   const { t } = useTranslations();
   const allLabel = t("common.all");
+  const [canCreateListing, setCanCreateListing] = useState(false);
+
+  useEffect(() => {
+    const token = getToken();
+    const user = getStoredUser();
+    setCanCreateListing(!!token && user?.accountType === "CLIENT");
+  }, []);
 
   return (
     <nav className="hidden lg:block">
@@ -29,7 +39,7 @@ export function CategoriesSidebarDesktop({
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <CategoryIcon categorySlug="" categoryName={allLabel} className="size-5 shrink-0" />
+            <CategoryIcon categoryName={allLabel} className="size-5 shrink-0" />
             {allLabel}
           </Link>
         </li>
@@ -45,7 +55,6 @@ export function CategoriesSidebarDesktop({
               )}
             >
               <CategoryIcon
-                categorySlug={cat.slug}
                 categoryName={cat.name}
                 className="size-5 shrink-0"
               />
@@ -54,6 +63,16 @@ export function CategoriesSidebarDesktop({
           </li>
         ))}
       </ul>
+      {canCreateListing && (
+        <div className="mt-6">
+          <Button asChild variant="default" size="lg" className="w-full justify-start">
+            <Link href="/listings/new">
+              <Plus className="size-5 shrink-0" aria-hidden />
+              {t("listings.newListing")}
+            </Link>
+          </Button>
+        </div>
+      )}
     </nav>
   );
 }

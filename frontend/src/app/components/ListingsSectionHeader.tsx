@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { HomeNav } from "@/app/components/HomeNav";
 import { ListingsFeed } from "@/app/components/ListingsFeed";
 import type { ListingLanguage } from "@/lib/api";
 import { useTranslations } from "@/hooks/useTranslations";
@@ -45,7 +44,6 @@ export function ListingsSectionHeader({
               </option>
             ))}
           </select>
-          <HomeNav showCreateOnly />
         </div>
       </div>
       <ListingsFeed

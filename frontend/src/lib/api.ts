@@ -255,6 +255,8 @@ export interface Listing {
   skills: ListingSkillRelation[];
   applications?: ListingApplication[];
   currentUserApplied?: boolean;
+  /** Optional message of the current user's application (if freelancer applied). */
+  currentUserApplicationMessage?: string;
   isFavorite?: boolean;
 }
 

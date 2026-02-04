@@ -202,6 +202,9 @@ export function ListingsFeed({
         const canPublish = user?.accountType === "ADMIN" && isDraft;
         const isOwnListing = user?.id === listing.authorId;
         const isVisited = visitedIds.has(listing.id);
+        const isApplied =
+          !!listing.currentUserApplied && user?.accountType === "FREELANCER";
+        const isFavorite = !!listing.isFavorite;
         return (
           <div
             key={listing.id}
@@ -209,7 +212,15 @@ export function ListingsFeed({
               isDraft
                 ? "overflow-hidden rounded-xl shadow-sm border border-amber-300/80 dark:border-amber-700/80"
                 : "",
-              isVisited ? "opacity-70" : "",
+              isApplied && !isDraft
+                ? "overflow-hidden rounded-xl shadow-sm border border-emerald-500/80 dark:border-emerald-500/80"
+                : "",
+              isFavorite && !isDraft
+                ? "overflow-hidden rounded-xl shadow-sm border border-yellow-400/80 dark:border-yellow-500/80"
+                : "",
+              !isVisited && !isDraft && !isApplied && !isFavorite
+                ? "rounded-xl border-1 border-primary/80 dark:border-primary/90"
+                : "",
             ].filter(Boolean).join(" ")}
           >
             <ListingPost
@@ -228,6 +239,11 @@ export function ListingsFeed({
               }
               headerAction={
                 <div className="flex items-center gap-2">
+                  {isApplied && (
+                    <span className="rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-100 px-2 py-0.5 text-xs font-medium">
+                      Zgłosiłeś się
+                    </span>
+                  )}
                   <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                     {listing.category.name}
                   </span>

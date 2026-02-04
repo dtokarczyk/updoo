@@ -120,6 +120,29 @@ export function ListingPost({
       )}
     >
       <CardHeader className="pb-2">
+        {(headerAction || showFavorite) && (
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-2">{headerAction}</div>
+            {showFavorite && (
+              <button
+                type="button"
+                onClick={handleFavoriteClick}
+                disabled={favoriteLoading}
+                className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                aria-label={isFavorite ? "Usuń z ulubionych" : "Dodaj do ulubionych"}
+              >
+                <Star
+                  className={cn(
+                    "h-5 w-5",
+                    isFavorite
+                      ? "fill-yellow-500 text-yellow-500"
+                      : "fill-none text-muted-foreground"
+                  )}
+                />
+              </button>
+            )}
+          </div>
+        )}
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0 flex-1">
             <CardTitle className="text-xl font-bold leading-tight text-foreground">
@@ -144,27 +167,6 @@ export function ListingPost({
                 </span>
               )}
             </div>
-          </div>
-          <div className="flex shrink-0 items-center justify-center gap-2">
-            {headerAction}
-            {showFavorite && (
-              <button
-                type="button"
-                onClick={handleFavoriteClick}
-                disabled={favoriteLoading}
-                className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
-                aria-label={isFavorite ? "Usuń z ulubionych" : "Dodaj do ulubionych"}
-              >
-                <Star
-                  className={cn(
-                    "h-5 w-5",
-                    isFavorite
-                      ? "fill-yellow-500 text-yellow-500"
-                      : "fill-none text-muted-foreground"
-                  )}
-                />
-              </button>
-            )}
           </div>
         </div>
       </CardHeader>

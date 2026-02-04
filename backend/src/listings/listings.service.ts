@@ -332,10 +332,28 @@ export class ListingsService implements OnModuleInit {
     });
 
     const favoriteIds = userId ? await this.favoritesService.getFavoriteListingIds(userId) : new Set<string>();
+
+    const appliedIds = userId && listings.length
+      ? new Set(
+        (
+          await this.prisma.listingApplication.findMany({
+            where: {
+              freelancerId: userId,
+              listingId: {
+                in: listings.map((l) => l.id),
+              },
+            },
+            select: { listingId: true },
+          })
+        ).map((a) => a.listingId),
+      )
+      : new Set<string>();
+
     const items = listings.map((item) => ({
       ...item,
       category: this.getCategoryWithTranslation(item.category, userLanguage),
       isFavorite: favoriteIds.has(item.id),
+      currentUserApplied: appliedIds.has(item.id),
     }));
 
     const totalPages = Math.ceil(total / pageSize);
@@ -407,6 +425,10 @@ export class ListingsService implements OnModuleInit {
     const currentUserApplied = Boolean(
       userId && listing.applications.some((a) => a.freelancerId === userId),
     );
+    const currentUserApplication = userId
+      ? listing.applications.find((a) => a.freelancerId === userId)
+      : undefined;
+    const currentUserApplicationMessage = currentUserApplication?.message ?? undefined;
     const isFavorite = userId
       ? (await this.favoritesService.getFavoriteListingIds(userId)).has(listing.id)
       : false;
@@ -416,6 +438,7 @@ export class ListingsService implements OnModuleInit {
       category: this.getCategoryWithTranslation(listing.category, userLanguage),
       applications: applicationsForResponse,
       currentUserApplied,
+      currentUserApplicationMessage,
       isFavorite,
     };
   }
@@ -423,9 +446,9 @@ export class ListingsService implements OnModuleInit {
   private getInitials(name: string | null, surname: string | null): string {
     const n = (name?.trim() ?? '').charAt(0).toUpperCase();
     const s = (surname?.trim() ?? '').charAt(0).toUpperCase();
-    if (n && s) return `${n}. ${s}.`;
-    if (n) return `${n}.`;
-    if (s) return `${s}.`;
+    if (n && s) return `${n}${s}`;
+    if (n) return n;
+    if (s) return s;
     return '';
   }
 

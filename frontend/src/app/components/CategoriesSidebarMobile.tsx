@@ -38,8 +38,9 @@ export function CategoriesSidebarMobile({
           type="button"
           onClick={() => setOpen((o) => !o)}
           className={cn(
-            "flex h-11 w-full items-center justify-between gap-2 text-xl font-semibold text-foreground",
+            "flex w-full items-center justify-between gap-2 text-xl font-semibold text-foreground",
             "rounded-md border border-input bg-background px-3 shadow-sm",
+            "py-2.5",
             "hover:bg-accent hover:text-accent-foreground",
             "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           )}
@@ -74,41 +75,45 @@ export function CategoriesSidebarMobile({
           open ? "max-h-200" : "max-h-0"
         )}
       >
-        <li>
-          <Link
-            href="/"
-            onClick={() => setOpen(false)}
-            className={cn(
-              "flex items-center gap-3 py-1 text-xl font-semibold transition-colors",
-              !currentCategorySlug
-                ? "text-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <CategoryIcon categoryName={allLabel} className="h-9 w-9 shrink-0" />
-            {allLabel}
-          </Link>
-        </li>
-        {categories.map((cat) => (
-          <li key={cat.id}>
+        {currentCategorySlug && (
+          <li>
             <Link
-              href={`/?category=${encodeURIComponent(cat.slug)}`}
+              href="/"
               onClick={() => setOpen(false)}
               className={cn(
-                "flex items-center gap-3 py-1 text-xl font-semibold transition-colors",
-                currentCategorySlug === cat.slug
+                "flex items-center gap-3 px-3 py-2.5 text-xl font-semibold transition-colors",
+                !currentCategorySlug
                   ? "text-foreground"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <CategoryIcon
-                categoryName={cat.name}
-                className="h-9 w-9 shrink-0"
-              />
-              {cat.name}
+              <CategoryIcon categoryName={allLabel} className="h-9 w-9 shrink-0" />
+              {allLabel}
             </Link>
           </li>
-        ))}
+        )}
+        {categories
+          .filter((cat) => cat.slug !== currentCategorySlug)
+          .map((cat) => (
+            <li key={cat.id}>
+              <Link
+                href={`/?category=${encodeURIComponent(cat.slug)}`}
+                onClick={() => setOpen(false)}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 text-xl font-semibold transition-colors",
+                  currentCategorySlug === cat.slug
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <CategoryIcon
+                  categoryName={cat.name}
+                  className="h-9 w-9 shrink-0"
+                />
+                {cat.name}
+              </Link>
+            </li>
+          ))}
       </ul>
     </nav>
   );

@@ -136,6 +136,9 @@ export default function ListingDetailPage() {
   const [applyMessage, setApplyMessage] = useState("");
   const [applySubmitting, setApplySubmitting] = useState(false);
   const [applyError, setApplyError] = useState<string | null>(null);
+  const [lastApplicationMessage, setLastApplicationMessage] = useState<string | null>(
+    null
+  );
   const user = getStoredUser();
 
   useEffect(() => {
@@ -144,7 +147,18 @@ export default function ListingDetailPage() {
       return;
     }
     getListing(id)
-      .then(setListing)
+      .then((data) => {
+        setListing(data);
+        const backendMessage = data.currentUserApplicationMessage;
+        if (backendMessage && backendMessage.trim().length > 0) {
+          setLastApplicationMessage(backendMessage);
+        } else if (data.currentUserApplied && data.applications && data.applications.length > 0) {
+          const maybeOwnApplication = data.applications.find(isApplicationFull);
+          if (maybeOwnApplication && maybeOwnApplication.message) {
+            setLastApplicationMessage(maybeOwnApplication.message);
+          }
+        }
+      })
       .catch((e) => setError(e instanceof Error ? e.message : "Błąd ładowania"))
       .finally(() => setLoading(false));
   }, [id]);
@@ -188,12 +202,20 @@ export default function ListingDetailPage() {
   async function handleApply(e: React.FormEvent) {
     e.preventDefault();
     if (!id || !canApply) return;
+    const messageToSend = applyMessage.trim();
+    setLastApplicationMessage(messageToSend || null);
     setApplySubmitting(true);
     setApplyError(null);
     try {
-      await applyToListing(id, applyMessage || undefined);
+      await applyToListing(id, messageToSend || undefined);
       const updated = await getListing(id);
       setListing(updated);
+      if (
+        updated.currentUserApplicationMessage &&
+        updated.currentUserApplicationMessage.trim().length > 0
+      ) {
+        setLastApplicationMessage(updated.currentUserApplicationMessage);
+      }
       setApplyMessage("");
     } catch (e) {
       setApplyError(e instanceof Error ? e.message : "Błąd zgłoszenia");
@@ -204,15 +226,6 @@ export default function ListingDetailPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
-      <div className="mb-6 flex flex-wrap items-center gap-2">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Lista ofert
-          </Link>
-        </Button>
-      </div>
-
       <Card className="overflow-hidden">
         <CardHeader className="space-y-1 pb-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -243,14 +256,6 @@ export default function ListingDetailPage() {
               <span className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
                 {listing.language === "ENGLISH" ? "English" : "Polish"}
               </span>
-              {isOwnListing && (
-                <Button size="sm" variant="outline" asChild>
-                  <Link href={`/listings/${listing.id}/edit`}>
-                    <Pencil className="mr-1.5 h-3.5 w-3.5" />
-                    Edytuj
-                  </Link>
-                </Button>
-              )}
             </div>
           </div>
           {isDraft && (
@@ -430,8 +435,20 @@ export default function ListingDetailPage() {
           {user?.accountType === "FREELANCER" && !isOwnListing && !isDraft && (
             <section className="border-t pt-6">
               {listing.currentUserApplied ? (
-                <div className="rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200 px-3 py-2 text-sm">
-                  Zgłosiłeś się do tej oferty.
+                <div className="space-y-3">
+                  <div className="rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200 px-3 py-2 text-sm">
+                    Zgłosiłeś się do tej oferty.
+                  </div>
+                  {lastApplicationMessage && (
+                    <div className="rounded-lg border bg-muted/40 px-3 py-2">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
+                        Treść Twojego zgłoszenia
+                      </p>
+                      <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                        {lastApplicationMessage}
+                      </p>
+                    </div>
+                  )}
                 </div>
               ) : deadlinePassed ? (
                 <p className="text-sm text-muted-foreground">

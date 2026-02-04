@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { type Category } from "@/lib/api";
+import { CategoryIcon } from "@/components/CategoryIcon";
 import { cn } from "@/lib/utils";
 
 export function CategoriesSidebarDesktop({
@@ -18,12 +19,13 @@ export function CategoriesSidebarDesktop({
           <Link
             href="/"
             className={cn(
-              "block py-1.5 text-xl font-semibold transition-colors",
+              "flex items-center gap-2 py-1.5 text-xl font-semibold transition-colors",
               !currentCategorySlug
                 ? "text-foreground"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
+            <CategoryIcon categoryName="Wszystkie" className="size-5 shrink-0" />
             Wszystkie
           </Link>
         </li>
@@ -32,12 +34,16 @@ export function CategoriesSidebarDesktop({
             <Link
               href={`/?category=${encodeURIComponent(cat.slug)}`}
               className={cn(
-                "block py-1.5 text-xl font-semibold transition-colors",
+                "flex items-center gap-2 py-1.5 text-xl font-semibold transition-colors",
                 currentCategorySlug === cat.slug
                   ? "text-foreground"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
+              <CategoryIcon
+                categoryName={cat.name}
+                className="size-5 shrink-0"
+              />
               {cat.name}
             </Link>
           </li>

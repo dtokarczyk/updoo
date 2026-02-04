@@ -10,6 +10,40 @@ import {
   PenLine,
   type LucideIcon,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+type CategoryIconConfig = {
+  icon: LucideIcon;
+  bgClass: string;
+};
+
+const ICONS: Record<string, CategoryIconConfig> = {
+  // All listings
+  wszystkie: { icon: LayoutGrid, bgClass: "bg-zinc-500" },
+  all: { icon: LayoutGrid, bgClass: "bg-zinc-500" },
+
+  // Programming
+  programowanie: { icon: Code, bgClass: "bg-sky-500" },
+  programming: { icon: Code, bgClass: "bg-sky-500" },
+
+  // Design
+  design: { icon: Palette, bgClass: "bg-purple-500" },
+
+  // Marketing
+  marketing: { icon: Megaphone, bgClass: "bg-amber-500" },
+
+  // Writing
+  pisanie: { icon: PenLine, bgClass: "bg-emerald-500" },
+  writing: { icon: PenLine, bgClass: "bg-emerald-500" },
+
+  // Office work
+  "prace biurowe": { icon: Briefcase, bgClass: "bg-slate-500" },
+  "office work": { icon: Briefcase, bgClass: "bg-slate-500" },
+
+  // Other
+  inne: { icon: Folder, bgClass: "bg-gray-500" },
+  other: { icon: Folder, bgClass: "bg-gray-500" },
+};
 
 export function CategoryIcon({
   categoryName,
@@ -19,23 +53,22 @@ export function CategoryIcon({
   className?: string;
 }) {
   const name = categoryName.trim().toLowerCase();
-  let Icon: LucideIcon | null = null;
-  if (name === "wszystkie") {
-    Icon = LayoutGrid;
-  } else if (name === "design") {
-    Icon = Palette;
-  } else if (name === "inne") {
-    Icon = Folder;
-  } else if (name === "marketing") {
-    Icon = Megaphone;
-  } else if (name === "pisanie") {
-    Icon = PenLine;
-  } else if (name === "prace biurowe") {
-    Icon = Briefcase;
-  } else if (name === "programowanie") {
-    Icon = Code;
-  }
+  const config = ICONS[name];
 
-  if (!Icon) return null;
-  return <Icon className={className} aria-hidden />;
+  if (!config) return null;
+
+  const Icon = config.icon;
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center justify-center rounded-md p-1.5",
+        config.bgClass,
+        className
+      )}
+      aria-hidden
+    >
+      <Icon className="h-5 w-5 text-white" />
+    </span>
+  );
 }

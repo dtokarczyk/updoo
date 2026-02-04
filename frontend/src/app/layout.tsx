@@ -2,18 +2,13 @@
 
 import React from "react";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeScript } from "@/app/components/ThemeScript";
 import { ThemeProvider } from "@/lib/theme";
 import { AppHeader } from "@/app/components/AppHeader";
 import { AppFooter } from "@/app/components/AppFooter";
 import { getUserLocale } from "@/lib/i18n";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -30,7 +25,7 @@ export default function RootLayout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistMono.variable} antialiased`}
       >
         <ThemeScript />
         <ThemeProvider>

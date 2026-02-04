@@ -45,8 +45,8 @@ export function CategoriesSidebarMobile({
           )}
           aria-expanded={open}
         >
-          <span className="flex min-w-0 flex-1 items-center gap-2">
-            <CategoryIcon categoryName={currentLabel} className="size-5 shrink-0" />
+          <span className="flex min-w-0 flex-1 items-center gap-3">
+            <CategoryIcon categoryName={currentLabel} className="h-9 w-9 shrink-0" />
             {currentLabel}
           </span>
           {open ? (
@@ -79,13 +79,13 @@ export function CategoriesSidebarMobile({
             href="/"
             onClick={() => setOpen(false)}
             className={cn(
-              "flex items-center gap-2 py-1 text-xl font-semibold transition-colors",
+              "flex items-center gap-3 py-1 text-xl font-semibold transition-colors",
               !currentCategorySlug
                 ? "text-foreground"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <CategoryIcon categoryName={allLabel} className="size-5 shrink-0" />
+            <CategoryIcon categoryName={allLabel} className="h-9 w-9 shrink-0" />
             {allLabel}
           </Link>
         </li>
@@ -95,7 +95,7 @@ export function CategoriesSidebarMobile({
               href={`/?category=${encodeURIComponent(cat.slug)}`}
               onClick={() => setOpen(false)}
               className={cn(
-                "flex items-center gap-2 py-1 text-xl font-semibold transition-colors",
+                "flex items-center gap-3 py-1 text-xl font-semibold transition-colors",
                 currentCategorySlug === cat.slug
                   ? "text-foreground"
                   : "text-muted-foreground hover:text-foreground"
@@ -103,7 +103,7 @@ export function CategoriesSidebarMobile({
             >
               <CategoryIcon
                 categoryName={cat.name}
-                className="size-5 shrink-0"
+                className="h-9 w-9 shrink-0"
               />
               {cat.name}
             </Link>

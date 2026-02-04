@@ -28,18 +28,18 @@ export function CategoriesSidebarDesktop({
 
   return (
     <nav className="hidden lg:block">
-      <ul className="space-y-2">
+      <ul className="space-y-1">
         <li>
           <Link
             href="/"
             className={cn(
-              "flex items-center gap-2 py-1.5 text-xl font-semibold transition-colors",
+              "flex items-center gap-3 py-1.5 text-xl font-semibold transition-colors",
               !currentCategorySlug
                 ? "text-foreground"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <CategoryIcon categoryName={allLabel} className="size-5 shrink-0" />
+            <CategoryIcon categoryName={allLabel} className="h-9 w-9 shrink-0" />
             {allLabel}
           </Link>
         </li>
@@ -48,7 +48,7 @@ export function CategoriesSidebarDesktop({
             <Link
               href={`/?category=${encodeURIComponent(cat.slug)}`}
               className={cn(
-                "flex items-center gap-2 py-1.5 text-xl font-semibold transition-colors",
+                "flex items-center gap-3 py-1.5 text-xl font-semibold transition-colors",
                 currentCategorySlug === cat.slug
                   ? "text-foreground"
                   : "text-muted-foreground hover:text-foreground"
@@ -56,7 +56,7 @@ export function CategoriesSidebarDesktop({
             >
               <CategoryIcon
                 categoryName={cat.name}
-                className="size-5 shrink-0"
+                className="h-9 w-9 shrink-0"
               />
               {cat.name}
             </Link>

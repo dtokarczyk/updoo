@@ -31,13 +31,12 @@ function truncateDescription(text: string, maxLength: number): string {
 function formatRate(rate: string, currency: string, billingType: string): string {
   const r = parseFloat(rate);
   if (Number.isNaN(r)) return "";
-  const formatted = r.toLocaleString("pl-PL", {
+  const rounded = Math.round(r);
+  const formatted = rounded.toLocaleString("pl-PL", {
     minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
+    maximumFractionDigits: 0,
   });
-  return billingType === "HOURLY"
-    ? `${formatted} ${currency}/h`
-    : `${formatted} ${currency}`;
+  return formatted;
 }
 
 function formatPostedAgo(iso: string): string {
@@ -186,7 +185,13 @@ export function ListingPost({
             </div>
             <div className="min-w-0">
               <p className="font-semibold text-foreground">
-                {secondFieldLabel}
+                <span className="text-emerald-600 dark:text-emerald-400">
+                  {secondFieldLabel}
+                </span>
+                <span className="ml-1">
+                  {listing.currency}
+                  {listing.billingType === "HOURLY" ? "/h" : ""}
+                </span>
                 {listing.rateNegotiable && " (do negocjacji)"}
               </p>
               <p className="text-sm text-muted-foreground">{secondFieldSub}</p>

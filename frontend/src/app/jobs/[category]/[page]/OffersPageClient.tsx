@@ -12,7 +12,8 @@ import { AuthBottomBar } from "@/app/components/AuthBottomBar";
 import { Logotype } from "@/app/components/Logotype";
 import { getToken, getStoredUser, type Category, type JobLanguage } from "@/lib/api";
 import { useTranslations } from "@/hooks/useTranslations";
-import { type Locale } from "@/lib/i18n";
+import { getUserLocale, type Locale } from "@/lib/i18n";
+import { t as translate } from "@/lib/translations";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ function OffersPageContent({
   page,
   isHomePage,
   isLoggedIn,
+  initialLocale,
 }: {
   categories: Category[];
   categoryId: string | undefined;
@@ -39,9 +41,27 @@ function OffersPageContent({
   page: number;
   isHomePage: boolean;
   isLoggedIn: boolean;
+  initialLocale: Locale;
 }) {
-  const { t } = useTranslations();
+  const { locale: clientLocale } = useTranslations();
   const searchParams = useSearchParams();
+
+  // Use initialLocale from server during SSR to avoid hydration mismatch
+  // After hydration, use client locale which may differ if user preferences changed
+  const [locale, setLocaleState] = useState<Locale>(initialLocale ?? clientLocale);
+
+  // Update locale after mount if client locale differs from initial locale
+  useEffect(() => {
+    const currentLocale = getUserLocale();
+    if (currentLocale !== initialLocale) {
+      setLocaleState(currentLocale);
+    }
+  }, [initialLocale]);
+
+  // Use server locale for translations during SSR, client locale after mount
+  const t = (key: string, params?: Record<string, string | number>) => {
+    return translate(locale, key, params);
+  };
 
   const { initialLanguage, initialSkillIds } = useMemo(() => {
     const languageParam = searchParams.get("language");
@@ -98,6 +118,7 @@ function OffersPageContent({
         categoryName={categoryNameForHeader}
         initialLanguage={initialLanguage}
         initialSkillIds={initialSkillIds}
+        initialLocale={initialLocale}
       />
     </>
   );
@@ -173,12 +194,13 @@ export function OffersPageClient({
                 page={page}
                 isHomePage={isHomePage}
                 isLoggedIn={isLoggedIn}
+                initialLocale={initialLocale}
               />
             </Suspense>
           </div>
           {!isLoggedIn && (
             <aside className="sticky top-0 z-10 hidden shrink-0 lg:top-14 lg:block lg:self-start lg:w-1/5">
-              <AuthPromoSidebar />
+              <AuthPromoSidebar initialLocale={initialLocale} />
             </aside>
           )}
         </div>

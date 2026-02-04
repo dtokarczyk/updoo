@@ -15,9 +15,10 @@ import type { Locale } from "@/lib/i18n";
 export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
   const pathname = usePathname();
   const router = useRouter();
+  const isHome = pathname === "/";
   const isListings = pathname.startsWith("/jobs/");
-  const showBack = !isListings;
-  const topBarVisible = !isListings;
+  const showBack = !isListings && !isHome;
+  const topBarVisible = !isListings && !isHome;
 
   const { t, locale } = useTranslations();
   const [isLoggedIn, setIsLoggedIn] = useState(false);

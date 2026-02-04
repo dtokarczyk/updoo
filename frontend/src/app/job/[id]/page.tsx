@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState, useRef } from "react";
 import ReactCountryFlag from "react-country-flag";
 import {
   ArrowLeft,
@@ -30,13 +30,6 @@ import {
   type Job,
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useTranslations } from "@/hooks/useTranslations";
 import { format } from "date-fns";
@@ -153,6 +146,7 @@ function DetailRow({
 export default function JobDetailPage() {
   const { t, locale } = useTranslations();
   const params = useParams();
+  const router = useRouter();
   const id = typeof params?.id === "string" ? params.id : "";
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
@@ -164,6 +158,7 @@ export default function JobDetailPage() {
     null
   );
   const user = getStoredUser();
+  const applyFormRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!id) {
@@ -189,8 +184,69 @@ export default function JobDetailPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
-        <p className="text-muted-foreground">Ładowanie oferty…</p>
+      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 animate-pulse">
+        {/* Header skeleton */}
+        <div className="mb-8 space-y-4">
+          <div>
+            <div className="h-10 w-3/4 rounded-md bg-muted mb-3" />
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <div className="h-4 w-32 rounded-md bg-muted" />
+              <div className="h-4 w-40 rounded-md bg-muted" />
+              <div className="h-4 w-36 rounded-md bg-muted" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="h-7 w-24 rounded-full bg-muted" />
+            <div className="h-7 w-20 rounded-full bg-muted" />
+          </div>
+        </div>
+
+        <div className="grid gap-8 lg:grid-cols-6">
+          {/* Main content skeleton */}
+          <div className="lg:col-span-4 space-y-6">
+            {/* Skills skeleton */}
+            <div className="flex gap-3 items-start">
+              <div className="h-9 w-9 shrink-0 rounded-lg bg-muted" />
+              <div className="min-w-0 flex-1 space-y-2">
+                <div className="h-3 w-16 rounded-md bg-muted" />
+                <div className="flex flex-wrap gap-2">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="h-7 w-20 rounded-full bg-muted" />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Description skeleton */}
+            <div className="flex gap-3 items-start">
+              <div className="h-9 w-9 shrink-0 rounded-lg bg-muted" />
+              <div className="min-w-0 flex-1 space-y-2">
+                <div className="h-3 w-24 rounded-md bg-muted" />
+                <div className="space-y-2">
+                  <div className="h-4 w-full rounded-md bg-muted" />
+                  <div className="h-4 w-full rounded-md bg-muted" />
+                  <div className="h-4 w-5/6 rounded-md bg-muted" />
+                  <div className="h-4 w-4/6 rounded-md bg-muted" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Sidebar skeleton */}
+          <aside className="lg:col-span-2">
+            <div className="space-y-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="flex gap-3 items-start">
+                  <div className="h-9 w-9 shrink-0 rounded-lg bg-muted" />
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <div className="h-3 w-20 rounded-md bg-muted" />
+                    <div className="h-4 w-32 rounded-md bg-muted" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </aside>
+        </div>
       </div>
     );
   }
@@ -248,53 +304,108 @@ export default function JobDetailPage() {
     }
   }
 
+  function handleApplyClick() {
+    // If user is not logged in, redirect to login
+    if (!user) {
+      const returnUrl = `/job/${id}`;
+      router.push(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+      return;
+    }
+
+    // If user is logged in but not a freelancer, redirect to login (they need to switch account)
+    if (user.accountType !== "FREELANCER") {
+      const returnUrl = `/job/${id}`;
+      router.push(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+      return;
+    }
+
+    // If user can apply, scroll to form
+    if (canApply && applyFormRef.current) {
+      applyFormRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      // Focus on textarea after scroll
+      setTimeout(() => {
+        const textarea = applyFormRef.current?.querySelector("textarea");
+        if (textarea) {
+          textarea.focus();
+        }
+      }, 500);
+    }
+  }
+
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
-      <Card className="overflow-hidden">
-        <CardHeader className="space-y-1 pb-4">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <CardTitle className="text-2xl leading-tight">{job.title}</CardTitle>
-              <CardDescription className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                <span className="flex items-center gap-1.5">
-                  <User className="h-3.5 w-3.5" />
-                  {authorDisplayName(job.author) || job.author.email}
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5" />
-                  {formatDate(job.createdAt, locale)}
-                </span>
-                {job.deadline && formatDeadlineRemaining(job.deadline, locale, t) && (
-                  <span className="flex items-center gap-1.5 font-medium text-foreground">
-                    <Clock className="h-3.5 w-3.5" />
-                    {formatDeadlineRemaining(job.deadline, locale, t)}
-                  </span>
-                )}
-              </CardDescription>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
-                <Tag className="h-3.5 w-3.5" />
-                {job.category.name}
+    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+      {/* Header with title and meta - full width */}
+      <div className="mb-8 space-y-4">
+        <div>
+          <h1 className="text-4xl font-semibold leading-tight">{job.title}</h1>
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <User className="h-3.5 w-3.5" />
+              {authorDisplayName(job.author) || job.author.email}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Calendar className="h-3.5 w-3.5" />
+              {formatDate(job.createdAt, locale)}
+            </span>
+            {job.deadline && formatDeadlineRemaining(job.deadline, locale, t) && (
+              <span className="flex items-center gap-1.5 font-medium text-foreground">
+                <Clock className="h-3.5 w-3.5" />
+                {formatDeadlineRemaining(job.deadline, locale, t)}
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
-                <ReactCountryFlag
-                  svg
-                  countryCode={job.language === "ENGLISH" ? "GB" : "PL"}
-                  style={{ width: "1em", height: "1em" }}
-                />
-                {job.language === "ENGLISH" ? t("jobs.english") : t("jobs.polish")}
-              </span>
-            </div>
+            )}
           </div>
-          {isDraft && (
-            <div className="rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 px-3 py-2 text-sm">
-              {t("jobs.draftVisibleOnlyToYou")}
-            </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
+            <Tag className="h-3.5 w-3.5" />
+            {job.category.name}
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
+            <ReactCountryFlag
+              svg
+              countryCode={job.language === "ENGLISH" ? "GB" : "PL"}
+              style={{ width: "1em", height: "1em" }}
+            />
+            {job.language === "ENGLISH" ? t("jobs.english") : t("jobs.polish")}
+          </span>
+        </div>
+        {isDraft && (
+          <div className="rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 px-3 py-2 text-sm">
+            {t("jobs.draftVisibleOnlyToYou")}
+          </div>
+        )}
+      </div>
+
+      <div className="grid gap-8 lg:grid-cols-6">
+        {/* Main content with description */}
+        <div className="lg:col-span-4 space-y-6">
+          {/* Skills */}
+          {skills.length > 0 && (
+            <section>
+              <div className="flex gap-3 items-start">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                  <Wrench className="h-4 w-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+                    {t("jobs.skills")}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {skills.map((name) => (
+                      <span
+                        key={name}
+                        className="rounded-full bg-muted px-3 py-1 text-sm text-foreground"
+                      >
+                        {name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
           )}
-        </CardHeader>
-        <CardContent className="space-y-8">
-          {/* Full description */}
+
+          {/* Description */}
           <section>
             <div className="flex gap-3 items-start mb-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
@@ -304,15 +415,155 @@ export default function JobDetailPage() {
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
                   {t("jobs.description")}
                 </p>
-                <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                <p className="text-base whitespace-pre-wrap leading-relaxed">
                   {job.description}
                 </p>
               </div>
             </div>
           </section>
 
-          {/* Details grid */}
-          <section className="grid gap-6 sm:grid-cols-2">
+          {/* Freelancer applications: full data for author, initials for others */}
+          {applications.length > 0 && (
+            <section>
+              <div className="flex gap-3 items-start">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                  <Users className="h-4 w-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+                    {t("jobs.applicationsCount", { count: applications.length })}
+                  </p>
+                  {isOwnJob ? (
+                    <div className="space-y-4">
+                      {applications.map((app) =>
+                        isApplicationFull(app) ? (
+                          <div
+                            key={app.id}
+                            className="rounded-lg border bg-muted/30 p-3 space-y-1.5"
+                          >
+                            <p className="font-medium text-foreground">
+                              {authorDisplayName(app.freelancer) || app.freelancer.email}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {app.freelancer.email}
+                            </p>
+                            {app.message && (
+                              <p className="text-sm whitespace-pre-wrap pt-1 border-t mt-2">
+                                {app.message}
+                              </p>
+                            )}
+                            <p className="text-xs text-muted-foreground">
+                              {formatDate(app.createdAt, locale)}
+                            </p>
+                          </div>
+                        ) : null
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {applications.map((app) => (
+                        <span
+                          key={app.id}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-foreground"
+                          title={t("jobs.appliedFreelancer")}
+                        >
+                          {"freelancerInitials" in app
+                            ? app.freelancerInitials || "?"
+                            : "?"}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Apply form (freelancer, before deadline, not own listing) */}
+          {user?.accountType === "FREELANCER" && !isOwnJob && !isDraft && (
+            <section ref={applyFormRef} className="border-t pt-6">
+              {job.currentUserApplied ? (
+                <div className="space-y-3">
+                  <div className="rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200 px-3 py-2 text-sm">
+                    {t("jobs.applied")}
+                  </div>
+                  {lastApplicationMessage && (
+                    <div className="rounded-lg border bg-muted/40 px-3 py-2">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
+                        {t("jobs.applicationMessageContent")}
+                      </p>
+                      <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                        {lastApplicationMessage}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : deadlinePassed ? (
+                <p className="text-sm text-muted-foreground">
+                  {t("jobs.deadlinePassedMessage")}
+                </p>
+              ) : (
+                <form onSubmit={handleApply} className="space-y-3">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    {t("jobs.applyToJob")}
+                  </p>
+                  <Textarea
+                    placeholder={t("jobs.applyMessagePlaceholder")}
+                    value={applyMessage}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                      setApplyMessage(e.target.value)
+                    }
+                    maxLength={2000}
+                    rows={3}
+                    className="resize-none"
+                    disabled={applySubmitting}
+                  />
+                  {applyError && (
+                    <p className="text-sm text-destructive">{applyError}</p>
+                  )}
+                  <Button type="submit" disabled={applySubmitting}>
+                    {applySubmitting ? (
+                      t("jobs.applying")
+                    ) : (
+                      <>
+                        <Send className="mr-1.5 h-3.5 w-3.5" />
+                        {t("jobs.apply")}
+                      </>
+                    )}
+                  </Button>
+                </form>
+              )}
+            </section>
+          )}
+        </div>
+
+        {/* Sidebar with job data */}
+        <aside className="lg:col-span-2">
+          <div className="lg:sticky lg:top-8 space-y-6">
+            {/* CTA Button for desktop */}
+            {!isOwnJob && !isDraft && (
+              <div className="hidden lg:block">
+                {canApply ? (
+                  <Button onClick={handleApplyClick} className="w-full" size="lg">
+                    <Send className="mr-2 h-4 w-4" />
+                    {t("jobs.apply")}
+                  </Button>
+                ) : user?.accountType === "FREELANCER" && job.currentUserApplied ? (
+                  <Button disabled className="w-full" size="lg" variant="outline">
+                    {t("jobs.appliedShort")}
+                  </Button>
+                ) : deadlinePassed ? (
+                  <Button disabled className="w-full" size="lg" variant="outline">
+                    {t("jobs.deadlinePassed")}
+                  </Button>
+                ) : (
+                  <Button onClick={handleApplyClick} className="w-full" size="lg">
+                    <Send className="mr-2 h-4 w-4" />
+                    {t("jobs.apply")}
+                  </Button>
+                )}
+              </div>
+            )}
             <DetailRow
               icon={Banknote}
               label={t("jobs.rate")}
@@ -354,6 +605,13 @@ export default function JobDetailPage() {
                 PROJECT_TYPE_LABELS[job.projectType] ?? job.projectType
               }
             />
+            {job.deadline && (
+              <DetailRow
+                icon={Clock}
+                label={t("jobs.deadline")}
+                value={formatDeadlineRemaining(job.deadline, locale, t) ?? undefined}
+              />
+            )}
             {job.location && (
               <DetailRow
                 icon={MapPin}
@@ -368,156 +626,36 @@ export default function JobDetailPage() {
                 value={t("common.yes")}
               />
             )}
-            {job.deadline && (
-              <DetailRow
-                icon={Clock}
-                label={t("jobs.deadline")}
-                value={formatDeadlineRemaining(job.deadline, locale, t) ?? undefined}
-              />
+          </div>
+        </aside>
+      </div>
+
+      {/* Sticky CTA button */}
+      {!isOwnJob && !isDraft && (
+        <div className="fixed inset-x-0 bottom-0 z-50 border-t border-zinc-200 bg-background/95 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] backdrop-blur dark:border-zinc-800 lg:hidden">
+          <div className="mx-auto max-w-4xl">
+            {canApply ? (
+              <Button onClick={handleApplyClick} className="w-full" size="lg">
+                <Send className="mr-2 h-4 w-4" />
+                {t("jobs.apply")}
+              </Button>
+            ) : user?.accountType === "FREELANCER" && job.currentUserApplied ? (
+              <Button disabled className="w-full" size="lg" variant="outline">
+                {t("jobs.appliedShort")}
+              </Button>
+            ) : deadlinePassed ? (
+              <Button disabled className="w-full" size="lg" variant="outline">
+                {t("jobs.deadlinePassed")}
+              </Button>
+            ) : (
+              <Button onClick={handleApplyClick} className="w-full" size="lg">
+                <Send className="mr-2 h-4 w-4" />
+                {t("jobs.apply")}
+              </Button>
             )}
-          </section>
-
-          {/* Skills */}
-          {skills.length > 0 && (
-            <section>
-              <div className="flex gap-3 items-start">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                  <Wrench className="h-4 w-4" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                    {t("jobs.skills")}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {skills.map((name) => (
-                      <span
-                        key={name}
-                        className="rounded-full bg-muted px-3 py-1 text-sm text-foreground"
-                      >
-                        {name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* Freelancer applications: full data for author, initials for others */}
-          {applications.length > 0 && (
-            <section>
-              <div className="flex gap-3 items-start">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                  <Users className="h-4 w-4" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                    {t("listings.applicationsCount", { count: applications.length })}
-                  </p>
-                  {isOwnJob ? (
-                    <div className="space-y-4">
-                      {applications.map((app) =>
-                        isApplicationFull(app) ? (
-                          <div
-                            key={app.id}
-                            className="rounded-lg border bg-muted/30 p-3 space-y-1.5"
-                          >
-                            <p className="font-medium text-foreground">
-                              {authorDisplayName(app.freelancer) || app.freelancer.email}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {app.freelancer.email}
-                            </p>
-                            {app.message && (
-                              <p className="text-sm whitespace-pre-wrap pt-1 border-t mt-2">
-                                {app.message}
-                              </p>
-                            )}
-                            <p className="text-xs text-muted-foreground">
-                              {formatDate(app.createdAt, locale)}
-                            </p>
-                          </div>
-                        ) : null
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {applications.map((app) => (
-                        <span
-                          key={app.id}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-foreground"
-                          title={t("listings.appliedFreelancer")}
-                        >
-                          {"freelancerInitials" in app
-                            ? app.freelancerInitials || "?"
-                            : "?"}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* Apply form (freelancer, before deadline, not own listing) */}
-          {user?.accountType === "FREELANCER" && !isOwnJob && !isDraft && (
-            <section className="border-t pt-6">
-              {job.currentUserApplied ? (
-                <div className="space-y-3">
-                  <div className="rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200 px-3 py-2 text-sm">
-                    {t("jobs.applied")}
-                  </div>
-                  {lastApplicationMessage && (
-                    <div className="rounded-lg border bg-muted/40 px-3 py-2">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
-                        {t("listings.applicationMessageContent")}
-                      </p>
-                      <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                        {lastApplicationMessage}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              ) : deadlinePassed ? (
-                <p className="text-sm text-muted-foreground">
-                  {t("listings.deadlinePassedMessage")}
-                </p>
-              ) : (
-                <form onSubmit={handleApply} className="space-y-3">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    {t("listings.applyToListing")}
-                  </p>
-                  <Textarea
-                    placeholder={t("listings.applyMessagePlaceholder")}
-                    value={applyMessage}
-                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                      setApplyMessage(e.target.value)
-                    }
-                    maxLength={2000}
-                    rows={3}
-                    className="resize-none"
-                    disabled={applySubmitting}
-                  />
-                  {applyError && (
-                    <p className="text-sm text-destructive">{applyError}</p>
-                  )}
-                  <Button type="submit" disabled={applySubmitting}>
-                    {applySubmitting ? (
-                      t("listings.applying")
-                    ) : (
-                      <>
-                        <Send className="mr-1.5 h-3.5 w-3.5" />
-                        {t("listings.apply")}
-                      </>
-                    )}
-                  </Button>
-                </form>
-              )}
-            </section>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,8 +17,9 @@ import {
 import { login as apiLogin, setAuth, needsOnboarding } from "@/lib/api";
 import { useTranslations } from "@/hooks/useTranslations";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t } = useTranslations();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,7 +33,14 @@ export default function LoginPage() {
     try {
       const data = await apiLogin(email, password);
       setAuth(data);
-      router.push(needsOnboarding(data.user) ? "/onboarding" : "/");
+
+      // Check for returnUrl parameter
+      const returnUrl = searchParams.get("returnUrl");
+      if (returnUrl) {
+        router.push(returnUrl);
+      } else {
+        router.push(needsOnboarding(data.user) ? "/onboarding" : "/");
+      }
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : t("auth.loginFailed"));
@@ -101,5 +109,21 @@ export default function LoginPage() {
         </form>
       </Card>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center p-4 pt-12">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-3xl">Loading...</CardTitle>
+          </CardHeader>
+        </Card>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }

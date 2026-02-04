@@ -8,6 +8,8 @@ import { useTranslations } from "@/hooks/useTranslations";
 import { useRouter } from "next/navigation";
 import ReactCountryFlag from "react-country-flag";
 import { Button } from "@/components/ui/button";
+import { getUserLocale, type Locale } from "@/lib/i18n";
+import { t as translate } from "@/lib/translations";
 
 export function JobsSectionHeader({
   sectionTitle,
@@ -17,6 +19,7 @@ export function JobsSectionHeader({
   categoryName,
   initialLanguage,
   initialSkillIds,
+  initialLocale,
 }: {
   sectionTitle: string;
   categoryId?: string;
@@ -25,8 +28,27 @@ export function JobsSectionHeader({
   categoryName?: string;
   initialLanguage?: JobLanguage;
   initialSkillIds?: string[];
+  /** Initial locale from server to avoid hydration mismatch */
+  initialLocale?: Locale;
 }) {
-  const { t } = useTranslations();
+  const { locale: clientLocale } = useTranslations();
+
+  // Use initialLocale from server during SSR to avoid hydration mismatch
+  // After hydration, use client locale which may differ if user preferences changed
+  const [locale, setLocaleState] = useState<Locale>(initialLocale ?? clientLocale);
+
+  // Update locale after mount if client locale differs from initial locale
+  useEffect(() => {
+    const currentLocale = getUserLocale();
+    if (currentLocale !== initialLocale) {
+      setLocaleState(currentLocale);
+    }
+  }, [initialLocale]);
+
+  // Use server locale for translations during SSR, client locale after mount
+  const t = (key: string, params?: Record<string, string | number>) => {
+    return translate(locale, key, params);
+  };
   const router = useRouter();
   const [count, setCount] = useState<number | null>(null);
   const [language, setLanguage] = useState<"" | JobLanguage>(

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { type Category, getStoredUser, getToken } from "@/lib/api";
 import { CategoryIcon } from "@/components/CategoryIcon";
+import { LanguageToggle } from "@/components/LanguageToggle";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "@/hooks/useTranslations";
@@ -19,10 +20,14 @@ export function CategoriesSidebarDesktop({
   const { t } = useTranslations();
   const allLabel = t("common.all");
   const [canCreateListing, setCanCreateListing] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const token = getToken();
     const user = getStoredUser();
+    setIsLoggedIn(!!token);
     setCanCreateListing(!!token && user?.accountType === "CLIENT");
   }, []);
 
@@ -63,6 +68,11 @@ export function CategoriesSidebarDesktop({
           </li>
         ))}
       </ul>
+      {mounted && !isLoggedIn && (
+        <div className="mt-6">
+          <LanguageToggle size="default" className="w-full justify-center" showFullName />
+        </div>
+      )}
       {canCreateListing && (
         <div className="mt-6">
           <Button asChild variant="default" size="lg" className="w-full justify-start">

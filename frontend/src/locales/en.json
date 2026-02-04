@@ -15,7 +15,8 @@
     "no": "No",
     "all": "All",
     "theme": "Theme",
-    "logout": "Log out"
+    "logout": "Log out",
+    "changeLanguage": "Change language"
   },
   "auth": {
     "login": "Login",
@@ -40,6 +41,9 @@
     "promoDescription": "Create an account to quickly find listings perfectly matched to you.",
     "promoCtaRegister": "Create account",
     "promoCtaLogin": "I already have an account – log in",
+    "signUp": "Sign Up",
+    "signIn": "Sign In",
+    "alreadyHaveAccountText": "I already have an account",
     "promoBarText": "Do you have or want to create an Updoo account?",
     "confirmPassword": "Repeat password",
     "passwordsMustMatch": "Passwords must match.",
@@ -89,7 +93,7 @@
     "headerSampleWithCategory": "Check out a sample of the {count} {category} jobs posted on Updoo",
     "headerSampleWithoutCategory": "Check out a sample of the {count} jobs posted on Updoo",
     "newListing": "New listing",
-    "createListing": "Create listing",
+    "createListing": "Add a job",
     "editListing": "Edit listing",
     "listingDetails": "Listing details",
     "loadingListing": "Loading listing…",
@@ -130,7 +134,6 @@
     "language": "Listing language",
     "billingType": "Billing type",
     "fixedRate": "Fixed rate",
-    "hourlyRate": "Hourly rate",
     "hoursPerWeek": "Hours per week",
     "lessThan10": "Less than 10",
     "from11To20": "11–20",
@@ -139,7 +142,6 @@
     "rateAmount": "Rate",
     "rateNegotiable": "Rate negotiable",
     "currency": "Currency",
-    "experienceLevel": "Experience level",
     "junior": "Junior",
     "mid": "Mid",
     "senior": "Senior",
@@ -163,20 +165,32 @@
     "deadlineRemaining1": "1 day remaining",
     "deadlineRemainingFew": "{days} days remaining",
     "deadlineRemainingMany": "{days} days remaining",
+    "deadlineRemainingHours": "{hours} hours remaining",
+    "deadlineRemainingMinutes": "{minutes} minutes remaining",
     "deadlinePassedMessage": "Application deadline has passed. You can no longer apply.",
     "apply": "Apply",
     "applying": "Submitting…",
     "applyToListing": "Apply to listing",
     "applyMessagePlaceholder": "Optional message to client…",
     "applied": "You have applied to this listing.",
+    "appliedShort": "Applied",
+    "applicationMessageContent": "Your application message",
     "applications": "Applications",
     "applicationsCount": "Applications ({count})",
     "appliedFreelancer": "Applied freelancer",
     "author": "Author",
-    "posted": "Published {ago}"
+    "posted": "Published {ago}",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page",
+    "of": "of",
+    "listingsCount": "listings"
   },
   "branding": {
     "logotypeTagline": "Publish and search offers for freelancers"
+  },
+  "homepage": {
+    "heroText": "The easiest way to connect businesses and top freelancers"
   },
   "accountTypes": {
     "client": "Client",

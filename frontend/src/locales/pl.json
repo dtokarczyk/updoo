@@ -15,7 +15,8 @@
     "no": "Nie",
     "all": "Wszystkie",
     "theme": "Motyw",
-    "logout": "Wyloguj"
+    "logout": "Wyloguj",
+    "changeLanguage": "Zmień język"
   },
   "auth": {
     "login": "Logowanie",
@@ -40,6 +41,9 @@
     "promoDescription": "Załóż konto, aby szybciej znajdować oferty idealnie dopasowane do Ciebie.",
     "promoCtaRegister": "Utwórz konto",
     "promoCtaLogin": "Mam już konto – zaloguj się",
+    "signUp": "Sign Up",
+    "signIn": "Sign In",
+    "alreadyHaveAccountText": "Mam już konto",
     "promoBarText": "Masz lub chcesz założyć konto w Updoo?",
     "confirmPassword": "Powtórz hasło",
     "passwordsMustMatch": "Hasła muszą być takie same.",
@@ -86,10 +90,10 @@
   },
   "listings": {
     "listings": "Ogłoszenia",
-    "headerSampleWithCategory": "Zobacz próbkę {count} ogłoszeń {category} opublikowanych na Updoo",
-    "headerSampleWithoutCategory": "Zobacz próbkę {count} ogłoszeń opublikowanych na Updoo",
+    "headerSampleWithCategory": "Zobacz {count} ogłoszeń {category} opublikowanych na Updoo",
+    "headerSampleWithoutCategory": "Zobacz {count} ogłoszeń opublikowanych na Updoo",
     "newListing": "Nowe ogłoszenie",
-    "createListing": "Utwórz ogłoszenie",
+    "createListing": "Utwórz darmowe ogłoszenie",
     "editListing": "Edytuj ogłoszenie",
     "listingDetails": "Szczegóły ogłoszenia",
     "loadingListing": "Ładowanie oferty…",
@@ -130,7 +134,6 @@
     "language": "Język ogłoszenia",
     "billingType": "Typ rozliczenia",
     "fixedRate": "Stawka ryczałtowa (fix)",
-    "hourlyRate": "Stawka godzinowa",
     "hoursPerWeek": "Godziny tygodniowo",
     "lessThan10": "Mniej niż 10",
     "from11To20": "11–20",
@@ -139,7 +142,6 @@
     "rateAmount": "Stawka",
     "rateNegotiable": "Stawka do negocjacji",
     "currency": "Waluta",
-    "experienceLevel": "Poziom doświadczenia",
     "junior": "Junior",
     "mid": "Mid",
     "senior": "Senior",
@@ -163,20 +165,32 @@
     "deadlineRemaining1": "Pozostał 1 dzień",
     "deadlineRemainingFew": "Pozostały {days} dni",
     "deadlineRemainingMany": "Pozostało {days} dni",
+    "deadlineRemainingHours": "Pozostało {hours} godzin",
+    "deadlineRemainingMinutes": "Pozostało {minutes} minut",
     "deadlinePassedMessage": "Termin zgłoszeń minął. Nie można już się zgłosić.",
     "apply": "Zgłoś się",
     "applying": "Wysyłanie…",
     "applyToListing": "Zgłoś się do oferty",
     "applyMessagePlaceholder": "Opcjonalna wiadomość do zleceniodawcy…",
     "applied": "Zgłosiłeś się do tej oferty.",
+    "appliedShort": "Zgłosiłeś się",
+    "applicationMessageContent": "Treść Twojego zgłoszenia",
     "applications": "Zgłoszenia",
     "applicationsCount": "Zgłoszenia ({count})",
     "appliedFreelancer": "Zgłoszony freelancer",
     "author": "Autor",
-    "posted": "Opublikowano {ago}"
+    "posted": "Opublikowano {ago}",
+    "previous": "Poprzednia",
+    "next": "Następna",
+    "page": "Strona",
+    "of": "z",
+    "listingsCount": "ogłoszeń"
   },
   "branding": {
     "logotypeTagline": "Publikuj i szukaj ofert dla freelancerów"
+  },
+  "homepage": {
+    "heroText": "Najłatwiejszy sposób na połączenie firm i najlepszych freelancerów"
   },
   "accountTypes": {
     "client": "Klient",

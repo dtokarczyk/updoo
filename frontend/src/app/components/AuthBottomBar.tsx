@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "@/hooks/useTranslations";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 export function AuthBottomBar() {
   const { t } = useTranslations();
@@ -14,6 +15,7 @@ export function AuthBottomBar() {
           {t("auth.promoBarText")}
         </p>
         <div className="flex shrink-0 items-center gap-2">
+          <LanguageToggle size="sm" />
           <Button asChild variant="outline" size="sm">
             <Link href="/login">{t("auth.logIn")}</Link>
           </Button>

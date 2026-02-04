@@ -313,6 +313,14 @@ export async function getCategories(): Promise<Category[]> {
   const headers: HeadersInit = {};
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
+
+  // Add Accept-Language header based on user locale
+  if (typeof window !== "undefined") {
+    const { getUserLocale } = await import("./i18n");
+    const locale = getUserLocale();
+    headers["Accept-Language"] = locale;
+  }
+
   const res = await fetch(`${API_URL}/listings/categories`, { headers });
   if (!res.ok) throw new Error("Failed to fetch categories");
   return res.json();
@@ -351,6 +359,14 @@ export async function getListingsFeed(
   const headers: HeadersInit = {};
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
+
+  // Add Accept-Language header based on user locale
+  if (typeof window !== "undefined") {
+    const { getUserLocale } = await import("./i18n");
+    const locale = getUserLocale();
+    headers["Accept-Language"] = locale;
+  }
+
   const res = await fetch(url, { headers });
   if (!res.ok) throw new Error("Failed to fetch listings");
   return res.json();
@@ -360,6 +376,14 @@ export async function getListing(id: string): Promise<Listing> {
   const headers: HeadersInit = {};
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
+
+  // Add Accept-Language header based on user locale
+  if (typeof window !== "undefined") {
+    const { getUserLocale } = await import("./i18n");
+    const locale = getUserLocale();
+    headers["Accept-Language"] = locale;
+  }
+
   const res = await fetch(`${API_URL}/listings/${id}`, { headers });
   if (!res.ok) {
     if (res.status === 404) throw new Error("Ogłoszenie nie istnieje");
@@ -501,9 +525,16 @@ export async function removeFavorite(listingId: string): Promise<{ ok: boolean }
 export async function getFavoritesListings(): Promise<Listing[]> {
   const token = getToken();
   if (!token) throw new Error("Zaloguj się, aby zobaczyć ulubione");
-  const res = await fetch(`${API_URL}/listings/favorites`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const headers: HeadersInit = { Authorization: `Bearer ${token}` };
+
+  // Add Accept-Language header based on user locale
+  if (typeof window !== "undefined") {
+    const { getUserLocale } = await import("./i18n");
+    const locale = getUserLocale();
+    headers["Accept-Language"] = locale;
+  }
+
+  const res = await fetch(`${API_URL}/listings/favorites`, { headers });
   if (!res.ok) throw new Error("Nie udało się załadować ulubionych");
   return res.json();
 }

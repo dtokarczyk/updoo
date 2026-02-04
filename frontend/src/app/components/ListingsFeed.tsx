@@ -15,6 +15,7 @@ import {
 } from "@/lib/api";
 import { ListingPost } from "@/app/components/ListingPost";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "@/hooks/useTranslations";
 
 const VISITED_LISTINGS_KEY = "visitedListings";
 const FEED_STATE_KEY = "listingsFeedState";
@@ -107,6 +108,7 @@ export function ListingsFeed({
   skillIds?: string[];
   onCountChange?: (count: number) => void;
 }) {
+  const { t } = useTranslations();
   const router = useRouter();
 
   const [listings, setListings] = useState<Listing[]>([]);
@@ -302,7 +304,7 @@ export function ListingsFeed({
                 <div className="flex items-center gap-2">
                   {isApplied && (
                     <span className="rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-100 px-2 py-0.5 text-xs font-medium">
-                      Zgłosiłeś się
+                      {t("listings.appliedShort")}
                     </span>
                   )}
                   <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
@@ -320,7 +322,7 @@ export function ListingsFeed({
                     <Button size="icon" variant="ghost" className="h-8 w-8" asChild>
                       <Link
                         href={`/listings/${listing.id}/edit`}
-                        aria-label="Edytuj ogłoszenie"
+                        aria-label={t("listings.editListing")}
                       >
                         <Pencil className="h-4 w-4" />
                       </Link>
@@ -361,7 +363,7 @@ export function ListingsFeed({
             disabled={!pagination.hasPreviousPage}
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
-            Poprzednia
+            {t("listings.previous")}
           </Button>
 
           <div className="flex items-center gap-1">
@@ -398,7 +400,7 @@ export function ListingsFeed({
             onClick={() => handlePageChange(page + 1)}
             disabled={!pagination.hasNextPage}
           >
-            Następna
+            {t("listings.next")}
             <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         </div>
@@ -406,7 +408,7 @@ export function ListingsFeed({
 
       {pagination && (
         <div className="text-center text-sm text-muted-foreground pt-2">
-          Strona {pagination.page} z {pagination.totalPages} ({pagination.total} ogłoszeń)
+          {t("listings.page")} {pagination.page} {t("listings.of")} {pagination.totalPages} ({pagination.total} {t("listings.listingsCount")})
         </div>
       )}
     </div>

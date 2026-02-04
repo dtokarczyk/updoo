@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 export function AppFooter() {
   const year = new Date().getFullYear();
@@ -12,9 +15,12 @@ export function AppFooter() {
           >
             Updoo
           </Link>
-          <p className="text-xs text-muted-foreground">
-            © {year} Updoo. Wszelkie prawa zastrzeżone.
-          </p>
+          <div className="flex items-center gap-4">
+            <LanguageToggle size="sm" />
+            <p className="text-xs text-muted-foreground">
+              © {year} Updoo. Wszelkie prawa zastrzeżone.
+            </p>
+          </div>
         </div>
       </div>
     </footer>

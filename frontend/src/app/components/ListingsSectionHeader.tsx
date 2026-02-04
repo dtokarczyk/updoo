@@ -97,7 +97,7 @@ export function ListingsSectionHeader({
 
   return (
     <section
-      className="flex-1 min-w-0 space-y-6 pt-0 lg:pt-14 lg:basis-3/5 lg:min-h-[60vh]"
+      className="flex-1 min-w-0 space-y-6 lg:min-h-[60vh]"
       aria-label={sectionTitle}
     >
       <div className="flex flex-col gap-3">

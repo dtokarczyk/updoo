@@ -189,7 +189,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
+    <div className="flex justify-center p-4 pt-12">
       <Card className="w-full max-w-md">
         {step === STEP_NAME && (
           <>

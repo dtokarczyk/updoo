@@ -38,6 +38,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { useTranslations } from "@/hooks/useTranslations";
+import { format } from "date-fns";
+import { pl, enUS } from "date-fns/locale";
+import { intervalToDuration } from "date-fns";
 
 const BILLING_LABELS: Record<string, string> = {
   FIXED: "Ryczałt",
@@ -62,15 +66,10 @@ const PROJECT_TYPE_LABELS: Record<string, string> = {
   CONTINUOUS: "Ciągły",
 };
 
-function formatDate(iso: string) {
-  const d = new Date(iso);
-  return d.toLocaleDateString("pl-PL", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+function formatDate(iso: string, locale: "pl" | "en"): string {
+  const dateFnsLocale = locale === "en" ? enUS : pl;
+  const date = new Date(iso);
+  return format(date, "d MMMM yyyy 'at' HH:mm", { locale: dateFnsLocale });
 }
 
 function getDeadlineRemainingDays(deadline: string | null): number | null {
@@ -82,13 +81,36 @@ function getDeadlineRemainingDays(deadline: string | null): number | null {
   return Math.ceil(ms / (24 * 60 * 60 * 1000));
 }
 
-function formatDeadlineRemaining(deadline: string | null): string | null {
-  const days = getDeadlineRemainingDays(deadline);
-  if (days === null) return null;
-  if (days === 0) return "Termin zbierania ofert minął";
-  if (days === 1) return "Pozostał 1 dzień";
-  if (days < 5) return `Pozostały ${days} dni`;
-  return `Pozostało ${days} dni`;
+function formatDeadlineRemaining(deadline: string | null, locale: "pl" | "en", t: (key: string, params?: Record<string, string | number>) => string): string | null {
+  if (!deadline) return null;
+  const end = new Date(deadline);
+  const now = new Date();
+  if (end <= now) return t("listings.deadlinePassed");
+
+  const duration = intervalToDuration({
+    start: now,
+    end: end.getTime(),
+  });
+
+  const daysLeft = duration.days ?? 0;
+  if (daysLeft === 0) {
+    const hoursLeft = duration.hours ?? 0;
+    if (hoursLeft === 0) {
+      const minutesLeft = duration.minutes ?? 0;
+      return t("listings.deadlineRemainingMinutes", { minutes: minutesLeft });
+    }
+    return t("listings.deadlineRemainingHours", { hours: hoursLeft });
+  }
+
+  if (daysLeft === 1) {
+    return t("listings.deadlineRemaining1");
+  }
+
+  if (daysLeft < 5) {
+    return t("listings.deadlineRemainingFew", { days: daysLeft });
+  }
+
+  return t("listings.deadlineRemainingMany", { days: daysLeft });
 }
 
 function formatRate(rate: string, currency: string, billingType: string) {
@@ -129,6 +151,7 @@ function DetailRow({
 }
 
 export default function ListingDetailPage() {
+  const { t, locale } = useTranslations();
   const params = useParams();
   const id = typeof params?.id === "string" ? params.id : "";
   const [listing, setListing] = useState<Listing | null>(null);
@@ -175,11 +198,11 @@ export default function ListingDetailPage() {
   if (error || !listing) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
-        <p className="mb-4 text-destructive">{error ?? "Oferta nie istnieje."}</p>
+        <p className="mb-4 text-destructive">{error ?? t("listings.listingNotFound")}</p>
         <Button variant="outline" asChild>
           <Link href="/offers/all/1">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Powrót do listy
+            {t("listings.backToList")}
           </Link>
         </Button>
       </div>
@@ -239,12 +262,12 @@ export default function ListingDetailPage() {
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Calendar className="h-3.5 w-3.5" />
-                  {formatDate(listing.createdAt)}
+                  {formatDate(listing.createdAt, locale)}
                 </span>
-                {listing.deadline && formatDeadlineRemaining(listing.deadline) && (
+                {listing.deadline && formatDeadlineRemaining(listing.deadline, locale, t) && (
                   <span className="flex items-center gap-1.5 font-medium text-foreground">
                     <Clock className="h-3.5 w-3.5" />
-                    {formatDeadlineRemaining(listing.deadline)}
+                    {formatDeadlineRemaining(listing.deadline, locale, t)}
                   </span>
                 )}
               </CardDescription>
@@ -260,13 +283,13 @@ export default function ListingDetailPage() {
                   countryCode={listing.language === "ENGLISH" ? "GB" : "PL"}
                   style={{ width: "1em", height: "1em" }}
                 />
-                {listing.language === "ENGLISH" ? "English" : "Polish"}
+                {listing.language === "ENGLISH" ? t("listings.english") : t("listings.polish")}
               </span>
             </div>
           </div>
           {isDraft && (
             <div className="rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 px-3 py-2 text-sm">
-              Szkic — widoczny tylko dla Ciebie.
+              {t("listings.draftVisibleOnlyToYou")}
             </div>
           )}
         </CardHeader>
@@ -279,7 +302,7 @@ export default function ListingDetailPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
-                  Opis
+                  {t("listings.description")}
                 </p>
                 <p className="text-sm whitespace-pre-wrap leading-relaxed">
                   {listing.description}
@@ -292,14 +315,14 @@ export default function ListingDetailPage() {
           <section className="grid gap-6 sm:grid-cols-2">
             <DetailRow
               icon={Banknote}
-              label="Stawka"
+              label={t("listings.rate")}
               value={
                 <>
                   {formatRate(listing.rate, listing.currency, listing.billingType)}
                   {listing.rateNegotiable && (
                     <span className="text-muted-foreground font-normal">
                       {" "}
-                      · do negocjacji
+                      · {t("listings.negotiable")}
                     </span>
                   )}
                 </>
@@ -307,26 +330,26 @@ export default function ListingDetailPage() {
             />
             <DetailRow
               icon={Briefcase}
-              label="Typ rozliczenia"
+              label={t("listings.billingType")}
               value={BILLING_LABELS[listing.billingType] ?? listing.billingType}
             />
             {listing.billingType === "HOURLY" && listing.hoursPerWeek && (
               <DetailRow
                 icon={Clock}
-                label="Godziny tygodniowo"
+                label={t("listings.hoursPerWeek")}
                 value={HOURS_LABELS[listing.hoursPerWeek] ?? listing.hoursPerWeek}
               />
             )}
             <DetailRow
               icon={BarChart3}
-              label="Poziom doświadczenia"
+              label={t("listings.experienceLevel")}
               value={
                 EXPERIENCE_LABELS[listing.experienceLevel] ?? listing.experienceLevel
               }
             />
             <DetailRow
               icon={Briefcase}
-              label="Typ projektu"
+              label={t("listings.projectType")}
               value={
                 PROJECT_TYPE_LABELS[listing.projectType] ?? listing.projectType
               }
@@ -334,22 +357,22 @@ export default function ListingDetailPage() {
             {listing.location && (
               <DetailRow
                 icon={MapPin}
-                label="Lokalizacja"
+                label={t("listings.location")}
                 value={listing.location.name}
               />
             )}
             {listing.isRemote && (
               <DetailRow
                 icon={Laptop}
-                label="Praca zdalna"
-                value="Tak"
+                label={t("listings.remoteWork")}
+                value={t("common.yes")}
               />
             )}
             {listing.deadline && (
               <DetailRow
                 icon={Clock}
-                label="Termin zbierania ofert"
-                value={formatDeadlineRemaining(listing.deadline) ?? undefined}
+                label={t("listings.deadline")}
+                value={formatDeadlineRemaining(listing.deadline, locale, t) ?? undefined}
               />
             )}
           </section>
@@ -363,7 +386,7 @@ export default function ListingDetailPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                    Umiejętności
+                    {t("listings.skills")}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {skills.map((name) => (
@@ -389,7 +412,7 @@ export default function ListingDetailPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                    Zgłoszenia ({applications.length})
+                    {t("listings.applicationsCount", { count: applications.length })}
                   </p>
                   {isOwnListing ? (
                     <div className="space-y-4">
@@ -411,7 +434,7 @@ export default function ListingDetailPage() {
                               </p>
                             )}
                             <p className="text-xs text-muted-foreground">
-                              {formatDate(app.createdAt)}
+                              {formatDate(app.createdAt, locale)}
                             </p>
                           </div>
                         ) : null
@@ -423,7 +446,7 @@ export default function ListingDetailPage() {
                         <span
                           key={app.id}
                           className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-foreground"
-                          title="Zgłoszony freelancer"
+                          title={t("listings.appliedFreelancer")}
                         >
                           {"freelancerInitials" in app
                             ? app.freelancerInitials || "?"
@@ -443,12 +466,12 @@ export default function ListingDetailPage() {
               {listing.currentUserApplied ? (
                 <div className="space-y-3">
                   <div className="rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200 px-3 py-2 text-sm">
-                    Zgłosiłeś się do tej oferty.
+                    {t("listings.applied")}
                   </div>
                   {lastApplicationMessage && (
                     <div className="rounded-lg border bg-muted/40 px-3 py-2">
                       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
-                        Treść Twojego zgłoszenia
+                        {t("listings.applicationMessageContent")}
                       </p>
                       <p className="text-sm whitespace-pre-wrap leading-relaxed">
                         {lastApplicationMessage}
@@ -458,15 +481,15 @@ export default function ListingDetailPage() {
                 </div>
               ) : deadlinePassed ? (
                 <p className="text-sm text-muted-foreground">
-                  Termin zgłoszeń minął. Nie można już się zgłosić.
+                  {t("listings.deadlinePassedMessage")}
                 </p>
               ) : (
                 <form onSubmit={handleApply} className="space-y-3">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    Zgłoś się do oferty
+                    {t("listings.applyToListing")}
                   </p>
                   <Textarea
-                    placeholder="Opcjonalna wiadomość do zleceniodawcy…"
+                    placeholder={t("listings.applyMessagePlaceholder")}
                     value={applyMessage}
                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                       setApplyMessage(e.target.value)
@@ -481,11 +504,11 @@ export default function ListingDetailPage() {
                   )}
                   <Button type="submit" disabled={applySubmitting}>
                     {applySubmitting ? (
-                      "Wysyłanie…"
+                      t("listings.applying")
                     ) : (
                       <>
                         <Send className="mr-1.5 h-3.5 w-3.5" />
-                        Zgłoś się
+                        {t("listings.apply")}
                       </>
                     )}
                   </Button>

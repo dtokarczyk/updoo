@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Logotype } from "@/app/components/Logotype";
+import { HomeNav } from "@/app/components/HomeNav";
 
 export function AppHeader() {
   const pathname = usePathname();
@@ -18,7 +19,7 @@ export function AppHeader() {
       <div
         className={`relative mx-auto flex max-w-6xl flex-row items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-4`}
       >
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
           {showBack && (
             <Button
               variant="outline"
@@ -41,7 +42,8 @@ export function AppHeader() {
 
         <Logotype className="absolute left-1/2 -translate-x-1/2 shrink-0 items-center" />
 
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
+          <HomeNav />
           <ThemeToggle size="icon-lg" />
         </div>
       </div>

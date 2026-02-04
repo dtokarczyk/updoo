@@ -196,18 +196,8 @@ export function HomeNav({ showCreateOnly, placement = "header" }: HomeNavProps) 
 
   if (!mounted) {
     if (showCreateOnly) return null;
-    return (
-      <div className="flex shrink-0 flex-nowrap items-center gap-2">
-        <Link href="/register">
-          <Button variant="ghost" size="sm" className="shrink-0">
-            {t("auth.register")}
-          </Button>
-        </Link>
-        <Link href="/login">
-          <Button size="sm" className="shrink-0">{t("auth.login")}</Button>
-        </Link>
-      </div>
-    );
+    // Don't show login/register buttons in header - they're in AuthBottomBar on mobile
+    return null;
   }
 
   if (showCreateOnly) {
@@ -222,18 +212,8 @@ export function HomeNav({ showCreateOnly, placement = "header" }: HomeNavProps) 
   }
 
   if (!isLoggedIn) {
-    return (
-      <div className="flex shrink-0 flex-nowrap items-center gap-2">
-        <Link href="/register">
-          <Button variant="ghost" size="sm" className="shrink-0">
-            {t("auth.register")}
-          </Button>
-        </Link>
-        <Link href="/login">
-          <Button size="sm" className="shrink-0">{t("auth.login")}</Button>
-        </Link>
-      </div>
-    );
+    // Don't show login/register buttons in header - they're in AuthBottomBar on mobile
+    return null;
   }
 
   // Header: profile button with dropdown; hide on desktop when on home (profile is in sidebar)

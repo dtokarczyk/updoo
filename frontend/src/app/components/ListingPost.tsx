@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { formatDistanceToNow } from "date-fns";
-import { pl } from "date-fns/locale";
+import { formatDistanceToNow, formatDuration, intervalToDuration } from "date-fns";
+import { pl, enUS } from "date-fns/locale";
 import { Calendar, Clock, Settings2, Star } from "lucide-react";
 import type { Listing } from "@/lib/api";
 import {
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "@/hooks/useTranslations";
 
 const EXPERIENCE_LABELS: Record<string, string> = {
   JUNIOR: "Junior",
@@ -39,23 +40,41 @@ function formatRate(rate: string, currency: string, billingType: string): string
   return formatted;
 }
 
-function formatPostedAgo(iso: string): string {
-  return formatDistanceToNow(new Date(iso), { addSuffix: true, locale: pl });
+function formatPostedAgo(iso: string, locale: "pl" | "en"): string {
+  const dateFnsLocale = locale === "en" ? enUS : pl;
+  return formatDistanceToNow(new Date(iso), { addSuffix: true, locale: dateFnsLocale });
 }
 
-function pluralizeDays(n: number): string {
-  if (n === 1) return "dzień";
-  // Polish: 2-4 days -> "dni", 5+ -> "dni" (same form), but keep logic for readability/future.
-  return "dni";
-}
-
-function formatTimeLeftUntil(iso: string): string {
+function formatTimeLeftUntil(iso: string, locale: "pl" | "en", t: (key: string, params?: Record<string, string | number>) => string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
   const msLeft = d.getTime() - Date.now();
-  if (msLeft <= 0) return "Zakończone";
-  const daysLeft = Math.max(1, Math.ceil(msLeft / (24 * 60 * 60 * 1000)));
-  return `Pozostało ${daysLeft} ${pluralizeDays(daysLeft)}`;
+  if (msLeft <= 0) return t("listings.deadlinePassed");
+
+  const duration = intervalToDuration({
+    start: Date.now(),
+    end: d.getTime(),
+  });
+
+  const daysLeft = duration.days ?? 0;
+  if (daysLeft === 0) {
+    const hoursLeft = duration.hours ?? 0;
+    if (hoursLeft === 0) {
+      const minutesLeft = duration.minutes ?? 0;
+      return t("listings.deadlineRemainingMinutes", { minutes: minutesLeft });
+    }
+    return t("listings.deadlineRemainingHours", { hours: hoursLeft });
+  }
+
+  if (daysLeft === 1) {
+    return t("listings.deadlineRemaining1");
+  }
+
+  if (daysLeft < 5) {
+    return t("listings.deadlineRemainingFew", { days: daysLeft });
+  }
+
+  return t("listings.deadlineRemainingMany", { days: daysLeft });
 }
 
 export function ListingPost({
@@ -94,21 +113,22 @@ export function ListingPost({
       setFavoriteLoading(false);
     }
   };
+  const { t, locale } = useTranslations();
   const skills = listing.skills?.map((r) => r.skill.name) ?? [];
   const shortDescription = truncateDescription(
     listing.description,
     LISTING_DESCRIPTION_MAX_LENGTH
   );
-  const metaPosted = formatPostedAgo(listing.createdAt);
-  const metaDeadlineLeft = listing.deadline ? formatTimeLeftUntil(listing.deadline) : "";
+  const metaPosted = formatPostedAgo(listing.createdAt, locale);
+  const metaDeadlineLeft = listing.deadline ? formatTimeLeftUntil(listing.deadline, locale, t) : "";
   const firstFieldLabel = EXPERIENCE_LABELS[listing.experienceLevel] ?? listing.experienceLevel;
-  const firstFieldSub = "Poziom doświadczenia";
+  const firstFieldSub = t("listings.experienceLevel");
   const secondFieldLabel = formatRate(
     listing.rate,
     listing.currency,
     listing.billingType
   );
-  const secondFieldSub = listing.billingType === "HOURLY" ? "Stawka godzinowa" : "Stawka";
+  const secondFieldSub = listing.billingType === "HOURLY" ? t("listings.hourlyRate") : t("listings.rate");
 
   return (
     <Card
@@ -158,7 +178,7 @@ export function ListingPost({
             <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
               <span className="inline-flex items-center gap-1.5">
                 <Calendar className="h-4 w-4" aria-hidden />
-                Opublikowano {metaPosted}
+                {t("listings.published")} {metaPosted}
               </span>
               {metaDeadlineLeft && (
                 <span className="inline-flex items-center gap-1.5">
@@ -194,7 +214,7 @@ export function ListingPost({
                   {listing.currency}
                   {listing.billingType === "HOURLY" ? "/h" : ""}
                 </span>
-                {listing.rateNegotiable && " (do negocjacji)"}
+                {listing.rateNegotiable && ` (${t("listings.negotiable")})`}
               </p>
               <p className="text-sm text-muted-foreground">{secondFieldSub}</p>
             </div>
@@ -223,7 +243,7 @@ export function ListingPost({
               className="mt-2 shrink-0"
             >
               <Link href={`/listings/${listing.id}`} scroll={false} onClick={onNavigate}>
-                Zobacz więcej
+                {t("listings.seeMore")}
               </Link>
             </Button>
           </div>
@@ -236,7 +256,7 @@ export function ListingPost({
               className="mt-2 shrink-0"
             >
               <Link href={`/listings/${listing.id}`} scroll={false} onClick={onNavigate}>
-                Zobacz więcej
+                {t("listings.seeMore")}
               </Link>
             </Button>
           </div>

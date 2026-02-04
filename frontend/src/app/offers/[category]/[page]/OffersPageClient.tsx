@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -10,6 +9,7 @@ import { HomeNav } from "@/app/components/HomeNav";
 import { ListingsSectionHeader } from "@/app/components/ListingsSectionHeader";
 import { AuthPromoSidebar } from "@/app/components/AuthPromoSidebar";
 import { AuthBottomBar } from "@/app/components/AuthBottomBar";
+import { Logotype } from "@/app/components/Logotype";
 import { getToken, type Category, type ListingLanguage } from "@/lib/api";
 import { useTranslations } from "@/hooks/useTranslations";
 
@@ -88,12 +88,7 @@ export function OffersPageClient({
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-8">
           <aside className="z-10 shrink-0 lg:sticky lg:top-14 lg:self-start lg:basis-1/5">
             <div className="hidden items-center justify-between lg:flex lg:pb-4">
-              <Link
-                href="/"
-                className="text-xl font-semibold tracking-tight text-foreground hover:underline focus:outline-none focus:underline"
-              >
-                Updoo
-              </Link>
+              <Logotype />
               <ThemeToggle />
             </div>
             <CategoriesSidebar

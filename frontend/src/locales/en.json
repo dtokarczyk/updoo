@@ -175,6 +175,9 @@
     "author": "Author",
     "posted": "Published {ago}"
   },
+  "branding": {
+    "logotypeTagline": "Publish and search offers for freelancers"
+  },
   "accountTypes": {
     "client": "Client",
     "freelancer": "Freelancer",

@@ -15,8 +15,8 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
   const pathname = usePathname();
   const router = useRouter();
   const isHome = pathname === "/";
-  const isListing = pathname.startsWith("/offers/");
-  const showBack = !isHome && !isListing;
+  const isJob = pathname.startsWith("/jobs/");
+  const showBack = !isHome && !isJob;
   const { t, locale } = useTranslations();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -53,7 +53,7 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
   };
 
   return (
-    <header className={`bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 ${isListing ? "lg:hidden" : ""}`}>
+    <header className={`bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 ${isJob ? "lg:hidden" : ""}`}>
       <div
         className={`relative mx-auto flex max-w-6xl flex-row items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-4`}
       >
@@ -69,7 +69,7 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
                   router.back();
                 } else {
                   // Fallback to default offers list when history is not available.
-                  router.push("/offers/all/1");
+                  router.push("/jobs/all/1");
                 }
               }}
             >

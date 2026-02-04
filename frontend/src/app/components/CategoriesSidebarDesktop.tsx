@@ -24,7 +24,7 @@ export function CategoriesSidebarDesktop({
   // After hydration, use client locale which may differ if user preferences changed
   const [locale, setLocaleState] = useState<Locale>(initialLocale ?? getUserLocale());
   const [mounted, setMounted] = useState(false);
-  const [canCreateListing, setCanCreateListing] = useState(false);
+  const [canCreateJob, setCanCreateJob] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Update locale after mount if client locale differs from initial locale
@@ -37,7 +37,7 @@ export function CategoriesSidebarDesktop({
     const token = getToken();
     const user = getStoredUser();
     setIsLoggedIn(!!token);
-    setCanCreateListing(!!token && user?.accountType === "CLIENT");
+    setCanCreateJob(!!token && user?.accountType === "CLIENT");
   }, [initialLocale]);
 
   // Use server locale for translations during SSR, client locale after mount
@@ -52,7 +52,7 @@ export function CategoriesSidebarDesktop({
       <ul className="space-y-1">
         <li>
           <Link
-            href="/offers/all/1"
+            href="/jobs/all/1"
             className={cn(
               "flex items-center gap-3 py-1.5 text-xl font-semibold transition-colors",
               !currentCategorySlug
@@ -67,7 +67,7 @@ export function CategoriesSidebarDesktop({
         {categories.map((cat) => (
           <li key={cat.id}>
             <Link
-              href={`/offers/${encodeURIComponent(cat.slug)}/1`}
+              href={`/jobs/${encodeURIComponent(cat.slug)}/1`}
               className={cn(
                 "flex items-center gap-3 py-1.5 text-xl font-semibold transition-colors",
                 currentCategorySlug === cat.slug
@@ -89,12 +89,12 @@ export function CategoriesSidebarDesktop({
           <LanguageToggle size="default" className="w-full justify-center" showFullName initialLocale={initialLocale} />
         </div>
       )}
-      {canCreateListing && (
+      {canCreateJob && (
         <div className="mt-6">
           <Button asChild variant="default" size="lg" className="w-full justify-start">
-            <Link href="/listings/new">
+            <Link href="/jobs/new">
               <Plus className="size-5 shrink-0" aria-hidden />
-              {t("listings.newListing")}
+              {t("jobs.newJob")}
             </Link>
           </Button>
         </div>

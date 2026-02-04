@@ -38,12 +38,12 @@ export function CategoriesSidebarMobile({
 
   const allLabel = t("common.all");
   const [open, setOpen] = useState(false);
-  const [canCreateListing, setCanCreateListing] = useState(false);
+  const [canCreateJob, setCanCreateJob] = useState(false);
 
   useEffect(() => {
     const token = getToken();
     const user = getStoredUser();
-    setCanCreateListing(!!token && user?.accountType === "CLIENT");
+    setCanCreateJob(!!token && user?.accountType === "CLIENT");
   }, []);
 
   const currentLabel = currentCategorySlug
@@ -75,13 +75,13 @@ export function CategoriesSidebarMobile({
             <ChevronDown className="size-6 shrink-0" aria-hidden />
           )}
         </button>
-        {canCreateListing && (
-          <Link href="/listings/new" onClick={() => setOpen(false)} className="shrink-0">
+        {canCreateJob && (
+          <Link href="/jobs/new" onClick={() => setOpen(false)} className="shrink-0">
             <Button
               type="button"
               size="icon"
               className="size-11 rounded-md"
-              aria-label={t("listings.newListing")}
+              aria-label={t("jobs.newJob")}
             >
               <Plus className="size-5" aria-hidden />
             </Button>
@@ -97,7 +97,7 @@ export function CategoriesSidebarMobile({
         {currentCategorySlug && (
           <li>
             <Link
-              href="/offers/all/1"
+              href="/jobs/all/1"
               onClick={() => setOpen(false)}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 text-xl font-semibold transition-colors",
@@ -116,7 +116,7 @@ export function CategoriesSidebarMobile({
           .map((cat) => (
             <li key={cat.id}>
               <Link
-                href={`/offers/${encodeURIComponent(cat.slug)}/1`}
+                href={`/jobs/${encodeURIComponent(cat.slug)}/1`}
                 onClick={() => setOpen(false)}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 text-xl font-semibold transition-colors",

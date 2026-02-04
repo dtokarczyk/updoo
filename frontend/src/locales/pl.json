@@ -88,21 +88,21 @@
     "freelancerSkillsSearchPlaceholder": "Szukaj umiejętności…",
     "freelancerSkillsNoResults": "Brak umiejętności pasujących do wyszukiwania."
   },
-  "listings": {
-    "listings": "Ogłoszenia",
+  "jobs": {
+    "jobs": "Ogłoszenia",
     "headerSampleWithCategory": "Zobacz {count} ogłoszeń {category} opublikowanych na Updoo",
     "headerSampleWithoutCategory": "Zobacz {count} ogłoszeń opublikowanych na Updoo",
-    "newListing": "Nowe ogłoszenie",
-    "createListing": "Utwórz darmowe ogłoszenie",
-    "editListing": "Edytuj ogłoszenie",
-    "listingDetails": "Szczegóły ogłoszenia",
-    "loadingListing": "Ładowanie oferty…",
-    "listingNotFound": "Oferta nie istnieje.",
+    "newJob": "Nowe ogłoszenie",
+    "createJob": "Utwórz darmowe ogłoszenie",
+    "editJob": "Edytuj ogłoszenie",
+    "jobDetails": "Szczegóły ogłoszenia",
+    "loadingJob": "Ładowanie oferty…",
+    "jobNotFound": "Oferta nie istnieje.",
     "backToList": "Powrót do listy",
-    "backToAllListings": "Lista ofert",
-    "loadingListings": "Ładowanie ogłoszeń...",
+    "backToAllJobs": "Lista ofert",
+    "loadingJobs": "Ładowanie ogłoszeń...",
     "failedToLoad": "Nie udało się załadować ogłoszeń",
-    "noListings": "Brak ogłoszeń. Dodaj pierwsze ogłoszenie!",
+    "noJobs": "Brak ogłoszeń. Dodaj pierwsze ogłoszenie!",
     "published": "Opublikowano",
     "experienceLevel": "Poziom doświadczenia",
     "hourlyRate": "Stawka godzinowa",
@@ -170,7 +170,7 @@
     "deadlinePassedMessage": "Termin zgłoszeń minął. Nie można już się zgłosić.",
     "apply": "Zgłoś się",
     "applying": "Wysyłanie…",
-    "applyToListing": "Zgłoś się do oferty",
+    "applyToJob": "Zgłoś się do oferty",
     "applyMessagePlaceholder": "Opcjonalna wiadomość do zleceniodawcy…",
     "applied": "Zgłosiłeś się do tej oferty.",
     "appliedShort": "Zgłosiłeś się",
@@ -184,8 +184,8 @@
     "next": "Następna",
     "page": "Strona",
     "of": "z",
-    "listingsCount": "ogłoszeń",
-    "newListingForm": {
+    "jobsCount": "ogłoszeń",
+    "newJobForm": {
       "title": "Nowe ogłoszenie",
       "description": "Wypełnij szczegóły ogłoszenia. Pola rozliczenia i skille pomogą dopasować ofertę.",
       "titlePlaceholder": "np. Szukam developera React",
@@ -205,18 +205,6 @@
       "submitting": "Dodawanie...",
       "submit": "Dodaj ogłoszenie"
     }
-  },
-  "jobs": {
-    "allLanguages": "Wszystkie języki",
-    "english": "English",
-    "polish": "Polish",
-    "headerSampleWithCategory": "Zobacz {count} ofert {category} opublikowanych na Updoo",
-    "headerSampleWithoutCategory": "Zobacz {count} ofert opublikowanych na Updoo",
-    "appliedShort": "Zgłosiłeś się",
-    "editJob": "Edytuj ofertę",
-    "page": "Strona",
-    "of": "z",
-    "jobsCount": "ofert"
   },
   "branding": {
     "logotypeTagline": "Publikuj i szukaj ofert dla freelancerów"

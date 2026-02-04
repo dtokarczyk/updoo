@@ -54,7 +54,7 @@ export function LanguageToggle({
   const nextLocale: Locale = locale === "pl" ? "en" : "pl";
   const nextFlag = nextLocale === "pl" ? "PL" : "GB";
   const displayText = showFullName
-    ? (nextLocale === "pl" ? t("listings.polish") : t("listings.english"))
+    ? (nextLocale === "pl" ? t("jobs.polish") : t("jobs.english"))
     : nextLocale.toUpperCase();
 
   return (

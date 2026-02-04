@@ -7,8 +7,6 @@ import {
   getCategories,
   getLocations,
   getSkills,
-  getListing,
-  updateListing,
   getStoredUser,
   type Category,
   type Location,
@@ -18,6 +16,8 @@ import {
   type ExperienceLevel,
   type ProjectType,
   type JobLanguage,
+  getJob,
+  updateJob,
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -106,7 +106,7 @@ export default function EditListingPage() {
       getCategories(),
       getLocations(),
       getSkills(),
-      getListing(id),
+      getJob(id),
     ])
       .then(([cats, locs, sk, listing]) => {
         if (listing.authorId !== user.id) {
@@ -207,7 +207,7 @@ export default function EditListingPage() {
     }
     setSubmitting(true);
     try {
-      await updateListing(id, {
+      await updateJob(id, {
         title: title.trim(),
         description: description.trim(),
         categoryId,

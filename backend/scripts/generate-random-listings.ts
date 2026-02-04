@@ -140,7 +140,7 @@ async function main() {
 
   console.log(`Found ${categories.length} categories, ${locations.length} locations, ${skills.length} skills, ${users.length} CLIENT users`);
 
-  const listingsToCreate = [];
+  const jobsToCreate = [];
   const now = new Date();
 
   for (let i = 0; i < 100; i++) {
@@ -172,7 +172,7 @@ async function main() {
     const daysAgo = randomInt(0, 30);
     const createdAt = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
 
-    listingsToCreate.push({
+    jobsToCreate.push({
       title: randomElement(titles) + ` #${i + 1}`,
       description: randomElement(descriptions),
       categoryId: randomElement(categories).id,
@@ -195,14 +195,14 @@ async function main() {
     });
   }
 
-  console.log(`\nCreating ${listingsToCreate.length} jobs...`);
+  console.log(`\nCreating ${jobsToCreate.length} jobs...`);
 
   // Create jobs in batches
   const batchSize = 10;
   let created = 0;
 
-  for (let i = 0; i < listingsToCreate.length; i += batchSize) {
-    const batch = listingsToCreate.slice(i, i + batchSize);
+  for (let i = 0; i < jobsToCreate.length; i += batchSize) {
+    const batch = jobsToCreate.slice(i, i + batchSize);
 
     for (const jobData of batch) {
       const { skills, ...jobFields } = jobData;
@@ -220,7 +220,7 @@ async function main() {
 
       created++;
       if (created % 10 === 0) {
-        console.log(`Created ${created}/${listingsToCreate.length} jobs...`);
+        console.log(`Created ${created}/${jobsToCreate.length} jobs...`);
       }
     }
   }

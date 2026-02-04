@@ -55,7 +55,7 @@ export function JobsSectionHeader({
     }
 
     const search = searchParams.toString();
-    return `/offers/${encodeURIComponent(categorySlugForRouting)}/${nextPage}${search ? `?${search}` : ""
+    return `/jobs/${encodeURIComponent(categorySlugForRouting)}/${nextPage}${search ? `?${search}` : ""
       }`;
   };
 

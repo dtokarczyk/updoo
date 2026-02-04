@@ -121,7 +121,7 @@ export function UserDropdown({
             className="block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800"
             onClick={() => setDropdownOpen(false)}
           >
-            {t("listings.favorites")}
+            {t("jobs.favorites")}
           </Link>
           <button
             type="button"
@@ -212,9 +212,9 @@ export function HomeNav({ showCreateOnly, placement = "header" }: HomeNavProps) 
   if (showCreateOnly) {
     if (!canCreateListing) return null;
     return (
-      <Link href="/listings/new">
+      <Link href="/jobs/new">
         <Button variant="outline" size="sm">
-          {t("listings.newListing")}
+          {t("jobs.newJob")}
         </Button>
       </Link>
     );

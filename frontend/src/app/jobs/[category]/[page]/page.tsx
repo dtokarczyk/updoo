@@ -10,7 +10,7 @@ export const revalidate = 60;
 async function getCategoriesServer(): Promise<Category[]> {
   const locale = await getLocaleFromRequest();
 
-  const res = await fetch(`${API_URL}/listings/categories`, {
+  const res = await fetch(`${API_URL}/jobs/categories`, {
     // Revalidate categories periodically so they do not have to be
     // fetched on every client render.
     next: { revalidate },

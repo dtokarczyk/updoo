@@ -82,8 +82,8 @@ function OffersPageContent({
                 {t("homepage.heroText")}
               </h1>
               <Button asChild size="lg" className="text-lg px-8 py-6">
-                <Link href="/listings/new">
-                  {t("listings.createListing")}
+                <Link href="/jobs/new">
+                  {t("jobs.createJob")}
                 </Link>
               </Button>
             </div>
@@ -91,7 +91,7 @@ function OffersPageContent({
         </div>
       )}
       <JobsSectionHeader
-        sectionTitle={t("listings.listings")}
+        sectionTitle={t("jobs.jobs")}
         categoryId={categoryId}
         categorySlugForRouting={routingCategorySlug}
         page={page}

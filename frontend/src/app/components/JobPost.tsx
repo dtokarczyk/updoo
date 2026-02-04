@@ -49,7 +49,7 @@ function formatTimeLeftUntil(iso: string, locale: "pl" | "en", t: (key: string, 
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
   const msLeft = d.getTime() - Date.now();
-  if (msLeft <= 0) return t("listings.deadlinePassed");
+  if (msLeft <= 0) return t("jobs.deadlinePassed");
 
   const duration = intervalToDuration({
     start: Date.now(),
@@ -61,20 +61,20 @@ function formatTimeLeftUntil(iso: string, locale: "pl" | "en", t: (key: string, 
     const hoursLeft = duration.hours ?? 0;
     if (hoursLeft === 0) {
       const minutesLeft = duration.minutes ?? 0;
-      return t("listings.deadlineRemainingMinutes", { minutes: minutesLeft });
+      return t("jobs.deadlineRemainingMinutes", { minutes: minutesLeft });
     }
-    return t("listings.deadlineRemainingHours", { hours: hoursLeft });
+    return t("jobs.deadlineRemainingHours", { hours: hoursLeft });
   }
 
   if (daysLeft === 1) {
-    return t("listings.deadlineRemaining1");
+    return t("jobs.deadlineRemaining1");
   }
 
   if (daysLeft < 5) {
-    return t("listings.deadlineRemainingFew", { days: daysLeft });
+    return t("jobs.deadlineRemainingFew", { days: daysLeft });
   }
 
-  return t("listings.deadlineRemainingMany", { days: daysLeft });
+  return t("jobs.deadlineRemainingMany", { days: daysLeft });
 }
 
 export function JobPost({
@@ -122,13 +122,13 @@ export function JobPost({
   const metaPosted = formatPostedAgo(job.createdAt, locale);
   const metaDeadlineLeft = job.deadline ? formatTimeLeftUntil(job.deadline, locale, t) : "";
   const firstFieldLabel = EXPERIENCE_LABELS[job.experienceLevel] ?? job.experienceLevel;
-  const firstFieldSub = t("listings.experienceLevel");
+  const firstFieldSub = t("jobs.experienceLevel");
   const secondFieldLabel = formatRate(
     job.rate,
     job.currency,
     job.billingType
   );
-  const secondFieldSub = job.billingType === "HOURLY" ? t("listings.hourlyRate") : t("listings.rate");
+  const secondFieldSub = job.billingType === "HOURLY" ? t("jobs.hourlyRate") : t("jobs.rate");
 
   return (
     <Card
@@ -167,7 +167,7 @@ export function JobPost({
           <div className="min-w-0 flex-1">
             <CardTitle className="text-xl font-bold leading-tight text-foreground">
               <Link
-                href={`/jobs/${job.id}`}
+                href={`/jobs/job/${job.id}`}
                 scroll={false}
                 className="hover:underline focus:outline-none focus:underline"
                 onClick={onNavigate}
@@ -178,7 +178,7 @@ export function JobPost({
             <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
               <span className="inline-flex items-center gap-1.5">
                 <Calendar className="h-4 w-4" aria-hidden />
-                {t("listings.published")} {metaPosted}
+                {t("jobs.published")} {metaPosted}
               </span>
               {metaDeadlineLeft && (
                 <span className="inline-flex items-center gap-1.5">
@@ -214,7 +214,7 @@ export function JobPost({
                   {job.currency}
                   {job.billingType === "HOURLY" ? "/h" : ""}
                 </span>
-                {job.rateNegotiable && ` (${t("listings.negotiable")})`}
+                {job.rateNegotiable && ` (${t("jobs.negotiable")})`}
               </p>
               <p className="text-sm text-muted-foreground">{secondFieldSub}</p>
             </div>
@@ -242,8 +242,8 @@ export function JobPost({
               size="lg"
               className="mt-2 shrink-0"
             >
-              <Link href={`/jobs/${job.id}`} scroll={false} onClick={onNavigate}>
-                {t("listings.seeMore")}
+              <Link href={`/jobs/job/${job.id}`} scroll={false} onClick={onNavigate}>
+                {t("jobs.seeMore")}
               </Link>
             </Button>
           </div>
@@ -255,8 +255,8 @@ export function JobPost({
               size="lg"
               className="mt-2 shrink-0"
             >
-              <Link href={`/jobs/${job.id}`} scroll={false} onClick={onNavigate}>
-                {t("listings.seeMore")}
+              <Link href={`/jobs/job/${job.id}`} scroll={false} onClick={onNavigate}>
+                {t("jobs.seeMore")}
               </Link>
             </Button>
           </div>

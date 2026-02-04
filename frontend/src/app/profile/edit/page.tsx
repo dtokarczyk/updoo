@@ -273,8 +273,8 @@ export default function ProfileEditPage() {
                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none disabled:opacity-50 md:text-sm"
                     disabled={loading}
                   >
-                    <option value="POLISH">{t("listings.polish")}</option>
-                    <option value="ENGLISH">{t("listings.english")}</option>
+                    <option value="POLISH">{t("jobs.polish")}</option>
+                    <option value="ENGLISH">{t("jobs.english")}</option>
                   </select>
                   <p className="text-xs text-muted-foreground">
                     {t("profile.languageDesc")}

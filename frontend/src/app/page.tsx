@@ -13,6 +13,6 @@ export default async function Home({
   const params = await searchParams;
   const slug = params?.category || "all";
   const page = parsePage(params?.page);
-  const target = `/offers/${encodeURIComponent(slug)}/${page}`;
+  const target = `/jobs/${encodeURIComponent(slug)}/${page}`;
   redirect(target);
 }

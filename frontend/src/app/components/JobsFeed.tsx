@@ -173,7 +173,7 @@ export function JobsFeed({
       searchParams.set("skills", skillIds.join(","));
     }
     const search = searchParams.toString();
-    const target = `/offers/${encodeURIComponent(categorySlug)}/${newPage}${search ? `?${search}` : ""
+    const target = `/jobs/${encodeURIComponent(categorySlug)}/${newPage}${search ? `?${search}` : ""
       }`;
     router.replace(target);
   };
@@ -363,7 +363,7 @@ export function JobsFeed({
             disabled={!pagination.hasPreviousPage}
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
-            {t("listings.previous")}
+            {t("jobs.previous")}
           </Button>
 
           <div className="flex items-center gap-1">
@@ -400,7 +400,7 @@ export function JobsFeed({
             onClick={() => handlePageChange(page + 1)}
             disabled={!pagination.hasNextPage}
           >
-            {t("listings.next")}
+            {t("jobs.next")}
             <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         </div>

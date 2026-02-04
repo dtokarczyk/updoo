@@ -61,6 +61,7 @@ model User {
   listings    Listing[]
   applications ListingApplication[]
   favorites   Favorite[]
+  skills      UserSkill[]
 }
 
 model Category {
@@ -101,6 +102,7 @@ model Skill {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   listingSkills ListingSkill[]
+  userSkills    UserSkill[]
 }
 
 model Listing {
@@ -174,5 +176,17 @@ model ListingSkill {
 
   @@unique([listingId, skillId])
   @@index([listingId])
+  @@index([skillId])
+}
+
+model UserSkill {
+  id        String   @id @default(cuid())
+  userId    String
+  skillId   String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill     Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skillId])
+  @@index([userId])
   @@index([skillId])
 }

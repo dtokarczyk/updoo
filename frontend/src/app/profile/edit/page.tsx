@@ -13,13 +13,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   getStoredUser,
   updateProfile,
   updateStoredUser,
   getToken,
   clearAuth,
+  getSkills,
   type UserLanguage,
+  type Skill,
 } from "@/lib/api";
 import { useTranslations } from "@/hooks/useTranslations";
 
@@ -29,12 +33,19 @@ export default function ProfileEditPage() {
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
   const [email, setEmail] = useState("");
+  const [oldPassword, setOldPassword] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
   const [language, setLanguage] = useState<UserLanguage>("POLISH");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [skillsLoading, setSkillsLoading] = useState(false);
+  const [skillsError, setSkillsError] = useState("");
+  const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
+  const [skillsSearch, setSkillsSearch] = useState("");
 
   useEffect(() => {
     setMounted(true);
@@ -44,6 +55,9 @@ export default function ProfileEditPage() {
       setSurname(user.surname ?? "");
       setEmail(user.email ?? "");
       setLanguage(user.language ?? "POLISH");
+      if (Array.isArray(user.skills)) {
+        setSelectedSkillIds(user.skills.map((skill) => skill.id));
+      }
     }
   }, []);
 
@@ -55,7 +69,49 @@ export default function ProfileEditPage() {
     }
   }, [mounted, router]);
 
-  async function handleSubmit(e: React.FormEvent) {
+  useEffect(() => {
+    if (!mounted) return;
+    let cancelled = false;
+    async function loadSkills() {
+      setSkillsError("");
+      setSkillsLoading(true);
+      try {
+        const allSkills = await getSkills();
+        if (!cancelled) {
+          setSkills(allSkills);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setSkillsError(
+            err instanceof Error ? err.message : "Failed to load skills"
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setSkillsLoading(false);
+        }
+      }
+    }
+    void loadSkills();
+    return () => {
+      cancelled = true;
+    };
+  }, [mounted]);
+
+  function toggleSkill(id: string) {
+    setSelectedSkillIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }
+
+  const filteredSkills =
+    skillsSearch.trim().length === 0
+      ? skills
+      : skills.filter((skill) =>
+        skill.name.toLowerCase().includes(skillsSearch.trim().toLowerCase())
+      );
+
+  async function handleBasicSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setSuccess(false);
@@ -67,18 +123,63 @@ export default function ProfileEditPage() {
         email: email.trim() || undefined,
         language,
       };
-      if (password.trim()) payload.password = password.trim();
       const { user: updated } = await updateProfile(payload);
       updateStoredUser(updated);
-      setPassword("");
       setSuccess(true);
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("profile.saveFailed"));
+    } finally {
+      setLoading(false);
+    }
+  }
 
-      if (password.trim()) {
-        clearAuth();
-        router.push("/login");
-        router.refresh();
-        return;
-      }
+  async function handleSkillsSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setSuccess(false);
+    setLoading(true);
+    try {
+      const payload: Parameters<typeof updateProfile>[0] = {
+        skillIds: selectedSkillIds,
+      };
+      const { user: updated } = await updateProfile(payload);
+      updateStoredUser(updated);
+      setSuccess(true);
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("profile.saveFailed"));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handlePasswordSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setSuccess(false);
+    if (!oldPassword.trim() || !password.trim() || !passwordConfirm.trim()) {
+      setError(t("profile.passwordBothRequired"));
+      return;
+    }
+    if (password.trim() !== passwordConfirm.trim()) {
+      setError(t("profile.passwordMismatch"));
+      return;
+    }
+    setLoading(true);
+    try {
+      const payload: Parameters<typeof updateProfile>[0] = {
+        oldPassword: oldPassword.trim(),
+        password: password.trim(),
+      };
+      const { user: updated } = await updateProfile(payload);
+      updateStoredUser(updated);
+      setOldPassword("");
+      setPassword("");
+      setPasswordConfirm("");
+      setSuccess(true);
+      clearAuth();
+      router.push("/login");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : t("profile.saveFailed"));
@@ -100,8 +201,19 @@ export default function ProfileEditPage() {
             {t("profile.editProfileDesc")}
           </CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit}>
+        <Tabs defaultValue="basic">
           <CardContent className="space-y-4">
+            <TabsList className="w-full justify-start">
+              <TabsTrigger value="basic">
+                {t("profile.tabBasic")}
+              </TabsTrigger>
+              <TabsTrigger value="skills">
+                {t("profile.tabSkills")}
+              </TabsTrigger>
+              <TabsTrigger value="password">
+                {t("profile.tabPassword")}
+              </TabsTrigger>
+            </TabsList>
             {error && (
               <p className="text-sm text-destructive rounded-md bg-destructive/10 px-3 py-2">
                 {error}
@@ -112,80 +224,181 @@ export default function ProfileEditPage() {
                 {t("profile.profileSaved")}
               </p>
             )}
-            <div className="space-y-2">
-              <Label htmlFor="name">{t("auth.name")}</Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder={t("auth.name")}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                autoComplete="given-name"
-                disabled={loading}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="surname">{t("auth.surname")}</Label>
-              <Input
-                id="surname"
-                type="text"
-                placeholder={t("auth.surname")}
-                value={surname}
-                onChange={(e) => setSurname(e.target.value)}
-                autoComplete="family-name"
-                disabled={loading}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">{t("auth.email")}</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder={t("auth.email")}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-                disabled={loading}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="language">{t("profile.language")}</Label>
-              <select
-                id="language"
-                value={language}
-                onChange={(e) => setLanguage(e.target.value as UserLanguage)}
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none disabled:opacity-50 md:text-sm"
-                disabled={loading}
-              >
-                <option value="POLISH">{t("listings.polish")}</option>
-                <option value="ENGLISH">{t("listings.english")}</option>
-              </select>
-              <p className="text-xs text-muted-foreground">
-                {t("profile.languageDesc")}
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">{t("profile.newPassword")}</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder={t("profile.passwordPlaceholder")}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="new-password"
-                disabled={loading}
-              />
-              <p className="text-xs text-muted-foreground">
-                {t("profile.passwordMinLength")}
-              </p>
-            </div>
+            <TabsContent value="basic" className="space-y-4">
+              <form onSubmit={handleBasicSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">{t("auth.name")}</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder={t("auth.name")}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    autoComplete="given-name"
+                    disabled={loading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="surname">{t("auth.surname")}</Label>
+                  <Input
+                    id="surname"
+                    type="text"
+                    placeholder={t("auth.surname")}
+                    value={surname}
+                    onChange={(e) => setSurname(e.target.value)}
+                    autoComplete="family-name"
+                    disabled={loading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">{t("auth.email")}</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder={t("auth.email")}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email"
+                    disabled={loading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="language">{t("profile.language")}</Label>
+                  <select
+                    id="language"
+                    value={language}
+                    onChange={(e) =>
+                      setLanguage(e.target.value as UserLanguage)
+                    }
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none disabled:opacity-50 md:text-sm"
+                    disabled={loading}
+                  >
+                    <option value="POLISH">{t("listings.polish")}</option>
+                    <option value="ENGLISH">{t("listings.english")}</option>
+                  </select>
+                  <p className="text-xs text-muted-foreground">
+                    {t("profile.languageDesc")}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                </div>
+                <CardFooter className="px-0">
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? t("common.saving") : t("common.save")}
+                  </Button>
+                </CardFooter>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="skills" className="space-y-4">
+              <form onSubmit={handleSkillsSubmit} className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  {t("onboarding.freelancerSkillsDesc")}
+                </p>
+                <Input
+                  type="text"
+                  placeholder={t(
+                    "onboarding.freelancerSkillsSearchPlaceholder"
+                  )}
+                  value={skillsSearch}
+                  onChange={(e) => setSkillsSearch(e.target.value)}
+                  disabled={skillsLoading || loading}
+                />
+                <div className="max-h-72 space-y-2 overflow-y-auto rounded-md border p-3">
+                  {skillsLoading && (
+                    <p className="text-sm text-muted-foreground">
+                      {t("common.loading")}
+                    </p>
+                  )}
+                  {!skillsLoading && filteredSkills.length === 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      {skillsSearch.trim().length > 0
+                        ? t("onboarding.freelancerSkillsNoResults")
+                        : t("onboarding.freelancerSkillsEmpty")}
+                    </p>
+                  )}
+                  {!skillsLoading &&
+                    filteredSkills.map((skill) => {
+                      const checked = selectedSkillIds.includes(skill.id);
+                      return (
+                        <label
+                          key={skill.id}
+                          className="flex w-full items-center gap-2 rounded-md px-1.5 py-1 text-sm hover:bg-accent/60 cursor-pointer"
+                        >
+                          <Checkbox
+                            checked={checked}
+                            onCheckedChange={() => toggleSkill(skill.id)}
+                            className="shrink-0"
+                            disabled={loading}
+                            aria-label={skill.name}
+                          />
+                          <span>{skill.name}</span>
+                        </label>
+                      );
+                    })}
+                </div>
+                <CardFooter className="px-0">
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? t("common.saving") : t("common.save")}
+                  </Button>
+                </CardFooter>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="password" className="space-y-4">
+              <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="oldPassword">
+                    {t("profile.currentPassword")}
+                  </Label>
+                  <Input
+                    id="oldPassword"
+                    type="password"
+                    placeholder={t("profile.currentPasswordPlaceholder")}
+                    value={oldPassword}
+                    onChange={(e) => setOldPassword(e.target.value)}
+                    autoComplete="current-password"
+                    disabled={loading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">{t("profile.newPassword")}</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder={t("profile.passwordPlaceholder")}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="new-password"
+                    disabled={loading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="passwordConfirm">
+                    {t("profile.newPasswordConfirm")}
+                  </Label>
+                  <Input
+                    id="passwordConfirm"
+                    type="password"
+                    placeholder={t("profile.passwordPlaceholder")}
+                    value={passwordConfirm}
+                    onChange={(e) => setPasswordConfirm(e.target.value)}
+                    autoComplete="new-password"
+                    disabled={loading}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t("profile.passwordMinLength")}
+                  </p>
+                </div>
+                <CardFooter className="px-0">
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? t("common.saving") : t("common.save")}
+                  </Button>
+                </CardFooter>
+              </form>
+            </TabsContent>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? t("common.saving") : t("common.save")}
-            </Button>
-          </CardFooter>
-        </form>
+        </Tabs>
       </Card>
     </div>
   );

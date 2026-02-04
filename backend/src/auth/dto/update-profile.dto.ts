@@ -25,10 +25,18 @@ export class UpdateProfileDto {
   password?: string;
 
   @IsOptional()
+  @IsString()
+  oldPassword?: string;
+
+  @IsOptional()
   @IsIn(ACCOUNT_TYPES, { message: 'accountType must be CLIENT or FREELANCER' })
   accountType?: UpdateProfileAccountType;
 
   @IsOptional()
   @IsIn(LANGUAGES, { message: 'language must be POLISH or ENGLISH' })
   language?: UserLanguage;
+
+  @IsOptional()
+  @IsString({ each: true })
+  skillIds?: string[];
 }

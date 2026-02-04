@@ -46,12 +46,20 @@
     "editProfile": "Edycja profilu",
     "editProfileDesc": "Zmień imię, nazwisko, adres e-mail lub hasło. Po zmianie hasła zostaniesz wylogowany.",
     "profileSaved": "Profil zapisany.",
+    "currentPassword": "Aktualne hasło",
+    "currentPasswordPlaceholder": "Wpisz swoje aktualne hasło",
     "newPassword": "Nowe hasło (opcjonalnie)",
     "passwordPlaceholder": "Zostaw puste, aby nie zmieniać",
     "passwordMinLength": "Min. 6 znaków. Po zmianie hasła zostaniesz wylogowany.",
     "saveFailed": "Zapisywanie nie powiodło się",
     "language": "Język",
-    "languageDesc": "Wybierz język interfejsu"
+    "languageDesc": "Wybierz język interfejsu",
+    "tabBasic": "Podstawowe dane",
+    "tabSkills": "Umiejętności",
+    "tabPassword": "Hasło",
+    "passwordBothRequired": "Wpisz nowe hasło w oba pola.",
+    "passwordMismatch": "Hasła nie są takie same.",
+    "newPasswordConfirm": "Powtórz nowe hasło"
   },
   "onboarding": {
     "whatShouldWeCallYou": "Jak mamy Cię nazywać?",
@@ -59,11 +67,18 @@
     "chooseAccountType": "Wybierz typ konta",
     "chooseAccountTypeDesc": "Wybierz, czy jesteś klientem szukającym freelancera, czy freelancerem szukającym pracy.",
     "client": "Klient",
+    "clientTitle": "Chcę publikować oferty",
     "clientDesc": "Szukam freelancera do wykonania projektu",
     "freelancer": "Freelancer",
+    "freelancerTitle": "Szukam zleceń",
     "freelancerDesc": "Szukam projektów do wykonania",
     "saving": "Zapisywanie…",
-    "saveFailed": "Zapisywanie nie powiodło się"
+    "saveFailed": "Zapisywanie nie powiodło się",
+    "freelancerSkillsTitle": "Zaznacz swoje umiejętności",
+    "freelancerSkillsDesc": "Zaznacz posiadane przez Ciebie umiejętności, abyśmy mogli łatwiej dopasowywać do Ciebie oferty.",
+    "freelancerSkillsEmpty": "Brak dostępnych umiejętności.",
+    "freelancerSkillsSearchPlaceholder": "Szukaj umiejętności…",
+    "freelancerSkillsNoResults": "Brak umiejętności pasujących do wyszukiwania."
   },
   "listings": {
     "listings": "Ogłoszenia",

@@ -15,9 +15,19 @@ export interface JwtPayload {
   email: string;
 }
 
+export interface AuthResponseUser {
+  id: string;
+  email: string;
+  name: string | null;
+  surname: string | null;
+  accountType: string | null;
+  language: string;
+  skills: { id: string; name: string }[];
+}
+
 export interface AuthResponse {
   access_token: string;
-  user: { id: string; email: string; name: string | null; surname: string | null; accountType: string | null; language: string };
+  user: AuthResponseUser;
 }
 
 @Injectable()
@@ -43,19 +53,49 @@ export class AuthService {
         password: hashedPassword,
       },
     });
+    const withRelations = await this.prisma.user.findUnique({
+      where: { id: user.id },
+      // Skills relation is defined in Prisma schema; cast to any to avoid
+      // type mismatch before regenerating Prisma client.
+      include: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ...({ skills: { include: { skill: true } } } as any),
+      },
+    });
+    if (!withRelations) {
+      return this.buildAuthResponse({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        surname: user.surname,
+        accountType: user.accountType,
+        language: user.language,
+        skills: [],
+      });
+    }
+    const skillsFromUser = (withRelations as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
     return this.buildAuthResponse({
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      surname: user.surname,
-      accountType: user.accountType,
-      language: user.language,
+      id: withRelations.id,
+      email: withRelations.email,
+      name: withRelations.name,
+      surname: withRelations.surname,
+      accountType: withRelations.accountType,
+      language: withRelations.language,
+      skills: skillsFromUser.map((relation) => ({
+        id: relation.skill.id,
+        name: relation.skill.name,
+      })),
     });
   }
 
   async login(dto: LoginDto): Promise<AuthResponse> {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email.toLowerCase() },
+      // See comment in register(): we cast include to any until Prisma client is regenerated.
+      include: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ...({ skills: { include: { skill: true } } } as any),
+      },
     });
     if (!user) {
       throw new UnauthorizedException('Invalid email or password');
@@ -64,6 +104,7 @@ export class AuthService {
     if (!isMatch) {
       throw new UnauthorizedException('Invalid email or password');
     }
+    const skillsFromUser = (user as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
     return this.buildAuthResponse({
       id: user.id,
       email: user.email,
@@ -71,6 +112,10 @@ export class AuthService {
       surname: user.surname,
       accountType: user.accountType,
       language: user.language,
+      skills: skillsFromUser.map((relation) => ({
+        id: relation.skill.id,
+        name: relation.skill.name,
+      })),
     });
   }
 
@@ -98,12 +143,41 @@ export class AuthService {
       ...(dto.language !== undefined && { language: dto.language }),
     };
     if (dto.password !== undefined && dto.password.trim()) {
+      const existingUser = await this.prisma.user.findUnique({
+        where: { id: userId },
+      });
+      if (!existingUser) {
+        throw new UnauthorizedException('Invalid user');
+      }
+      if (!dto.oldPassword || !dto.oldPassword.trim()) {
+        throw new UnauthorizedException('Current password is required');
+      }
+      const isOldPasswordValid = await bcrypt.compare(
+        dto.oldPassword.trim(),
+        existingUser.password,
+      );
+      if (!isOldPasswordValid) {
+        throw new UnauthorizedException('Current password is incorrect');
+      }
       updateData.password = await bcrypt.hash(dto.password.trim(), this.saltRounds);
+    }
+    if (Array.isArray(dto.skillIds)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (updateData as any).skills = {
+        deleteMany: {},
+        create: dto.skillIds.map((skillId) => ({ skillId })),
+      };
     }
     const user = await this.prisma.user.update({
       where: { id: userId },
       data: updateData,
+      // See comment in register(): cast include to any until Prisma client is regenerated.
+      include: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ...({ skills: { include: { skill: true } } } as any),
+      },
     });
+    const skillsFromUser = (user as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
     return {
       user: {
         id: user.id,
@@ -112,6 +186,10 @@ export class AuthService {
         surname: user.surname,
         accountType: user.accountType,
         language: user.language,
+        skills: skillsFromUser.map((relation) => ({
+          id: relation.skill.id,
+          name: relation.skill.name,
+        })),
       },
     };
   }
@@ -119,8 +197,14 @@ export class AuthService {
   async validateUser(payload: JwtPayload) {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
+      // See comment in register(): cast include to any until Prisma client is regenerated.
+      include: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ...({ skills: { include: { skill: true } } } as any),
+      },
     });
     if (!user) return null;
+    const skillsFromUser = (user as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
     return {
       id: user.id,
       email: user.email,
@@ -128,17 +212,14 @@ export class AuthService {
       surname: user.surname,
       accountType: user.accountType,
       language: user.language,
+      skills: skillsFromUser.map((relation) => ({
+        id: relation.skill.id,
+        name: relation.skill.name,
+      })),
     };
   }
 
-  private buildAuthResponse(user: {
-    id: string;
-    email: string;
-    name: string | null;
-    surname: string | null;
-    accountType: string | null;
-    language: string;
-  }): AuthResponse {
+  private buildAuthResponse(user: AuthResponseUser): AuthResponse {
     const payload: JwtPayload = { sub: user.id, email: user.email };
     const access_token = this.jwtService.sign(payload);
     return {
@@ -150,6 +231,7 @@ export class AuthService {
         surname: user.surname,
         accountType: user.accountType,
         language: user.language,
+        skills: user.skills,
       },
     };
   }

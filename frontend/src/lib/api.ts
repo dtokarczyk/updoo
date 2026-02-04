@@ -11,6 +11,8 @@ export interface AuthUser {
   surname: string | null;
   accountType: AccountType | null;
   language: UserLanguage;
+  /** Skills directly attached to freelancer account. */
+  skills?: Skill[];
 }
 
 export interface AuthResponse {
@@ -41,7 +43,11 @@ export interface UpdateProfilePayload {
   email?: string;
   accountType?: AccountType;
   password?: string;
+  /** Current password, required when changing password. */
+  oldPassword?: string;
   language?: UserLanguage;
+  /** When provided, replaces freelancer skills on the account. */
+  skillIds?: string[];
 }
 
 export async function updateProfile(
@@ -54,8 +60,12 @@ export async function updateProfile(
   if (payload.surname !== undefined) body.surname = payload.surname;
   if (payload.email !== undefined) body.email = payload.email;
   if (payload.accountType !== undefined) body.accountType = payload.accountType;
-  if (payload.password !== undefined && payload.password.trim()) body.password = payload.password;
+  if (payload.password !== undefined && payload.password.trim())
+    body.password = payload.password;
+  if (payload.oldPassword !== undefined && payload.oldPassword.trim())
+    body.oldPassword = payload.oldPassword;
   if (payload.language !== undefined) body.language = payload.language;
+  if (payload.skillIds !== undefined) body.skillIds = payload.skillIds;
   const res = await fetch(`${API_URL}/auth/profile`, {
     method: "PATCH",
     headers: {
@@ -127,7 +137,13 @@ export function clearAuth(): void {
 
 /** True if user has not completed onboarding (missing name or account type). */
 export function needsOnboarding(user: AuthUser | null): boolean {
-  return user != null && (user.name == null || user.accountType == null);
+  if (user == null) return false;
+  if (user.name == null || user.accountType == null) return true;
+  if (user.accountType === "FREELANCER") {
+    const skillsCount = user.skills?.length ?? 0;
+    return skillsCount === 0;
+  }
+  return false;
 }
 
 // Listings & categories

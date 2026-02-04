@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Megaphone, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -18,45 +20,101 @@ import {
   updateProfile,
   updateStoredUser,
   needsOnboarding,
+  getSkills,
   type AccountType,
+  type Skill,
+  type AuthUser,
 } from "@/lib/api";
 import { useTranslations } from "@/hooks/useTranslations";
 
 const STEP_NAME = 1;
 const STEP_ACCOUNT_TYPE = 2;
+const STEP_SKILLS = 3;
 
 export default function OnboardingPage() {
   const router = useRouter();
   const { t } = useTranslations();
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [step, setStep] = useState(STEP_NAME);
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
   const [accountType, setAccountType] = useState<AccountType | "">("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const user = typeof window !== "undefined" ? getStoredUser() : null;
+  const [skillsLoading, setSkillsLoading] = useState(false);
+  const [skillsError, setSkillsError] = useState("");
+  const [availableSkills, setAvailableSkills] = useState<Skill[]>([]);
+  const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
+  const [skillsSearch, setSkillsSearch] = useState("");
 
   useEffect(() => {
-    if (user === null) {
+    const stored = getStoredUser();
+    if (stored === null) {
       router.replace("/login");
       return;
     }
-    if (!needsOnboarding(user)) {
+    if (!needsOnboarding(stored)) {
       router.replace("/");
       return;
     }
-    if (user.name != null) {
-      setName(user.name);
+    setUser(stored);
+    if (stored.name != null) {
+      setName(stored.name);
       setStep(STEP_ACCOUNT_TYPE);
     }
-    if (user.surname != null) {
-      setSurname(user.surname);
+    if (stored.surname != null) {
+      setSurname(stored.surname);
     }
-    if (user.accountType != null) {
-      setAccountType(user.accountType);
+    if (stored.accountType != null) {
+      setAccountType(stored.accountType);
     }
-  }, [user?.id, user?.name, user?.surname, user?.accountType, router]);
+    if (stored.accountType === "FREELANCER" && Array.isArray(stored.skills)) {
+      setSelectedSkillIds(stored.skills.map((skill) => skill.id));
+    }
+  }, [router]);
+
+  useEffect(() => {
+    if (step !== STEP_SKILLS || accountType !== "FREELANCER") return;
+    if (availableSkills.length > 0) return;
+    let cancelled = false;
+    async function loadSkills() {
+      setSkillsError("");
+      setSkillsLoading(true);
+      try {
+        const skills = await getSkills();
+        if (!cancelled) {
+          setAvailableSkills(skills);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setSkillsError(
+            err instanceof Error ? err.message : t("onboarding.saveFailed")
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setSkillsLoading(false);
+        }
+      }
+    }
+    void loadSkills();
+    return () => {
+      cancelled = true;
+    };
+  }, [step, accountType, availableSkills.length]);
+
+  function toggleSkill(id: string) {
+    setSelectedSkillIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }
+
+  const filteredSkills =
+    skillsSearch.trim().length === 0
+      ? availableSkills
+      : availableSkills.filter((skill) =>
+        skill.name.toLowerCase().includes(skillsSearch.trim().toLowerCase())
+      );
 
   async function handleNameSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -85,6 +143,30 @@ export default function OnboardingPage() {
     try {
       const { user: updated } = await updateProfile({
         accountType: accountType || undefined,
+      });
+      updateStoredUser(updated);
+      if (accountType === "FREELANCER") {
+        setStep(STEP_SKILLS);
+      } else {
+        router.push("/");
+        router.refresh();
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : t("onboarding.saveFailed")
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSkillsSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const { user: updated } = await updateProfile({
+        skillIds: selectedSkillIds,
       });
       updateStoredUser(updated);
       router.push("/");
@@ -173,27 +255,50 @@ export default function OnboardingPage() {
                     {error}
                   </p>
                 )}
-                <div className="space-y-2">
-                  <Label htmlFor="accountType">
-                    {t("onboarding.chooseAccountType")}
-                  </Label>
-                  <select
-                    id="accountType"
-                    value={accountType}
-                    onChange={(e) =>
-                      setAccountType((e.target.value || "") as AccountType | "")
-                    }
+                <div className="space-y-3">
+                  <button
+                    type="button"
                     disabled={loading}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    onClick={() => setAccountType("CLIENT")}
+                    className={`flex w-full items-start gap-3 rounded-lg border p-4 text-left transition-colors ${accountType === "CLIENT"
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/60"
+                      }`}
                   >
-                    <option value="">
-                      — {t("common.select") ?? "Select"} —
-                    </option>
-                    <option value="CLIENT">{t("onboarding.client")}</option>
-                    <option value="FREELANCER">
-                      {t("onboarding.freelancer")}
-                    </option>
-                  </select>
+                    <div className="mt-1 rounded-md bg-primary/10 p-2">
+                      <Megaphone className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="font-medium">
+                        {t("onboarding.clientTitle")}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {t("onboarding.clientDesc")}
+                      </p>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={loading}
+                    onClick={() => setAccountType("FREELANCER")}
+                    className={`flex w-full items-start gap-3 rounded-lg border p-4 text-left transition-colors ${accountType === "FREELANCER"
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/60"
+                      }`}
+                  >
+                    <div className="mt-1 rounded-md bg-primary/10 p-2">
+                      <Search className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="font-medium">
+                        {t("onboarding.freelancerTitle")}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {t("onboarding.freelancerDesc")}
+                      </p>
+                    </div>
+                  </button>
                 </div>
               </CardContent>
               <CardFooter className="mt-4 flex gap-2">
@@ -206,7 +311,94 @@ export default function OnboardingPage() {
                 >
                   {t("common.back")}
                 </Button>
-                <Button type="submit" className="flex-1" disabled={loading}>
+                <Button
+                  type="submit"
+                  className="flex-1"
+                  disabled={loading || !accountType}
+                >
+                  {loading ? t("onboarding.saving") : t("common.continue")}
+                </Button>
+              </CardFooter>
+            </form>
+          </>
+        )}
+
+        {step === STEP_SKILLS && accountType === "FREELANCER" && (
+          <>
+            <CardHeader>
+              <CardTitle>{t("onboarding.freelancerSkillsTitle")}</CardTitle>
+              <CardDescription>
+                {t("onboarding.freelancerSkillsDesc")}
+              </CardDescription>
+            </CardHeader>
+            <form onSubmit={handleSkillsSubmit}>
+              <CardContent className="space-y-4">
+                {(error || skillsError) && (
+                  <p className="text-sm text-destructive rounded-md bg-destructive/10 px-3 py-2">
+                    {error || skillsError}
+                  </p>
+                )}
+                <div className="space-y-3">
+                  <Input
+                    id="skills-search"
+                    type="text"
+                    placeholder={t(
+                      "onboarding.freelancerSkillsSearchPlaceholder"
+                    )}
+                    value={skillsSearch}
+                    onChange={(e) => setSkillsSearch(e.target.value)}
+                    disabled={skillsLoading || loading}
+                  />
+                  <div className="max-h-72 space-y-2 overflow-y-auto rounded-md border p-3">
+                    {skillsLoading && (
+                      <p className="text-sm text-muted-foreground">
+                        {t("common.loading")}
+                      </p>
+                    )}
+                    {!skillsLoading && filteredSkills.length === 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        {skillsSearch.trim().length > 0
+                          ? t("onboarding.freelancerSkillsNoResults")
+                          : t("onboarding.freelancerSkillsEmpty")}
+                      </p>
+                    )}
+                    {!skillsLoading &&
+                      filteredSkills.map((skill) => {
+                        const checked = selectedSkillIds.includes(skill.id);
+                        return (
+                          <label
+                            key={skill.id}
+                            className="flex w-full items-center gap-2 rounded-md px-1.5 py-1 text-sm hover:bg-accent/60 cursor-pointer"
+                          >
+                            <Checkbox
+                              checked={checked}
+                              onCheckedChange={() => toggleSkill(skill.id)}
+                              className="shrink-0"
+                              disabled={loading}
+                              aria-label={skill.name}
+                            />
+                            <span>{skill.name}</span>
+                          </label>
+                        );
+                      })}
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter className="mt-4 flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  disabled={loading}
+                  onClick={() => setStep(STEP_ACCOUNT_TYPE)}
+                >
+                  {t("common.back")}
+                </Button>
+                <Button
+                  type="submit"
+                  className="flex-1"
+                  disabled={loading}
+                >
                   {loading ? t("onboarding.saving") : t("common.continue")}
                 </Button>
               </CardFooter>

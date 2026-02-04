@@ -46,12 +46,20 @@
     "editProfile": "Edit profile",
     "editProfileDesc": "Change your name, surname, email address or password. After changing password you will be logged out.",
     "profileSaved": "Profile saved.",
+    "currentPassword": "Current password",
+    "currentPasswordPlaceholder": "Enter your current password",
     "newPassword": "New password (optional)",
     "passwordPlaceholder": "Leave empty to keep unchanged",
     "passwordMinLength": "Min. 6 characters. After changing password you will be logged out.",
     "saveFailed": "Saving failed",
     "language": "Language",
-    "languageDesc": "Select interface language"
+    "languageDesc": "Select interface language",
+    "tabBasic": "Basic data",
+    "tabSkills": "Skills",
+    "tabPassword": "Password",
+    "passwordBothRequired": "Enter the new password in both fields.",
+    "passwordMismatch": "Passwords do not match.",
+    "newPasswordConfirm": "Repeat new password"
   },
   "onboarding": {
     "whatShouldWeCallYou": "What should we call you?",
@@ -59,11 +67,18 @@
     "chooseAccountType": "Choose account type",
     "chooseAccountTypeDesc": "Choose whether you are a client looking for a freelancer or a freelancer looking for work.",
     "client": "Client",
+    "clientTitle": "I want to publish jobs",
     "clientDesc": "I'm looking for a freelancer to complete a project",
     "freelancer": "Freelancer",
+    "freelancerTitle": "I'm looking for gigs",
     "freelancerDesc": "I'm looking for projects to complete",
     "saving": "Saving…",
-    "saveFailed": "Saving failed"
+    "saveFailed": "Saving failed",
+    "freelancerSkillsTitle": "Select your skills",
+    "freelancerSkillsDesc": "Select the skills you have so we can better match you with listings.",
+    "freelancerSkillsEmpty": "No skills available yet.",
+    "freelancerSkillsSearchPlaceholder": "Search skills…",
+    "freelancerSkillsNoResults": "No skills match your search."
   },
   "listings": {
     "listings": "Listings",

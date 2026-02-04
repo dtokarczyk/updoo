@@ -22,10 +22,9 @@ export function AppHeader() {
         <div className="flex items-center">
           {showBack && (
             <Button
-              variant="ghost"
-              size="icon"
+              variant="outline"
+              size="icon-lg"
               asChild
-              className="h-9 w-9 rounded-full"
             >
               <Link href="/" aria-label="Powrót do listy">
                 <ArrowLeft className="h-5 w-5" />
@@ -42,7 +41,7 @@ export function AppHeader() {
         </Link>
 
         <div className="flex items-center">
-          <ThemeToggle />
+          <ThemeToggle size="icon-lg" />
         </div>
       </div>
     </header>

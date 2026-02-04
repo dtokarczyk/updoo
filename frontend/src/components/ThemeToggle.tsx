@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 interface ThemeToggleProps {
   className?: string;
-  size?: "default" | "sm" | "icon" | "icon-sm";
+  size?: "default" | "sm" | "icon" | "icon-sm" | "icon-lg";
 }
 
 export function ThemeToggle({ className, size = "icon-sm" }: ThemeToggleProps) {
@@ -16,7 +16,7 @@ export function ThemeToggle({ className, size = "icon-sm" }: ThemeToggleProps) {
   return (
     <Button
       type="button"
-      variant="ghost"
+      variant="outline"
       size={size}
       onClick={toggleTheme}
       className={cn("shrink-0", className)}

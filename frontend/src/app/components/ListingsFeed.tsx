@@ -148,12 +148,7 @@ export function ListingsFeed({
 
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || (pagination && newPage > pagination.totalPages)) return;
-    router.replace(
-      `/offers/${encodeURIComponent(categorySlug)}/${newPage}`,
-      {
-        scroll: false,
-      }
-    );
+    router.replace(`/offers/${encodeURIComponent(categorySlug)}/${newPage}`);
   };
 
   const markVisited = (listingId: string) => {

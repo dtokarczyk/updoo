@@ -203,24 +203,44 @@ export function ListingPost({
 
         <p className="text-sm text-foreground">{shortDescription}</p>
 
-        {skills.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {skills.map((name) => (
-              <span
-                key={name}
-                className="rounded-full bg-muted px-3 py-1 text-sm text-foreground"
-              >
-                {name}
-              </span>
-            ))}
+        {skills.length > 0 ? (
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div className="flex flex-wrap gap-2">
+              {skills.map((name) => (
+                <span
+                  key={name}
+                  className="rounded-full bg-muted px-3 py-1 text-sm text-foreground"
+                >
+                  {name}
+                </span>
+              ))}
+            </div>
+
+            <Button
+              asChild
+              variant="default"
+              size="lg"
+              className="mt-2 shrink-0"
+            >
+              <Link href={`/listings/${listing.id}`} scroll={false} onClick={onNavigate}>
+                Zobacz więcej
+              </Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="flex justify-end">
+            <Button
+              asChild
+              variant="default"
+              size="lg"
+              className="mt-2 shrink-0"
+            >
+              <Link href={`/listings/${listing.id}`} scroll={false} onClick={onNavigate}>
+                Zobacz więcej
+              </Link>
+            </Button>
           </div>
         )}
-
-        <Button asChild variant="default" size="lg" className="mt-2">
-          <Link href={`/listings/${listing.id}`} scroll={false} onClick={onNavigate}>
-            Zobacz więcej
-          </Link>
-        </Button>
       </CardContent>
     </Card>
   );

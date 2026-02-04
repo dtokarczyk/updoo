@@ -82,6 +82,7 @@ export function JobPost({
   headerAction,
   headerRightAction,
   isDraft,
+  isClosed,
   onFavoriteToggle,
   onNavigate,
   showFavorite,
@@ -90,6 +91,7 @@ export function JobPost({
   headerAction?: React.ReactNode;
   headerRightAction?: React.ReactNode;
   isDraft?: boolean;
+  isClosed?: boolean;
   /** Called after favorite add/remove; parent can refetch. */
   onFavoriteToggle?: (jobId: string) => void;
   /** Called when user navigates to job details. */
@@ -138,7 +140,9 @@ export function JobPost({
         "overflow-hidden shadow-sm",
         isDraft
           ? "rounded-t-xl rounded-b-none border-0 bg-amber-50 dark:bg-amber-950/30"
-          : "rounded-xl"
+          : isClosed
+            ? "rounded-xl opacity-75"
+            : "rounded-xl"
       )}
     >
       <CardHeader className="pb-2">
@@ -195,7 +199,12 @@ export function JobPost({
                 <Calendar className="h-4 w-4" aria-hidden />
                 {t("jobs.published")} {metaPosted}
               </span>
-              {metaDeadlineLeft && (
+              {isClosed && (
+                <span className="inline-flex items-center gap-1.5 font-medium text-red-600 dark:text-red-400">
+                  {t("jobs.closed")}
+                </span>
+              )}
+              {metaDeadlineLeft && !isClosed && (
                 <span className="inline-flex items-center gap-1.5">
                   <Clock className="h-4 w-4" aria-hidden />
                   {metaDeadlineLeft}

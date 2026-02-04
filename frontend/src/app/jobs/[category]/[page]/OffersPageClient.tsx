@@ -2,14 +2,13 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { OnboardingRedirect } from "@/app/components/OnboardingRedirect";
 import { CategoriesSidebar } from "@/app/components/CategoriesSidebar";
-import { HomeNav } from "@/app/components/HomeNav";
 import { JobsSectionHeader } from "@/app/components/JobsSectionHeader";
 import { AuthPromoSidebar } from "@/app/components/AuthPromoSidebar";
 import { AuthBottomBar } from "@/app/components/AuthBottomBar";
+import { UserSidebar } from "@/app/components/UserSidebar";
 import { Logotype } from "@/app/components/Logotype";
 import { getToken, getStoredUser, type Category, type JobLanguage } from "@/lib/api";
 import { useTranslations } from "@/hooks/useTranslations";
@@ -182,12 +181,6 @@ export function OffersPageClient({
               currentCategorySlug={resolvedCategorySlug}
               initialLocale={initialLocale}
             />
-            <div className="hidden lg:flex items-center gap-2 pt-4 mt-4 border-t border-zinc-200 dark:border-zinc-800">
-              <div className="flex-1">
-                <HomeNav placement="sidebar" />
-              </div>
-              <ThemeToggle className="h-[44px] w-[44px] px-0" />
-            </div>
           </aside>
           <div className="min-w-0 lg:w-3/5 pt-0 lg:pt-14">
             <Suspense fallback={<div className="h-96" />}>
@@ -207,6 +200,9 @@ export function OffersPageClient({
             <aside className="sticky top-0 z-10 hidden shrink-0 lg:top-14 lg:block lg:self-start lg:w-1/5">
               <AuthPromoSidebar initialLocale={initialLocale} />
             </aside>
+          )}
+          {isLoggedIn && (
+            <UserSidebar initialLocale={initialLocale} />
           )}
         </div>
       </div>

@@ -21,11 +21,13 @@ import {
   Wrench,
   Laptop,
   BarChart3,
+  X,
 } from "lucide-react";
 import {
   getJob,
   getJobPrevNext,
   applyToJob,
+  closeJob,
   getStoredUser,
   authorDisplayName,
   isApplicationFull,
@@ -65,7 +67,8 @@ const PROJECT_TYPE_LABELS: Record<string, string> = {
 function formatDate(iso: string, locale: "pl" | "en"): string {
   const dateFnsLocale = locale === "en" ? enUS : pl;
   const date = new Date(iso);
-  return format(date, "d MMMM yyyy 'at' HH:mm", { locale: dateFnsLocale });
+  const dateFormat = locale === "en" ? "d MMMM yyyy 'at' HH:mm" : "d MMMM yyyy 'o' HH:mm";
+  return format(date, dateFormat, { locale: dateFnsLocale });
 }
 
 function getDeadlineRemainingDays(deadline: string | null): number | null {
@@ -161,6 +164,7 @@ export default function JobDetailPage() {
     null
   );
   const [prevNext, setPrevNext] = useState<JobPrevNext | null>(null);
+  const [closeSubmitting, setCloseSubmitting] = useState(false);
   const user = getStoredUser();
   const applyFormRef = useRef<HTMLDivElement>(null);
 
@@ -306,6 +310,7 @@ export default function JobDetailPage() {
   const isOwnJob = user?.id === job.authorId;
   const isAdmin = user?.accountType === "ADMIN";
   const isDraft = job.status === "DRAFT";
+  const isClosed = job.status === "CLOSED";
   const deadlinePassed = job.deadline
     ? getDeadlineRemainingDays(job.deadline) === 0
     : false;
@@ -313,8 +318,10 @@ export default function JobDetailPage() {
     user?.accountType === "FREELANCER" &&
     !isOwnJob &&
     !isDraft &&
+    !isClosed &&
     !deadlinePassed &&
     !job.currentUserApplied;
+  const canClose = (isOwnJob || isAdmin) && !isClosed && !isDraft;
   const applications = job.applications ?? [];
   // Admin can see full application data even if not the author
   const canSeeFullApplications = isOwnJob || isAdmin;
@@ -372,6 +379,19 @@ export default function JobDetailPage() {
     }
   }
 
+  async function handleClose() {
+    if (!id || !canClose) return;
+    setCloseSubmitting(true);
+    try {
+      const updated = await closeJob(id);
+      setJob(updated);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Błąd zamykania oferty");
+    } finally {
+      setCloseSubmitting(false);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
       {/* Header with title and meta - full width */}
@@ -412,6 +432,16 @@ export default function JobDetailPage() {
         {isDraft && (
           <div className="rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 px-3 py-2 text-sm">
             {t("jobs.draftVisibleOnlyToYou")}
+          </div>
+        )}
+        {isClosed && (
+          <div className="rounded-lg bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200 px-3 py-2 text-sm">
+            {t("jobs.closed")}
+            {job.closedAt && (
+              <span className="ml-2">
+                ({formatDate(job.closedAt, locale)})
+              </span>
+            )}
           </div>
         )}
       </div>
@@ -564,14 +594,35 @@ export default function JobDetailPage() {
         <aside className="lg:col-span-2">
           <div className="lg:sticky lg:top-8 space-y-6">
             {/* CTA Button for desktop */}
-            {!isOwnJob && !isDraft && (
+            {(isOwnJob || isAdmin) ? (
+              <div className="hidden lg:block space-y-2">
+                <Button className="w-full" size="lg" asChild>
+                  <Link href={`/job/${job.id}/edit`}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    {t("jobs.edit")}
+                  </Link>
+                </Button>
+                {canClose && (
+                  <Button
+                    className="w-full"
+                    size="lg"
+                    variant="destructive"
+                    onClick={handleClose}
+                    disabled={closeSubmitting}
+                  >
+                    <X className="mr-2 h-4 w-4" />
+                    {closeSubmitting ? t("jobs.closing") : t("jobs.close")}
+                  </Button>
+                )}
+              </div>
+            ) : !isDraft && !isClosed && user?.accountType === "FREELANCER" ? (
               <div className="hidden lg:block">
                 {canApply ? (
                   <Button onClick={handleApplyClick} className="w-full" size="lg">
                     <Send className="mr-2 h-4 w-4" />
                     {t("jobs.apply")}
                   </Button>
-                ) : user?.accountType === "FREELANCER" && job.currentUserApplied ? (
+                ) : job.currentUserApplied ? (
                   <Button disabled className="w-full" size="lg" variant="outline">
                     {t("jobs.appliedShort")}
                   </Button>
@@ -586,7 +637,7 @@ export default function JobDetailPage() {
                   </Button>
                 )}
               </div>
-            )}
+            ) : null}
 
             {/* Freelancer applications: full data for author and admin, initials for others */}
             {applications.length > 0 && (
@@ -716,7 +767,7 @@ export default function JobDetailPage() {
       </div>
 
       {/* Sticky CTA button */}
-      {!isOwnJob && !isDraft && (
+      {!isOwnJob && !isDraft && !isClosed && (
         <div className="fixed inset-x-0 bottom-0 z-50 border-t border-zinc-200 bg-background/95 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] backdrop-blur dark:border-zinc-800 lg:hidden">
           <div className="mx-auto max-w-4xl">
             {canApply ? (

@@ -227,7 +227,7 @@ export interface PopularSkill extends Skill {
   count: number;
 }
 
-export type JobStatus = "DRAFT" | "PUBLISHED";
+export type JobStatus = "DRAFT" | "PUBLISHED" | "CLOSED";
 export type JobLanguage = "ENGLISH" | "POLISH";
 export type BillingType = "FIXED" | "HOURLY";
 export type HoursPerWeek = "LESS_THAN_10" | "FROM_11_TO_20" | "FROM_21_TO_30" | "MORE_THAN_30";
@@ -306,6 +306,7 @@ export interface Job {
   isRemote: boolean;
   projectType: ProjectType;
   deadline: string | null;
+  closedAt: string | null;
   createdAt: string;
   category: Category;
   author: JobAuthor;
@@ -467,6 +468,23 @@ export async function publishJob(jobId: string): Promise<Job> {
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
     throw new Error(msg ?? "Failed to publish job");
+  }
+  return res.json();
+}
+
+export async function closeJob(jobId: string): Promise<Job> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+  const res = await fetch(`${API_URL}/jobs/${jobId}/close`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? "Failed to close job");
   }
   return res.json();
 }
@@ -655,6 +673,55 @@ export async function getPendingJobs(
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
     throw new Error(msg ?? "Failed to fetch pending jobs");
+  }
+  return res.json();
+}
+
+export interface UserApplication {
+  id: string;
+  createdAt: string;
+  message?: string;
+  job: Job;
+}
+
+export async function getUserApplications(): Promise<UserApplication[]> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+  const headers: HeadersInit = { Authorization: `Bearer ${token}` };
+
+  // Add Accept-Language header based on user locale
+  if (typeof window !== "undefined") {
+    const { getUserLocale } = await import("./i18n");
+    const locale = getUserLocale();
+    headers["Accept-Language"] = locale;
+  }
+
+  const res = await fetch(`${API_URL}/jobs/my-applications`, { headers });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? "Failed to fetch user applications");
+  }
+  return res.json();
+}
+
+export async function getUserJobs(): Promise<Job[]> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+  const headers: HeadersInit = { Authorization: `Bearer ${token}` };
+
+  // Add Accept-Language header based on user locale
+  if (typeof window !== "undefined") {
+    const { getUserLocale } = await import("./i18n");
+    const locale = getUserLocale();
+    headers["Accept-Language"] = locale;
+  }
+
+  const res = await fetch(`${API_URL}/jobs/my-jobs`, { headers });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? "Failed to fetch user jobs");
   }
   return res.json();
 }

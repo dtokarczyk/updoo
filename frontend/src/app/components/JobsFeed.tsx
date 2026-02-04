@@ -262,6 +262,7 @@ export function JobsFeed({
     <div className="space-y-4">
       {jobs.map((job) => {
         const isDraft = job.status === "DRAFT";
+        const isClosed = job.status === "CLOSED";
         const canPublish = user?.accountType === "ADMIN" && isDraft;
         const isAdmin = user?.accountType === "ADMIN";
         const isOwnJob = isAdmin || user?.id === job.authorId;
@@ -276,13 +277,16 @@ export function JobsFeed({
               isDraft
                 ? "overflow-hidden rounded-xl shadow-sm border border-amber-300/80 dark:border-amber-700/80"
                 : "",
-              isApplied && !isDraft
+              isClosed && !isDraft
+                ? "overflow-hidden rounded-xl shadow-sm border border-red-300/80 dark:border-red-700/80 opacity-75"
+                : "",
+              isApplied && !isDraft && !isClosed
                 ? "overflow-hidden rounded-xl shadow-sm border border-emerald-500/80 dark:border-emerald-500/80"
                 : "",
-              isFavorite && !isDraft
+              isFavorite && !isDraft && !isClosed
                 ? "overflow-hidden rounded-xl shadow-sm border border-yellow-400/80 dark:border-yellow-500/80"
                 : "",
-              !isVisited && !isDraft && !isApplied && !isFavorite
+              !isVisited && !isDraft && !isClosed && !isApplied && !isFavorite
                 ? "rounded-xl border border-primary/80 dark:border-primary/90"
                 : "",
             ].filter(Boolean).join(" ")}
@@ -290,6 +294,7 @@ export function JobsFeed({
             <JobPost
               job={job}
               isDraft={isDraft}
+              isClosed={isClosed}
               showFavorite={!!user}
               onNavigate={() => handleNavigateToJob(job.id)}
               onFavoriteToggle={(jobId) =>

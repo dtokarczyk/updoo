@@ -127,6 +127,26 @@ export function needsOnboarding(user: AuthUser | null): boolean {
 
 // Listings & categories
 
+/** Display order: 1. Wszystkie (link only), 2. Programowanie, 3. Design, 4. Marketing, 5. Pisanie, 6. Prace biurowe, 7. Inne */
+const CATEGORY_ORDER = [
+  "programowanie",
+  "design",
+  "marketing",
+  "pisanie",
+  "prace biurowe",
+  "inne",
+];
+
+export function sortCategoriesByOrder(categories: Category[]): Category[] {
+  return [...categories].sort((a, b) => {
+    const indexA = CATEGORY_ORDER.indexOf(a.name.trim().toLowerCase());
+    const indexB = CATEGORY_ORDER.indexOf(b.name.trim().toLowerCase());
+    const orderA = indexA === -1 ? CATEGORY_ORDER.length : indexA;
+    const orderB = indexB === -1 ? CATEGORY_ORDER.length : indexB;
+    return orderA - orderB;
+  });
+}
+
 export interface Category {
   id: string;
   name: string;

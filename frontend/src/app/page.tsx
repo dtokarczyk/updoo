@@ -3,7 +3,7 @@ import { OnboardingRedirect } from "@/app/components/OnboardingRedirect";
 import { CategoriesSidebar } from "@/app/components/CategoriesSidebar";
 import { HomeNav } from "@/app/components/HomeNav";
 import { ListingsSectionHeader } from "@/app/components/ListingsSectionHeader";
-import { getCategories } from "@/lib/api";
+import { getCategories, sortCategoriesByOrder } from "@/lib/api";
 
 export default async function Home({
   searchParams,
@@ -12,7 +12,7 @@ export default async function Home({
 }) {
   const params = await searchParams;
   const categorySlug = params.category ?? undefined;
-  const categories = await getCategories();
+  const categories = sortCategoriesByOrder(await getCategories());
   const selectedCategory = categorySlug
     ? categories.find((c) => c.slug === categorySlug)
     : undefined;

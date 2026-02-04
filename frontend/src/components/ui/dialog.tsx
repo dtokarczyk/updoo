@@ -30,6 +30,11 @@ const DialogOverlay = React.forwardRef<
 ))
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 
+/**
+ * DialogContent requires a DialogTitle for accessibility.
+ * If you want to hide the DialogTitle visually, wrap it with VisuallyHidden component.
+ * @see https://radix-ui.com/primitives/docs/components/dialog
+ */
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>

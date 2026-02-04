@@ -8,8 +8,8 @@ import { t } from "@/lib/translations";
 export function AppFooter({ initialLocale }: { initialLocale: Locale }) {
   const year = new Date().getFullYear();
   return (
-    <footer>
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+    <footer className="w-full overflow-x-hidden">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 w-full max-w-full">
         <div className="flex flex-col items-center justify-between gap-4 sm:flex-row sm:gap-0">
           <div className="flex items-center gap-4">
             <LanguageToggle size="sm" initialLocale={initialLocale} />

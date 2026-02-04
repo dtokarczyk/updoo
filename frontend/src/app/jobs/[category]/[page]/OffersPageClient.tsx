@@ -88,7 +88,7 @@ function OffersPageContent({
   return (
     <>
       {!isLoggedIn && isHomePage && (
-        <div className="relative w-full h-64 md:h-80 lg:h-96 rounded-xl overflow-hidden mb-6">
+        <div className="relative w-full max-w-full h-64 md:h-80 lg:h-96 rounded-xl overflow-hidden mb-6">
           <Image
             src="/images/u2844336958_freelancer_woman_at_work_good_mood_macbook_reflex_h_86dbbfef-0bcd-4592-94db-4b415b4965c4.png"
             alt=""

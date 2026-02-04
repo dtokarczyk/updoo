@@ -31,6 +31,7 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
   const [authDrawerOpen, setAuthDrawerOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Initialize auth state on mount
   useEffect(() => {
     setMounted(true);
     const token = getToken();
@@ -38,6 +39,15 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
     setUser(u);
     setIsLoggedIn(!!token);
   }, []);
+
+  // Refresh auth state when pathname changes (e.g., after login redirect)
+  useEffect(() => {
+    if (!mounted) return;
+    const token = getToken();
+    const u = getStoredUser();
+    setUser(u);
+    setIsLoggedIn(!!token);
+  }, [pathname, mounted]);
 
   useEffect(() => {
     if (!dropdownOpen) return;
@@ -61,9 +71,9 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
 
 
   return (
-    <header className={`border-b border-border ${!topBarVisible ? "lg:hidden" : ""}`}>
+    <header className={`border-b border-border ${!topBarVisible ? "lg:hidden" : ""} overflow-x-hidden w-full`}>
       <div
-        className={`relative mx-auto flex max-w-6xl flex-row items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-4`}
+        className={`relative mx-auto flex flex-row items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-4 w-full max-w-6xl overflow-x-hidden`}
       >
         <div className="flex items-center gap-2">
           {showBack && (
@@ -105,7 +115,7 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
 
                 {isLoggedIn ? <UserDrawerContent
                   initialLocale={initialLocale}
-                  onClose={() => setDrawerOpen(false)}
+                  onClose={() => setAuthDrawerOpen(false)}
                 /> : <AuthDrawerContent
                   initialLocale={initialLocale}
                   onClose={() => setAuthDrawerOpen(false)}

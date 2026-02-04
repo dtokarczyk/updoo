@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Plus } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { pl, enUS } from "date-fns/locale";
@@ -20,6 +20,7 @@ interface UserSidebarProps {
 
 export function UserSidebar({ initialLocale }: UserSidebarProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const { t, locale } = useTranslations();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -30,6 +31,7 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Initialize auth state on mount
   useEffect(() => {
     setMounted(true);
     const token = getToken();
@@ -37,6 +39,15 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
     setUser(u);
     setIsLoggedIn(!!token);
   }, []);
+
+  // Refresh auth state when pathname changes (e.g., after login redirect)
+  useEffect(() => {
+    if (!mounted) return;
+    const token = getToken();
+    const u = getStoredUser();
+    setUser(u);
+    setIsLoggedIn(!!token);
+  }, [pathname, mounted]);
 
   useEffect(() => {
     if (!mounted || !isLoggedIn || !user) {
@@ -175,7 +186,7 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
             )
           ) : user.accountType === "CLIENT" ? (
             jobs.length === 0 ? (
-              <div className="text-sm text-muted-foreground">
+              <div className="text-sm text-muted-foreground py-2">
                 {t("jobs.noJobs")}
               </div>
             ) : (

@@ -1,5 +1,5 @@
 import React from "react";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeScript } from "@/app/components/ThemeScript";
@@ -13,6 +13,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -21,15 +28,15 @@ export default async function RootLayout({
   const locale = await getLocaleFromRequest();
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning className="w-full overflow-x-hidden">
       <body
-        className={`${geistMono.variable} antialiased`}
+        className={`${geistMono.variable} antialiased w-full overflow-x-hidden`}
       >
         <ThemeScript />
         <ThemeProvider>
-          <div className="flex min-h-screen flex-col font-sans">
+          <div className="flex min-h-screen flex-col font-sans w-full overflow-x-hidden">
             <AppHeader initialLocale={locale} />
-            <main className="flex-1">{children}</main>
+            <main className="flex-1 w-full overflow-x-hidden">{children}</main>
             <AppFooter initialLocale={locale} />
           </div>
         </ThemeProvider>

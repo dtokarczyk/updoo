@@ -347,7 +347,7 @@ export function JobsFeed({
       })}
 
       {pagination && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 pt-6">
+        <div className="flex flex-wrap items-center justify-center gap-2 pt-6">
           <Button
             variant="outline"
             size="sm"
@@ -355,11 +355,11 @@ export function JobsFeed({
             onClick={() => handlePageChange(page - 1)}
             disabled={!pagination.hasPreviousPage}
           >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            {t("jobs.previous")}
+            <ChevronLeft className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">{t("jobs.previous")}</span>
           </Button>
 
-          <div className="flex items-center gap-1">
+          <div className="flex flex-wrap items-center justify-center gap-1">
             {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
               let pageNum: number;
               if (pagination.totalPages <= 5) {
@@ -393,8 +393,8 @@ export function JobsFeed({
             onClick={() => handlePageChange(page + 1)}
             disabled={!pagination.hasNextPage}
           >
-            {t("jobs.next")}
-            <ChevronRight className="h-4 w-4 ml-1" />
+            <span className="hidden sm:inline">{t("jobs.next")}</span>
+            <ChevronRight className="h-4 w-4 sm:ml-1" />
           </Button>
         </div>
       )}

@@ -149,6 +149,95 @@ function DetailRow({
   );
 }
 
+function JobActions({
+  isOwnJob,
+  isAdmin,
+  isDraft,
+  isClosed,
+  user,
+  canApply,
+  currentUserApplied,
+  deadlinePassed,
+  canClose,
+  closeSubmitting,
+  jobId,
+  onApplyClick,
+  onClose,
+  t,
+  layout = "column",
+}: {
+  isOwnJob: boolean;
+  isAdmin: boolean;
+  isDraft: boolean;
+  isClosed: boolean;
+  user: ReturnType<typeof getStoredUser>;
+  canApply: boolean;
+  currentUserApplied: boolean | undefined;
+  deadlinePassed: boolean;
+  canClose: boolean;
+  closeSubmitting: boolean;
+  jobId: string;
+  onApplyClick: () => void;
+  onClose: () => void;
+  t: (key: string, params?: Record<string, string | number>) => string;
+  layout?: "column" | "row";
+}) {
+  // Don't render if no actions available
+  const isOwnerOrAdmin = isOwnJob || isAdmin;
+  const isFreelancerCanSee = !isDraft && !isClosed && user?.accountType === "FREELANCER";
+
+  if (!isOwnerOrAdmin && !isFreelancerCanSee) {
+    return null;
+  }
+
+  const containerClassName = layout === "row" ? "flex gap-2" : "space-y-2";
+
+  return (
+    <div className={containerClassName}>
+      {isOwnerOrAdmin ? (
+        <>
+          <Button className="w-full" size="lg" asChild>
+            <Link href={`/job/${jobId}/edit`}>
+              <Pencil className="mr-2 h-4 w-4" />
+              {t("jobs.edit")}
+            </Link>
+          </Button>
+          {canClose && (
+            <Button
+              className="w-full"
+              size="lg"
+              variant="destructive"
+              onClick={onClose}
+              disabled={closeSubmitting}
+            >
+              <X className="mr-2 h-4 w-4" />
+              {closeSubmitting ? t("jobs.closing") : t("jobs.close")}
+            </Button>
+          )}
+        </>
+      ) : canApply ? (
+        <Button onClick={onApplyClick} className="w-full" size="lg">
+          <Send className="mr-2 h-4 w-4" />
+          {t("jobs.apply")}
+        </Button>
+      ) : currentUserApplied === true ? (
+        <Button disabled className="w-full" size="lg" variant="outline">
+          {t("jobs.appliedShort")}
+        </Button>
+      ) : deadlinePassed ? (
+        <Button disabled className="w-full" size="lg" variant="outline">
+          {t("jobs.deadlinePassed")}
+        </Button>
+      ) : (
+        <Button onClick={onApplyClick} className="w-full" size="lg">
+          <Send className="mr-2 h-4 w-4" />
+          {t("jobs.apply")}
+        </Button>
+      )}
+    </div>
+  );
+}
+
 export default function JobDetailPage() {
   const { t, locale } = useTranslations();
   const params = useParams();
@@ -394,61 +483,61 @@ export default function JobDetailPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
-      {/* Header with title and meta - full width */}
-      <div className="mb-8 space-y-4">
-        <div>
-          <h1 className="text-4xl font-semibold leading-tight">{job.title}</h1>
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1.5">
-              <User className="h-3.5 w-3.5" />
-              {authorDisplayName(job.author) || job.author.email}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Calendar className="h-3.5 w-3.5" />
-              {formatDate(job.createdAt, locale)}
-            </span>
-            {job.deadline && formatDeadlineRemaining(job.deadline, locale, t) && (
-              <span className="flex items-center gap-1.5 font-medium text-foreground">
-                <Clock className="h-3.5 w-3.5" />
-                {formatDeadlineRemaining(job.deadline, locale, t)}
-              </span>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
-            <Tag className="h-3.5 w-3.5" />
-            {job.category.name}
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
-            <ReactCountryFlag
-              svg
-              countryCode={job.language === "ENGLISH" ? "GB" : "PL"}
-              style={{ width: "1em", height: "1em" }}
-            />
-            {job.language === "ENGLISH" ? t("jobs.english") : t("jobs.polish")}
-          </span>
-        </div>
-        {isDraft && (
-          <div className="rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 px-3 py-2 text-sm">
-            {t("jobs.draftVisibleOnlyToYou")}
-          </div>
-        )}
-        {isClosed && (
-          <div className="rounded-lg bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200 px-3 py-2 text-sm">
-            {t("jobs.closed")}
-            {job.closedAt && (
-              <span className="ml-2">
-                ({formatDate(job.closedAt, locale)})
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-
       <div className="grid gap-8 lg:grid-cols-6">
-        {/* Main content with description */}
+        {/* Main content with description - title on the left */}
         <div className="lg:col-span-4 space-y-6">
+          {/* Header with title and meta - left column only */}
+          <div className="space-y-4">
+            <div>
+              <h1 className="text-4xl font-semibold leading-tight">{job.title}</h1>
+              <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <User className="h-3.5 w-3.5" />
+                  {authorDisplayName(job.author) || job.author.email}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5" />
+                  {formatDate(job.createdAt, locale)}
+                </span>
+                {job.deadline && formatDeadlineRemaining(job.deadline, locale, t) && (
+                  <span className="flex items-center gap-1.5 font-medium text-foreground">
+                    <Clock className="h-3.5 w-3.5" />
+                    {formatDeadlineRemaining(job.deadline, locale, t)}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
+                <Tag className="h-3.5 w-3.5" />
+                {job.category.name}
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
+                <ReactCountryFlag
+                  svg
+                  countryCode={job.language === "ENGLISH" ? "GB" : "PL"}
+                  style={{ width: "1em", height: "1em" }}
+                />
+                {job.language === "ENGLISH" ? t("jobs.english") : t("jobs.polish")}
+              </span>
+            </div>
+            {isDraft && (
+              <div className="rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 px-3 py-2 text-sm">
+                {t("jobs.draftVisibleOnlyToYou")}
+              </div>
+            )}
+            {isClosed && (
+              <div className="rounded-lg bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200 px-3 py-2 text-sm">
+                {t("jobs.closed")}
+                {job.closedAt && (
+                  <span className="ml-2">
+                    ({formatDate(job.closedAt, locale)})
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Skills */}
           {skills.length > 0 && (
             <section>
@@ -537,9 +626,6 @@ export default function JobDetailPage() {
             <section ref={applyFormRef} className="border-t pt-6">
               {job.currentUserApplied ? (
                 <div className="space-y-3">
-                  <div className="rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200 px-3 py-2 text-sm">
-                    {t("jobs.applied")}
-                  </div>
                   {lastApplicationMessage && (
                     <div className="rounded-lg border bg-muted/40 px-3 py-2">
                       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
@@ -594,50 +680,25 @@ export default function JobDetailPage() {
         <aside className="lg:col-span-2">
           <div className="lg:sticky lg:top-8 space-y-6">
             {/* CTA Button for desktop */}
-            {(isOwnJob || isAdmin) ? (
-              <div className="hidden lg:block space-y-2">
-                <Button className="w-full" size="lg" asChild>
-                  <Link href={`/job/${job.id}/edit`}>
-                    <Pencil className="mr-2 h-4 w-4" />
-                    {t("jobs.edit")}
-                  </Link>
-                </Button>
-                {canClose && (
-                  <Button
-                    className="w-full"
-                    size="lg"
-                    variant="destructive"
-                    onClick={handleClose}
-                    disabled={closeSubmitting}
-                  >
-                    <X className="mr-2 h-4 w-4" />
-                    {closeSubmitting ? t("jobs.closing") : t("jobs.close")}
-                  </Button>
-                )}
-              </div>
-            ) : !isDraft && !isClosed && user?.accountType === "FREELANCER" ? (
-              <div className="hidden lg:block">
-                {canApply ? (
-                  <Button onClick={handleApplyClick} className="w-full" size="lg">
-                    <Send className="mr-2 h-4 w-4" />
-                    {t("jobs.apply")}
-                  </Button>
-                ) : job.currentUserApplied ? (
-                  <Button disabled className="w-full" size="lg" variant="outline">
-                    {t("jobs.appliedShort")}
-                  </Button>
-                ) : deadlinePassed ? (
-                  <Button disabled className="w-full" size="lg" variant="outline">
-                    {t("jobs.deadlinePassed")}
-                  </Button>
-                ) : (
-                  <Button onClick={handleApplyClick} className="w-full" size="lg">
-                    <Send className="mr-2 h-4 w-4" />
-                    {t("jobs.apply")}
-                  </Button>
-                )}
-              </div>
-            ) : null}
+            <div className="hidden lg:block">
+              <JobActions
+                isOwnJob={isOwnJob}
+                isAdmin={isAdmin}
+                isDraft={isDraft}
+                isClosed={isClosed}
+                user={user}
+                canApply={canApply}
+                currentUserApplied={job.currentUserApplied}
+                deadlinePassed={deadlinePassed}
+                canClose={canClose}
+                closeSubmitting={closeSubmitting}
+                jobId={job.id}
+                onApplyClick={handleApplyClick}
+                onClose={handleClose}
+                t={t}
+                layout="column"
+              />
+            </div>
 
             {/* Freelancer applications: full data for author and admin, initials for others */}
             {applications.length > 0 && (
@@ -767,28 +828,26 @@ export default function JobDetailPage() {
       </div>
 
       {/* Sticky CTA button */}
-      {!isOwnJob && !isDraft && !isClosed && (
+      {((isOwnJob || isAdmin) || (!isDraft && !isClosed && user?.accountType === "FREELANCER")) && (
         <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
           <div className="mx-auto max-w-4xl">
-            {canApply ? (
-              <Button onClick={handleApplyClick} className="w-full" size="lg">
-                <Send className="mr-2 h-4 w-4" />
-                {t("jobs.apply")}
-              </Button>
-            ) : user?.accountType === "FREELANCER" && job.currentUserApplied ? (
-              <Button disabled className="w-full" size="lg" variant="outline">
-                {t("jobs.appliedShort")}
-              </Button>
-            ) : deadlinePassed ? (
-              <Button disabled className="w-full" size="lg" variant="outline">
-                {t("jobs.deadlinePassed")}
-              </Button>
-            ) : (
-              <Button onClick={handleApplyClick} className="w-full" size="lg">
-                <Send className="mr-2 h-4 w-4" />
-                {t("jobs.apply")}
-              </Button>
-            )}
+            <JobActions
+              isOwnJob={isOwnJob}
+              isAdmin={isAdmin}
+              isDraft={isDraft}
+              isClosed={isClosed}
+              user={user}
+              canApply={canApply}
+              currentUserApplied={job.currentUserApplied}
+              deadlinePassed={deadlinePassed}
+              canClose={canClose}
+              closeSubmitting={closeSubmitting}
+              jobId={job.id}
+              onApplyClick={handleApplyClick}
+              onClose={handleClose}
+              t={t}
+              layout="column"
+            />
           </div>
         </div>
       )}

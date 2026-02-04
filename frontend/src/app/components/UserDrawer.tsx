@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { pl, enUS } from "date-fns/locale";
 import { getUserApplications, getUserJobs, getToken, getStoredUser, clearAuth, type AuthUser, type UserApplication, type Job } from "@/lib/api";
@@ -37,6 +37,9 @@ export function UserDrawerContent({ initialLocale, onClose }: UserDrawerContentP
   const [mounted, setMounted] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
+  const pathname = usePathname();
+
+  // Initialize auth state on mount
   useEffect(() => {
     setMounted(true);
     const token = getToken();
@@ -44,6 +47,15 @@ export function UserDrawerContent({ initialLocale, onClose }: UserDrawerContentP
     setUser(u);
     setIsLoggedIn(!!token);
   }, []);
+
+  // Refresh auth state when pathname changes (e.g., after login redirect)
+  useEffect(() => {
+    if (!mounted) return;
+    const token = getToken();
+    const u = getStoredUser();
+    setUser(u);
+    setIsLoggedIn(!!token);
+  }, [pathname, mounted]);
 
   useEffect(() => {
     if (!mounted || !isLoggedIn || !user) {

@@ -216,5 +216,12 @@
     "client": "Client",
     "freelancer": "Freelancer",
     "admin": "Admin"
+  },
+  "admin": {
+    "pendingJobs": "Pending jobs",
+    "pendingJobsTitle": "Jobs awaiting approval",
+    "noPendingJobs": "No jobs awaiting approval",
+    "failedToLoadPending": "Failed to load pending jobs",
+    "approve": "Approve"
   }
 }

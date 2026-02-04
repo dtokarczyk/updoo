@@ -80,6 +80,7 @@ function formatTimeLeftUntil(iso: string, locale: "pl" | "en", t: (key: string, 
 export function JobPost({
   job,
   headerAction,
+  headerRightAction,
   isDraft,
   onFavoriteToggle,
   onNavigate,
@@ -87,6 +88,7 @@ export function JobPost({
 }: {
   job: Job;
   headerAction?: React.ReactNode;
+  headerRightAction?: React.ReactNode;
   isDraft?: boolean;
   /** Called after favorite add/remove; parent can refetch. */
   onFavoriteToggle?: (jobId: string) => void;
@@ -140,26 +142,31 @@ export function JobPost({
       )}
     >
       <CardHeader className="pb-2">
-        {(headerAction || showFavorite) && (
+        {(headerAction || showFavorite || headerRightAction) && (
           <div className="mb-2 flex items-center justify-between gap-2">
             <div className="flex flex-wrap items-center gap-2">{headerAction}</div>
-            {showFavorite && (
-              <button
-                type="button"
-                onClick={handleFavoriteClick}
-                disabled={favoriteLoading}
-                className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
-                aria-label={isFavorite ? "Usuń z ulubionych" : "Dodaj do ulubionych"}
-              >
-                <Star
-                  className={cn(
-                    "h-5 w-5",
-                    isFavorite
-                      ? "fill-yellow-500 text-yellow-500"
-                      : "fill-none text-muted-foreground"
-                  )}
-                />
-              </button>
+            {(showFavorite || headerRightAction) && (
+              <div className="flex items-center gap-1">
+                {headerRightAction}
+                {showFavorite && (
+                  <button
+                    type="button"
+                    onClick={handleFavoriteClick}
+                    disabled={favoriteLoading}
+                    className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                    aria-label={isFavorite ? "Usuń z ulubionych" : "Dodaj do ulubionych"}
+                  >
+                    <Star
+                      className={cn(
+                        "h-5 w-5",
+                        isFavorite
+                          ? "fill-yellow-500 text-yellow-500"
+                          : "fill-none text-muted-foreground"
+                      )}
+                    />
+                  </button>
+                )}
+              </div>
             )}
           </div>
         )}
@@ -167,7 +174,7 @@ export function JobPost({
           <div className="min-w-0 flex-1">
             <CardTitle className="text-xl font-bold leading-tight text-foreground">
               <Link
-                href={`/jobs/job/${job.id}`}
+                href={`/job/${job.id}`}
                 scroll={false}
                 className="hover:underline focus:outline-none focus:underline"
                 onClick={onNavigate}
@@ -242,7 +249,7 @@ export function JobPost({
               size="lg"
               className="mt-2 shrink-0"
             >
-              <Link href={`/jobs/job/${job.id}`} scroll={false} onClick={onNavigate}>
+              <Link href={`/job/${job.id}`} scroll={false} onClick={onNavigate}>
                 {t("jobs.seeMore")}
               </Link>
             </Button>
@@ -255,7 +262,7 @@ export function JobPost({
               size="lg"
               className="mt-2 shrink-0"
             >
-              <Link href={`/jobs/job/${job.id}`} scroll={false} onClick={onNavigate}>
+              <Link href={`/job/${job.id}`} scroll={false} onClick={onNavigate}>
                 {t("jobs.seeMore")}
               </Link>
             </Button>

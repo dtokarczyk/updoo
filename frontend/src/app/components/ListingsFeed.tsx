@@ -263,7 +263,8 @@ export function JobsFeed({
       {jobs.map((job) => {
         const isDraft = job.status === "DRAFT";
         const canPublish = user?.accountType === "ADMIN" && isDraft;
-        const isOwnJob = user?.id === job.authorId;
+        const isAdmin = user?.accountType === "ADMIN";
+        const isOwnJob = isAdmin || user?.id === job.authorId;
         const isVisited = visitedIds.has(job.id);
         const isApplied =
           !!job.currentUserApplied && user?.accountType === "FREELANCER";
@@ -321,7 +322,7 @@ export function JobsFeed({
                   {isOwnJob && (
                     <Button size="icon" variant="ghost" className="h-8 w-8" asChild>
                       <Link
-                        href={`/jobs/job/${job.id}/edit`}
+                        href={`/job/${job.id}/edit`}
                         aria-label={t("jobs.editJob")}
                       >
                         <Pencil className="h-4 w-4" />

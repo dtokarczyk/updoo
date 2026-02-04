@@ -22,12 +22,12 @@ import {
   BarChart3,
 } from "lucide-react";
 import {
-  getListing,
-  applyToListing,
+  getJob,
+  applyToJob,
   getStoredUser,
   authorDisplayName,
   isApplicationFull,
-  type Listing,
+  type Job,
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
@@ -85,7 +85,7 @@ function formatDeadlineRemaining(deadline: string | null, locale: "pl" | "en", t
   if (!deadline) return null;
   const end = new Date(deadline);
   const now = new Date();
-  if (end <= now) return t("listings.deadlinePassed");
+  if (end <= now) return t("jobs.deadlinePassed");
 
   const duration = intervalToDuration({
     start: now,
@@ -97,20 +97,20 @@ function formatDeadlineRemaining(deadline: string | null, locale: "pl" | "en", t
     const hoursLeft = duration.hours ?? 0;
     if (hoursLeft === 0) {
       const minutesLeft = duration.minutes ?? 0;
-      return t("listings.deadlineRemainingMinutes", { minutes: minutesLeft });
+      return t("jobs.deadlineRemainingMinutes", { minutes: minutesLeft });
     }
-    return t("listings.deadlineRemainingHours", { hours: hoursLeft });
+    return t("jobs.deadlineRemainingHours", { hours: hoursLeft });
   }
 
   if (daysLeft === 1) {
-    return t("listings.deadlineRemaining1");
+    return t("jobs.deadlineRemaining1");
   }
 
   if (daysLeft < 5) {
-    return t("listings.deadlineRemainingFew", { days: daysLeft });
+    return t("jobs.deadlineRemainingFew", { days: daysLeft });
   }
 
-  return t("listings.deadlineRemainingMany", { days: daysLeft });
+  return t("jobs.deadlineRemainingMany", { days: daysLeft });
 }
 
 function formatRate(rate: string, currency: string, billingType: string) {
@@ -150,11 +150,11 @@ function DetailRow({
   );
 }
 
-export default function ListingDetailPage() {
+export default function JobDetailPage() {
   const { t, locale } = useTranslations();
   const params = useParams();
   const id = typeof params?.id === "string" ? params.id : "";
-  const [listing, setListing] = useState<Listing | null>(null);
+  const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [applyMessage, setApplyMessage] = useState("");
@@ -170,9 +170,9 @@ export default function ListingDetailPage() {
       setLoading(false);
       return;
     }
-    getListing(id)
+    getJob(id)
       .then((data) => {
-        setListing(data);
+        setJob(data);
         const backendMessage = data.currentUserApplicationMessage;
         if (backendMessage && backendMessage.trim().length > 0) {
           setLastApplicationMessage(backendMessage);
@@ -195,33 +195,33 @@ export default function ListingDetailPage() {
     );
   }
 
-  if (error || !listing) {
+  if (error || !job) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
-        <p className="mb-4 text-destructive">{error ?? t("listings.listingNotFound")}</p>
+        <p className="mb-4 text-destructive">{error ?? t("jobs.jobNotFound")}</p>
         <Button variant="outline" asChild>
           <Link href="/offers/all/1">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            {t("listings.backToList")}
+            {t("jobs.backToList")}
           </Link>
         </Button>
       </div>
     );
   }
 
-  const skills = listing.skills?.map((r) => r.skill.name) ?? [];
-  const isOwnListing = user?.id === listing.authorId;
-  const isDraft = listing.status === "DRAFT";
-  const deadlinePassed = listing.deadline
-    ? getDeadlineRemainingDays(listing.deadline) === 0
+  const skills = job.skills?.map((r) => r.skill.name) ?? [];
+  const isOwnJob = user?.id === job.authorId;
+  const isDraft = job.status === "DRAFT";
+  const deadlinePassed = job.deadline
+    ? getDeadlineRemainingDays(job.deadline) === 0
     : false;
   const canApply =
     user?.accountType === "FREELANCER" &&
-    !isOwnListing &&
+    !isOwnJob &&
     !isDraft &&
     !deadlinePassed &&
-    !listing.currentUserApplied;
-  const applications = listing.applications ?? [];
+    !job.currentUserApplied;
+  const applications = job.applications ?? [];
 
   async function handleApply(e: React.FormEvent) {
     e.preventDefault();
@@ -231,9 +231,9 @@ export default function ListingDetailPage() {
     setApplySubmitting(true);
     setApplyError(null);
     try {
-      await applyToListing(id, messageToSend || undefined);
-      const updated = await getListing(id);
-      setListing(updated);
+      await applyToJob(id, messageToSend || undefined);
+      const updated = await getJob(id);
+      setJob(updated);
       if (
         updated.currentUserApplicationMessage &&
         updated.currentUserApplicationMessage.trim().length > 0
@@ -254,20 +254,20 @@ export default function ListingDetailPage() {
         <CardHeader className="space-y-1 pb-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <CardTitle className="text-2xl leading-tight">{listing.title}</CardTitle>
+              <CardTitle className="text-2xl leading-tight">{job.title}</CardTitle>
               <CardDescription className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
                 <span className="flex items-center gap-1.5">
                   <User className="h-3.5 w-3.5" />
-                  {authorDisplayName(listing.author) || listing.author.email}
+                  {authorDisplayName(job.author) || job.author.email}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Calendar className="h-3.5 w-3.5" />
-                  {formatDate(listing.createdAt, locale)}
+                  {formatDate(job.createdAt, locale)}
                 </span>
-                {listing.deadline && formatDeadlineRemaining(listing.deadline, locale, t) && (
+                {job.deadline && formatDeadlineRemaining(job.deadline, locale, t) && (
                   <span className="flex items-center gap-1.5 font-medium text-foreground">
                     <Clock className="h-3.5 w-3.5" />
-                    {formatDeadlineRemaining(listing.deadline, locale, t)}
+                    {formatDeadlineRemaining(job.deadline, locale, t)}
                   </span>
                 )}
               </CardDescription>
@@ -275,21 +275,21 @@ export default function ListingDetailPage() {
             <div className="flex items-center gap-2 shrink-0">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
                 <Tag className="h-3.5 w-3.5" />
-                {listing.category.name}
+                {job.category.name}
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
                 <ReactCountryFlag
                   svg
-                  countryCode={listing.language === "ENGLISH" ? "GB" : "PL"}
+                  countryCode={job.language === "ENGLISH" ? "GB" : "PL"}
                   style={{ width: "1em", height: "1em" }}
                 />
-                {listing.language === "ENGLISH" ? t("listings.english") : t("listings.polish")}
+                {job.language === "ENGLISH" ? t("jobs.english") : t("jobs.polish")}
               </span>
             </div>
           </div>
           {isDraft && (
             <div className="rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 px-3 py-2 text-sm">
-              {t("listings.draftVisibleOnlyToYou")}
+              {t("jobs.draftVisibleOnlyToYou")}
             </div>
           )}
         </CardHeader>
@@ -302,10 +302,10 @@ export default function ListingDetailPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
-                  {t("listings.description")}
+                  {t("jobs.description")}
                 </p>
                 <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                  {listing.description}
+                  {job.description}
                 </p>
               </div>
             </div>
@@ -315,14 +315,14 @@ export default function ListingDetailPage() {
           <section className="grid gap-6 sm:grid-cols-2">
             <DetailRow
               icon={Banknote}
-              label={t("listings.rate")}
+              label={t("jobs.rate")}
               value={
                 <>
-                  {formatRate(listing.rate, listing.currency, listing.billingType)}
-                  {listing.rateNegotiable && (
+                  {formatRate(job.rate, job.currency, job.billingType)}
+                  {job.rateNegotiable && (
                     <span className="text-muted-foreground font-normal">
                       {" "}
-                      · {t("listings.negotiable")}
+                      · {t("jobs.negotiable")}
                     </span>
                   )}
                 </>
@@ -330,49 +330,49 @@ export default function ListingDetailPage() {
             />
             <DetailRow
               icon={Briefcase}
-              label={t("listings.billingType")}
-              value={BILLING_LABELS[listing.billingType] ?? listing.billingType}
+              label={t("jobs.billingType")}
+              value={BILLING_LABELS[job.billingType] ?? job.billingType}
             />
-            {listing.billingType === "HOURLY" && listing.hoursPerWeek && (
+            {job.billingType === "HOURLY" && job.hoursPerWeek && (
               <DetailRow
                 icon={Clock}
-                label={t("listings.hoursPerWeek")}
-                value={HOURS_LABELS[listing.hoursPerWeek] ?? listing.hoursPerWeek}
+                label={t("jobs.hoursPerWeek")}
+                value={HOURS_LABELS[job.hoursPerWeek] ?? job.hoursPerWeek}
               />
             )}
             <DetailRow
               icon={BarChart3}
-              label={t("listings.experienceLevel")}
+              label={t("jobs.experienceLevel")}
               value={
-                EXPERIENCE_LABELS[listing.experienceLevel] ?? listing.experienceLevel
+                EXPERIENCE_LABELS[job.experienceLevel] ?? job.experienceLevel
               }
             />
             <DetailRow
               icon={Briefcase}
-              label={t("listings.projectType")}
+              label={t("jobs.projectType")}
               value={
-                PROJECT_TYPE_LABELS[listing.projectType] ?? listing.projectType
+                PROJECT_TYPE_LABELS[job.projectType] ?? job.projectType
               }
             />
-            {listing.location && (
+            {job.location && (
               <DetailRow
                 icon={MapPin}
-                label={t("listings.location")}
-                value={listing.location.name}
+                label={t("jobs.location")}
+                value={job.location.name}
               />
             )}
-            {listing.isRemote && (
+            {job.isRemote && (
               <DetailRow
                 icon={Laptop}
-                label={t("listings.remoteWork")}
+                label={t("jobs.remoteWork")}
                 value={t("common.yes")}
               />
             )}
-            {listing.deadline && (
+            {job.deadline && (
               <DetailRow
                 icon={Clock}
-                label={t("listings.deadline")}
-                value={formatDeadlineRemaining(listing.deadline, locale, t) ?? undefined}
+                label={t("jobs.deadline")}
+                value={formatDeadlineRemaining(job.deadline, locale, t) ?? undefined}
               />
             )}
           </section>
@@ -386,7 +386,7 @@ export default function ListingDetailPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                    {t("listings.skills")}
+                    {t("jobs.skills")}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {skills.map((name) => (
@@ -414,7 +414,7 @@ export default function ListingDetailPage() {
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
                     {t("listings.applicationsCount", { count: applications.length })}
                   </p>
-                  {isOwnListing ? (
+                  {isOwnJob ? (
                     <div className="space-y-4">
                       {applications.map((app) =>
                         isApplicationFull(app) ? (
@@ -461,12 +461,12 @@ export default function ListingDetailPage() {
           )}
 
           {/* Apply form (freelancer, before deadline, not own listing) */}
-          {user?.accountType === "FREELANCER" && !isOwnListing && !isDraft && (
+          {user?.accountType === "FREELANCER" && !isOwnJob && !isDraft && (
             <section className="border-t pt-6">
-              {listing.currentUserApplied ? (
+              {job.currentUserApplied ? (
                 <div className="space-y-3">
                   <div className="rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200 px-3 py-2 text-sm">
-                    {t("listings.applied")}
+                    {t("jobs.applied")}
                   </div>
                   {lastApplicationMessage && (
                     <div className="rounded-lg border bg-muted/40 px-3 py-2">

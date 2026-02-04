@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Star } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { Logotype } from "@/app/components/Logotype";
 import { HomeNav, UserDropdown } from "@/app/components/HomeNav";
 import { getToken, getStoredUser, clearAuth, type AuthUser } from "@/lib/api";
@@ -14,9 +15,10 @@ import type { Locale } from "@/lib/i18n";
 export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
   const pathname = usePathname();
   const router = useRouter();
-  const isHome = pathname === "/";
-  const isJob = pathname.startsWith("/jobs/");
-  const showBack = !isHome && !isJob;
+  const isListings = pathname.startsWith("/jobs/");
+  const showBack = !isListings;
+  const topBarVisible = !isListings;
+
   const { t, locale } = useTranslations();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -52,8 +54,9 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
     router.refresh();
   };
 
+
   return (
-    <header className={`bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 ${isJob ? "lg:hidden" : ""}`}>
+    <header className={`bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 ${!topBarVisible ? "lg:hidden" : ""}`}>
       <div
         className={`relative mx-auto flex max-w-6xl flex-row items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-4`}
       >
@@ -83,18 +86,21 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
         <div className="flex items-center gap-2">
           <HomeNav />
           {mounted && isLoggedIn && (
-            <div className="relative" ref={dropdownRef}>
-              <UserDropdown
-                user={user}
-                dropdownOpen={dropdownOpen}
-                setDropdownOpen={setDropdownOpen}
-                dropdownRef={dropdownRef}
-                handleLogout={handleLogout}
-                locale={locale}
-                t={t}
-                iconOnly
-              />
-            </div>
+            <>
+
+              <div className="relative" ref={dropdownRef}>
+                <UserDropdown
+                  user={user}
+                  dropdownOpen={dropdownOpen}
+                  setDropdownOpen={setDropdownOpen}
+                  dropdownRef={dropdownRef}
+                  handleLogout={handleLogout}
+                  locale={locale}
+                  t={t}
+                  iconOnly
+                />
+              </div>
+            </>
           )}
           <ThemeToggle size="icon-lg" />
         </div>

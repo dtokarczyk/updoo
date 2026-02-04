@@ -82,7 +82,7 @@ function OffersPageContent({
                 {t("homepage.heroText")}
               </h1>
               <Button asChild size="lg" className="text-lg px-8 py-6">
-                <Link href="/jobs/new">
+                <Link href="/job/new">
                   {t("jobs.createJob")}
                 </Link>
               </Button>

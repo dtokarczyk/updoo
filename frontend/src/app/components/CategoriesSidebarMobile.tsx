@@ -76,7 +76,7 @@ export function CategoriesSidebarMobile({
           )}
         </button>
         {canCreateJob && (
-          <Link href="/jobs/new" onClick={() => setOpen(false)} className="shrink-0">
+          <Link href="/job/new" onClick={() => setOpen(false)} className="shrink-0">
             <Button
               type="button"
               size="icon"

@@ -12,19 +12,21 @@ async function bootstrap() {
       : ['log', 'error', 'warn'],
   });
   app.useGlobalPipes(new I18nValidationPipe());
-  const frontendOrigin = process.env.FRONTEND_URL ?? 'http://localhost:3000';
-  const allowedOrigins = [
-    frontendOrigin,
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-  ].filter((o, i, a) => a.indexOf(o) === i);
   app.enableCors({
     origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      // Allow requests without origin (same-origin requests, Postman, etc.)
+      if (!origin) {
         callback(null, true);
-      } else {
-        callback(null, false);
+        return;
       }
+      // Allow any origin on ports starting with 3 (3000, 3002, 30000, etc.)
+      const portMatch = origin.match(/:3\d+(?:\/|$)/);
+      if (portMatch) {
+        callback(null, true);
+        return;
+      }
+      // Reject other origins
+      callback(null, false);
     },
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Accept-Language'],

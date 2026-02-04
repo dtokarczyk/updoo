@@ -76,7 +76,7 @@ export class JobsController {
     const parsedSkillIds = skillIds
       ? skillIds.split(',').map((id) => id.trim()).filter(Boolean)
       : undefined;
-    return this.jobsService.getFeed(pageNum, pageSizeNum, user?.id, categoryId, language, parsedSkillIds, finalLanguage);
+    return this.jobsService.getFeed(pageNum, pageSizeNum, user?.id, user?.accountType === 'ADMIN', categoryId, language, parsedSkillIds, finalLanguage);
   }
 
   @Get('popular-skills')
@@ -162,5 +162,22 @@ export class JobsController {
   publishJob(@Param('id') id: string, @GetUser() user: JwtUser) {
     const userLanguage = (user.language || 'POLISH') as JobLanguage;
     return this.jobsService.publishJob(id, user.id, user.accountType === 'ADMIN', userLanguage);
+  }
+
+  @Get('pending')
+  @UseGuards(JwtAuthGuard)
+  getPendingJobs(
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+    @Headers('accept-language') acceptLanguage?: string,
+    @GetUser() user?: JwtUser,
+  ) {
+    const pageNum = page ? Math.max(1, parseInt(page, 10) || 1) : 1;
+    const pageSizeNum = pageSize ? Math.min(Math.max(1, parseInt(pageSize, 10) || 15), 100) : 15;
+    // Priority: Accept-Language header > user language > default POLISH
+    const headerLanguage = acceptLanguage ? parseLanguageFromHeader(acceptLanguage) : null;
+    const userLanguage = (user?.language || 'POLISH') as JobLanguage;
+    const finalLanguage = headerLanguage || userLanguage;
+    return this.jobsService.getPendingJobs(pageNum, pageSizeNum, user!.id, user!.accountType === 'ADMIN', finalLanguage);
   }
 }

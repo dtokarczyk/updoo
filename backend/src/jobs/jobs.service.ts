@@ -387,20 +387,30 @@ export class JobsService implements OnModuleInit {
   }
 
   /** Feed: published for everyone; when userId is set, also include that user's draft jobs.
+   * When isAdmin is true, include all draft jobs (not just user's own).
    * Optional filters: categoryId, language and skills (at least one of the job skills must match).
    */
   async getFeed(
     page = 1,
     pageSize = 15,
     userId?: string,
+    isAdmin?: boolean,
     categoryId?: string,
     language?: string,
     skillIds?: string[],
     userLanguage: JobLanguage = JobLanguage.POLISH,
   ) {
-    const statusWhere = userId
-      ? { OR: [{ status: JobStatus.PUBLISHED }, { status: JobStatus.DRAFT, authorId: userId }] }
-      : { status: JobStatus.PUBLISHED };
+    let statusWhere: Record<string, unknown>;
+    if (isAdmin) {
+      // Admin sees all jobs (published + all drafts)
+      statusWhere = { OR: [{ status: JobStatus.PUBLISHED }, { status: JobStatus.DRAFT }] };
+    } else if (userId) {
+      // Regular user sees published + own drafts
+      statusWhere = { OR: [{ status: JobStatus.PUBLISHED }, { status: JobStatus.DRAFT, authorId: userId }] };
+    } else {
+      // Not logged in: only published
+      statusWhere = { status: JobStatus.PUBLISHED };
+    }
     let where: Record<string, unknown> = categoryId
       ? { ...statusWhere, categoryId }
       : statusWhere;
@@ -426,11 +436,15 @@ export class JobsService implements OnModuleInit {
     // Get total count for pagination metadata
     const total = await this.prisma.job.count({ where });
 
+    // Sort: drafts first (DRAFT status), then published, both sorted by createdAt desc
     const jobs = await this.prisma.job.findMany({
       skip,
       take: pageSize,
       where,
-      orderBy: { createdAt: 'desc' },
+      orderBy: [
+        { status: 'asc' }, // DRAFT comes before PUBLISHED alphabetically
+        { createdAt: 'desc' },
+      ],
       include: {
         category: {
           include: {
@@ -607,7 +621,7 @@ export class JobsService implements OnModuleInit {
     return { ok: true };
   }
 
-  /** Update job. Only author can update; status is always set to DRAFT so admin can re-approve. */
+  /** Update job. Only author can update (or admin can update any); status is always set to DRAFT so admin can re-approve. */
   async updateJob(jobId: string, userId: string, accountType: string | null, dto: CreateJobDto, userLanguage: JobLanguage = JobLanguage.POLISH) {
     const job = await this.prisma.job.findUnique({
       where: { id: jobId },
@@ -615,10 +629,11 @@ export class JobsService implements OnModuleInit {
     if (!job) {
       throw new NotFoundException('Job not found');
     }
-    if (job.authorId !== userId) {
+    const isAdmin = accountType === 'ADMIN';
+    if (!isAdmin && job.authorId !== userId) {
       throw new ForbiddenException('Możesz edytować tylko swoje oferty');
     }
-    if (accountType !== 'CLIENT') {
+    if (!isAdmin && accountType !== 'CLIENT') {
       throw new ForbiddenException('Tylko klienci mogą edytować oferty');
     }
     const category = await this.prisma.category.findUnique({
@@ -772,6 +787,68 @@ export class JobsService implements OnModuleInit {
     return {
       ...result,
       category: this.getCategoryWithTranslation(result.category, userLanguage),
+    };
+  }
+
+  /** Get all DRAFT jobs for admin approval. Only accessible by ADMIN users. */
+  async getPendingJobs(
+    page = 1,
+    pageSize = 15,
+    userId: string,
+    isAdmin: boolean,
+    userLanguage: JobLanguage = JobLanguage.POLISH,
+  ) {
+    if (!isAdmin) {
+      throw new ForbiddenException('Tylko użytkownik z typem konta ADMIN może przeglądać oferty oczekujące na zatwierdzenie');
+    }
+
+    const where = { status: JobStatus.DRAFT };
+
+    const skip = (page - 1) * pageSize;
+
+    // Get total count for pagination metadata
+    const total = await this.prisma.job.count({ where });
+
+    const jobs = await this.prisma.job.findMany({
+      skip,
+      take: pageSize,
+      where,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        category: {
+          include: {
+            translations: {
+              where: { language: userLanguage },
+            },
+          },
+        },
+        author: { select: { id: true, email: true, name: true, surname: true } },
+        location: true,
+        skills: { include: { skill: true } },
+      },
+    });
+
+    const favoriteIds = await this.favoritesService.getFavoriteJobIds(userId);
+
+    const items = jobs.map((item) => ({
+      ...item,
+      category: this.getCategoryWithTranslation(item.category, userLanguage),
+      isFavorite: favoriteIds.has(item.id),
+      currentUserApplied: false,
+    }));
+
+    const totalPages = Math.ceil(total / pageSize);
+
+    return {
+      items,
+      pagination: {
+        page,
+        pageSize,
+        total,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      }
     };
   }
 }

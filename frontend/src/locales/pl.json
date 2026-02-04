@@ -216,5 +216,12 @@
     "client": "Klient",
     "freelancer": "Freelancer",
     "admin": "Admin"
+  },
+  "admin": {
+    "pendingJobs": "Oferty do zatwierdzenia",
+    "pendingJobsTitle": "Oferty oczekujące na zatwierdzenie",
+    "noPendingJobs": "Brak ofert oczekujących na zatwierdzenie",
+    "failedToLoadPending": "Nie udało się załadować ofert do zatwierdzenia",
+    "approve": "Zatwierdź"
   }
 }

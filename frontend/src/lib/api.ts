@@ -596,3 +596,31 @@ export async function getFavoritesJobs(): Promise<Job[]> {
   if (!res.ok) throw new Error("Nie udało się załadować ulubionych");
   return res.json();
 }
+
+export async function getPendingJobs(
+  page: number = 1,
+  pageSize: number = 15
+): Promise<JobsFeedResponse> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+  const params = new URLSearchParams();
+  params.set("page", String(page));
+  params.set("pageSize", String(pageSize));
+  const url = `${API_URL}/jobs/pending?${params.toString()}`;
+  const headers: HeadersInit = { Authorization: `Bearer ${token}` };
+
+  // Add Accept-Language header based on user locale
+  if (typeof window !== "undefined") {
+    const { getUserLocale } = await import("./i18n");
+    const locale = getUserLocale();
+    headers["Accept-Language"] = locale;
+  }
+
+  const res = await fetch(url, { headers });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? "Failed to fetch pending jobs");
+  }
+  return res.json();
+}

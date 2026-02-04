@@ -1,12 +1,12 @@
 "use client";
 
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import Link from "next/link";
 import {
   getCategories,
   getLocations,
   getSkills,
+  createJob,
   getStoredUser,
   type Category,
   type Location,
@@ -16,8 +16,6 @@ import {
   type ExperienceLevel,
   type ProjectType,
   type JobLanguage,
-  getJob,
-  updateJob,
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,38 +28,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-
-const BILLING_LABELS: Record<BillingType, string> = {
-  FIXED: "Stawka ryczałtowa (fix)",
-  HOURLY: "Stawka godzinowa",
-};
-
-const HOURS_LABELS: Record<HoursPerWeek, string> = {
-  LESS_THAN_10: "Mniej niż 10",
-  FROM_11_TO_20: "11–20",
-  FROM_21_TO_30: "21–30",
-  MORE_THAN_30: "Powyżej 30",
-};
-
-const EXPERIENCE_LABELS: Record<ExperienceLevel, string> = {
-  JUNIOR: "Junior",
-  MID: "Mid",
-  SENIOR: "Senior",
-};
-
-const PROJECT_TYPE_LABELS: Record<ProjectType, string> = {
-  ONE_TIME: "Jednorazowy",
-  CONTINUOUS: "Ciągły",
-};
+import { useTranslations } from "@/hooks/useTranslations";
 
 const CURRENCIES = ["PLN", "EUR", "USD", "GBP", "CHF"];
 
 type SelectedSkill = { id: string | null; name: string };
 
-export default function EditListingPage() {
+export default function NewListingPage() {
   const router = useRouter();
-  const params = useParams();
-  const id = typeof params?.id === "string" ? params.id : "";
+  const { t } = useTranslations();
   const [categories, setCategories] = useState<Category[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
@@ -84,8 +59,30 @@ export default function EditListingPage() {
   const [skillDropdownOpen, setSkillDropdownOpen] = useState(false);
   const skillInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+
+  const BILLING_LABELS: Record<BillingType, string> = {
+    FIXED: t("jobs.fixedRate"),
+    HOURLY: t("jobs.newJobForm.hourlyRate"),
+  };
+
+  const HOURS_LABELS: Record<HoursPerWeek, string> = {
+    LESS_THAN_10: t("jobs.lessThan10"),
+    FROM_11_TO_20: t("jobs.from11To20"),
+    FROM_21_TO_30: t("jobs.from21To30"),
+    MORE_THAN_30: t("jobs.moreThan30"),
+  };
+
+  const EXPERIENCE_LABELS: Record<ExperienceLevel, string> = {
+    JUNIOR: t("jobs.junior"),
+    MID: t("jobs.mid"),
+    SENIOR: t("jobs.senior"),
+  };
+
+  const PROJECT_TYPE_LABELS: Record<ProjectType, string> = {
+    ONE_TIME: t("jobs.oneTime"),
+    CONTINUOUS: t("jobs.continuous"),
+  };
 
   useEffect(() => {
     const user = getStoredUser();
@@ -93,62 +90,22 @@ export default function EditListingPage() {
       router.replace("/login");
       return;
     }
-    const isAdmin = user.accountType === "ADMIN";
-    if (!isAdmin && user.accountType !== "CLIENT") {
+    if (user.accountType !== "CLIENT") {
       router.replace("/");
-      return;
-    }
-    if (!id) {
-      setLoading(false);
-      setError("Brak ID ogłoszenia");
       return;
     }
     Promise.all([
       getCategories(),
       getLocations(),
       getSkills(),
-      getJob(id),
     ])
-      .then(([cats, locs, sk, listing]) => {
-        if (!isAdmin && listing.authorId !== user.id) {
-          setError("Możesz edytować tylko swoje ogłoszenia");
-          setLoading(false);
-          return;
-        }
+      .then(([cats, locs, sk]) => {
         setCategories(cats);
         setLocations(locs);
         setSkills(sk);
-        setTitle(listing.title);
-        setDescription(listing.description);
-        setCategoryId(listing.categoryId);
-        setLanguage(listing.language ?? "POLISH");
-        setBillingType(listing.billingType);
-        setHoursPerWeek(listing.hoursPerWeek ?? "");
-        setRate(listing.rate ?? "");
-        setRateNegotiable(listing.rateNegotiable ?? false);
-        setCurrency(listing.currency ?? "PLN");
-        setExperienceLevel(listing.experienceLevel);
-        setLocationId(listing.locationId ?? "");
-        setIsRemote(listing.isRemote);
-        setProjectType(listing.projectType);
-        if (listing.deadline && listing.createdAt) {
-          const ms = new Date(listing.deadline).getTime() - new Date(listing.createdAt).getTime();
-          const days = Math.round(ms / (24 * 60 * 60 * 1000));
-          const allowed = [7, 14, 21, 30];
-          const closest = allowed.reduce((prev, curr) =>
-            Math.abs(curr - days) < Math.abs(prev - days) ? curr : prev
-          );
-          setOfferDays(closest);
-        } else {
-          setOfferDays(14);
-        }
-        setSelectedSkills(
-          listing.skills?.map((r) => ({ id: r.skill.id, name: r.skill.name })) ?? []
-        );
       })
-      .catch((err) => setError(err instanceof Error ? err.message : "Nie udało się załadować ogłoszenia"))
-      .finally(() => setLoading(false));
-  }, [id, router]);
+      .catch(() => setError(t("jobs.failedToLoadData")));
+  }, [router]);
 
   const addSkill = (skill: SelectedSkill) => {
     if (selectedSkills.some((s) => s.name.toLowerCase() === skill.name.toLowerCase())) return;
@@ -187,28 +144,27 @@ export default function EditListingPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!id) return;
     if (!title.trim() || !description.trim() || !categoryId) {
-      setError("Wypełnij tytuł, opis i kategorię");
+      setError(t("jobs.fillRequired"));
       return;
     }
     const rateNum = parseFloat(rate.replace(",", "."));
     if (isNaN(rateNum) || rateNum < 0) {
-      setError("Podaj poprawną stawkę");
+      setError(t("jobs.invalidRate"));
       return;
     }
     if (billingType === "HOURLY" && !hoursPerWeek) {
-      setError("Przy rozliczeniu godzinowym wybierz ilość godzin tygodniowo");
+      setError(t("jobs.selectHoursPerWeek"));
       return;
     }
     const allowedOfferDays = [7, 14, 21, 30];
     if (!allowedOfferDays.includes(offerDays)) {
-      setError("Ilość dni na zebranie ofert: wybierz 7, 14, 21 lub 30 dni");
+      setError(t("jobs.invalidOfferDays"));
       return;
     }
     setSubmitting(true);
     try {
-      await updateJob(id, {
+      await createJob({
         title: title.trim(),
         description: description.trim(),
         categoryId,
@@ -228,7 +184,7 @@ export default function EditListingPage() {
       });
       router.push("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Błąd podczas zapisywania");
+      setError(err instanceof Error ? err.message : t("jobs.failedToCreate"));
     } finally {
       setSubmitting(false);
     }
@@ -240,25 +196,14 @@ export default function EditListingPage() {
     "disabled:opacity-50 md:text-sm"
   );
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 py-12 px-4">
-        <main className="max-w-xl mx-auto text-center text-muted-foreground">
-          Ładowanie ogłoszenia...
-        </main>
-      </div>
-    );
-  }
-
-
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 py-12 px-4">
       <main className="max-w-xl mx-auto">
         <Card>
           <CardHeader>
-            <CardTitle>Edytuj ogłoszenie</CardTitle>
+            <CardTitle className="text-3xl font-bold">{t("jobs.newJobForm.title")}</CardTitle>
             <CardDescription>
-              Po zapisie ogłoszenie wróci do statusu „Szkic” i będzie wymagało ponownej akceptacji przez administratora.
+              {t("jobs.newJobForm.description")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -267,23 +212,23 @@ export default function EditListingPage() {
                 <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
               )}
               <div className="space-y-2">
-                <Label htmlFor="title">Tytuł</Label>
+                <Label htmlFor="title">{t("jobs.title")}</Label>
                 <Input
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="np. Szukam developera React"
+                  placeholder={t("jobs.newJobForm.titlePlaceholder")}
                   maxLength={200}
                   disabled={submitting}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">Opis</Label>
+                <Label htmlFor="description">{t("jobs.description")}</Label>
                 <textarea
                   id="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Opisz szczegóły ogłoszenia..."
+                  placeholder={t("jobs.newJobForm.descriptionPlaceholder")}
                   maxLength={5000}
                   rows={6}
                   disabled={submitting}
@@ -295,7 +240,7 @@ export default function EditListingPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="category">Kategoria</Label>
+                <Label htmlFor="category">{t("jobs.category")}</Label>
                 <select
                   id="category"
                   value={categoryId}
@@ -304,7 +249,7 @@ export default function EditListingPage() {
                   className={selectClass}
                 >
                   <option value="">
-                    {categories.length === 0 ? "Ładowanie..." : "Wybierz kategorię"}
+                    {categories.length === 0 ? t("common.loading") : t("jobs.newJobForm.selectCategory")}
                   </option>
                   {categories.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -314,7 +259,7 @@ export default function EditListingPage() {
                 </select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="language">Język ogłoszenia</Label>
+                <Label htmlFor="language">{t("jobs.language")}</Label>
                 <select
                   id="language"
                   value={language}
@@ -322,13 +267,13 @@ export default function EditListingPage() {
                   disabled={submitting}
                   className={selectClass}
                 >
-                  <option value="POLISH">Polish</option>
-                  <option value="ENGLISH">English</option>
+                  <option value="POLISH">{t("jobs.polish")}</option>
+                  <option value="ENGLISH">{t("jobs.english")}</option>
                 </select>
               </div>
 
               <div className="space-y-2">
-                <Label>Typ rozliczenia</Label>
+                <Label>{t("jobs.billingType")}</Label>
                 <div className="flex gap-4">
                   {(Object.keys(BILLING_LABELS) as BillingType[]).map((t) => (
                     <label key={t} className="flex items-center gap-2 cursor-pointer">
@@ -348,7 +293,7 @@ export default function EditListingPage() {
 
               {billingType === "HOURLY" && (
                 <div className="space-y-2">
-                  <Label htmlFor="hoursPerWeek">Ilość godzin tygodniowo</Label>
+                  <Label htmlFor="hoursPerWeek">{t("jobs.hoursPerWeek")}</Label>
                   <select
                     id="hoursPerWeek"
                     value={hoursPerWeek}
@@ -356,7 +301,7 @@ export default function EditListingPage() {
                     disabled={submitting}
                     className={selectClass}
                   >
-                    <option value="">Wybierz przedział</option>
+                    <option value="">{t("jobs.newJobForm.selectInterval")}</option>
                     {(Object.keys(HOURS_LABELS) as HoursPerWeek[]).map((h) => (
                       <option key={h} value={h}>
                         {HOURS_LABELS[h]}
@@ -369,7 +314,7 @@ export default function EditListingPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="rate">
-                    {billingType === "HOURLY" ? "Stawka godzinowa" : "Stawka (ryczałt)"}
+                    {billingType === "HOURLY" ? t("jobs.newJobForm.hourlyRate") : t("jobs.newJobForm.fixedRate")}
                   </Label>
                   <Input
                     id="rate"
@@ -383,7 +328,7 @@ export default function EditListingPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="currency">Waluta</Label>
+                  <Label htmlFor="currency">{t("jobs.currency")}</Label>
                   <select
                     id="currency"
                     value={currency}
@@ -410,12 +355,12 @@ export default function EditListingPage() {
                   className="rounded border-input"
                 />
                 <Label htmlFor="rateNegotiable" className="cursor-pointer">
-                  Stawka do negocjacji
+                  {t("jobs.rateNegotiable")}
                 </Label>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="experienceLevel">Oczekiwany poziom doświadczenia</Label>
+                <Label htmlFor="experienceLevel">{t("jobs.experienceLevel")}</Label>
                 <select
                   id="experienceLevel"
                   value={experienceLevel}
@@ -432,7 +377,7 @@ export default function EditListingPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="location">Miejsce</Label>
+                <Label htmlFor="location">{t("jobs.location")}</Label>
                 <select
                   id="location"
                   value={locationId}
@@ -440,7 +385,7 @@ export default function EditListingPage() {
                   disabled={submitting || locations.length === 0}
                   className={selectClass}
                 >
-                  <option value="">Nie wybrano</option>
+                  <option value="">{t("jobs.newJobForm.notSelected")}</option>
                   {locations.map((loc) => (
                     <option key={loc.id} value={loc.id}>
                       {loc.name}
@@ -459,12 +404,12 @@ export default function EditListingPage() {
                   className="rounded border-input"
                 />
                 <Label htmlFor="isRemote" className="cursor-pointer">
-                  Praca zdalna (remote)
+                  {t("jobs.remoteWork")}
                 </Label>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="projectType">Typ projektu</Label>
+                <Label htmlFor="projectType">{t("jobs.projectType")}</Label>
                 <select
                   id="projectType"
                   value={projectType}
@@ -481,7 +426,7 @@ export default function EditListingPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="offerDays">Ilość dni na zebranie ofert</Label>
+                <Label htmlFor="offerDays">{t("jobs.offerDays")}</Label>
                 <select
                   id="offerDays"
                   value={offerDays}
@@ -491,19 +436,19 @@ export default function EditListingPage() {
                 >
                   {[7, 14, 21, 30].map((d) => (
                     <option key={d} value={d}>
-                      {d} dni
+                      {d} {t("jobs.newJobForm.days")}
                     </option>
                   ))}
                 </select>
                 <p className="text-xs text-muted-foreground">
-                  7, 14, 21 lub 30 dni na zbieranie ofert od daty utworzenia.
+                  {t("jobs.newJobForm.offerDaysDescription")}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label>Oczekiwane skille</Label>
+                <Label>{t("jobs.newJobForm.expectedSkills")}</Label>
                 <p className="text-xs text-muted-foreground">
-                  Wybierz z listy lub wpisz nazwę i naciśnij Enter, aby dodać (w tym nowy skill).
+                  {t("jobs.newJobForm.skillsDescription")}
                 </p>
                 <div className="flex flex-wrap gap-2 p-2 border border-input rounded-md bg-transparent min-h-10">
                   {selectedSkills.map((s, i) => (
@@ -517,7 +462,7 @@ export default function EditListingPage() {
                         onClick={() => removeSkill(i)}
                         disabled={submitting}
                         className="ml-0.5 rounded-full hover:bg-muted-foreground/20 p-0.5 leading-none"
-                        aria-label="Usuń"
+                        aria-label={t("jobs.newJobForm.remove")}
                       >
                         ×
                       </button>
@@ -534,7 +479,7 @@ export default function EditListingPage() {
                       onFocus={() => setSkillDropdownOpen(true)}
                       onBlur={() => setTimeout(() => setSkillDropdownOpen(false), 150)}
                       onKeyDown={handleSkillKeyDown}
-                      placeholder="Dodaj skill..."
+                      placeholder={t("jobs.newJobForm.addSkillPlaceholder")}
                       disabled={submitting}
                       className="border-0 shadow-none focus-visible:ring-0 h-8 min-w-0"
                     />
@@ -563,7 +508,7 @@ export default function EditListingPage() {
                                 addSkill({ id: null, name: skillInput.trim() });
                               }}
                             >
-                              + Dodaj „{skillInput.trim()}” jako nowy skill
+                              {t("jobs.newJobForm.addNewSkill", { name: skillInput.trim() })}
                             </button>
                           )}
                       </div>
@@ -573,7 +518,7 @@ export default function EditListingPage() {
               </div>
 
               <Button type="submit" disabled={submitting}>
-                {submitting ? "Zapisywanie..." : "Zapisz zmiany"}
+                {submitting ? t("jobs.newJobForm.submitting") : t("jobs.newJobForm.submit")}
               </Button>
             </form>
           </CardContent>

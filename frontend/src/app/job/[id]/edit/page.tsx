@@ -1,12 +1,12 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
+import Link from "next/link";
 import {
   getCategories,
   getLocations,
   getSkills,
-  createListing,
   getStoredUser,
   type Category,
   type Location,
@@ -16,6 +16,8 @@ import {
   type ExperienceLevel,
   type ProjectType,
   type JobLanguage,
+  getJob,
+  updateJob,
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,15 +30,38 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { useTranslations } from "@/hooks/useTranslations";
+
+const BILLING_LABELS: Record<BillingType, string> = {
+  FIXED: "Stawka ryczałtowa (fix)",
+  HOURLY: "Stawka godzinowa",
+};
+
+const HOURS_LABELS: Record<HoursPerWeek, string> = {
+  LESS_THAN_10: "Mniej niż 10",
+  FROM_11_TO_20: "11–20",
+  FROM_21_TO_30: "21–30",
+  MORE_THAN_30: "Powyżej 30",
+};
+
+const EXPERIENCE_LABELS: Record<ExperienceLevel, string> = {
+  JUNIOR: "Junior",
+  MID: "Mid",
+  SENIOR: "Senior",
+};
+
+const PROJECT_TYPE_LABELS: Record<ProjectType, string> = {
+  ONE_TIME: "Jednorazowy",
+  CONTINUOUS: "Ciągły",
+};
 
 const CURRENCIES = ["PLN", "EUR", "USD", "GBP", "CHF"];
 
 type SelectedSkill = { id: string | null; name: string };
 
-export default function NewListingPage() {
+export default function EditListingPage() {
   const router = useRouter();
-  const { t } = useTranslations();
+  const params = useParams();
+  const id = typeof params?.id === "string" ? params.id : "";
   const [categories, setCategories] = useState<Category[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
@@ -59,30 +84,8 @@ export default function NewListingPage() {
   const [skillDropdownOpen, setSkillDropdownOpen] = useState(false);
   const skillInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-
-  const BILLING_LABELS: Record<BillingType, string> = {
-    FIXED: t("listings.fixedRate"),
-    HOURLY: t("listings.newListingForm.hourlyRate"),
-  };
-
-  const HOURS_LABELS: Record<HoursPerWeek, string> = {
-    LESS_THAN_10: t("listings.lessThan10"),
-    FROM_11_TO_20: t("listings.from11To20"),
-    FROM_21_TO_30: t("listings.from21To30"),
-    MORE_THAN_30: t("listings.moreThan30"),
-  };
-
-  const EXPERIENCE_LABELS: Record<ExperienceLevel, string> = {
-    JUNIOR: t("listings.junior"),
-    MID: t("listings.mid"),
-    SENIOR: t("listings.senior"),
-  };
-
-  const PROJECT_TYPE_LABELS: Record<ProjectType, string> = {
-    ONE_TIME: t("listings.oneTime"),
-    CONTINUOUS: t("listings.continuous"),
-  };
 
   useEffect(() => {
     const user = getStoredUser();
@@ -90,22 +93,62 @@ export default function NewListingPage() {
       router.replace("/login");
       return;
     }
-    if (user.accountType !== "CLIENT") {
+    const isAdmin = user.accountType === "ADMIN";
+    if (!isAdmin && user.accountType !== "CLIENT") {
       router.replace("/");
+      return;
+    }
+    if (!id) {
+      setLoading(false);
+      setError("Brak ID ogłoszenia");
       return;
     }
     Promise.all([
       getCategories(),
       getLocations(),
       getSkills(),
+      getJob(id),
     ])
-      .then(([cats, locs, sk]) => {
+      .then(([cats, locs, sk, listing]) => {
+        if (!isAdmin && listing.authorId !== user.id) {
+          setError("Możesz edytować tylko swoje ogłoszenia");
+          setLoading(false);
+          return;
+        }
         setCategories(cats);
         setLocations(locs);
         setSkills(sk);
+        setTitle(listing.title);
+        setDescription(listing.description);
+        setCategoryId(listing.categoryId);
+        setLanguage(listing.language ?? "POLISH");
+        setBillingType(listing.billingType);
+        setHoursPerWeek(listing.hoursPerWeek ?? "");
+        setRate(listing.rate ?? "");
+        setRateNegotiable(listing.rateNegotiable ?? false);
+        setCurrency(listing.currency ?? "PLN");
+        setExperienceLevel(listing.experienceLevel);
+        setLocationId(listing.locationId ?? "");
+        setIsRemote(listing.isRemote);
+        setProjectType(listing.projectType);
+        if (listing.deadline && listing.createdAt) {
+          const ms = new Date(listing.deadline).getTime() - new Date(listing.createdAt).getTime();
+          const days = Math.round(ms / (24 * 60 * 60 * 1000));
+          const allowed = [7, 14, 21, 30];
+          const closest = allowed.reduce((prev, curr) =>
+            Math.abs(curr - days) < Math.abs(prev - days) ? curr : prev
+          );
+          setOfferDays(closest);
+        } else {
+          setOfferDays(14);
+        }
+        setSelectedSkills(
+          listing.skills?.map((r) => ({ id: r.skill.id, name: r.skill.name })) ?? []
+        );
       })
-      .catch(() => setError(t("listings.failedToLoadData")));
-  }, [router]);
+      .catch((err) => setError(err instanceof Error ? err.message : "Nie udało się załadować ogłoszenia"))
+      .finally(() => setLoading(false));
+  }, [id, router]);
 
   const addSkill = (skill: SelectedSkill) => {
     if (selectedSkills.some((s) => s.name.toLowerCase() === skill.name.toLowerCase())) return;
@@ -144,27 +187,28 @@ export default function NewListingPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (!id) return;
     if (!title.trim() || !description.trim() || !categoryId) {
-      setError(t("listings.fillRequired"));
+      setError("Wypełnij tytuł, opis i kategorię");
       return;
     }
     const rateNum = parseFloat(rate.replace(",", "."));
     if (isNaN(rateNum) || rateNum < 0) {
-      setError(t("listings.invalidRate"));
+      setError("Podaj poprawną stawkę");
       return;
     }
     if (billingType === "HOURLY" && !hoursPerWeek) {
-      setError(t("listings.selectHoursPerWeek"));
+      setError("Przy rozliczeniu godzinowym wybierz ilość godzin tygodniowo");
       return;
     }
     const allowedOfferDays = [7, 14, 21, 30];
     if (!allowedOfferDays.includes(offerDays)) {
-      setError(t("listings.invalidOfferDays"));
+      setError("Ilość dni na zebranie ofert: wybierz 7, 14, 21 lub 30 dni");
       return;
     }
     setSubmitting(true);
     try {
-      await createListing({
+      await updateJob(id, {
         title: title.trim(),
         description: description.trim(),
         categoryId,
@@ -184,7 +228,7 @@ export default function NewListingPage() {
       });
       router.push("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("listings.failedToCreate"));
+      setError(err instanceof Error ? err.message : "Błąd podczas zapisywania");
     } finally {
       setSubmitting(false);
     }
@@ -196,14 +240,25 @@ export default function NewListingPage() {
     "disabled:opacity-50 md:text-sm"
   );
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 py-12 px-4">
+        <main className="max-w-xl mx-auto text-center text-muted-foreground">
+          Ładowanie ogłoszenia...
+        </main>
+      </div>
+    );
+  }
+
+
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 py-12 px-4">
       <main className="max-w-xl mx-auto">
         <Card>
           <CardHeader>
-            <CardTitle className="text-3xl font-bold">{t("listings.newListingForm.title")}</CardTitle>
+            <CardTitle>Edytuj ogłoszenie</CardTitle>
             <CardDescription>
-              {t("listings.newListingForm.description")}
+              Po zapisie ogłoszenie wróci do statusu „Szkic” i będzie wymagało ponownej akceptacji przez administratora.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -212,23 +267,23 @@ export default function NewListingPage() {
                 <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
               )}
               <div className="space-y-2">
-                <Label htmlFor="title">{t("listings.title")}</Label>
+                <Label htmlFor="title">Tytuł</Label>
                 <Input
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder={t("listings.newListingForm.titlePlaceholder")}
+                  placeholder="np. Szukam developera React"
                   maxLength={200}
                   disabled={submitting}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">{t("listings.description")}</Label>
+                <Label htmlFor="description">Opis</Label>
                 <textarea
                   id="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder={t("listings.newListingForm.descriptionPlaceholder")}
+                  placeholder="Opisz szczegóły ogłoszenia..."
                   maxLength={5000}
                   rows={6}
                   disabled={submitting}
@@ -240,7 +295,7 @@ export default function NewListingPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="category">{t("listings.category")}</Label>
+                <Label htmlFor="category">Kategoria</Label>
                 <select
                   id="category"
                   value={categoryId}
@@ -249,7 +304,7 @@ export default function NewListingPage() {
                   className={selectClass}
                 >
                   <option value="">
-                    {categories.length === 0 ? t("common.loading") : t("listings.newListingForm.selectCategory")}
+                    {categories.length === 0 ? "Ładowanie..." : "Wybierz kategorię"}
                   </option>
                   {categories.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -259,7 +314,7 @@ export default function NewListingPage() {
                 </select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="language">{t("listings.language")}</Label>
+                <Label htmlFor="language">Język ogłoszenia</Label>
                 <select
                   id="language"
                   value={language}
@@ -267,13 +322,13 @@ export default function NewListingPage() {
                   disabled={submitting}
                   className={selectClass}
                 >
-                  <option value="POLISH">{t("listings.polish")}</option>
-                  <option value="ENGLISH">{t("listings.english")}</option>
+                  <option value="POLISH">Polish</option>
+                  <option value="ENGLISH">English</option>
                 </select>
               </div>
 
               <div className="space-y-2">
-                <Label>{t("listings.billingType")}</Label>
+                <Label>Typ rozliczenia</Label>
                 <div className="flex gap-4">
                   {(Object.keys(BILLING_LABELS) as BillingType[]).map((t) => (
                     <label key={t} className="flex items-center gap-2 cursor-pointer">
@@ -293,7 +348,7 @@ export default function NewListingPage() {
 
               {billingType === "HOURLY" && (
                 <div className="space-y-2">
-                  <Label htmlFor="hoursPerWeek">{t("listings.hoursPerWeek")}</Label>
+                  <Label htmlFor="hoursPerWeek">Ilość godzin tygodniowo</Label>
                   <select
                     id="hoursPerWeek"
                     value={hoursPerWeek}
@@ -301,7 +356,7 @@ export default function NewListingPage() {
                     disabled={submitting}
                     className={selectClass}
                   >
-                    <option value="">{t("listings.newListingForm.selectInterval")}</option>
+                    <option value="">Wybierz przedział</option>
                     {(Object.keys(HOURS_LABELS) as HoursPerWeek[]).map((h) => (
                       <option key={h} value={h}>
                         {HOURS_LABELS[h]}
@@ -314,7 +369,7 @@ export default function NewListingPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="rate">
-                    {billingType === "HOURLY" ? t("listings.newListingForm.hourlyRate") : t("listings.newListingForm.fixedRate")}
+                    {billingType === "HOURLY" ? "Stawka godzinowa" : "Stawka (ryczałt)"}
                   </Label>
                   <Input
                     id="rate"
@@ -328,7 +383,7 @@ export default function NewListingPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="currency">{t("listings.currency")}</Label>
+                  <Label htmlFor="currency">Waluta</Label>
                   <select
                     id="currency"
                     value={currency}
@@ -355,12 +410,12 @@ export default function NewListingPage() {
                   className="rounded border-input"
                 />
                 <Label htmlFor="rateNegotiable" className="cursor-pointer">
-                  {t("listings.rateNegotiable")}
+                  Stawka do negocjacji
                 </Label>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="experienceLevel">{t("listings.experienceLevel")}</Label>
+                <Label htmlFor="experienceLevel">Oczekiwany poziom doświadczenia</Label>
                 <select
                   id="experienceLevel"
                   value={experienceLevel}
@@ -377,7 +432,7 @@ export default function NewListingPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="location">{t("listings.location")}</Label>
+                <Label htmlFor="location">Miejsce</Label>
                 <select
                   id="location"
                   value={locationId}
@@ -385,7 +440,7 @@ export default function NewListingPage() {
                   disabled={submitting || locations.length === 0}
                   className={selectClass}
                 >
-                  <option value="">{t("listings.newListingForm.notSelected")}</option>
+                  <option value="">Nie wybrano</option>
                   {locations.map((loc) => (
                     <option key={loc.id} value={loc.id}>
                       {loc.name}
@@ -404,12 +459,12 @@ export default function NewListingPage() {
                   className="rounded border-input"
                 />
                 <Label htmlFor="isRemote" className="cursor-pointer">
-                  {t("listings.remoteWork")}
+                  Praca zdalna (remote)
                 </Label>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="projectType">{t("listings.projectType")}</Label>
+                <Label htmlFor="projectType">Typ projektu</Label>
                 <select
                   id="projectType"
                   value={projectType}
@@ -426,7 +481,7 @@ export default function NewListingPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="offerDays">{t("listings.offerDays")}</Label>
+                <Label htmlFor="offerDays">Ilość dni na zebranie ofert</Label>
                 <select
                   id="offerDays"
                   value={offerDays}
@@ -436,19 +491,19 @@ export default function NewListingPage() {
                 >
                   {[7, 14, 21, 30].map((d) => (
                     <option key={d} value={d}>
-                      {d} {t("listings.newListingForm.days")}
+                      {d} dni
                     </option>
                   ))}
                 </select>
                 <p className="text-xs text-muted-foreground">
-                  {t("listings.newListingForm.offerDaysDescription")}
+                  7, 14, 21 lub 30 dni na zbieranie ofert od daty utworzenia.
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label>{t("listings.newListingForm.expectedSkills")}</Label>
+                <Label>Oczekiwane skille</Label>
                 <p className="text-xs text-muted-foreground">
-                  {t("listings.newListingForm.skillsDescription")}
+                  Wybierz z listy lub wpisz nazwę i naciśnij Enter, aby dodać (w tym nowy skill).
                 </p>
                 <div className="flex flex-wrap gap-2 p-2 border border-input rounded-md bg-transparent min-h-10">
                   {selectedSkills.map((s, i) => (
@@ -462,7 +517,7 @@ export default function NewListingPage() {
                         onClick={() => removeSkill(i)}
                         disabled={submitting}
                         className="ml-0.5 rounded-full hover:bg-muted-foreground/20 p-0.5 leading-none"
-                        aria-label={t("listings.newListingForm.remove")}
+                        aria-label="Usuń"
                       >
                         ×
                       </button>
@@ -479,7 +534,7 @@ export default function NewListingPage() {
                       onFocus={() => setSkillDropdownOpen(true)}
                       onBlur={() => setTimeout(() => setSkillDropdownOpen(false), 150)}
                       onKeyDown={handleSkillKeyDown}
-                      placeholder={t("listings.newListingForm.addSkillPlaceholder")}
+                      placeholder="Dodaj skill..."
                       disabled={submitting}
                       className="border-0 shadow-none focus-visible:ring-0 h-8 min-w-0"
                     />
@@ -508,7 +563,7 @@ export default function NewListingPage() {
                                 addSkill({ id: null, name: skillInput.trim() });
                               }}
                             >
-                              {t("listings.newListingForm.addNewSkill", { name: skillInput.trim() })}
+                              + Dodaj „{skillInput.trim()}” jako nowy skill
                             </button>
                           )}
                       </div>
@@ -518,7 +573,7 @@ export default function NewListingPage() {
               </div>
 
               <Button type="submit" disabled={submitting}>
-                {submitting ? t("listings.newListingForm.submitting") : t("listings.newListingForm.submit")}
+                {submitting ? "Zapisywanie..." : "Zapisz zmiany"}
               </Button>
             </form>
           </CardContent>

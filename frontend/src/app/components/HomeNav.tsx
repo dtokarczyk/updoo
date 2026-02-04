@@ -212,7 +212,7 @@ export function HomeNav({ showCreateOnly, placement = "header" }: HomeNavProps) 
   if (showCreateOnly) {
     if (!canCreateListing) return null;
     return (
-      <Link href="/jobs/new">
+      <Link href="/job/new">
         <Button variant="outline" size="sm">
           {t("jobs.newJob")}
         </Button>

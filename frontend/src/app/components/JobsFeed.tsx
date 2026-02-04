@@ -136,7 +136,7 @@ export function JobsFeed({
           }
         })
         .catch(() => {
-          setError("Nie udało się załadować ofert");
+          setError(t("jobs.failedToLoad"));
           onCountChange?.(0);
         })
         .finally(() => setLoading(false));
@@ -202,7 +202,7 @@ export function JobsFeed({
     setPublishingId(jobId);
     publishJob(jobId)
       .then(() => loadFeed(page))
-      .catch(() => setError("Nie udało się opublikować oferty"))
+      .catch(() => setError(t("jobs.failedToPublish")))
       .finally(() => setPublishingId(null));
   };
 
@@ -253,7 +253,7 @@ export function JobsFeed({
   if (jobs.length === 0) {
     return (
       <div className="py-12 text-center text-muted-foreground rounded-lg border border-dashed">
-        Brak ofert. Dodaj pierwszą ofertę!
+        {t("jobs.noJobs")}
       </div>
     );
   }
@@ -263,7 +263,8 @@ export function JobsFeed({
       {jobs.map((job) => {
         const isDraft = job.status === "DRAFT";
         const canPublish = user?.accountType === "ADMIN" && isDraft;
-        const isOwnJob = user?.id === job.authorId;
+        const isAdmin = user?.accountType === "ADMIN";
+        const isOwnJob = isAdmin || user?.id === job.authorId;
         const isVisited = visitedIds.has(job.id);
         const isApplied =
           !!job.currentUserApplied && user?.accountType === "FREELANCER";
@@ -316,25 +317,27 @@ export function JobsFeed({
                       countryCode={job.language === "ENGLISH" ? "GB" : "PL"}
                       style={{ width: "1em", height: "1em" }}
                     />
-                    {job.language === "ENGLISH" ? "English" : "Polish"}
+                    {job.language === "ENGLISH" ? t("jobs.english") : t("jobs.polish")}
                   </span>
-                  {isOwnJob && (
-                    <Button size="icon" variant="ghost" className="h-8 w-8" asChild>
-                      <Link
-                        href={`/jobs/${job.id}/edit`}
-                        aria-label={t("jobs.editJob")}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                  )}
                 </div>
+              }
+              headerRightAction={
+                isOwnJob ? (
+                  <Button size="icon" variant="ghost" className="h-8 w-8" asChild>
+                    <Link
+                      href={`/job/${job.id}/edit`}
+                      aria-label={t("jobs.editJob")}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                ) : undefined
               }
             />
             {isDraft && (
               <div className="bg-amber-200/90 dark:bg-amber-900/50 text-amber-900 dark:text-amber-100 border-t border-amber-300/80 dark:border-amber-700/80 px-4 py-3 flex flex-wrap items-center justify-between gap-2">
                 <p className="text-sm">
-                  Czeka na akceptację administratora. Widoczny tylko dla autora.
+                  {t("jobs.waitingForAdmin")}
                 </p>
                 {canPublish && (
                   <Button
@@ -344,7 +347,7 @@ export function JobsFeed({
                     onClick={() => handlePublish(job.id)}
                     disabled={publishingId === job.id}
                   >
-                    {publishingId === job.id ? "Publikowanie…" : "Opublikuj"}
+                    {publishingId === job.id ? t("jobs.publishing") : t("jobs.publish")}
                   </Button>
                 )}
               </div>

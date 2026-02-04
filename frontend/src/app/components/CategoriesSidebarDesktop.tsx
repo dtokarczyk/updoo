@@ -84,11 +84,7 @@ export function CategoriesSidebarDesktop({
           </li>
         ))}
       </ul>
-      {mounted && !isLoggedIn && (
-        <div className="mt-6">
-          <LanguageToggle size="default" className="w-full justify-center" showFullName initialLocale={initialLocale} />
-        </div>
-      )}
+
       {canCreateJob && (
         <div className="mt-6">
           <Button asChild variant="default" size="lg" className="w-full justify-start">
@@ -97,6 +93,12 @@ export function CategoriesSidebarDesktop({
               {t("jobs.newJob")}
             </Link>
           </Button>
+        </div>
+      )}
+
+      {mounted && !isLoggedIn && (
+        <div className="mt-6">
+          <LanguageToggle size="default" className="w-full justify-center" showFullName initialLocale={initialLocale} />
         </div>
       )}
     </nav>

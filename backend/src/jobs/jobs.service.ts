@@ -589,6 +589,139 @@ export class JobsService implements OnModuleInit {
     return '';
   }
 
+  /** Get previous and next job in the same category. Uses same sorting as feed: status asc, createdAt desc. */
+  async getPrevNextJob(jobId: string, userId?: string, isAdmin?: boolean, userLanguage: JobLanguage = JobLanguage.POLISH) {
+    const currentJob = await this.prisma.job.findUnique({
+      where: { id: jobId },
+      select: {
+        id: true,
+        categoryId: true,
+        status: true,
+        createdAt: true,
+        authorId: true,
+      },
+    });
+
+    if (!currentJob) {
+      throw new NotFoundException('Job not found');
+    }
+
+    const isAuthor = userId && currentJob.authorId === userId;
+    if (currentJob.status === JobStatus.DRAFT && !isAuthor && !isAdmin) {
+      throw new NotFoundException('Job not found');
+    }
+
+    // Build status filter - same logic as getFeed
+    let statusWhere: Record<string, unknown>;
+    if (isAdmin) {
+      statusWhere = { OR: [{ status: JobStatus.PUBLISHED }, { status: JobStatus.DRAFT }] };
+    } else if (userId) {
+      statusWhere = { OR: [{ status: JobStatus.PUBLISHED }, { status: JobStatus.DRAFT, authorId: userId }] };
+    } else {
+      statusWhere = { status: JobStatus.PUBLISHED };
+    }
+
+    const baseWhere = {
+      ...statusWhere,
+      categoryId: currentJob.categoryId,
+      id: { not: currentJob.id },
+    };
+
+    // Sort order: status asc (DRAFT before PUBLISHED), createdAt desc (newer first)
+    // Previous = comes before current in this order
+    // Next = comes after current in this order
+
+    let prevJob = null;
+    let nextJob = null;
+
+    if (currentJob.status === JobStatus.DRAFT) {
+      // For DRAFT: prev is newer DRAFT, next is older DRAFT or newest PUBLISHED
+      prevJob = await this.prisma.job.findFirst({
+        where: {
+          ...baseWhere,
+          status: JobStatus.DRAFT,
+          createdAt: { gt: currentJob.createdAt },
+        },
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, title: true },
+      });
+
+      // If no newer DRAFT, try older DRAFT
+      if (!prevJob) {
+        prevJob = await this.prisma.job.findFirst({
+          where: {
+            ...baseWhere,
+            status: JobStatus.DRAFT,
+            createdAt: { lt: currentJob.createdAt },
+          },
+          orderBy: { createdAt: 'desc' },
+          select: { id: true, title: true },
+        });
+      }
+
+      // Next: older DRAFT or newest PUBLISHED
+      nextJob = await this.prisma.job.findFirst({
+        where: {
+          ...baseWhere,
+          status: JobStatus.DRAFT,
+          createdAt: { lt: currentJob.createdAt },
+        },
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, title: true },
+      });
+
+      if (!nextJob) {
+        nextJob = await this.prisma.job.findFirst({
+          where: {
+            ...baseWhere,
+            status: JobStatus.PUBLISHED,
+          },
+          orderBy: { createdAt: 'desc' },
+          select: { id: true, title: true },
+        });
+      }
+    } else {
+      // For PUBLISHED: prev is newer PUBLISHED or newest DRAFT, next is older PUBLISHED
+      prevJob = await this.prisma.job.findFirst({
+        where: {
+          ...baseWhere,
+          status: JobStatus.PUBLISHED,
+          createdAt: { gt: currentJob.createdAt },
+        },
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, title: true },
+      });
+
+      // If no newer PUBLISHED, try newest DRAFT
+      if (!prevJob) {
+        prevJob = await this.prisma.job.findFirst({
+          where: {
+            ...baseWhere,
+            status: JobStatus.DRAFT,
+          },
+          orderBy: { createdAt: 'desc' },
+          select: { id: true, title: true },
+        });
+      }
+
+      // Next: older PUBLISHED
+      nextJob = await this.prisma.job.findFirst({
+        where: {
+          ...baseWhere,
+          status: JobStatus.PUBLISHED,
+          createdAt: { lt: currentJob.createdAt },
+        },
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, title: true },
+      });
+    }
+
+    return {
+      prev: prevJob ? { id: prevJob.id, title: prevJob.title } : null,
+      next: nextJob ? { id: nextJob.id, title: nextJob.title } : null,
+    };
+  }
+
   /** Freelancer applies to a job. Allowed only before deadline. */
   async applyToJob(
     jobId: string,

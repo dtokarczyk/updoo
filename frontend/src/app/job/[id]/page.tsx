@@ -6,6 +6,7 @@ import { useEffect, useState, useRef } from "react";
 import ReactCountryFlag from "react-country-flag";
 import {
   ArrowLeft,
+  ArrowRight,
   Banknote,
   Briefcase,
   Calendar,
@@ -23,11 +24,13 @@ import {
 } from "lucide-react";
 import {
   getJob,
+  getJobPrevNext,
   applyToJob,
   getStoredUser,
   authorDisplayName,
   isApplicationFull,
   type Job,
+  type JobPrevNext,
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -157,6 +160,7 @@ export default function JobDetailPage() {
   const [lastApplicationMessage, setLastApplicationMessage] = useState<string | null>(
     null
   );
+  const [prevNext, setPrevNext] = useState<JobPrevNext | null>(null);
   const user = getStoredUser();
   const applyFormRef = useRef<HTMLDivElement>(null);
 
@@ -165,9 +169,13 @@ export default function JobDetailPage() {
       setLoading(false);
       return;
     }
-    getJob(id)
-      .then((data) => {
+    Promise.all([
+      getJob(id),
+      getJobPrevNext(id).catch(() => ({ prev: null, next: null })),
+    ])
+      .then(([data, prevNextData]) => {
         setJob(data);
+        setPrevNext(prevNextData);
         const backendMessage = data.currentUserApplicationMessage;
         if (backendMessage && backendMessage.trim().length > 0) {
           setLastApplicationMessage(backendMessage);
@@ -454,59 +462,42 @@ export default function JobDetailPage() {
             </div>
           </section>
 
-          {/* Freelancer applications: full data for author and admin, initials for others */}
-          {applications.length > 0 && (
-            <section>
-              <div className="flex gap-3 items-start">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                  <Users className="h-4 w-4" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                    {t("jobs.applicationsCount", { count: applications.length })}
-                  </p>
-                  {canSeeFullApplications ? (
-                    <div className="space-y-4">
-                      {applications.map((app) =>
-                        isApplicationFull(app) ? (
-                          <div
-                            key={app.id}
-                            className="rounded-lg border bg-muted/30 p-3 space-y-1.5"
-                          >
-                            <p className="font-medium text-foreground">
-                              {authorDisplayName(app.freelancer) || app.freelancer.email}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {app.freelancer.email}
-                            </p>
-                            {app.message && (
-                              <p className="text-sm whitespace-pre-wrap pt-1 border-t mt-2">
-                                {app.message}
-                              </p>
-                            )}
-                            <p className="text-xs text-muted-foreground">
-                              {formatDate(app.createdAt, locale)}
-                            </p>
-                          </div>
-                        ) : null
-                      )}
+          {/* Prev/Next Navigation */}
+          {(prevNext?.prev || prevNext?.next) && (
+            <section className="border-t pt-6">
+              <div className="flex gap-4">
+                {prevNext.prev ? (
+                  <Link
+                    href={`/job/${prevNext.prev.id}`}
+                    className="group flex-1 rounded-lg border bg-muted/30 p-4 transition-colors hover:bg-muted/50"
+                  >
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1.5">
+                      <ArrowLeft className="h-4 w-4" />
+                      <span>{t("jobs.previous")}</span>
                     </div>
-                  ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {applications.map((app) => (
-                        <span
-                          key={app.id}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-foreground"
-                          title={t("jobs.appliedFreelancer")}
-                        >
-                          {"freelancerInitials" in app
-                            ? app.freelancerInitials || "?"
-                            : "?"}
-                        </span>
-                      ))}
+                    <p className="font-medium text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+                      {prevNext.prev.title}
+                    </p>
+                  </Link>
+                ) : (
+                  <div className="flex-1" />
+                )}
+                {prevNext.next ? (
+                  <Link
+                    href={`/job/${prevNext.next.id}`}
+                    className="group flex-1 rounded-lg border bg-muted/30 p-4 transition-colors hover:bg-muted/50 text-right"
+                  >
+                    <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground mb-1.5">
+                      <span>{t("jobs.next")}</span>
+                      <ArrowRight className="h-4 w-4" />
                     </div>
-                  )}
-                </div>
+                    <p className="font-medium text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+                      {prevNext.next.title}
+                    </p>
+                  </Link>
+                ) : (
+                  <div className="flex-1" />
+                )}
               </div>
             </section>
           )}
@@ -596,6 +587,68 @@ export default function JobDetailPage() {
                 )}
               </div>
             )}
+
+            {/* Freelancer applications: full data for author and admin, initials for others */}
+            {applications.length > 0 && (
+              <div className="space-y-3 pb-6 border-b">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    {t("jobs.applicationsCount", { count: applications.length })}
+                  </p>
+                </div>
+                {canSeeFullApplications ? (
+                  <div className="space-y-3">
+                    {applications.map((app) =>
+                      isApplicationFull(app) ? (
+                        <div
+                          key={app.id}
+                          className="rounded-lg border bg-muted/30 p-3 space-y-1.5"
+                        >
+                          <p className="font-medium text-sm text-foreground">
+                            {authorDisplayName(app.freelancer) || app.freelancer.email}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {app.freelancer.email}
+                          </p>
+                          {app.message && (
+                            <p className="text-xs whitespace-pre-wrap pt-1 border-t mt-2 text-muted-foreground">
+                              {app.message}
+                            </p>
+                          )}
+                          <p className="text-xs text-muted-foreground">
+                            {formatDate(app.createdAt, locale)}
+                          </p>
+                        </div>
+                      ) : null
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {applications.slice(0, 7).map((app) => (
+                      <span
+                        key={app.id}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-foreground"
+                        title={t("jobs.appliedFreelancer")}
+                      >
+                        {"freelancerInitials" in app
+                          ? app.freelancerInitials || "?"
+                          : "?"}
+                      </span>
+                    ))}
+                    {applications.length > 7 && (
+                      <span
+                        className="inline-flex h-8 items-center justify-center rounded-full bg-primary/10 px-3 text-sm font-medium text-foreground"
+                        title={t("jobs.appliedFreelancer")}
+                      >
+                        +{applications.length - 7}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
             <DetailRow
               icon={Banknote}
               label={t("jobs.rate")}

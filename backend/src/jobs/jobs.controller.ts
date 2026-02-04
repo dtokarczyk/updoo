@@ -117,6 +117,20 @@ export class JobsController {
     return this.jobsService.getJob(id, user?.id, user?.accountType === 'ADMIN', finalLanguage);
   }
 
+  @Get(':id/prev-next')
+  @UseGuards(OptionalJwtAuthGuard)
+  getPrevNextJob(
+    @Param('id') id: string,
+    @Headers('accept-language') acceptLanguage?: string,
+    @GetUser() user?: JwtUser,
+  ) {
+    // Priority: Accept-Language header > user language > default POLISH
+    const headerLanguage = acceptLanguage ? parseLanguageFromHeader(acceptLanguage) : null;
+    const userLanguage = (user?.language || 'POLISH') as JobLanguage;
+    const finalLanguage = headerLanguage || userLanguage;
+    return this.jobsService.getPrevNextJob(id, user?.id, user?.accountType === 'ADMIN', finalLanguage);
+  }
+
   @Post(':id/apply')
   @UseGuards(JwtAuthGuard)
   applyToJob(

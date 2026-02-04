@@ -429,6 +429,31 @@ export async function getJob(id: string): Promise<Job> {
   return res.json();
 }
 
+export interface JobPrevNext {
+  prev: { id: string; title: string } | null;
+  next: { id: string; title: string } | null;
+}
+
+export async function getJobPrevNext(id: string): Promise<JobPrevNext> {
+  const headers: HeadersInit = {};
+  const token = getToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  // Add Accept-Language header based on user locale
+  if (typeof window !== "undefined") {
+    const { getUserLocale } = await import("./i18n");
+    const locale = getUserLocale();
+    headers["Accept-Language"] = locale;
+  }
+
+  const res = await fetch(`${API_URL}/jobs/${id}/prev-next`, { headers });
+  if (!res.ok) {
+    if (res.status === 404) throw new Error("Oferta nie istnieje");
+    throw new Error("Failed to fetch prev/next jobs");
+  }
+  return res.json();
+}
+
 export async function publishJob(jobId: string): Promise<Job> {
   const token = getToken();
   if (!token) throw new Error("Not authenticated");

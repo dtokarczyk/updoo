@@ -134,12 +134,12 @@ export function needsOnboarding(user: AuthUser | null): boolean {
 
 /** Display order: 1. Wszystkie (link only), 2. Programowanie, 3. Design, 4. Marketing, 5. Pisanie, 6. Prace biurowe, 7. Inne */
 const CATEGORY_ORDER = [
-  "programowanie",
+  "programming",
   "design",
   "marketing",
-  "pisanie",
-  "prace-biurowe",
-  "inne",
+  "writing",
+  "office-working",
+  "other",
 ];
 
 export function sortCategoriesByOrder(categories: Category[]): Category[] {

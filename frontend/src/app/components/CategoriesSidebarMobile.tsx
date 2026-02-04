@@ -78,7 +78,7 @@ export function CategoriesSidebarMobile({
         {currentCategorySlug && (
           <li>
             <Link
-              href="/"
+              href="/offers/all/1"
               onClick={() => setOpen(false)}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 text-xl font-semibold transition-colors",
@@ -97,7 +97,7 @@ export function CategoriesSidebarMobile({
           .map((cat) => (
             <li key={cat.id}>
               <Link
-                href={`/?category=${encodeURIComponent(cat.slug)}`}
+                href={`/offers/${encodeURIComponent(cat.slug)}/1`}
                 onClick={() => setOpen(false)}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 text-xl font-semibold transition-colors",

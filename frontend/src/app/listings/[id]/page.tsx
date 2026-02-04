@@ -176,7 +176,7 @@ export default function ListingDetailPage() {
       <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
         <p className="mb-4 text-destructive">{error ?? "Oferta nie istnieje."}</p>
         <Button variant="outline" asChild>
-          <Link href="/">
+          <Link href="/offers/all/1">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Powrót do listy
           </Link>

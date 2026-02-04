@@ -31,7 +31,7 @@ export function CategoriesSidebarDesktop({
       <ul className="space-y-1">
         <li>
           <Link
-            href="/"
+            href="/offers/all/1"
             className={cn(
               "flex items-center gap-3 py-1.5 text-xl font-semibold transition-colors",
               !currentCategorySlug
@@ -46,7 +46,7 @@ export function CategoriesSidebarDesktop({
         {categories.map((cat) => (
           <li key={cat.id}>
             <Link
-              href={`/?category=${encodeURIComponent(cat.slug)}`}
+              href={`/offers/${encodeURIComponent(cat.slug)}/1`}
               className={cn(
                 "flex items-center gap-3 py-1.5 text-xl font-semibold transition-colors",
                 currentCategorySlug === cat.slug

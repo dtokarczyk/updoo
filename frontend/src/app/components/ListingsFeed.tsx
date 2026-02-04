@@ -1,10 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Pencil, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
-import { getListingsFeed, publishListing, getStoredUser, type Listing, type ListingLanguage, type PaginationInfo } from "@/lib/api";
+import {
+  getListingsFeed,
+  publishListing,
+  getStoredUser,
+  type Listing,
+  type ListingLanguage,
+  type PaginationInfo,
+} from "@/lib/api";
 import { ListingPost } from "@/app/components/ListingPost";
 import { Button } from "@/components/ui/button";
 
@@ -17,11 +24,6 @@ type FeedState = {
   categoryId?: string;
   language?: ListingLanguage;
 };
-
-function parsePageParam(raw: string | null): number {
-  const n = raw ? Number.parseInt(raw, 10) : 1;
-  return Number.isFinite(n) && n > 0 ? n : 1;
-}
 
 function readVisitedListings(): Set<string> {
   if (typeof window === "undefined") return new Set();
@@ -81,16 +83,18 @@ function clearFeedState() {
 
 export function ListingsFeed({
   categoryId,
+  categorySlug,
+  page,
   language,
   onCountChange,
 }: {
   categoryId?: string;
+  categorySlug: string;
+  page: number;
   language?: ListingLanguage;
   onCountChange?: (count: number) => void;
 }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const page = parsePageParam(searchParams.get("page"));
 
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
@@ -100,27 +104,30 @@ export function ListingsFeed({
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const user = getStoredUser();
 
-  const loadFeed = useCallback((currentPage: number = 1, opts?: { restoreScrollY?: number }) => {
-    setLoading(true);
-    getListingsFeed(currentPage, 15, categoryId, language)
-      .then((res) => {
-        setListings(res.items);
-        setPagination(res.pagination);
-        onCountChange?.(res.pagination.total);
-        if (opts?.restoreScrollY != null) {
-          // Wait for DOM paint before restoring scroll position
-          requestAnimationFrame(() => {
-            window.scrollTo({ top: opts.restoreScrollY ?? 0 });
-          });
-          clearFeedState();
-        }
-      })
-      .catch(() => {
-        setError("Nie udało się załadować ogłoszeń");
-        onCountChange?.(0);
-      })
-      .finally(() => setLoading(false));
-  }, [categoryId, language, onCountChange]);
+  const loadFeed = useCallback(
+    (currentPage: number = page, opts?: { restoreScrollY?: number }) => {
+      setLoading(true);
+      getListingsFeed(currentPage, 15, categoryId, language)
+        .then((res) => {
+          setListings(res.items);
+          setPagination(res.pagination);
+          onCountChange?.(res.pagination.total);
+          if (opts?.restoreScrollY != null) {
+            // Wait for DOM paint before restoring scroll position
+            requestAnimationFrame(() => {
+              window.scrollTo({ top: opts.restoreScrollY ?? 0 });
+            });
+            clearFeedState();
+          }
+        })
+        .catch(() => {
+          setError("Nie udało się załadować ogłoszeń");
+          onCountChange?.(0);
+        })
+        .finally(() => setLoading(false));
+    },
+    [categoryId, language, onCountChange, page]
+  );
 
   useEffect(() => {
     setVisitedIds(readVisitedListings());
@@ -141,9 +148,12 @@ export function ListingsFeed({
 
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || (pagination && newPage > pagination.totalPages)) return;
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", String(newPage));
-    router.push(`/?${params.toString()}`, { scroll: false });
+    router.replace(
+      `/offers/${encodeURIComponent(categorySlug)}/${newPage}`,
+      {
+        scroll: false,
+      }
+    );
   };
 
   const markVisited = (listingId: string) => {

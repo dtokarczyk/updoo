@@ -235,6 +235,13 @@
       "suggestedRateNote": "We've suggested a market rate, but you can change it",
       "billingTypeHourlyDescription": "Billing for each hour worked",
       "billingTypeFixedDescription": "Fixed rate for the entire project regardless of working time"
+    },
+    "draftModal": {
+      "beforeLoginTitle": "Job saved in memory",
+      "beforeLoginDescription": "Your job posting has been saved in browser memory. You need to log in to publish it.",
+      "afterLoginTitle": "You have a saved job",
+      "afterLoginDescription": "You have a saved job in memory. Do you want to return to editing and publish it?",
+      "continueEditing": "Continue editing"
     }
   },
   "branding": {

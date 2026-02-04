@@ -136,6 +136,7 @@ export async function login(
 
 export const AUTH_TOKEN_KEY = "auth_token";
 export const AUTH_USER_KEY = "auth_user";
+export const DRAFT_JOB_KEY = "draft_job";
 
 export function setAuth(data: AuthResponse): void {
   if (typeof window === "undefined") return;
@@ -168,6 +169,28 @@ export function clearAuth(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(AUTH_TOKEN_KEY);
   localStorage.removeItem(AUTH_USER_KEY);
+}
+
+// Draft job functions
+export function saveDraftJob(payload: CreateJobPayload): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(DRAFT_JOB_KEY, JSON.stringify(payload));
+}
+
+export function getDraftJob(): CreateJobPayload | null {
+  if (typeof window === "undefined") return null;
+  const raw = localStorage.getItem(DRAFT_JOB_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as CreateJobPayload;
+  } catch {
+    return null;
+  }
+}
+
+export function clearDraftJob(): void {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(DRAFT_JOB_KEY);
 }
 
 /** True if user has not completed onboarding (missing name or account type). */

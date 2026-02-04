@@ -17,11 +17,20 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   getStoredUser,
   updateProfile,
   updateStoredUser,
   needsOnboarding,
   getSkills,
+  getDraftJob,
   type AccountType,
   type Skill,
   type AuthUser,
@@ -49,6 +58,7 @@ export default function OnboardingPage() {
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
   const [skillsSearch, setSkillsSearch] = useState("");
   const [defaultMessage, setDefaultMessage] = useState("");
+  const [showDraftModal, setShowDraftModal] = useState(false);
 
   useEffect(() => {
     const stored = getStoredUser();
@@ -161,8 +171,15 @@ export default function OnboardingPage() {
       if (accountType === "FREELANCER") {
         setStep(STEP_SKILLS);
       } else {
-        router.push("/");
-        router.refresh();
+        // Check if there's a draft job for CLIENT
+        const draft = getDraftJob();
+        if (draft) {
+          setLoading(false);
+          setShowDraftModal(true);
+        } else {
+          router.push("/");
+          router.refresh();
+        }
       }
     } catch (err) {
       setError(
@@ -201,8 +218,15 @@ export default function OnboardingPage() {
         defaultMessage: defaultMessage.trim() || undefined,
       });
       updateStoredUser(updated);
-      router.push("/");
-      router.refresh();
+      // Check if there's a draft job (shouldn't happen for freelancer, but check anyway)
+      const draft = getDraftJob();
+      if (draft && updated.accountType === "CLIENT") {
+        setLoading(false);
+        setShowDraftModal(true);
+      } else {
+        router.push("/");
+        router.refresh();
+      }
     } catch (err) {
       setError(
         err instanceof Error ? err.message : t("onboarding.saveFailed")
@@ -491,6 +515,41 @@ export default function OnboardingPage() {
           </>
         )}
       </Card>
+
+      {/* Modal after onboarding asking if user wants to continue editing draft */}
+      <Dialog open={showDraftModal} onOpenChange={setShowDraftModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("jobs.draftModal.afterLoginTitle")}</DialogTitle>
+            <DialogDescription>
+              {t("jobs.draftModal.afterLoginDescription")}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowDraftModal(false);
+                router.push("/");
+                router.refresh();
+              }}
+              className="w-full sm:w-auto"
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button
+              onClick={() => {
+                setShowDraftModal(false);
+                router.push("/job/new");
+                router.refresh();
+              }}
+              className="w-full sm:w-auto"
+            >
+              {t("jobs.draftModal.continueEditing")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

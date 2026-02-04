@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { createJob, getStoredUser } from "@/lib/api";
+import { createJob, getStoredUser, saveDraftJob, getDraftJob, clearDraftJob } from "@/lib/api";
 import {
   Card,
   CardContent,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { useTranslations } from "@/hooks/useTranslations";
 import { JobForm } from "@/app/components/JobForm";
+import type { CreateJobPayload } from "@/lib/api";
 
 export default function NewListingPage() {
   const router = useRouter();
@@ -19,18 +20,27 @@ export default function NewListingPage() {
 
   useEffect(() => {
     const user = getStoredUser();
-    if (!user) {
-      router.replace("/login");
-      return;
-    }
-    if (user.accountType !== "CLIENT") {
+    // Only redirect if user is logged in but not a CLIENT
+    if (user && user.accountType !== "CLIENT") {
       router.replace("/");
       return;
     }
   }, [router]);
 
-  const handleSubmit = async (data: Parameters<typeof createJob>[0]) => {
+  const handleSubmit = async (data: CreateJobPayload) => {
+    const user = getStoredUser();
+
+    // If user is not logged in, save to localStorage and redirect to login
+    if (!user || user.accountType !== "CLIENT") {
+      saveDraftJob(data);
+      router.push("/login?returnUrl=/job/new&hasDraft=true");
+      return;
+    }
+
+    // User is logged in, create the job
     await createJob(data);
+    // Clear draft after successful creation
+    clearDraftJob();
     router.push("/");
   };
 

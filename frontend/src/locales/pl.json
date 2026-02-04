@@ -235,6 +235,13 @@
       "suggestedRateNote": "Zasugerowaliśmy rynkową stawkę, ale możesz ją zmienić",
       "billingTypeHourlyDescription": "Rozliczenie za każdą przepracowaną godzinę",
       "billingTypeFixedDescription": "Stała stawka za cały projekt niezależnie od czasu pracy"
+    },
+    "draftModal": {
+      "beforeLoginTitle": "Ogłoszenie zapisane w pamięci",
+      "beforeLoginDescription": "Twoje ogłoszenie zostało zapisane w pamięci przeglądarki. Musisz się zalogować, aby je opublikować.",
+      "afterLoginTitle": "Masz zapisane ogłoszenie",
+      "afterLoginDescription": "Masz zapisane ogłoszenie w pamięci. Czy chcesz wrócić do edycji i opublikować je?",
+      "continueEditing": "Kontynuuj edycję"
     }
   },
   "branding": {

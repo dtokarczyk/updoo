@@ -5,6 +5,7 @@ import {
   getCategories,
   getLocations,
   getSkills,
+  getDraftJob,
   type Category,
   type Location,
   type Skill,
@@ -87,6 +88,7 @@ export function JobForm({ initialData, onSubmit, mode, loading: externalLoading 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [draftLoaded, setDraftLoaded] = useState(false);
 
   const BILLING_LABELS: Record<BillingType, string> = {
     FIXED: t("jobs.fixedRate"),
@@ -127,7 +129,7 @@ export function JobForm({ initialData, onSubmit, mode, loading: externalLoading 
     CONTINUOUS: t("jobs.newJobForm.projectTypeContinuousDescription"),
   };
 
-  // Load initial data for edit mode
+  // Load initial data for edit mode or draft from localStorage
   useEffect(() => {
     if (mode === "edit" && initialData) {
       setTitle(initialData.title);
@@ -157,8 +159,57 @@ export function JobForm({ initialData, onSubmit, mode, loading: externalLoading 
       setSelectedSkills(
         initialData.skills?.map((r) => ({ id: r.skill.id, name: r.skill.name })) ?? []
       );
+    } else if (mode === "create" && !draftLoaded) {
+      // Try to load draft from localStorage only once
+      const draft = getDraftJob();
+      if (draft) {
+        setTitle(draft.title);
+        setDescription(draft.description);
+        setCategoryId(draft.categoryId);
+        setLanguage(draft.language ?? "POLISH");
+        setBillingType(draft.billingType);
+        setHoursPerWeek(draft.hoursPerWeek ?? "");
+        setRate(draft.rate.toString());
+        setRateNegotiable(draft.rateNegotiable ?? false);
+        setCurrency(draft.currency ?? "PLN");
+        setExperienceLevel(draft.experienceLevel);
+        setLocationId(draft.locationId ?? "");
+        setIsRemote(draft.isRemote);
+        setProjectType(draft.projectType);
+        setOfferDays(draft.offerDays ?? 14);
+        setDraftLoaded(true);
+      }
     }
-  }, [initialData, mode]);
+  }, [initialData, mode, draftLoaded]);
+
+  // Load draft skills after skills list is loaded
+  useEffect(() => {
+    if (mode === "create" && skills.length > 0 && draftLoaded) {
+      const draft = getDraftJob();
+      if (draft) {
+        const loadedSkills: SelectedSkill[] = [];
+
+        // Load skills by ID
+        if (draft.skillIds && draft.skillIds.length > 0) {
+          draft.skillIds.forEach((id) => {
+            const skill = skills.find((s) => s.id === id);
+            if (skill) loadedSkills.push({ id: skill.id, name: skill.name });
+          });
+        }
+
+        // Add new skill names
+        if (draft.newSkillNames && draft.newSkillNames.length > 0) {
+          draft.newSkillNames.forEach((name) => {
+            loadedSkills.push({ id: null, name });
+          });
+        }
+
+        if (loadedSkills.length > 0) {
+          setSelectedSkills(loadedSkills);
+        }
+      }
+    }
+  }, [mode, skills, draftLoaded]);
 
   // Load categories, locations, skills
   useEffect(() => {

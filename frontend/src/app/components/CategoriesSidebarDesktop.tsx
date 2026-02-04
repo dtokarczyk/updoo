@@ -8,28 +8,44 @@ import { CategoryIcon } from "@/components/CategoryIcon";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useTranslations } from "@/hooks/useTranslations";
+import { getUserLocale, type Locale } from "@/lib/i18n";
+import { t as translate } from "@/lib/translations";
 
 export function CategoriesSidebarDesktop({
   categories,
   currentCategorySlug,
+  initialLocale,
 }: {
   categories: Category[];
   currentCategorySlug?: string;
+  initialLocale?: Locale;
 }) {
-  const { t } = useTranslations();
-  const allLabel = t("common.all");
+  // Use initialLocale from server during SSR to avoid hydration mismatch
+  // After hydration, use client locale which may differ if user preferences changed
+  const [locale, setLocaleState] = useState<Locale>(initialLocale ?? getUserLocale());
+  const [mounted, setMounted] = useState(false);
   const [canCreateListing, setCanCreateListing] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
+  // Update locale after mount if client locale differs from initial locale
   useEffect(() => {
     setMounted(true);
+    const currentLocale = getUserLocale();
+    if (currentLocale !== initialLocale) {
+      setLocaleState(currentLocale);
+    }
     const token = getToken();
     const user = getStoredUser();
     setIsLoggedIn(!!token);
     setCanCreateListing(!!token && user?.accountType === "CLIENT");
-  }, []);
+  }, [initialLocale]);
+
+  // Use server locale for translations during SSR, client locale after mount
+  const t = (key: string, params?: Record<string, string | number>) => {
+    return translate(locale, key, params);
+  };
+
+  const allLabel = t("common.all");
 
   return (
     <nav className="hidden lg:block">
@@ -70,7 +86,7 @@ export function CategoriesSidebarDesktop({
       </ul>
       {mounted && !isLoggedIn && (
         <div className="mt-6">
-          <LanguageToggle size="default" className="w-full justify-center" showFullName />
+          <LanguageToggle size="default" className="w-full justify-center" showFullName initialLocale={initialLocale} />
         </div>
       )}
       {canCreateListing && (

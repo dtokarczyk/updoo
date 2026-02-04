@@ -6,8 +6,9 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Logotype } from "@/app/components/Logotype";
 import { HomeNav } from "@/app/components/HomeNav";
+import type { Locale } from "@/lib/i18n";
 
-export function AppHeader() {
+export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
   const pathname = usePathname();
   const router = useRouter();
   const isHome = pathname === "/";
@@ -40,7 +41,7 @@ export function AppHeader() {
           )}
         </div>
 
-        <Logotype className="absolute left-1/2 -translate-x-1/2 shrink-0 items-center" />
+        <Logotype className="absolute left-1/2 -translate-x-1/2 shrink-0 items-center" initialLocale={initialLocale} />
 
         <div className="flex items-center gap-2">
           <HomeNav />

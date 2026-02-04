@@ -4,8 +4,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "@/hooks/useTranslations";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import type { Locale } from "@/lib/i18n";
 
-export function AuthBottomBar() {
+export function AuthBottomBar({ initialLocale }: { initialLocale: Locale }) {
   const { t } = useTranslations();
 
   return (
@@ -15,7 +16,7 @@ export function AuthBottomBar() {
           {t("auth.promoBarText")}
         </p>
         <div className="flex shrink-0 items-center gap-2">
-          <LanguageToggle size="sm" />
+          <LanguageToggle size="sm" initialLocale={initialLocale} />
           <Button asChild variant="outline" size="sm">
             <Link href="/login">{t("auth.logIn")}</Link>
           </Button>

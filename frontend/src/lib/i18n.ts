@@ -98,3 +98,54 @@ export function getLocaleFromUserLanguage(language: "POLISH" | "ENGLISH"): Local
 export function getUserLanguageFromLocale(locale: Locale): "POLISH" | "ENGLISH" {
   return locale === "en" ? "ENGLISH" : "POLISH";
 }
+
+/**
+ * Gets locale from cookies or Accept-Language header on the server side.
+ * Priority: cookie > Accept-Language header > default "pl".
+ * 
+ * This function should be used in Server Components to get the locale
+ * that matches what the client will use, avoiding hydration mismatches.
+ * 
+ * Note: This function must be called from a Server Component context.
+ * It will throw an error if called from a Client Component.
+ */
+export async function getLocaleFromRequest(): Promise<Locale> {
+  if (typeof window !== "undefined") {
+    // On client, use getUserLocale instead
+    return getUserLocale();
+  }
+
+  // Server-side: import cookies and headers
+  // Note: In newer Next.js versions `cookies()` and `headers()` are async.
+  // We use `await` with a loose `any` cast to support both sync and async
+  // implementations without fighting type overloads.
+  try {
+    const { cookies } = await import("next/headers");
+    const cookieStore = (await (cookies() as any)) as {
+      get?: (name: string) => { value?: string } | undefined;
+    };
+    const cookieLocale = cookieStore.get?.("locale")?.value;
+    if (cookieLocale === "pl" || cookieLocale === "en") {
+      return cookieLocale;
+    }
+  } catch {
+    // Ignore and continue to header-based detection
+  }
+
+  try {
+    const { headers } = await import("next/headers");
+    const headersList = (await (headers() as any)) as {
+      get?: (name: string) => string | null | undefined;
+    };
+    const acceptLanguage = headersList.get?.("accept-language");
+    if (acceptLanguage) {
+      const langCode = acceptLanguage.toLowerCase().split("-")[0];
+      if (langCode === "en") return "en";
+      if (langCode === "pl") return "pl";
+    }
+  } catch {
+    // Ignore and use default
+  }
+
+  return defaultLocale;
+}

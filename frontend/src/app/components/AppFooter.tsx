@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import type { Locale } from "@/lib/i18n";
 
-export function AppFooter() {
+export function AppFooter({ initialLocale }: { initialLocale: Locale }) {
   const year = new Date().getFullYear();
   return (
     <footer className="bg-zinc-50 dark:bg-zinc-950">
@@ -16,7 +17,7 @@ export function AppFooter() {
             Updoo
           </Link>
           <div className="flex items-center gap-4">
-            <LanguageToggle size="sm" />
+            <LanguageToggle size="sm" initialLocale={initialLocale} />
             <p className="text-xs text-muted-foreground">
               © {year} Updoo. Wszelkie prawa zastrzeżone.
             </p>

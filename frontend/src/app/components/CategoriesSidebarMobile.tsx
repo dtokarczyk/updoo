@@ -7,16 +7,35 @@ import { type Category, getStoredUser, getToken } from "@/lib/api";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useTranslations } from "@/hooks/useTranslations";
+import { getUserLocale, type Locale } from "@/lib/i18n";
+import { t as translate } from "@/lib/translations";
 
 export function CategoriesSidebarMobile({
   categories,
   currentCategorySlug,
+  initialLocale,
 }: {
   categories: Category[];
   currentCategorySlug?: string;
+  initialLocale?: Locale;
 }) {
-  const { t } = useTranslations();
+  // Use initialLocale from server during SSR to avoid hydration mismatch
+  // After hydration, use client locale which may differ if user preferences changed
+  const [locale, setLocaleState] = useState<Locale>(initialLocale ?? getUserLocale());
+
+  // Update locale after mount if client locale differs from initial locale
+  useEffect(() => {
+    const currentLocale = getUserLocale();
+    if (currentLocale !== initialLocale) {
+      setLocaleState(currentLocale);
+    }
+  }, [initialLocale]);
+
+  // Use server locale for translations during SSR, client locale after mount
+  const t = (key: string, params?: Record<string, string | number>) => {
+    return translate(locale, key, params);
+  };
+
   const allLabel = t("common.all");
   const [open, setOpen] = useState(false);
   const [canCreateListing, setCanCreateListing] = useState(false);

@@ -1,68 +1,184 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ListingsFeed } from "@/app/components/ListingsFeed";
-import type { ListingLanguage } from "@/lib/api";
+import type { ListingLanguage, PopularSkill } from "@/lib/api";
+import { getPopularSkillsForCategory } from "@/lib/api";
 import { useTranslations } from "@/hooks/useTranslations";
 import { useRouter } from "next/navigation";
+import ReactCountryFlag from "react-country-flag";
+import { Button } from "@/components/ui/button";
 
 export function ListingsSectionHeader({
   sectionTitle,
   categoryId,
   categorySlugForRouting,
   page,
+  categoryName,
 }: {
   sectionTitle: string;
   categoryId?: string;
   categorySlugForRouting: string;
   page: number;
+  categoryName?: string;
 }) {
   const { t } = useTranslations();
   const router = useRouter();
   const [count, setCount] = useState<number | null>(null);
   const [language, setLanguage] = useState<"" | ListingLanguage>("");
+  const [popularSkills, setPopularSkills] = useState<PopularSkill[]>([]);
+  const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
 
-  const LANGUAGE_OPTIONS: { value: "" | ListingLanguage; label: string }[] = [
-    { value: "", label: t("listings.allLanguages") },
-    { value: "ENGLISH", label: t("listings.english") },
-    { value: "POLISH", label: t("listings.polish") },
-  ];
+  useEffect(() => {
+    if (!categoryId) {
+      setPopularSkills([]);
+      setSelectedSkillIds([]);
+      return;
+    }
+    let cancelled = false;
+    getPopularSkillsForCategory(categoryId)
+      .then((skills) => {
+        if (cancelled) return;
+        setPopularSkills(skills);
+        // Ensure selected skills always belong to current popular list.
+        setSelectedSkillIds((prev) =>
+          prev.filter((id) => skills.some((s) => s.id === id))
+        );
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setPopularSkills([]);
+        setSelectedSkillIds([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [categoryId]);
 
-  const titleWithCount =
-    count !== null ? `${sectionTitle} (${count})` : sectionTitle;
+  const LANGUAGE_OPTIONS: {
+    value: "" | ListingLanguage;
+    label: string;
+    countryCode?: string;
+  }[] = [
+      { value: "", label: t("listings.allLanguages") },
+      { value: "ENGLISH", label: t("listings.english"), countryCode: "GB" },
+      { value: "POLISH", label: t("listings.polish"), countryCode: "PL" },
+    ];
 
   return (
-    <section className="flex-1 min-w-0 space-y-6 pt-0 lg:pt-14 lg:basis-3/5">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-lg font-medium text-foreground">
-          {titleWithCount}
-        </h2>
-        <div className="flex items-center gap-2">
-          <select
-            value={language}
-            onChange={(e) => {
-              setLanguage((e.target.value || "") as "" | ListingLanguage);
-              const target = `/offers/${encodeURIComponent(
-                categorySlugForRouting
-              )}/1`;
-              router.replace(target, { scroll: false });
-            }}
-            className="rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            aria-label={t("listings.filterByLanguage")}
-          >
-            {LANGUAGE_OPTIONS.map((opt) => (
-              <option key={opt.value || "all"} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+    <section
+      className="flex-1 min-w-0 space-y-6 pt-0 lg:pt-14 lg:basis-3/5 lg:min-h-[60vh]"
+      aria-label={sectionTitle}
+    >
+      <div className="flex flex-col gap-3">
+        {count !== null && (
+          <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+            {categoryName
+              ? t("listings.headerSampleWithCategory", {
+                category: categoryName,
+                count,
+              })
+              : t("listings.headerSampleWithoutCategory", { count })}
+          </h2>
+        )}
+
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1">
+            {LANGUAGE_OPTIONS.map((opt) => {
+              const isActive = language === opt.value;
+              if (opt.value === "") {
+                return (
+                  <Button
+                    key="all-languages"
+                    type="button"
+                    size="sm"
+                    variant={isActive ? "default" : "outline"}
+                    className="rounded-full px-3 py-1 text-xs cursor-pointer"
+                    onClick={() => {
+                      setLanguage("");
+                      const target = `/offers/${encodeURIComponent(
+                        categorySlugForRouting
+                      )}/1`;
+                      router.replace(target, { scroll: false });
+                    }}
+                  >
+                    {opt.label}
+                  </Button>
+                );
+              }
+              return (
+                <Button
+                  key={opt.value}
+                  type="button"
+                  size="sm"
+                  variant={isActive ? "default" : "outline"}
+                  className="rounded-full px-3 py-1 text-xs flex items-center gap-1 cursor-pointer"
+                  onClick={() => {
+                    const nextValue =
+                      language === opt.value ? "" : (opt.value as ListingLanguage);
+                    setLanguage(nextValue as "" | ListingLanguage);
+                    const target = `/offers/${encodeURIComponent(
+                      categorySlugForRouting
+                    )}/1`;
+                    router.replace(target, { scroll: false });
+                  }}
+                  aria-pressed={isActive}
+                  aria-label={opt.label}
+                >
+                  {opt.countryCode && (
+                    <ReactCountryFlag
+                      svg
+                      countryCode={opt.countryCode}
+                      className="mr-1"
+                      style={{ width: "1em", height: "1em" }}
+                    />
+                  )}
+                  <span>{opt.label}</span>
+                </Button>
+              );
+            })}
+          </div>
         </div>
+
+        {popularSkills.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {popularSkills.map((skill) => {
+              const isActive = selectedSkillIds.includes(skill.id);
+              return (
+                <Button
+                  key={skill.id}
+                  type="button"
+                  size="sm"
+                  variant={isActive ? "default" : "outline"}
+                  className="rounded-full px-3 py-1 text-xs cursor-pointer"
+                  onClick={() => {
+                    setSelectedSkillIds((prev) => {
+                      const exists = prev.includes(skill.id);
+                      const next = exists
+                        ? prev.filter((id) => id !== skill.id)
+                        : [...prev, skill.id];
+                      const target = `/offers/${encodeURIComponent(
+                        categorySlugForRouting
+                      )}/1`;
+                      router.replace(target, { scroll: false });
+                      return next;
+                    });
+                  }}
+                  aria-pressed={isActive}
+                >
+                  {skill.name}
+                </Button>
+              );
+            })}
+          </div>
+        )}
       </div>
       <ListingsFeed
         categoryId={categoryId}
         categorySlug={categorySlugForRouting}
         page={page}
         language={language || undefined}
+        skillIds={selectedSkillIds}
         onCountChange={setCount}
       />
     </section>

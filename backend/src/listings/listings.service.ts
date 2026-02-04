@@ -5,13 +5,51 @@ import { CreateListingDto } from './dto/create-listing.dto';
 import { BillingType, HoursPerWeek, ExperienceLevel, ProjectType, ListingStatus, ListingLanguage } from '@prisma/client';
 
 const DEFAULT_CATEGORIES = [
-  { slug: 'programowanie', translations: [{ language: ListingLanguage.POLISH, name: 'Programowanie' }, { language: ListingLanguage.ENGLISH, name: 'Programming' }] },
-  { slug: 'design', translations: [{ language: ListingLanguage.POLISH, name: 'Design' }, { language: ListingLanguage.ENGLISH, name: 'Design' }] },
-  { slug: 'marketing', translations: [{ language: ListingLanguage.POLISH, name: 'Marketing' }, { language: ListingLanguage.ENGLISH, name: 'Marketing' }] },
-  { slug: 'pisanie', translations: [{ language: ListingLanguage.POLISH, name: 'Pisanie' }, { language: ListingLanguage.ENGLISH, name: 'Writing' }] },
-  { slug: 'prace-biurowe', translations: [{ language: ListingLanguage.POLISH, name: 'Prace biurowe' }, { language: ListingLanguage.ENGLISH, name: 'Office Work' }] },
-  { slug: 'inne', translations: [{ language: ListingLanguage.POLISH, name: 'Inne' }, { language: ListingLanguage.ENGLISH, name: 'Other' }] },
+  {
+    slug: 'programming',
+    translations: [
+      { language: ListingLanguage.POLISH, name: 'Programowanie' },
+      { language: ListingLanguage.ENGLISH, name: 'Programming' },
+    ],
+  },
+  {
+    slug: 'design',
+    translations: [
+      { language: ListingLanguage.POLISH, name: 'Design' },
+      { language: ListingLanguage.ENGLISH, name: 'Design' },
+    ],
+  },
+  {
+    slug: 'marketing',
+    translations: [
+      { language: ListingLanguage.POLISH, name: 'Marketing' },
+      { language: ListingLanguage.ENGLISH, name: 'Marketing' },
+    ],
+  },
+  {
+    slug: 'writing',
+    translations: [
+      { language: ListingLanguage.POLISH, name: 'Pisanie' },
+      { language: ListingLanguage.ENGLISH, name: 'Writing' },
+    ],
+  },
+  {
+    slug: 'office-working',
+    translations: [
+      { language: ListingLanguage.POLISH, name: 'Prace biurowe' },
+      { language: ListingLanguage.ENGLISH, name: 'Office Work' },
+    ],
+  },
+  {
+    slug: 'other',
+    translations: [
+      { language: ListingLanguage.POLISH, name: 'Inne' },
+      { language: ListingLanguage.ENGLISH, name: 'Other' },
+    ],
+  },
 ];
+
+const ALLOWED_CATEGORY_SLUGS = DEFAULT_CATEGORIES.map((c) => c.slug);
 
 const DEFAULT_LOCATIONS = [
   { name: 'Warszawa', slug: 'warszawa' },
@@ -135,6 +173,11 @@ export class ListingsService implements OnModuleInit {
 
   async getCategories(userLanguage: ListingLanguage = ListingLanguage.POLISH) {
     const categories = await this.prisma.category.findMany({
+      where: {
+        slug: {
+          in: ALLOWED_CATEGORY_SLUGS,
+        },
+      },
       include: {
         translations: {
           where: { language: userLanguage },
@@ -142,11 +185,13 @@ export class ListingsService implements OnModuleInit {
       },
     });
 
-    return categories.map((cat) => ({
-      id: cat.id,
-      slug: cat.slug,
-      name: cat.translations[0]?.name || cat.slug,
-    })).sort((a, b) => a.name.localeCompare(b.name));
+    return categories
+      .map((cat) => ({
+        id: cat.id,
+        slug: cat.slug,
+        name: cat.translations[0]?.name || cat.slug,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
   }
 
   private getCategoryWithTranslation(category: any, userLanguage: ListingLanguage = ListingLanguage.POLISH) {
@@ -169,6 +214,52 @@ export class ListingsService implements OnModuleInit {
     return this.prisma.skill.findMany({
       orderBy: { name: 'asc' },
     });
+  }
+
+  /** Return up to 10 most frequently used skills for listings in given category. Only published listings are taken into account. */
+  async getPopularSkillsForCategory(categoryId: string, limit = 10) {
+    // Group listing skills within a category and count how many times they are used.
+    const grouped = await this.prisma.listingSkill.groupBy({
+      by: ['skillId'],
+      _count: {
+        skillId: true,
+      },
+      where: {
+        listing: {
+          categoryId,
+          status: ListingStatus.PUBLISHED,
+        },
+      },
+      orderBy: [
+        {
+          _count: {
+            skillId: 'desc',
+          },
+        },
+      ],
+      take: limit,
+    });
+
+    if (!grouped.length) {
+      return [];
+    }
+
+    const skillIds = grouped.map((g) => g.skillId);
+    const skills = await this.prisma.skill.findMany({
+      where: { id: { in: skillIds } },
+    });
+
+    return grouped.map((g) => {
+      const skill = skills.find((s) => s.id === g.skillId);
+      const count = typeof g._count === 'object' && g._count && 'skillId' in g._count
+        ? (g._count as { skillId?: number }).skillId ?? 0
+        : 0;
+      return {
+        id: g.skillId,
+        name: skill?.name ?? '',
+        count,
+      };
+    }).filter((s) => s.name);
   }
 
   async createListing(authorId: string, accountType: string | null, dto: CreateListingDto, userLanguage: ListingLanguage = ListingLanguage.POLISH) {
@@ -295,8 +386,18 @@ export class ListingsService implements OnModuleInit {
     };
   }
 
-  /** Feed: published for everyone; when userId is set, also include that user's draft listings. Optional categoryId and language filter. */
-  async getFeed(page = 1, pageSize = 15, userId?: string, categoryId?: string, language?: string, userLanguage: ListingLanguage = ListingLanguage.POLISH) {
+  /** Feed: published for everyone; when userId is set, also include that user's draft listings.
+   * Optional filters: categoryId, language and skills (at least one of the listing skills must match).
+   */
+  async getFeed(
+    page = 1,
+    pageSize = 15,
+    userId?: string,
+    categoryId?: string,
+    language?: string,
+    skillIds?: string[],
+    userLanguage: ListingLanguage = ListingLanguage.POLISH,
+  ) {
     const statusWhere = userId
       ? { OR: [{ status: ListingStatus.PUBLISHED }, { status: ListingStatus.DRAFT, authorId: userId }] }
       : { status: ListingStatus.PUBLISHED };
@@ -305,6 +406,19 @@ export class ListingsService implements OnModuleInit {
       : statusWhere;
     if (language && (language === 'ENGLISH' || language === 'POLISH')) {
       where = { ...where, language: language as ListingLanguage };
+    }
+    if (skillIds && skillIds.length > 0) {
+      // At least one of the selected skills must be attached to the listing.
+      where = {
+        ...where,
+        skills: {
+          some: {
+            skillId: {
+              in: skillIds,
+            },
+          },
+        },
+      };
     }
 
     const skip = (page - 1) * pageSize;

@@ -67,6 +67,8 @@
   },
   "listings": {
     "listings": "Ogłoszenia",
+    "headerSampleWithCategory": "Zobacz próbkę {count} ogłoszeń {category} opublikowanych na Updoo",
+    "headerSampleWithoutCategory": "Zobacz próbkę {count} ogłoszeń opublikowanych na Updoo",
     "newListing": "Nowe ogłoszenie",
     "createListing": "Utwórz ogłoszenie",
     "editListing": "Edytuj ogłoszenie",

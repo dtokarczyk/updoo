@@ -1,7 +1,8 @@
 import 'dotenv/config';
-import { PrismaClient, BillingType, HoursPerWeek, ExperienceLevel, ProjectType, ListingStatus, ListingLanguage } from '@prisma/client';
+import { PrismaClient, BillingType, HoursPerWeek, ExperienceLevel, ProjectType, ListingStatus, ListingLanguage, AccountType } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
+import bcrypt from 'bcrypt';
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -11,6 +12,19 @@ if (!connectionString) {
 const pool = new pg.Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
+
+const DEFAULT_CLIENT_USERS = [
+  {
+    email: 'client1@example.com',
+    name: 'Client',
+    surname: 'One',
+  },
+  {
+    email: 'client2@example.com',
+    name: 'Client',
+    surname: 'Two',
+  },
+];
 
 // Sample data for generating random listings
 const TITLES_PL = [
@@ -97,7 +111,7 @@ async function main() {
   const categories = await prisma.category.findMany();
   const locations = await prisma.location.findMany();
   const skills = await prisma.skill.findMany();
-  const users = await prisma.user.findMany({
+  let users = await prisma.user.findMany({
     where: { accountType: 'CLIENT' },
   });
 
@@ -106,7 +120,22 @@ async function main() {
   }
 
   if (users.length === 0) {
-    throw new Error('No CLIENT users found. Please create at least one CLIENT user first.');
+    console.log('No CLIENT users found, creating default CLIENT users...');
+    const defaultPassword = await bcrypt.hash('Password123!', 10);
+    users = await Promise.all(
+      DEFAULT_CLIENT_USERS.map((u) =>
+        prisma.user.create({
+          data: {
+            email: u.email,
+            password: defaultPassword,
+            name: u.name,
+            surname: u.surname,
+            accountType: AccountType.CLIENT,
+          },
+        }),
+      ),
+    );
+    console.log(`Created ${users.length} default CLIENT users.`);
   }
 
   console.log(`Found ${categories.length} categories, ${locations.length} locations, ${skills.length} skills, ${users.length} CLIENT users`);

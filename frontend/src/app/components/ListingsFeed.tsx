@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Pencil, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
+import ReactCountryFlag from "react-country-flag";
 import {
   getListingsFeed,
   publishListing,
@@ -23,6 +24,7 @@ type FeedState = {
   scrollY: number;
   categoryId?: string;
   language?: ListingLanguage;
+  skillIds?: string[];
 };
 
 function readVisitedListings(): Set<string> {
@@ -57,8 +59,17 @@ function readFeedState(): FeedState | null {
     return {
       page: parsed.page,
       scrollY: parsed.scrollY,
-      categoryId: typeof parsed.categoryId === "string" ? parsed.categoryId : undefined,
-      language: parsed.language === "POLISH" || parsed.language === "ENGLISH" ? parsed.language : undefined,
+      categoryId:
+        typeof parsed.categoryId === "string"
+          ? parsed.categoryId
+          : undefined,
+      language:
+        parsed.language === "POLISH" || parsed.language === "ENGLISH"
+          ? parsed.language
+          : undefined,
+      skillIds: Array.isArray(parsed.skillIds)
+        ? parsed.skillIds.filter((v): v is string => typeof v === "string")
+        : undefined,
     };
   } catch {
     return null;
@@ -86,12 +97,14 @@ export function ListingsFeed({
   categorySlug,
   page,
   language,
+  skillIds,
   onCountChange,
 }: {
   categoryId?: string;
   categorySlug: string;
   page: number;
   language?: ListingLanguage;
+  skillIds?: string[];
   onCountChange?: (count: number) => void;
 }) {
   const router = useRouter();
@@ -107,7 +120,7 @@ export function ListingsFeed({
   const loadFeed = useCallback(
     (currentPage: number = page, opts?: { restoreScrollY?: number }) => {
       setLoading(true);
-      getListingsFeed(currentPage, 15, categoryId, language)
+      getListingsFeed(currentPage, 15, categoryId, language, skillIds)
         .then((res) => {
           setListings(res.items);
           setPagination(res.pagination);
@@ -126,7 +139,7 @@ export function ListingsFeed({
         })
         .finally(() => setLoading(false));
     },
-    [categoryId, language, onCountChange, page]
+    [categoryId, language, skillIds, onCountChange, page]
   );
 
   useEffect(() => {
@@ -136,6 +149,8 @@ export function ListingsFeed({
       restored &&
       (restored.categoryId ?? undefined) === (categoryId ?? undefined) &&
       (restored.language ?? undefined) === (language ?? undefined) &&
+      JSON.stringify(restored.skillIds ?? []) ===
+      JSON.stringify(skillIds ?? []) &&
       restored.page === page;
 
     if (restored && matchesFilters) {
@@ -167,6 +182,7 @@ export function ListingsFeed({
       scrollY: typeof window !== "undefined" ? window.scrollY : 0,
       categoryId,
       language,
+      skillIds,
     });
   };
 
@@ -282,7 +298,12 @@ export function ListingsFeed({
                   <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                     {listing.category.name}
                   </span>
-                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                    <ReactCountryFlag
+                      svg
+                      countryCode={listing.language === "ENGLISH" ? "GB" : "PL"}
+                      style={{ width: "1em", height: "1em" }}
+                    />
                     {listing.language === "ENGLISH" ? "English" : "Polish"}
                   </span>
                   {isOwnListing && (
@@ -325,6 +346,7 @@ export function ListingsFeed({
           <Button
             variant="outline"
             size="sm"
+            className="cursor-pointer"
             onClick={() => handlePageChange(page - 1)}
             disabled={!pagination.hasPreviousPage}
           >
@@ -350,8 +372,8 @@ export function ListingsFeed({
                   key={pageNum}
                   variant={pageNum === page ? "default" : "outline"}
                   size="sm"
+                  className="min-w-10 cursor-pointer"
                   onClick={() => handlePageChange(pageNum)}
-                  className="min-w-10"
                 >
                   {pageNum}
                 </Button>
@@ -362,6 +384,7 @@ export function ListingsFeed({
           <Button
             variant="outline"
             size="sm"
+            className="cursor-pointer"
             onClick={() => handlePageChange(page + 1)}
             disabled={!pagination.hasNextPage}
           >

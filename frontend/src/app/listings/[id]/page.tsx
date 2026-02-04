@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import ReactCountryFlag from "react-country-flag";
 import {
   ArrowLeft,
   Banknote,
@@ -253,7 +254,12 @@ export default function ListingDetailPage() {
                 <Tag className="h-3.5 w-3.5" />
                 {listing.category.name}
               </span>
-              <span className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
+                <ReactCountryFlag
+                  svg
+                  countryCode={listing.language === "ENGLISH" ? "GB" : "PL"}
+                  style={{ width: "1em", height: "1em" }}
+                />
                 {listing.language === "ENGLISH" ? "English" : "Polish"}
               </span>
             </div>

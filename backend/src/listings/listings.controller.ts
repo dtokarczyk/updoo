@@ -40,12 +40,27 @@ export class ListingsController {
     @Query('pageSize') pageSize?: string,
     @Query('categoryId') categoryId?: string,
     @Query('language') language?: string,
+    @Query('skillIds') skillIds?: string,
     @GetUser() user?: JwtUser,
   ) {
     const pageNum = page ? Math.max(1, parseInt(page, 10) || 1) : 1;
     const pageSizeNum = pageSize ? Math.min(Math.max(1, parseInt(pageSize, 10) || 15), 100) : 15;
     const userLanguage = (user?.language || 'POLISH') as ListingLanguage;
-    return this.listingsService.getFeed(pageNum, pageSizeNum, user?.id, categoryId, language, userLanguage);
+    const parsedSkillIds = skillIds
+      ? skillIds.split(',').map((id) => id.trim()).filter(Boolean)
+      : undefined;
+    return this.listingsService.getFeed(pageNum, pageSizeNum, user?.id, categoryId, language, parsedSkillIds, userLanguage);
+  }
+
+  @Get('popular-skills')
+  getPopularSkills(
+    @Query('categoryId') categoryId?: string,
+  ) {
+    if (!categoryId) {
+      // Without category context "popular skills" would not be meaningful, return empty list.
+      return [];
+    }
+    return this.listingsService.getPopularSkillsForCategory(categoryId);
   }
 
   @Get('favorites')

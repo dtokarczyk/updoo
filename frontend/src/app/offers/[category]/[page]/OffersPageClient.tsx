@@ -55,6 +55,7 @@ export function OffersPageClient({
     ? categories.find((c) => c.slug === resolvedCategorySlug)
     : undefined;
   const categoryId = selectedCategory?.id;
+  const categoryNameForHeader = selectedCategory?.name;
 
   const routingCategorySlug = resolvedCategorySlug ?? "all";
 
@@ -83,6 +84,7 @@ export function OffersPageClient({
             categoryId={categoryId}
             categorySlugForRouting={routingCategorySlug}
             page={page}
+            categoryName={categoryNameForHeader}
           />
           {!isLoggedIn && (
             <aside className="sticky top-0 z-10 hidden shrink-0 lg:top-14 lg:block lg:self-start lg:basis-1/5">

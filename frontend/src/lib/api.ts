@@ -169,6 +169,11 @@ export interface Skill {
   name: string;
 }
 
+export interface PopularSkill extends Skill {
+  /** How many listings in given category use this skill. */
+  count: number;
+}
+
 export type ListingStatus = "DRAFT" | "PUBLISHED";
 export type ListingLanguage = "ENGLISH" | "POLISH";
 export type BillingType = "FIXED" | "HOURLY";
@@ -274,6 +279,18 @@ export interface ListingsFeedResponse {
   pagination: PaginationInfo;
 }
 
+export async function getPopularSkillsForCategory(
+  categoryId: string
+): Promise<PopularSkill[]> {
+  const params = new URLSearchParams();
+  params.set("categoryId", categoryId);
+  const res = await fetch(
+    `${API_URL}/listings/popular-skills?${params.toString()}`
+  );
+  if (!res.ok) throw new Error("Failed to fetch popular skills");
+  return res.json();
+}
+
 export async function getCategories(): Promise<Category[]> {
   const headers: HeadersInit = {};
   const token = getToken();
@@ -299,7 +316,8 @@ export async function getListingsFeed(
   page: number = 1,
   pageSize: number = 15,
   categoryId?: string,
-  language?: ListingLanguage | "" | undefined
+  language?: ListingLanguage | "" | undefined,
+  skillIds?: string[]
 ): Promise<ListingsFeedResponse> {
   const params = new URLSearchParams();
   params.set("page", String(page));
@@ -307,6 +325,9 @@ export async function getListingsFeed(
   if (categoryId) params.set("categoryId", categoryId);
   if (language === "POLISH" || language === "ENGLISH") {
     params.set("language", language as ListingLanguage);
+  }
+  if (skillIds && skillIds.length > 0) {
+    params.set("skillIds", skillIds.join(","));
   }
   const url = `${API_URL}/listings/feed?${params.toString()}`;
   const headers: HeadersInit = {};

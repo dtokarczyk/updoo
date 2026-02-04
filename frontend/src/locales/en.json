@@ -67,6 +67,8 @@
   },
   "listings": {
     "listings": "Listings",
+    "headerSampleWithCategory": "Check out a sample of the {count} {category} jobs posted on Updoo",
+    "headerSampleWithoutCategory": "Check out a sample of the {count} jobs posted on Updoo",
     "newListing": "New listing",
     "createListing": "Create listing",
     "editListing": "Edit listing",

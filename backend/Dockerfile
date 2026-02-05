@@ -68,5 +68,5 @@ EXPOSE 80
 # Note: Running as root to bind to port 80
 USER root
 
-# Start the application
-CMD ["node", "dist/src/main.js"]
+# Run database migrations and start the application
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/src/main.js"]

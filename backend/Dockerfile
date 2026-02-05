@@ -3,12 +3,12 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files and config files needed for build
-COPY package*.json ./
-COPY tsconfig*.json ./
-COPY nest-cli.json ./
-COPY prisma.config.ts ./
-COPY prisma ./prisma/
+# Copy package files and config files needed for build (from monorepo root context)
+COPY backend/package*.json ./
+COPY backend/tsconfig*.json ./
+COPY backend/nest-cli.json ./
+COPY backend/prisma.config.ts ./
+COPY backend/prisma ./prisma/
 
 # Install dependencies (including dev dependencies for build)
 RUN npm ci
@@ -17,7 +17,7 @@ RUN npm ci
 RUN npx prisma generate
 
 # Copy source code
-COPY src ./src
+COPY backend/src ./src
 
 # Build the application
 RUN npm run build
@@ -34,8 +34,8 @@ WORKDIR /app
 RUN apk add --no-cache curl postgresql-client
 
 # Install only production dependencies
-COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
+COPY backend/package*.json ./
+RUN npm ci --omit=dev && npm cache clean --force
 
 # Copy Prisma schema and generated client
 COPY --from=builder /app/prisma ./prisma
@@ -46,7 +46,7 @@ COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/dist ./dist
 
 # Verify dist was copied correctly
-RUN ls -la /app/dist || echo "dist directory not found in production stage"
+RUN ls -la /app/dist || (echo "dist directory not found in production stage" && exit 1)
 RUN test -f /app/dist/src/main.js || (echo "main.js not found!" && ls -la /app/dist/ && exit 1)
 
 # Copy translation files (needed at runtime)
@@ -66,7 +66,6 @@ RUN chown -R nestjs:nodejs /app
 EXPOSE 80
 
 # Note: Running as root to bind to port 80
-# In production, consider using port 3000 + reverse proxy (nginx) for better security
 USER root
 
 # Start the application

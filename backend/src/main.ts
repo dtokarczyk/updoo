@@ -13,21 +13,8 @@ async function bootstrap() {
   });
   app.useGlobalPipes(new I18nValidationPipe());
   app.enableCors({
-    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-      // Allow requests without origin (same-origin requests, Postman, etc.)
-      if (!origin) {
-        callback(null, true);
-        return;
-      }
-      // Allow any origin on ports starting with 3 (3000, 3002, 30000, etc.)
-      const portMatch = origin.match(/:3\d+(?:\/|$)/);
-      if (portMatch) {
-        callback(null, true);
-        return;
-      }
-      // Reject other origins
-      callback(null, false);
-    },
+    // Allow requests from any origin. Use with caution in production.
+    origin: true,
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Accept-Language'],
     credentials: true,

@@ -750,3 +750,25 @@ export async function getUserJobs(): Promise<Job[]> {
   }
   return res.json();
 }
+
+export async function generateAiJob(): Promise<{ 
+  ok: boolean; 
+  message: string;
+  jobId?: string;
+  categorySlug?: string;
+}> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+  const res = await fetch(`${API_URL}/content-generator/generate-job`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? "Failed to generate job");
+  }
+  return res.json();
+}

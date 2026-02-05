@@ -146,6 +146,17 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
         </div>
       )}
 
+      {user?.accountType === "ADMIN" && (
+        <div className="mb-4">
+          <Button asChild variant="outline" size="lg" className="w-full justify-start">
+            <Link href="/admin">
+              <Plus className="size-5 shrink-0" aria-hidden />
+              Panel administracyjny
+            </Link>
+          </Button>
+        </div>
+      )}
+
       {/* Recent applications (for freelancer) or jobs (for client) */}
       {user?.accountType && (
         <div>

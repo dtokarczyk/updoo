@@ -127,6 +127,16 @@ export function UserDropdown({
           >
             {t("jobs.favorites")}
           </Link>
+          {user?.accountType === "ADMIN" && (
+            <Link
+              href="/admin"
+              role="menuitem"
+              className="block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted"
+              onClick={() => setDropdownOpen(false)}
+            >
+              Panel administracyjny
+            </Link>
+          )}
           <button
             type="button"
             role="menuitem"

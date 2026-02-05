@@ -37,8 +37,9 @@ RUN apk add --no-cache curl postgresql-client
 COPY backend/package*.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 
-# Copy Prisma schema and generated client
+# Copy Prisma schema, config and generated client
 COPY --from=builder /app/prisma ./prisma
+COPY backend/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 

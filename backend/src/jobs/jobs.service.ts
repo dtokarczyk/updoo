@@ -3,7 +3,8 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { FavoritesService } from './favorites.service';
 import { CreateJobDto } from './dto/create-job.dto';
-import { BillingType, HoursPerWeek, ExperienceLevel, ProjectType, JobStatus, JobLanguage } from '@prisma/client';
+import { BillingType, HoursPerWeek, ExperienceLevel, ProjectType, JobStatus, JobLanguage, AccountType } from '@prisma/client';
+import { ContentGeneratorService } from '../content-generator/content-generator.service';
 
 const DEFAULT_CATEGORIES = [
   {
@@ -89,6 +90,7 @@ export class JobsService implements OnModuleInit {
   constructor(
     private readonly prisma: PrismaService,
     private readonly favoritesService: FavoritesService,
+    private readonly contentGenerator: ContentGeneratorService,
   ) { }
 
   async onModuleInit() {
@@ -1119,6 +1121,7 @@ export class JobsService implements OnModuleInit {
       console.log(`Auto-closed ${result.count} expired job(s)`);
     }
   }
+
 
   /** Get all DRAFT jobs for admin approval. Only accessible by ADMIN users. */
   async getPendingJobs(

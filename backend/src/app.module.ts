@@ -6,9 +6,11 @@ import { AuthModule } from './auth/auth.module';
 import { JobsModule } from './jobs/jobs.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { I18nModule } from './i18n/i18n.module';
+import { AiModule } from './ai/ai.module';
+import { ContentGeneratorModule } from './content-generator/content-generator.module';
 
 @Module({
-  imports: [ScheduleModule.forRoot(), PrismaModule, AuthModule, JobsModule, I18nModule],
+  imports: [ScheduleModule.forRoot(), PrismaModule, AuthModule, JobsModule, I18nModule, AiModule, ContentGeneratorModule],
   controllers: [AppController],
   providers: [AppService],
 })

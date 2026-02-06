@@ -127,6 +127,16 @@ export function UserDropdown({
           >
             {t("jobs.favorites")}
           </Link>
+          {user?.accountType === "ADMIN" && (
+            <Link
+              href="/admin"
+              role="menuitem"
+              className="block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted"
+              onClick={() => setDropdownOpen(false)}
+            >
+              Panel administracyjny
+            </Link>
+          )}
           <button
             type="button"
             role="menuitem"
@@ -159,7 +169,6 @@ export function HomeNav({ showCreateOnly, placement = "header" }: HomeNavProps) 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Initialize auth state on mount
   useEffect(() => {
     setMounted(true);
     const token = getToken();
@@ -168,16 +177,6 @@ export function HomeNav({ showCreateOnly, placement = "header" }: HomeNavProps) 
     setIsLoggedIn(!!token);
     setCanCreateListing(!!token && u?.accountType === "CLIENT");
   }, []);
-
-  // Refresh auth state when pathname changes (e.g., after login redirect)
-  useEffect(() => {
-    if (!mounted) return;
-    const token = getToken();
-    const u = getStoredUser();
-    setUser(u);
-    setIsLoggedIn(!!token);
-    setCanCreateListing(!!token && u?.accountType === "CLIENT");
-  }, [pathname, mounted]);
 
   useEffect(() => {
     if (!dropdownOpen) return;

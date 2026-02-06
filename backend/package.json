@@ -23,7 +23,9 @@
     "prisma:studio": "prisma studio",
     "prisma:push": "prisma db push",
     "script:generate-jobs": "ts-node --project tsconfig.json scripts/generate-random-jobs.ts",
-    "script:seed-benchmarks": "ts-node --project tsconfig.json scripts/seed-benchmarks.ts"
+    "script:seed-benchmarks": "ts-node --project tsconfig.json scripts/seed-benchmarks.ts",
+    "script:seed-locations": "ts-node --project tsconfig.json scripts/seed-locations.ts",
+    "script:seed-skills": "ts-node --project tsconfig.json scripts/seed-skills.ts"
   },
   "dependencies": {
     "@faker-js/faker": "^10.2.0",

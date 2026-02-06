@@ -2,6 +2,10 @@
  * Seeds BenchmarkContent table from .txt files in scrapper/output.
  * Run from backend: npm run script:seed-benchmarks
  * Existing records (same `file`) are overwritten with new content.
+ *
+ * Verbose: VERBOSE=1 summary + progress, VERBOSE=2 log each file (insert/update).
+ *   npm run script:seed-benchmarks -- VERBOSE=2
+ *   VERBOSE=2 npm run script:seed-benchmarks
  */
 import 'dotenv/config';
 import * as fs from 'fs';
@@ -9,6 +13,8 @@ import * as path from 'path';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
+
+const VERBOSE = parseInt(process.env.VERBOSE ?? '0', 10) || 0;
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -67,15 +73,33 @@ async function main() {
     rows.push({ file, content });
   }
 
-  for (const row of rows) {
+  let inserted = 0;
+  let updated = 0;
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const existed = await prisma.benchmarkContent.findUnique({
+      where: { file: row.file },
+      select: { id: true },
+    });
+
     await prisma.benchmarkContent.upsert({
       where: { file: row.file },
       create: row,
       update: { content: row.content },
     });
+
+    if (existed) updated++;
+    else inserted++;
+
+    if (VERBOSE >= 2) {
+      console.log(`  ${existed ? 'update' : 'insert'}: ${row.file}`);
+    } else if (VERBOSE >= 1 && (i + 1) % 100 === 0) {
+      console.log(`  Progress: ${i + 1}/${rows.length}`);
+    }
   }
 
-  console.log(`Processed ${rows.length} records (inserted or updated).`);
+  console.log(`Processed ${rows.length} records (${inserted} inserted, ${updated} updated).`);
 }
 
 main()

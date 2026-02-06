@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/lib/theme";
 import { AppHeader } from "@/app/components/AppHeader";
 import { AppFooter } from "@/app/components/AppFooter";
 import { getLocaleFromRequest } from "@/lib/i18n";
+import { getMetadataConfig } from "@/lib/metadata-config";
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -19,6 +20,25 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocaleFromRequest();
+  const meta = getMetadataConfig(locale).default;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://updoo.pl";
+  return {
+    metadataBase: new URL(baseUrl),
+    title: {
+      default: meta.title,
+      template: meta.template,
+    },
+    description: meta.description,
+    openGraph: {
+      title: meta.title,
+      description: meta.description,
+      type: "website",
+    },
+  };
+}
 
 export default async function RootLayout({
   children,

@@ -1,6 +1,8 @@
+import type { Metadata } from "next";
 import { sortCategoriesByOrder, type Category } from "@/lib/api";
 import { OffersPageClient } from "./OffersPageClient";
 import { getLocaleFromRequest } from "@/lib/i18n";
+import { getMetadataConfig, allCategoriesLabelByLocale } from "@/lib/metadata-config";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
@@ -25,6 +27,42 @@ async function getCategoriesServer(): Promise<Category[]> {
 
   const data = (await res.json()) as Category[];
   return sortCategoriesByOrder(data);
+}
+
+function parsePageParam(raw: string | undefined): number {
+  const n = raw ? Number.parseInt(raw, 10) : 1;
+  return Number.isFinite(n) && n > 0 ? n : 1;
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ category: string; page: string }>;
+}): Promise<Metadata> {
+  const { category: categorySlug, page: pageParam } = await params;
+  const locale = await getLocaleFromRequest();
+  const categories = await getCategoriesServer();
+  const page = parsePageParam(pageParam);
+
+  const categoryDisplayName =
+    categorySlug === "all" || !categorySlug
+      ? allCategoriesLabelByLocale[locale]
+      : categories.find((c) => c.slug === categorySlug)?.name ??
+        allCategoriesLabelByLocale[locale];
+
+  const meta = getMetadataConfig(locale).offersCategory(
+    categoryDisplayName,
+    page
+  );
+
+  return {
+    title: meta.title,
+    description: meta.description,
+    openGraph: {
+      title: meta.title,
+      description: meta.description,
+    },
+  };
 }
 
 export default async function OffersPage() {

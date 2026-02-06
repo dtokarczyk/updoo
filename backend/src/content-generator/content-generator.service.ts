@@ -1,11 +1,22 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
 import { AiService } from '../ai/ai.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { AccountType, BillingType, ExperienceLevel, JobLanguage, JobStatus, ProjectType } from '@prisma/client';
 import { BENCHMARK_EXAMPLES } from './examples';
+import { fakerPL as faker } from '@faker-js/faker';
+import * as bcrypt from 'bcrypt';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export type SupportedLanguage = 'POLISH' | 'ENGLISH';
+
+/** Allowed values for AI-generated job metadata (used for validation and random offerDays). */
+const ALLOWED = {
+  billingType: Object.values(BillingType),
+  experienceLevel: Object.values(ExperienceLevel),
+  projectType: Object.values(ProjectType),
+  offerDays: [7, 14, 21, 30] as const,
+} as const;
 
 export interface GeneratedJobFormData {
   user: {
@@ -16,14 +27,15 @@ export interface GeneratedJobFormData {
   job: {
     title: string;
     description: string;
-    billingType: 'FIXED' | 'HOURLY';
+    categoryId: string;
+    billingType: BillingType;
     rate: number;
     currency: string;
-    experienceLevel: 'JUNIOR' | 'MID' | 'SENIOR';
+    experienceLevel: ExperienceLevel;
     isRemote: boolean;
-    projectType: 'ONE_TIME' | 'CONTINUOUS';
-    offerDays: number;
-    skills: string[];
+    projectType: ProjectType;
+    language?: JobLanguage;
+    offerDays?: number;
   };
 }
 
@@ -37,25 +49,27 @@ export class ContentGeneratorService {
   ) { }
 
   /**
-   * Generate a complete job form draft (user + job data) for a given category slug.
-   * Uses Gemini structured output so that the response is directly mappable to the job creation form.
+   * Call AI to generate job metadata (billing, rate, experience, etc.) from title + description.
    */
-  async generateJobPost(params: {
-    categorySlug: string;
-    language?: SupportedLanguage;
-  }): Promise<GeneratedJobFormData> {
-    const language = params.language ?? 'POLISH';
-    const languageLabel = language === 'ENGLISH' ? 'English' : 'Polish';
-
+  private async generateJobMetadata(params: {
+    title: string;
+    description: string;
+  }): Promise<{
+    billingType: BillingType;
+    rate: number;
+    currency: string;
+    experienceLevel: ExperienceLevel;
+    isRemote: boolean;
+    projectType: ProjectType;
+    language: JobLanguage;
+    offerDays: number;
+  }> {
     const prompt = [
-      `Jesteś asystentem, którego zadaniem jest tworzenie realistycznych ofert pracy freelance w języku ${languageLabel}.`,
-      `Wygeneruj jedną, wiarygodną ofertę pracy freelance dla kategorii o identyfikatorze (slug): ”${params.categorySlug}”.`,
-      'Cała treść oferty (tytuł, opis, wymagania, budżet, umiejętności itp.) musi być ściśle zgodna z tą kategorią i odpowiadać realiom rynkowym.',
-      'Zwróć dane w taki sposób, aby mogły bezpośrednio posłużyć do wypełnienia formularza dodawania oferty pracy oraz podstawowego profilu klienta.',
-      `Przykład oferty: ${BENCHMARK_EXAMPLES[Math.floor(Math.random() * BENCHMARK_EXAMPLES.length)]}`
+      `Na podstawie poniższego tytułu i opisu oferty pracy wywnioskuj najbardziej prawdopodobne metadane.`,
+      `Tytuł: ${params.title}`,
+      `Opis (fragment): ${params.description.slice(0, 1500)}`,
+      `Zwróć tylko poprawne wartości enum oraz realistyczną stawkę w PLN (typowa dla polskiego rynku, np. 1000–5000 dla FIXED, 50–200 dla HOURLY).`,
     ].join('\n');
-
-
 
     const raw = await this.aiService.generateText({
       model: 'gemini-flash-latest',
@@ -65,104 +79,130 @@ export class ContentGeneratorService {
         responseJsonSchema: {
           type: 'object',
           additionalProperties: false,
-          required: ['user', 'job'],
+          required: ['billingType', 'rate', 'experienceLevel', 'projectType'],
           properties: {
-            user: {
-              type: 'object',
-              description:
-                'Szczegóły klienta, który zamieszcza ofertę pracy, używane do wypełnienia formularza profilu użytkownika.',
-              additionalProperties: false,
-              required: ['email', 'name', 'surname'],
-              properties: {
-                email: {
-                  type: 'string',
-                  description: 'Email klienta, który zamieszcza ofertę pracy.',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Imię klienta, który zamieszcza ofertę pracy.',
-                },
-                surname: {
-                  type: 'string',
-                  description: 'Nazwisko klienta, który zamieszcza ofertę pracy.',
-                },
-              },
+            billingType: {
+              type: 'string',
+              enum: ALLOWED.billingType,
+              description: 'FIXED lub HOURLY',
             },
+            rate: {
+              type: 'number',
+              description: 'Stawka/budżet w PLN (np. 1000–5000 fixed, 50–200 hourly)',
+            },
+            experienceLevel: {
+              type: 'string',
+              enum: ALLOWED.experienceLevel,
+              description: 'JUNIOR, MID lub SENIOR',
+            },
+            projectType: {
+              type: 'string',
+              enum: ALLOWED.projectType,
+              description: 'ONE_TIME lub CONTINUOUS',
+            },
+          },
+        },
+      },
+    });
+
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    const billingType = ALLOWED.billingType.includes(parsed.billingType as BillingType)
+      ? (parsed.billingType as BillingType)
+      : BillingType.FIXED;
+    const rate = typeof parsed.rate === 'number' && parsed.rate > 0 ? Math.round(parsed.rate) : 1000;
+    const experienceLevel = ALLOWED.experienceLevel.includes(parsed.experienceLevel as ExperienceLevel)
+      ? (parsed.experienceLevel as ExperienceLevel)
+      : ExperienceLevel.MID;
+    const projectType = ALLOWED.projectType.includes(parsed.projectType as ProjectType)
+      ? (parsed.projectType as ProjectType)
+      : ProjectType.ONE_TIME;
+
+    const offerDays = ALLOWED.offerDays[Math.floor(Math.random() * ALLOWED.offerDays.length)];
+
+    return {
+      billingType,
+      rate,
+      currency: 'PLN',
+      experienceLevel,
+      isRemote: true,
+      projectType,
+      language: JobLanguage.POLISH,
+      offerDays,
+    };
+  }
+
+  /**
+   * Get a random benchmark text from scrapper/output folder
+   */
+  private getRandomBenchmark(): string {
+    try {
+      const scrapperOutputPath = path.join(process.cwd(), '..', 'scrapper', 'output');
+      const files = fs.readdirSync(scrapperOutputPath).filter(file => file.endsWith('.txt'));
+
+      if (files.length === 0) {
+        this.logger.warn('No benchmark files found in scrapper/output folder');
+        return BENCHMARK_EXAMPLES[0] || 'No benchmark available';
+      }
+
+      const randomFile = files[Math.floor(Math.random() * files.length)];
+      const filePath = path.join(scrapperOutputPath, randomFile);
+      const content = fs.readFileSync(filePath, 'utf-8');
+
+      return content.trim();
+    } catch (error) {
+      this.logger.error(`Error reading random benchmark file: ${error.message}`);
+      return BENCHMARK_EXAMPLES[0] || 'No benchmark available';
+    }
+  }
+
+  /**
+   * Generate a complete job form draft (user + job data) for a given category slug.
+   * Uses Gemini structured output so that the response is directly mappable to the job creation form.
+   */
+  async generateJobPost(params: {
+    language?: SupportedLanguage;
+  }): Promise<GeneratedJobFormData> {
+    const language = params.language ?? 'POLISH';
+    const languageLabel = language === 'ENGLISH' ? 'English' : 'Polish';
+    const randomBenchmark = this.getRandomBenchmark();
+
+    const categories = await this.prisma.category.findMany();
+
+    const prompt = [
+      `Dopasuj ofertę do jednej z kategorii: ${categories.map((c) => c.slug).join(', ')}`,
+      `Pisz w języku: ${languageLabel}.`,
+      `Przeredaguj poniższą treść minimalnie, zachowując tę samą strukturę, sens, styl ogłoszeniowy i zakres zlecenia, a jedynie lekko dostosuj słownictwo; nie dodawaj nowych informacji, nie rozbudowuj opisu i nie twórz nowej treści.`,
+      `Opis oferty (pole description) może być podzielony na akapity: oddzielaj każdy logiczny fragment (np. wprowadzenie, wymagania, zakres prac) podwójną nową linią (\\n\\n). Nie zwracaj jednego długiego akapitu. Gdy potrzebne są wypunktowania, używaj wyłącznie znaku '-' na początku linii. Gdy nie potrzeba wypunktowań, nie dodawaj żadnych znaków.`,
+      `Pisz czasami z malej litery. Czasami nie dawaj przecinkow tam gdzie powinny byc.`,
+      `Oferta do przerobienia: ${randomBenchmark.replace(/\s+/g, ' ').trim()}`,
+    ].join('\n');
+
+    const raw = await this.aiService.generateText({
+      model: 'gemini-flash-latest',
+      contents: prompt,
+      config: {
+        responseMimeType: 'application/json',
+        responseJsonSchema: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['job'],
+          properties: {
             job: {
               type: 'object',
               description:
-                'Pełna oferta pracy, używana do wypełnienia formularza dodawania oferty pracy.',
+                'Dane oferty pracy wygenerowanej na podstawie benchmarku. Tylko title i description - reszta uzupełniana na sztywno.',
               additionalProperties: false,
-              required: [
-                'title',
-                'description',
-                'billingType',
-                'rate',
-                'currency',
-                'experienceLevel',
-                'isRemote',
-                'projectType',
-                'offerDays',
-              ],
+              required: ['title', 'description'],
               properties: {
                 title: {
                   type: 'string',
                   description:
-                    'Krótki, zgrabny tytuł oferty pracy (maksymalnie 90 znaków), napisany w żądanym języku. Nie pisz z wielkich liter kadego slowa.',
+                    'Tytuł oferty pracy. Musi być bardzo zbliżony do tytułu z benchmarku - zachowaj konkretność, specyficzne terminy techniczne, styl i długość.',
                 },
                 description: {
                   type: 'string',
                   description:
-                    'Opis oferty pracy, który odpowiada identyfikatorowi kategorii (slug) i językowi. Bez wypunkwowania. Niezbale napisana. Pomiń niektóre fakty. Staraj sie pisać jak najbardziej naturalnie. Popełniaj błędny interpunkcyjne.',
-                },
-                billingType: {
-                  type: 'string',
-                  description: 'Typ rozliczenia (FIXED lub HOURLY), zgodny z CreateJobDto.',
-                  enum: ['FIXED', 'HOURLY'],
-                },
-                rate: {
-                  type: 'number',
-                  description:
-                    'Sugerowany budżet lub stawka godzinowa dla oferty pracy. Musi być liczbą nieujemną.',
-                  minimum: 0,
-                },
-                currency: {
-                  type: 'string',
-                  description:
-                    '3-literowy kod waluty (PLN, EUR lub USD), zgodny z scenariuszem (PLN jest preferowany).',
-                },
-                experienceLevel: {
-                  type: 'string',
-                  description:
-                    'Poziom doświadczenia (JUNIOR, MID lub SENIOR), zgodny z CreateJobDto.',
-                  enum: ['JUNIOR', 'MID', 'SENIOR'],
-                },
-                isRemote: {
-                  type: 'boolean',
-                  description:
-                    'True jeśli praca może być wykonywana całkowicie zdalnie. Wybierz realistyczną wartość dla oferty pracy.',
-                },
-                projectType: {
-                  type: 'string',
-                  description:
-                    'Typ projektu (ONE_TIME lub CONTINUOUS), zgodny z CreateJobDto.',
-                  enum: ['ONE_TIME', 'CONTINUOUS'],
-                },
-                offerDays: {
-                  type: 'integer',
-                  description:
-                    'Liczba dni na zbieranie ofert. Musi być jedną z 7, 14, 21 lub 30.',
-                  enum: [7, 14, 21, 30],
-                },
-                skills: {
-                  type: 'array',
-                  description:
-                    'Lista 3–10 istotnych nazw umiejętności (tagów), które ściśle odpowiadają tej ofercie pracy i kategorii.',
-                  items: {
-                    type: 'string',
-                  },
-                  minItems: 3,
-                  maxItems: 10,
+                    'Opis oferty pracy. Zachowaj strukturę, sekcje i styl benchmarku. Przeredaguj tylko minimalnie słownictwo. WYMAGANE: jeśli to możliwe podziel tekst na akapity – każdy logiczny fragment (np. wprowadzenie, wymagania, zakres) oddziel podwójną nową linią (\\n\\n). Minimum 2–3 akapity. Wypunktowania formatuj od znaku "-" (np. "- wymaganie").',
                 },
               },
             },
@@ -172,56 +212,42 @@ export class ContentGeneratorService {
     });
 
     try {
-      const parsed = JSON.parse(raw) as Partial<GeneratedJobFormData> | null;
-      const job = parsed?.job ?? ({} as GeneratedJobFormData['job']);
-      const user = parsed?.user ?? ({} as GeneratedJobFormData['user']);
-
-      const title = (job.title ?? '').toString().trim();
-      const description = (job.description ?? '').toString().trim();
+      const parsed = JSON.parse(raw) as { job?: { title?: string; description?: string } } | null;
+      const job = parsed?.job ?? {};
+      // Normalize all Unicode dash/hyphen variants to ASCII hyphen
+      const normalizeDashes = (s: string) => s.replace(/\p{Pd}/gu, '-');
+      const title = job.title ? normalizeDashes(job.title) : undefined;
+      const description = job.description ? normalizeDashes(job.description) : undefined;
 
       if (!title || !description) {
         throw new Error('Missing title or description in AI response JSON.');
       }
 
+      if (categories.length === 0) {
+        throw new Error('No categories in database.');
+      }
+      const category = categories[Math.floor(Math.random() * categories.length)];
+
+      const metadata = await this.generateJobMetadata({ title, description });
+
       const safeUser: GeneratedJobFormData['user'] = {
-        email: user.email,
-        name: user.name,
-        surname: user.surname,
+        email: faker.internet.email(),
+        name: faker.person.firstName(),
+        surname: faker.person.lastName(),
       };
 
       const safeJob: GeneratedJobFormData['job'] = {
         title,
         description,
-        billingType:
-          job.billingType === 'HOURLY'
-            ? 'HOURLY'
-            : 'FIXED',
-        rate: typeof job.rate === 'number' && job.rate >= 0 ? job.rate : 1000,
-        currency:
-          (job.currency ?? (language === 'POLISH' ? 'PLN' : 'EUR'))
-            .toString()
-            .trim()
-            .toUpperCase() || (language === 'POLISH' ? 'PLN' : 'EUR'),
-        experienceLevel:
-          job.experienceLevel === 'JUNIOR' ||
-            job.experienceLevel === 'SENIOR'
-            ? job.experienceLevel
-            : 'MID',
-        isRemote: typeof job.isRemote === 'boolean' ? job.isRemote : true,
-        projectType:
-          job.projectType === 'CONTINUOUS'
-            ? 'CONTINUOUS'
-            : 'ONE_TIME',
-        offerDays:
-          job.offerDays === 7 ||
-            job.offerDays === 14 ||
-            job.offerDays === 21 ||
-            job.offerDays === 30
-            ? job.offerDays
-            : 14,
-        skills: Array.isArray(job.skills)
-          ? job.skills.map((s) => s.toString().trim()).filter((s) => s.length > 0)
-          : [],
+        categoryId: category.id,
+        billingType: metadata.billingType,
+        rate: metadata.rate,
+        currency: metadata.currency,
+        experienceLevel: metadata.experienceLevel,
+        isRemote: metadata.isRemote,
+        projectType: metadata.projectType,
+        language: metadata.language,
+        offerDays: metadata.offerDays,
       };
 
       return {
@@ -229,81 +255,66 @@ export class ContentGeneratorService {
         job: safeJob,
       };
     } catch (error) {
+      this.logger.error('Failed to parse structured job post JSON', error as Error);
       throw new Error('Failed to parse structured job post JSON.');
     }
   }
 
   /**
-   * Generate and persist a new AI-based job in a random allowed category.
-   * Creates a fake client account with password "FAKE." and publishes the job.
-   * Returns the created job ID and category slug.
+   * Generate job data, create a new user from generated safeUser, and persist the job (author = new user).
+   * Returns the created job with category and author.
    */
-  @Cron('0 9,13,17 * * *')
-  async generateAiJobPostForRandomCategory(): Promise<{ jobId: string; categorySlug: string } | null> {
-    const allowedCategorySlugs = [
-      'programming',
-      'design',
-      'marketing',
-    ];
+  async generateAndCreateJob(): Promise<{ id: string; title: string; description: string; categoryId: string; status: JobStatus }> {
+    const generated = await this.generateJobPost({ language: 'POLISH' });
+    const { user: safeUser, job } = generated;
 
-    const categories = await this.prisma.category.findMany({
-      where: {
-        slug: {
-          in: allowedCategorySlugs,
-        },
-      },
-    });
-
-    if (!categories.length) {
-      this.logger.warn('AI jobs generator: no categories available.');
-      return null;
-    }
-
-    const randomIndex = Math.floor(Math.random() * categories.length);
-    const category = categories[randomIndex];
-
-    const post = await this.generateJobPost({
-      categorySlug: category.slug,
-      language: 'POLISH',
-    });
-
-    const fakeUser = await this.prisma.user.create({
+    const hashedPassword = await bcrypt.hash(faker.internet.password({ length: 12 }), 10);
+    const newUser = await this.prisma.user.create({
       data: {
-        email: post.user.email,
-        name: post.user.name,
-        surname: post.user.surname,
-        password: 'FAKE.',
+        email: safeUser.email.toLowerCase(),
+        password: hashedPassword,
+        name: safeUser.name,
+        surname: safeUser.surname,
         accountType: AccountType.CLIENT,
-        language: JobLanguage.POLISH,
       },
     });
 
     const now = new Date();
-    const deadline = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+    const allowedDays = [7, 14, 21, 30];
+    const deadline =
+      job.offerDays != null && allowedDays.includes(job.offerDays)
+        ? new Date(now.getTime() + job.offerDays * 24 * 60 * 60 * 1000)
+        : null;
 
-    const job = await this.prisma.job.create({
+    const created = await this.prisma.job.create({
       data: {
-        title: post.job.title,
-        description: post.job.description,
-        categoryId: category.id,
-        authorId: fakeUser.id,
-        status: JobStatus.PUBLISHED,
-        language: JobLanguage.POLISH,
-        billingType: BillingType.FIXED,
+        title: job.title.trim(),
+        description: job.description.trim(),
+        categoryId: job.categoryId,
+        authorId: newUser.id,
+        status: JobStatus.DRAFT,
+        language: job.language ?? JobLanguage.POLISH,
+        billingType: job.billingType,
         hoursPerWeek: null,
-        rate: 1000,
+        rate: job.rate,
         rateNegotiable: false,
-        currency: 'PLN',
-        experienceLevel: ExperienceLevel.MID,
+        currency: job.currency.toUpperCase().slice(0, 3),
+        experienceLevel: job.experienceLevel,
         locationId: null,
-        isRemote: true,
-        projectType: ProjectType.ONE_TIME,
+        isRemote: job.isRemote,
+        projectType: job.projectType,
         deadline,
       },
     });
 
-    this.logger.log(`AI jobs generator: created job ${job.id} in category ${category.slug} for fake user ${fakeUser.email}`);
-    return { jobId: job.id, categorySlug: category.slug };
+    this.logger.log(`Created job ${created.id} (${created.title}) for new user ${newUser.id} (${newUser.email})`);
+    return {
+      id: created.id,
+      title: created.title,
+      description: created.description,
+      categoryId: created.categoryId,
+      status: created.status,
+    };
   }
 }
 

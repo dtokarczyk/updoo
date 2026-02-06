@@ -8,7 +8,7 @@ import { ContentGeneratorService } from './content-generator.service';
 export class ContentGeneratorController {
   constructor(
     private readonly contentGeneratorService: ContentGeneratorService,
-  ) {}
+  ) { }
 
   @Post('generate-job')
   @UseGuards(JwtAuthGuard)
@@ -17,15 +17,11 @@ export class ContentGeneratorController {
       throw new ForbiddenException('Only admin users can generate jobs');
     }
 
-    const result = await this.contentGeneratorService.generateAiJobPostForRandomCategory();
-    if (!result) {
-      return { ok: false, message: 'Failed to generate job: no categories available' };
-    }
-    return { 
-      ok: true, 
-      message: `Job generated successfully in category ${result.categorySlug}`,
-      jobId: result.jobId,
-      categorySlug: result.categorySlug,
+    const job = await this.contentGeneratorService.generateAndCreateJob();
+    return {
+      ok: true,
+      message: 'Job generated and added successfully',
+      job,
     };
   }
 }

@@ -214,6 +214,7 @@
       "fixedRate": "Fixed rate",
       "expectedSkills": "Expected skills",
       "skillsDescription": "Select from list or type name and press Enter to add (including new skill).",
+      "skillsMaxCount": "You can add at most 5 skills.",
       "addSkillPlaceholder": "Add skill...",
       "addNewSkill": "+ Add \"{name}\" as a new skill",
       "remove": "Remove",

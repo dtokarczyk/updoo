@@ -266,6 +266,7 @@ export function JobForm({ initialData, onSubmit, mode, loading: externalLoading 
   }, [mode, categoryId, experienceLevel, billingType, categories]);
 
   const addSkill = (skill: SelectedSkill) => {
+    if (selectedSkills.length >= 5) return;
     if (selectedSkills.some((s) => s.name.toLowerCase() === skill.name.toLowerCase())) return;
     setSelectedSkills((prev) => [...prev, skill]);
     setSkillInput("");
@@ -280,6 +281,7 @@ export function JobForm({ initialData, onSubmit, mode, loading: externalLoading 
   const handleSkillKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
+      if (selectedSkills.length >= 5) return;
       const raw = skillInput.trim();
       if (!raw) return;
       const fromDict = skills.find((s) => s.name.toLowerCase() === raw.toLowerCase());
@@ -545,7 +547,7 @@ export function JobForm({ initialData, onSubmit, mode, loading: externalLoading 
         <div className="space-y-2">
           <Label>{t("jobs.newJobForm.expectedSkills")}</Label>
           <p className="text-xs text-muted-foreground">
-            {t("jobs.newJobForm.skillsDescription")}
+            {t("jobs.newJobForm.skillsDescription")} {t("jobs.newJobForm.skillsMaxCount")}
           </p>
           <div className="flex flex-wrap gap-2 p-2 border border-input rounded-md bg-transparent min-h-10">
             {selectedSkills.map((s, i) => (
@@ -576,11 +578,15 @@ export function JobForm({ initialData, onSubmit, mode, loading: externalLoading 
                 onFocus={() => setSkillDropdownOpen(true)}
                 onBlur={() => setTimeout(() => setSkillDropdownOpen(false), 150)}
                 onKeyDown={handleSkillKeyDown}
-                placeholder={t("jobs.newJobForm.addSkillPlaceholder")}
-                disabled={submitting}
+                placeholder={
+                  selectedSkills.length >= 5
+                    ? t("jobs.newJobForm.skillsMaxCount")
+                    : t("jobs.newJobForm.addSkillPlaceholder")
+                }
+                disabled={submitting || selectedSkills.length >= 5}
                 className="border-0 shadow-none focus-visible:ring-0 h-11 text-base min-w-0"
               />
-              {skillDropdownOpen && (filteredSkills.length > 0 || skillInput.trim()) && (
+              {skillDropdownOpen && selectedSkills.length < 5 && (filteredSkills.length > 0 || skillInput.trim()) && (
                 <div className="absolute left-0 right-0 top-full z-10 mt-1 max-h-48 overflow-auto rounded-md border border-input bg-background py-1 shadow-md">
                   {filteredSkills.map((s) => (
                     <button

@@ -11,6 +11,7 @@ import {
   Min,
   IsIn,
   ValidateIf,
+  ArrayMaxSize,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -108,6 +109,7 @@ export class CreateJobDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @ArrayMaxSize(5, { message: 'validation.skillsMaxCount' })
   skillIds?: string[];
 
   /** New skill names to create and attach (like tags). */
@@ -115,5 +117,6 @@ export class CreateJobDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(100, { each: true })
+  @ArrayMaxSize(5, { message: 'validation.skillsMaxCount' })
   newSkillNames?: string[];
 }

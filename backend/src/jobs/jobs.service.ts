@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, OnModuleInit, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, OnModuleInit, NotFoundException } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { FavoritesService } from './favorites.service';
@@ -256,6 +256,9 @@ export class JobsService implements OnModuleInit {
           skillIdsToLink.add(created.id);
         }
       }
+    }
+    if (skillIdsToLink.size > 5) {
+      throw new BadRequestException('validation.skillsMaxCount');
     }
     if (skillIdsToLink.size > 0) {
       const skillsExist = await this.prisma.skill.findMany({
@@ -893,6 +896,9 @@ export class JobsService implements OnModuleInit {
           skillIdsToLink.add(created.id);
         }
       }
+    }
+    if (skillIdsToLink.size > 5) {
+      throw new BadRequestException('validation.skillsMaxCount');
     }
     if (skillIdsToLink.size > 0) {
       const skillsExist = await this.prisma.skill.findMany({

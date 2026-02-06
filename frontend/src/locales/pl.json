@@ -213,6 +213,7 @@
       "fixedRate": "Stawka (ryczałt)",
       "expectedSkills": "Oczekiwane skille",
       "skillsDescription": "Wybierz z listy lub wpisz nazwę i naciśnij Enter, aby dodać (w tym nowy skill).",
+      "skillsMaxCount": "Można dodać maksymalnie 5 skilli.",
       "addSkillPlaceholder": "Dodaj skill...",
       "addNewSkill": "+ Dodaj „{name}” jako nowy skill",
       "remove": "Usuń",

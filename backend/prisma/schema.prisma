@@ -193,3 +193,9 @@ model UserSkill {
   @@index([userId])
   @@index([skillId])
 }
+
+model BenchmarkContent {
+  id      String   @id @default(cuid())
+  file    String   @unique
+  content String   @db.Text
+}

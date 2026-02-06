@@ -49,11 +49,12 @@ export class ContentGeneratorService {
   ) { }
 
   /**
-   * Call AI to generate job metadata (billing, rate, experience, etc.) from title + description.
+   * Call AI to generate job metadata (billing, rate, experience, category, etc.) from title + description.
    */
   private async generateJobMetadata(params: {
     title: string;
     description: string;
+    categorySlugs: string;
   }): Promise<{
     billingType: BillingType;
     rate: number;
@@ -63,12 +64,16 @@ export class ContentGeneratorService {
     projectType: ProjectType;
     language: JobLanguage;
     offerDays: number;
+    categorySlug: string;
   }> {
+    const allowedCategorySlugs = params.categorySlugs.split(', ').map((s) => s.trim()).filter(Boolean);
+
     const prompt = [
       `Na podstawie poniższego tytułu i opisu oferty pracy wywnioskuj najbardziej prawdopodobne metadane.`,
       `Tytuł: ${params.title}`,
       `Opis (fragment): ${params.description.slice(0, 1500)}`,
-      `Zwróć tylko poprawne wartości enum oraz realistyczną stawkę w PLN (typowa dla polskiego rynku, np. 1000–5000 dla FIXED, 50–200 dla HOURLY).`,
+      `Dostępne kategorie (wybierz dokładnie jeden slug najlepiej pasujący do opisu oferty): ${params.categorySlugs}`,
+      `Zwróć tylko poprawne wartości enum, realistyczną stawkę w PLN (typowa dla polskiego rynku, np. 1000–5000 dla FIXED, 50–200 dla HOURLY) oraz categorySlug z podanej listy.`,
     ].join('\n');
 
     const raw = await this.aiService.generateText({
@@ -79,7 +84,7 @@ export class ContentGeneratorService {
         responseJsonSchema: {
           type: 'object',
           additionalProperties: false,
-          required: ['billingType', 'rate', 'experienceLevel', 'projectType'],
+          required: ['billingType', 'rate', 'experienceLevel', 'projectType', 'categorySlug'],
           properties: {
             billingType: {
               type: 'string',
@@ -100,6 +105,11 @@ export class ContentGeneratorService {
               enum: ALLOWED.projectType,
               description: 'ONE_TIME lub CONTINUOUS',
             },
+            categorySlug: {
+              type: 'string',
+              enum: allowedCategorySlugs,
+              description: 'Slug kategorii najlepiej pasującej do opisu oferty (jedna z podanej listy)',
+            },
           },
         },
       },
@@ -119,6 +129,11 @@ export class ContentGeneratorService {
 
     const offerDays = ALLOWED.offerDays[Math.floor(Math.random() * ALLOWED.offerDays.length)];
 
+    const categorySlug =
+      typeof parsed.categorySlug === 'string' && allowedCategorySlugs.includes(parsed.categorySlug.trim())
+        ? parsed.categorySlug.trim()
+        : allowedCategorySlugs[0];
+
     return {
       billingType,
       rate,
@@ -128,6 +143,7 @@ export class ContentGeneratorService {
       projectType,
       language: JobLanguage.POLISH,
       offerDays,
+      categorySlug,
     };
   }
 
@@ -169,7 +185,6 @@ export class ContentGeneratorService {
     const categories = await this.prisma.category.findMany();
 
     const prompt = [
-      `Dopasuj ofertę do jednej z kategorii: ${categories.map((c) => c.slug).join(', ')}`,
       `Pisz w języku: ${languageLabel}.`,
       `Przeredaguj poniższą treść minimalnie, zachowując tę samą strukturę, sens, styl ogłoszeniowy i zakres zlecenia, a jedynie lekko dostosuj słownictwo; nie dodawaj nowych informacji, nie rozbudowuj opisu i nie twórz nowej treści.`,
       `Opis oferty (pole description) może być podzielony na akapity: oddzielaj każdy logiczny fragment (np. wprowadzenie, wymagania, zakres prac) podwójną nową linią (\\n\\n). Nie zwracaj jednego długiego akapitu. Gdy potrzebne są wypunktowania, używaj wyłącznie znaku '-' na początku linii. Gdy nie potrzeba wypunktowań, nie dodawaj żadnych znaków.`,
@@ -226,9 +241,12 @@ export class ContentGeneratorService {
       if (categories.length === 0) {
         throw new Error('No categories in database.');
       }
-      const category = categories[Math.floor(Math.random() * categories.length)];
 
-      const metadata = await this.generateJobMetadata({ title, description });
+      const categorySlugs = categories.map((c) => c.slug).join(', ');
+      const metadata = await this.generateJobMetadata({ title, description, categorySlugs });
+
+      const category =
+        categories.find((c) => c.slug === metadata.categorySlug) ?? categories[0];
 
       const safeUser: GeneratedJobFormData['user'] = {
         email: faker.internet.email(),

@@ -53,37 +53,6 @@ const DEFAULT_CATEGORIES = [
 
 const ALLOWED_CATEGORY_SLUGS = DEFAULT_CATEGORIES.map((c) => c.slug);
 
-const DEFAULT_LOCATIONS = [
-  { name: 'Warszawa', slug: 'warszawa' },
-  { name: 'Kraków', slug: 'krakow' },
-  { name: 'Wrocław', slug: 'wroclaw' },
-  { name: 'Poznań', slug: 'poznan' },
-  { name: 'Gdańsk', slug: 'gdansk' },
-  { name: 'Łódź', slug: 'lodz' },
-  { name: 'Katowice', slug: 'katowice' },
-  { name: 'Lublin', slug: 'lublin' },
-  { name: 'Bydgoszcz', slug: 'bydgoszcz' },
-  { name: 'Szczecin', slug: 'szczecin' },
-  { name: 'Remote', slug: 'remote' },
-];
-
-const DEFAULT_SKILLS = [
-  'JavaScript',
-  'TypeScript',
-  'React',
-  'Node.js',
-  'Python',
-  'Java',
-  'C#',
-  '.NET',
-  'PHP',
-  'SQL',
-  'HTML/CSS',
-  'Angular',
-  'Vue.js',
-  'GraphQL',
-  'REST API',
-];
 
 @Injectable()
 export class JobsService implements OnModuleInit {
@@ -95,8 +64,6 @@ export class JobsService implements OnModuleInit {
 
   async onModuleInit() {
     await this.ensureCategories();
-    await this.ensureLocations();
-    await this.ensureSkills();
   }
 
   private async ensureCategories() {
@@ -155,22 +122,6 @@ export class JobsService implements OnModuleInit {
           }
         }
       }
-    }
-  }
-
-  private async ensureLocations() {
-    const count = await this.prisma.location.count();
-    if (count === 0) {
-      await this.prisma.location.createMany({ data: DEFAULT_LOCATIONS });
-    }
-  }
-
-  private async ensureSkills() {
-    const count = await this.prisma.skill.count();
-    if (count === 0) {
-      await this.prisma.skill.createMany({
-        data: DEFAULT_SKILLS.map((name) => ({ name })),
-      });
     }
   }
 

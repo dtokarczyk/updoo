@@ -5,8 +5,6 @@ import { AccountType, BillingType, ExperienceLevel, JobLanguage, JobStatus, Proj
 import { BENCHMARK_EXAMPLES } from './examples';
 import { fakerPL as faker } from '@faker-js/faker';
 import * as bcrypt from 'bcrypt';
-import * as fs from 'fs';
-import * as path from 'path';
 
 export type SupportedLanguage = 'POLISH' | 'ENGLISH';
 
@@ -148,25 +146,26 @@ export class ContentGeneratorService {
   }
 
   /**
-   * Get a random benchmark text from scrapper/output folder
+   * Get a random benchmark text from database (BenchmarkContent table).
+   * Falls back to hardcoded examples if no records exist.
    */
-  private getRandomBenchmark(): string {
+  private async getRandomBenchmark(): Promise<string> {
     try {
-      const scrapperOutputPath = path.join(process.cwd(), '..', 'scrapper', 'output');
-      const files = fs.readdirSync(scrapperOutputPath).filter(file => file.endsWith('.txt'));
-
-      if (files.length === 0) {
-        this.logger.warn('No benchmark files found in scrapper/output folder');
+      const count = await this.prisma.benchmarkContent.count();
+      if (count === 0) {
+        this.logger.warn('No benchmark records in database');
         return BENCHMARK_EXAMPLES[0] || 'No benchmark available';
       }
 
-      const randomFile = files[Math.floor(Math.random() * files.length)];
-      const filePath = path.join(scrapperOutputPath, randomFile);
-      const content = fs.readFileSync(filePath, 'utf-8');
+      const random = await this.prisma.benchmarkContent.findFirst({
+        take: 1,
+        skip: Math.floor(Math.random() * count),
+        select: { content: true },
+      });
 
-      return content.trim();
+      return random?.content?.trim() ?? BENCHMARK_EXAMPLES[0] ?? 'No benchmark available';
     } catch (error) {
-      this.logger.error(`Error reading random benchmark file: ${error.message}`);
+      this.logger.error(`Error fetching random benchmark from DB: ${(error as Error).message}`);
       return BENCHMARK_EXAMPLES[0] || 'No benchmark available';
     }
   }
@@ -180,7 +179,7 @@ export class ContentGeneratorService {
   }): Promise<GeneratedJobFormData> {
     const language = params.language ?? 'POLISH';
     const languageLabel = language === 'ENGLISH' ? 'English' : 'Polish';
-    const randomBenchmark = this.getRandomBenchmark();
+    const randomBenchmark = await this.getRandomBenchmark();
 
     const categories = await this.prisma.category.findMany();
 

@@ -34,6 +34,7 @@ export class AiService {
 
     const model = this.getModelName(args.model);
     try {
+      console.log('Generating text with model:', await this.client.models.list());
       const result = await this.client.models.generateContent({
         ...args,
         model,

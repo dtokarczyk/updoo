@@ -3,40 +3,26 @@ import { Cron } from '@nestjs/schedule';
 import { AiService } from '../ai/ai.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { AccountType, BillingType, ExperienceLevel, JobLanguage, JobStatus, ProjectType } from '@prisma/client';
+import { BENCHMARK_EXAMPLES } from './examples';
 
 export type SupportedLanguage = 'POLISH' | 'ENGLISH';
 
-export interface GeneratedJobUserData {
-  /** Display name of the client or company shown publicly. */
-  displayName: string;
-  /** Optional company name if different from display name. */
-  companyName?: string;
-  /** Short paragraph describing the client or company. */
-  about: string;
-}
-
 export interface GeneratedJobFormData {
-  user: GeneratedJobUserData;
+  user: {
+    email: string;
+    name: string;
+    surname: string;
+  };
   job: {
-    /** Short, catchy job title. */
     title: string;
-    /** Detailed job description (3–6 paragraphs) matching the category and language. */
     description: string;
-    /** Billing type compatible with CreateJobDto/BillingTypeDto. */
     billingType: 'FIXED' | 'HOURLY';
-    /** Suggested budget or hourly rate (non‑negative). */
     rate: number;
-    /** 3‑letter currency code, e.g. PLN, EUR, USD. */
     currency: string;
-    /** Experience level compatible with CreateJobDto/ExperienceLevelDto. */
     experienceLevel: 'JUNIOR' | 'MID' | 'SENIOR';
-    /** Whether the work can be done fully remotely. */
     isRemote: boolean;
-    /** Type of project compatible with CreateJobDto/ProjectTypeDto. */
     projectType: 'ONE_TIME' | 'CONTINUOUS';
-    /** Number of days to collect offers (7, 14, 21 or 30). */
     offerDays: number;
-    /** List of relevant skill names (tags) for this job and category. */
     skills: string[];
   };
 }
@@ -62,22 +48,17 @@ export class ContentGeneratorService {
     const languageLabel = language === 'ENGLISH' ? 'English' : 'Polish';
 
     const prompt = [
-      `You are an assistant that writes realistic freelance job offers in ${languageLabel}.`,
-      `Generate one realistic freelance job offer for the category with slug "${params.categorySlug}".`,
-      'The job description and all details MUST be consistent with this category.',
-      'Return data that can directly pre-fill the job creation form and basic client profile.',
-      '',
-      'Requirements:',
-      '- The job title must be short and catchy (max 90 characters).',
-      '- The job description must be 3–6 paragraphs, detailed, and strictly related to the category.',
-      `- All text must be written in ${languageLabel}.`,
-      '- Choose realistic rates (budget) for the given category and experience level.',
-      '- Choose experience level, remote flag, project type and offerDays values that make sense for this job.',
-      '- Suggest 3–10 relevant skill names (tags) matching the category and job description.',
+      `Jesteś asystentem, którego zadaniem jest tworzenie realistycznych ofert pracy freelance w języku ${languageLabel}.`,
+      `Wygeneruj jedną, wiarygodną ofertę pracy freelance dla kategorii o identyfikatorze (slug): ”${params.categorySlug}”.`,
+      'Cała treść oferty (tytuł, opis, wymagania, budżet, umiejętności itp.) musi być ściśle zgodna z tą kategorią i odpowiadać realiom rynkowym.',
+      'Zwróć dane w taki sposób, aby mogły bezpośrednio posłużyć do wypełnienia formularza dodawania oferty pracy oraz podstawowego profilu klienta.',
+      `Przykład oferty: ${BENCHMARK_EXAMPLES[Math.floor(Math.random() * BENCHMARK_EXAMPLES.length)]}`
     ].join('\n');
 
+
+
     const raw = await this.aiService.generateText({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-flash-latest',
       contents: prompt,
       config: {
         responseMimeType: 'application/json',
@@ -89,29 +70,28 @@ export class ContentGeneratorService {
             user: {
               type: 'object',
               description:
-                'Details of the client posting the job, used to pre-fill the user profile form.',
+                'Szczegóły klienta, który zamieszcza ofertę pracy, używane do wypełnienia formularza profilu użytkownika.',
               additionalProperties: false,
-              required: ['displayName', 'about'],
+              required: ['email', 'name', 'surname'],
               properties: {
-                displayName: {
+                email: {
                   type: 'string',
-                  description: 'Short display name of the client or company shown publicly.',
+                  description: 'Email klienta, który zamieszcza ofertę pracy.',
                 },
-                companyName: {
+                name: {
                   type: 'string',
-                  description: 'Optional company name if different from display name.',
+                  description: 'Imię klienta, który zamieszcza ofertę pracy.',
                 },
-                about: {
+                surname: {
                   type: 'string',
-                  description:
-                    'Short paragraph describing the client or company, written in the requested language.',
+                  description: 'Nazwisko klienta, który zamieszcza ofertę pracy.',
                 },
               },
             },
             job: {
               type: 'object',
               description:
-                'Complete job offer fields to pre-fill the job creation form. All text must match the given category and language.',
+                'Pełna oferta pracy, używana do wypełnienia formularza dodawania oferty pracy.',
               additionalProperties: false,
               required: [
                 'title',
@@ -128,56 +108,56 @@ export class ContentGeneratorService {
                 title: {
                   type: 'string',
                   description:
-                    'Short, catchy job title (max 90 characters) written in the requested language.',
+                    'Krótki, zgrabny tytuł oferty pracy (maksymalnie 90 znaków), napisany w żądanym języku. Nie pisz z wielkich liter kadego slowa.',
                 },
                 description: {
                   type: 'string',
                   description:
-                    'Detailed job description (3–6 paragraphs) that clearly matches the given category slug and language.',
+                    'Opis oferty pracy, który odpowiada identyfikatorowi kategorii (slug) i językowi. Bez wypunkwowania. Niezbale napisana. Pomiń niektóre fakty. Staraj sie pisać jak najbardziej naturalnie. Popełniaj błędny interpunkcyjne.',
                 },
                 billingType: {
                   type: 'string',
-                  description: 'Billing type compatible with FIXED or HOURLY.',
+                  description: 'Typ rozliczenia (FIXED lub HOURLY), zgodny z CreateJobDto.',
                   enum: ['FIXED', 'HOURLY'],
                 },
                 rate: {
                   type: 'number',
                   description:
-                    'Suggested budget or hourly rate for the job. Must be a non-negative number.',
+                    'Sugerowany budżet lub stawka godzinowa dla oferty pracy. Musi być liczbą nieujemną.',
                   minimum: 0,
                 },
                 currency: {
                   type: 'string',
                   description:
-                    '3-letter currency code like PLN, EUR or USD that fits the scenario (PLN is preferred).',
+                    '3-literowy kod waluty (PLN, EUR lub USD), zgodny z scenariuszem (PLN jest preferowany).',
                 },
                 experienceLevel: {
                   type: 'string',
                   description:
-                    'Experience level compatible with JUNIOR, MID or SENIOR for CreateJobDto.',
+                    'Poziom doświadczenia (JUNIOR, MID lub SENIOR), zgodny z CreateJobDto.',
                   enum: ['JUNIOR', 'MID', 'SENIOR'],
                 },
                 isRemote: {
                   type: 'boolean',
                   description:
-                    'True if the work can be done fully remotely. Choose a realistic value for the job.',
+                    'True jeśli praca może być wykonywana całkowicie zdalnie. Wybierz realistyczną wartość dla oferty pracy.',
                 },
                 projectType: {
                   type: 'string',
                   description:
-                    'Type of project compatible with ONE_TIME or CONTINUOUS for CreateJobDto.',
+                    'Typ projektu (ONE_TIME lub CONTINUOUS), zgodny z CreateJobDto.',
                   enum: ['ONE_TIME', 'CONTINUOUS'],
                 },
                 offerDays: {
                   type: 'integer',
                   description:
-                    'Number of days to collect offers. Must be one of 7, 14, 21 or 30.',
+                    'Liczba dni na zbieranie ofert. Musi być jedną z 7, 14, 21 lub 30.',
                   enum: [7, 14, 21, 30],
                 },
                 skills: {
                   type: 'array',
                   description:
-                    'List of 3–10 relevant skill names (tags) that clearly match this job and category.',
+                    'Lista 3–10 istotnych nazw umiejętności (tagów), które ściśle odpowiadają tej ofercie pracy i kategorii.',
                   items: {
                     type: 'string',
                   },
@@ -203,13 +183,10 @@ export class ContentGeneratorService {
         throw new Error('Missing title or description in AI response JSON.');
       }
 
-      const safeUser: GeneratedJobUserData = {
-        displayName: (user.displayName ?? 'Client')?.toString().trim() || 'Client',
-        companyName: user.companyName ? user.companyName.toString().trim() : undefined,
-        about:
-          (user.about ?? 'Client looking for a freelancer for this project.')
-            .toString()
-            .trim() || 'Client looking for a freelancer for this project.',
+      const safeUser: GeneratedJobFormData['user'] = {
+        email: user.email,
+        name: user.name,
+        surname: user.surname,
       };
 
       const safeJob: GeneratedJobFormData['job'] = {
@@ -252,33 +229,7 @@ export class ContentGeneratorService {
         job: safeJob,
       };
     } catch (error) {
-      this.logger.warn(
-        'Failed to parse structured job post JSON. Falling back to minimal text output.',
-        error as Error,
-      );
-      const firstLine =
-        raw
-          .split('\n')
-          .find((line) => line.trim().length > 0) ?? 'AI generated job offer';
-      const fallbackTitle = firstLine.substring(0, 90);
-      return {
-        user: {
-          displayName: 'Client',
-          about: 'Client looking for a freelancer for this project.',
-        },
-        job: {
-          title: fallbackTitle,
-          description: raw,
-          billingType: 'FIXED',
-          rate: 1000,
-          currency: language === 'POLISH' ? 'PLN' : 'EUR',
-          experienceLevel: 'MID',
-          isRemote: true,
-          projectType: 'ONE_TIME',
-          offerDays: 14,
-          skills: [],
-        },
-      };
+      throw new Error('Failed to parse structured job post JSON.');
     }
   }
 
@@ -293,9 +244,6 @@ export class ContentGeneratorService {
       'programming',
       'design',
       'marketing',
-      'writing',
-      'office-working',
-      'other',
     ];
 
     const categories = await this.prisma.category.findMany({
@@ -319,10 +267,11 @@ export class ContentGeneratorService {
       language: 'POLISH',
     });
 
-    const email = `fake_${Date.now()}_${Math.floor(Math.random() * 100000)}@example.com`;
     const fakeUser = await this.prisma.user.create({
       data: {
-        email,
+        email: post.user.email,
+        name: post.user.name,
+        surname: post.user.surname,
         password: 'FAKE.',
         accountType: AccountType.CLIENT,
         language: JobLanguage.POLISH,
@@ -355,15 +304,6 @@ export class ContentGeneratorService {
 
     this.logger.log(`AI jobs generator: created job ${job.id} in category ${category.slug} for fake user ${fakeUser.email}`);
     return { jobId: job.id, categorySlug: category.slug };
-  }
-
-  /**
-   * Cron job that automatically generates AI job posts at scheduled times.
-   * Runs at 9:00, 13:00, and 17:00 every day.
-   */
-  @Cron('0 9,13,17 * * *')
-  async scheduledGenerateAiJobPost(): Promise<void> {
-    await this.generateAiJobPostForRandomCategory();
   }
 }
 

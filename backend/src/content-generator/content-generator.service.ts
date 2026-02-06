@@ -34,6 +34,7 @@ export interface GeneratedJobFormData {
     projectType: ProjectType;
     language?: JobLanguage;
     offerDays?: number;
+    skillIds: string[];
   };
 }
 
@@ -47,12 +48,13 @@ export class ContentGeneratorService {
   ) { }
 
   /**
-   * Call AI to generate job metadata (billing, rate, experience, category, etc.) from title + description.
+   * Call AI to generate job metadata (billing, rate, experience, category, skills, etc.) from title + description.
    */
   private async generateJobMetadata(params: {
     title: string;
     description: string;
     categorySlugs: string;
+    skillNames: string[];
   }): Promise<{
     billingType: BillingType;
     rate: number;
@@ -63,16 +65,53 @@ export class ContentGeneratorService {
     language: JobLanguage;
     offerDays: number;
     categorySlug: string;
+    skillNames: string[];
   }> {
     const allowedCategorySlugs = params.categorySlugs.split(', ').map((s) => s.trim()).filter(Boolean);
+    const allowedSkillNames = params.skillNames.slice(0, 500);
 
     const prompt = [
       `Na podstawie poniższego tytułu i opisu oferty pracy wywnioskuj najbardziej prawdopodobne metadane.`,
       `Tytuł: ${params.title}`,
       `Opis (fragment): ${params.description.slice(0, 1500)}`,
       `Dostępne kategorie (wybierz dokładnie jeden slug najlepiej pasujący do opisu oferty): ${params.categorySlugs}`,
-      `Zwróć tylko poprawne wartości enum, realistyczną stawkę w PLN (typowa dla polskiego rynku, np. 1000–5000 dla FIXED, 50–200 dla HOURLY) oraz categorySlug z podanej listy.`,
+      `Dostępne umiejętności (wybierz od 1 do 4 nazw najlepiej pasujących do realizacji tej oferty): ${allowedSkillNames.join(', ')}`,
+      `Zwróć poprawne wartości enum, realistyczną stawkę w PLN (typowa dla polskiego rynku, np. 1000–5000 dla FIXED, 50–200 dla HOURLY), categorySlug z podanej listy oraz skillNames – tablicę od 1 do 4 nazw umiejętności z podanej listy.`,
     ].join('\n');
+
+    const properties: Record<string, unknown> = {
+      billingType: {
+        type: 'string',
+        enum: ALLOWED.billingType,
+        description: 'FIXED lub HOURLY',
+      },
+      rate: {
+        type: 'number',
+        description: 'Stawka/budżet w PLN (np. 1000–5000 fixed, 50–200 hourly)',
+      },
+      experienceLevel: {
+        type: 'string',
+        enum: ALLOWED.experienceLevel,
+        description: 'JUNIOR, MID lub SENIOR',
+      },
+      projectType: {
+        type: 'string',
+        enum: ALLOWED.projectType,
+        description: 'ONE_TIME lub CONTINUOUS',
+      },
+      categorySlug: {
+        type: 'string',
+        enum: allowedCategorySlugs,
+        description: 'Slug kategorii najlepiej pasującej do opisu oferty (jedna z podanej listy)',
+      },
+      skillNames: {
+        type: 'array',
+        items: { type: 'string' },
+        minItems: 1,
+        maxItems: 4,
+        description: 'Od 1 do 4 nazw umiejętności z listy podanej w promptcie, potrzebne do realizacji oferty',
+      },
+    };
 
     const raw = await this.aiService.generateText({
       model: 'gemini-flash-latest',
@@ -82,33 +121,8 @@ export class ContentGeneratorService {
         responseJsonSchema: {
           type: 'object',
           additionalProperties: false,
-          required: ['billingType', 'rate', 'experienceLevel', 'projectType', 'categorySlug'],
-          properties: {
-            billingType: {
-              type: 'string',
-              enum: ALLOWED.billingType,
-              description: 'FIXED lub HOURLY',
-            },
-            rate: {
-              type: 'number',
-              description: 'Stawka/budżet w PLN (np. 1000–5000 fixed, 50–200 hourly)',
-            },
-            experienceLevel: {
-              type: 'string',
-              enum: ALLOWED.experienceLevel,
-              description: 'JUNIOR, MID lub SENIOR',
-            },
-            projectType: {
-              type: 'string',
-              enum: ALLOWED.projectType,
-              description: 'ONE_TIME lub CONTINUOUS',
-            },
-            categorySlug: {
-              type: 'string',
-              enum: allowedCategorySlugs,
-              description: 'Slug kategorii najlepiej pasującej do opisu oferty (jedna z podanej listy)',
-            },
-          },
+          required: ['billingType', 'rate', 'experienceLevel', 'projectType', 'categorySlug', 'skillNames'],
+          properties,
         },
       },
     });
@@ -132,6 +146,16 @@ export class ContentGeneratorService {
         ? parsed.categorySlug.trim()
         : allowedCategorySlugs[0];
 
+    const skillNamesRaw = Array.isArray(parsed.skillNames) ? parsed.skillNames : [];
+    const skillNamesSet = new Set(allowedSkillNames);
+    let skillNames = skillNamesRaw
+      .filter((n): n is string => typeof n === 'string' && skillNamesSet.has(n.trim()))
+      .map((n) => n.trim())
+      .slice(0, 4);
+    if (skillNames.length === 0 && allowedSkillNames.length > 0) {
+      skillNames = [allowedSkillNames[Math.floor(Math.random() * allowedSkillNames.length)]];
+    }
+
     return {
       billingType,
       rate,
@@ -142,6 +166,7 @@ export class ContentGeneratorService {
       language: JobLanguage.POLISH,
       offerDays,
       categorySlug,
+      skillNames,
     };
   }
 
@@ -241,11 +266,30 @@ export class ContentGeneratorService {
         throw new Error('No categories in database.');
       }
 
+      // Load all skills from DB – names go into AI enum
+      const skills = await this.prisma.skill.findMany({ select: { id: true, name: true } });
+      const skillNames = skills.map((s) => s.name);
       const categorySlugs = categories.map((c) => c.slug).join(', ');
-      const metadata = await this.generateJobMetadata({ title, description, categorySlugs });
+      const metadata = await this.generateJobMetadata({
+        title,
+        description,
+        categorySlugs,
+        skillNames,
+      });
 
       const category =
         categories.find((c) => c.slug === metadata.categorySlug) ?? categories[0];
+
+      // Find selected skill names in DB and get their IDs for JobSkill references
+      const skillIds =
+        metadata.skillNames.length > 0
+          ? (
+            await this.prisma.skill.findMany({
+              where: { name: { in: metadata.skillNames } },
+              select: { id: true },
+            })
+          ).map((s) => s.id)
+          : [];
 
       const safeUser: GeneratedJobFormData['user'] = {
         email: faker.internet.email(),
@@ -265,6 +309,7 @@ export class ContentGeneratorService {
         projectType: metadata.projectType,
         language: metadata.language,
         offerDays: metadata.offerDays,
+        skillIds,
       };
 
       return {
@@ -321,6 +366,10 @@ export class ContentGeneratorService {
         isRemote: job.isRemote,
         projectType: job.projectType,
         deadline,
+        skills:
+          job.skillIds?.length > 0
+            ? { create: job.skillIds.map((skillId) => ({ skillId })) }
+            : undefined,
       },
     });
 

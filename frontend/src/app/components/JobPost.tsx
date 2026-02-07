@@ -2,8 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { formatDistanceToNow, formatDuration, intervalToDuration } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import { pl, enUS } from "date-fns/locale";
+import {
+  getDeadlineMsLeft,
+  isDeadlineSoon as isDeadlineSoonUtil,
+  formatDeadlineRemaining,
+} from "@/lib/deadline-utils";
 import { Calendar, Clock, Settings2, Star, Hand } from "lucide-react";
 import type { Job } from "@/lib/api";
 import { jobPath } from "@/lib/job-url";
@@ -45,27 +50,6 @@ function formatRate(rate: string, currency: string, billingType: string): string
 function formatPostedAgo(iso: string, locale: "pl" | "en"): string {
   const dateFnsLocale = locale === "en" ? enUS : pl;
   return formatDistanceToNow(new Date(iso), { addSuffix: true, locale: dateFnsLocale });
-}
-
-function formatTimeLeftUntil(iso: string, locale: "pl" | "en", t: (key: string, params?: Record<string, string | number>) => string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  const msLeft = d.getTime() - Date.now();
-  if (msLeft <= 0) return t("jobs.deadlinePassed");
-
-  const dateFnsLocale = locale === "en" ? enUS : pl;
-  const duration = intervalToDuration({
-    start: Date.now(),
-    end: d.getTime(),
-  });
-  const format: (keyof typeof duration)[] =
-    (duration.days ?? 0) > 0
-      ? ["days"]
-      : (duration.hours ?? 0) > 0
-        ? ["hours"]
-        : ["minutes"];
-  const durationStr = formatDuration(duration, { locale: dateFnsLocale, format });
-  return t("jobs.deadlineRemaining", { duration: durationStr });
 }
 
 export function JobPost({
@@ -134,7 +118,12 @@ export function JobPost({
     LISTING_DESCRIPTION_MAX_LENGTH
   );
   const metaPosted = formatPostedAgo(job.createdAt, locale);
-  const metaDeadlineLeft = job.deadline ? formatTimeLeftUntil(job.deadline, locale, t) : "";
+  const msLeft = getDeadlineMsLeft(job.deadline);
+  const metaDeadlineLeft = job.deadline
+    ? (formatDeadlineRemaining(job.deadline, t) ?? "")
+    : "";
+  const isDeadlineSoon = isDeadlineSoonUtil(msLeft, isClosed);
+
   const firstFieldLabel = EXPERIENCE_LABELS[job.experienceLevel] ?? job.experienceLevel;
   const firstFieldSub = t("jobs.experienceLevel");
   const showNegotiable = Boolean(job.rateNegotiable);
@@ -218,8 +207,16 @@ export function JobPost({
                 </span>
               )}
               {metaDeadlineLeft && !isClosed && (
-                <span className="inline-flex items-center gap-1.5">
-                  <Clock className="h-4 w-4" aria-hidden />
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1.5",
+                    isDeadlineSoon && "font-bold text-red-600 dark:text-red-400"
+                  )}
+                >
+                  <Clock
+                    className={cn("h-4 w-4", isDeadlineSoon && "text-red-600 dark:text-red-400")}
+                    aria-hidden
+                  />
                   {metaDeadlineLeft}
                 </span>
               )}

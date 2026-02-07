@@ -36,12 +36,17 @@ import {
   type JobApplication,
 } from "@/lib/api";
 import { jobPath, jobPathEdit, parseJobSlugId } from "@/lib/job-url";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useTranslations } from "@/hooks/useTranslations";
 import { format } from "date-fns";
 import { pl, enUS } from "date-fns/locale";
-import { intervalToDuration } from "date-fns";
+import {
+  getDeadlineMsLeft,
+  formatDeadlineRemaining,
+  isDeadlineSoon,
+} from "@/lib/deadline-utils";
 
 const BILLING_LABELS: Record<string, string> = {
   FIXED: "Ryczałt",
@@ -96,47 +101,6 @@ function applicationDisplayName(app: JobApplication): string {
       : "?";
 }
 
-function getDeadlineRemainingDays(deadline: string | null): number | null {
-  if (!deadline) return null;
-  const end = new Date(deadline);
-  const now = new Date();
-  if (end <= now) return 0;
-  const ms = end.getTime() - now.getTime();
-  return Math.ceil(ms / (24 * 60 * 60 * 1000));
-}
-
-function formatDeadlineRemaining(deadline: string | null, locale: "pl" | "en", t: (key: string, params?: Record<string, string | number>) => string): string | null {
-  if (!deadline) return null;
-  const end = new Date(deadline);
-  const now = new Date();
-  if (end <= now) return t("jobs.deadlinePassed");
-
-  const duration = intervalToDuration({
-    start: now,
-    end: end.getTime(),
-  });
-
-  const daysLeft = duration.days ?? 0;
-  if (daysLeft === 0) {
-    const hoursLeft = duration.hours ?? 0;
-    if (hoursLeft === 0) {
-      const minutesLeft = duration.minutes ?? 0;
-      return t("jobs.deadlineRemainingMinutes", { minutes: minutesLeft });
-    }
-    return t("jobs.deadlineRemainingHours", { hours: hoursLeft });
-  }
-
-  if (daysLeft === 1) {
-    return t("jobs.deadlineRemaining1");
-  }
-
-  if (daysLeft < 5) {
-    return t("jobs.deadlineRemainingFew", { days: daysLeft });
-  }
-
-  return t("jobs.deadlineRemainingMany", { days: daysLeft });
-}
-
 function formatRate(rate: string, currency: string, billingType: string) {
   const r = parseFloat(rate);
   if (Number.isNaN(r)) return "";
@@ -153,10 +117,12 @@ function DetailRow({
   icon: Icon,
   label,
   value,
+  valueClassName,
 }: {
   icon: React.ElementType;
   label: string;
   value: React.ReactNode;
+  valueClassName?: string;
 }) {
   if (value == null || value === "") return null;
   return (
@@ -168,7 +134,7 @@ function DetailRow({
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           {label}
         </p>
-        <p className="text-sm font-medium">{value}</p>
+        <p className={cn("text-sm font-medium", valueClassName)}>{value}</p>
       </div>
     </div>
   );
@@ -321,9 +287,8 @@ export default function JobDetailPage() {
 
     const isOwnJob = user.id === job.authorId;
     const isDraft = job.status === "DRAFT";
-    const deadlinePassed = job.deadline
-      ? getDeadlineRemainingDays(job.deadline) === 0
-      : false;
+    const deadlineMsLeft = getDeadlineMsLeft(job.deadline);
+    const deadlinePassed = deadlineMsLeft !== null && deadlineMsLeft <= 0;
     const canApply =
       user.accountType === "FREELANCER" &&
       !isOwnJob &&
@@ -432,9 +397,9 @@ export default function JobDetailPage() {
   const isAdmin = user?.accountType === "ADMIN";
   const isDraft = job.status === "DRAFT";
   const isClosed = job.status === "CLOSED";
-  const deadlinePassed = job.deadline
-    ? getDeadlineRemainingDays(job.deadline) === 0
-    : false;
+  const deadlineMsLeft = getDeadlineMsLeft(job.deadline);
+  const deadlinePassed = deadlineMsLeft !== null && deadlineMsLeft <= 0;
+  const deadlineSoon = isDeadlineSoon(deadlineMsLeft, isClosed);
   const canApply =
     user?.accountType === "FREELANCER" &&
     !isOwnJob &&
@@ -530,12 +495,6 @@ export default function JobDetailPage() {
                   <Calendar className="h-3.5 w-3.5" />
                   {formatDate(job.createdAt, locale)}
                 </span>
-                {job.deadline && formatDeadlineRemaining(job.deadline, locale, t) && (
-                  <span className="flex items-center gap-1.5 font-medium text-foreground">
-                    <Clock className="h-3.5 w-3.5" />
-                    {formatDeadlineRemaining(job.deadline, locale, t)}
-                  </span>
-                )}
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -614,7 +573,12 @@ export default function JobDetailPage() {
               <DetailRow
                 icon={Clock}
                 label={t("jobs.deadline")}
-                value={formatDeadlineRemaining(job.deadline, locale, t) ?? undefined}
+                value={formatDeadlineRemaining(job.deadline, t) ?? undefined}
+                valueClassName={
+                  deadlineSoon
+                    ? "font-bold text-red-600 dark:text-red-400"
+                    : undefined
+                }
               />
             )}
             {job.location && (
@@ -831,7 +795,12 @@ export default function JobDetailPage() {
               <DetailRow
                 icon={Clock}
                 label={t("jobs.deadline")}
-                value={formatDeadlineRemaining(job.deadline, locale, t) ?? undefined}
+                value={formatDeadlineRemaining(job.deadline, t) ?? undefined}
+                valueClassName={
+                  deadlineSoon
+                    ? "font-bold text-red-600 dark:text-red-400"
+                    : undefined
+                }
               />
             )}
             {job.location && (

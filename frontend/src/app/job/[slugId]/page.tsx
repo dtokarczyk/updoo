@@ -22,7 +22,6 @@ import {
   Laptop,
   BarChart3,
   X,
-  CheckCircle2,
 } from "lucide-react";
 import {
   getJob,
@@ -526,9 +525,6 @@ export default function JobDetailPage() {
                 <span className="flex items-center gap-1.5">
                   <User className="h-3.5 w-3.5" />
                   {authorDisplayName(job.author) || job.author.email}
-                  {isOwnJob && (
-                    <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400 shrink-0" aria-hidden />
-                  )}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Calendar className="h-3.5 w-3.5" />

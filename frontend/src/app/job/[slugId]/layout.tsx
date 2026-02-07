@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getLocaleFromRequest } from "@/lib/i18n";
 import { getMetadataConfig } from "@/lib/metadata-config";
+import { parseJobSlugId } from "@/lib/job-url";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
@@ -36,9 +37,10 @@ function truncateDescription(text: string, maxLength: number): string {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slugId: string }>;
 }): Promise<Metadata> {
-  const { id } = await params;
+  const { slugId } = await params;
+  const id = parseJobSlugId(slugId);
   const locale = await getLocaleFromRequest();
   const metaConfig = getMetadataConfig(locale);
   const job = await fetchJobForMeta(id, locale);
@@ -58,7 +60,6 @@ export async function generateMetadata({
 
   const siteName = metaConfig.default.title;
   const fullTitle = `${job.title} | ${siteName}`;
-
 
   return {
     title: { absolute: fullTitle },

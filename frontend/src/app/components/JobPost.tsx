@@ -6,6 +6,7 @@ import { formatDistanceToNow, formatDuration, intervalToDuration } from "date-fn
 import { pl, enUS } from "date-fns/locale";
 import { Calendar, Clock, Settings2, Star, Hand } from "lucide-react";
 import type { Job } from "@/lib/api";
+import { jobPath } from "@/lib/job-url";
 import {
   Card,
   CardContent,
@@ -197,7 +198,7 @@ export function JobPost({
           <div className="min-w-0 flex-1">
             <CardTitle className="text-xl font-bold leading-tight text-foreground">
               <Link
-                href={`/job/${job.id}`}
+                href={jobPath(job)}
                 className="hover:underline focus:outline-none focus:underline"
                 onClick={onNavigate}
               >
@@ -276,7 +277,7 @@ export function JobPost({
               size="lg"
               className="mt-2 shrink-0"
             >
-              <Link href={`/job/${job.id}`} onClick={onNavigate}>
+              <Link href={jobPath(job)} onClick={onNavigate}>
                 {t("jobs.seeMore")}
               </Link>
             </Button>
@@ -289,7 +290,7 @@ export function JobPost({
               size="lg"
               className="mt-2 shrink-0"
             >
-              <Link href={`/job/${job.id}`} onClick={onNavigate}>
+              <Link href={jobPath(job)} onClick={onNavigate}>
                 {t("jobs.seeMore")}
               </Link>
             </Button>

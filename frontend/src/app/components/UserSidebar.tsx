@@ -7,6 +7,7 @@ import { Plus } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { pl, enUS } from "date-fns/locale";
 import { getUserApplications, getUserJobs, getToken, getStoredUser, clearAuth, type AuthUser, type UserApplication, type Job } from "@/lib/api";
+import { jobPath } from "@/lib/job-url";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "@/hooks/useTranslations";
@@ -177,7 +178,7 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
                 {applications.map((app) => (
                   <Link
                     key={app.id}
-                    href={`/job/${app.job.id}`}
+                    href={jobPath(app.job)}
                     className="block p-3 rounded-lg border border-border bg-card hover:bg-muted transition-colors"
                   >
                     <h4 className="text-sm font-medium text-foreground line-clamp-2 mb-1">
@@ -205,7 +206,7 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
                 {jobs.map((job) => (
                   <Link
                     key={job.id}
-                    href={`/job/${job.id}`}
+                    href={jobPath(job)}
                     className="block p-3 rounded-lg border border-border bg-card hover:bg-muted transition-colors"
                   >
                     <h4 className="text-sm font-medium text-foreground line-clamp-2 mb-1">

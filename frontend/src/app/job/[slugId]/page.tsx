@@ -36,6 +36,7 @@ import {
   type JobPrevNext,
   type JobApplication,
 } from "@/lib/api";
+import { jobPath, jobPathEdit, parseJobSlugId } from "@/lib/job-url";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useTranslations } from "@/hooks/useTranslations";
@@ -185,7 +186,7 @@ function JobActions({
   deadlinePassed,
   canClose,
   closeSubmitting,
-  jobId,
+  job,
   onApplyClick,
   onClose,
   t,
@@ -201,7 +202,7 @@ function JobActions({
   deadlinePassed: boolean;
   canClose: boolean;
   closeSubmitting: boolean;
-  jobId: string;
+  job: Job;
   onApplyClick: () => void;
   onClose: () => void;
   t: (key: string, params?: Record<string, string | number>) => string;
@@ -222,7 +223,7 @@ function JobActions({
       {isOwnerOrAdmin ? (
         <>
           <Button className="w-full" size="lg" asChild>
-            <Link href={`/job/${jobId}/edit`}>
+            <Link href={jobPathEdit(job)}>
               <Pencil className="mr-2 h-4 w-4" />
               {t("jobs.edit")}
             </Link>
@@ -267,7 +268,8 @@ export default function JobDetailPage() {
   const { t, locale } = useTranslations();
   const params = useParams();
   const router = useRouter();
-  const id = typeof params?.id === "string" ? params.id : "";
+  const slugId = typeof params?.slugId === "string" ? params.slugId : "";
+  const id = parseJobSlugId(slugId);
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -308,6 +310,12 @@ export default function JobDetailPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  // Redirect old /job/{id} URLs to canonical /job/{slug}-{id}
+  useEffect(() => {
+    if (!job || slugId !== job.id) return;
+    router.replace(jobPath(job));
+  }, [job, slugId, router]);
+
   // Fill default message when job loads and user is freelancer
   useEffect(() => {
     if (!job || !user) return;
@@ -324,7 +332,7 @@ export default function JobDetailPage() {
       !deadlinePassed &&
       !job.currentUserApplied;
 
-    // Only fill default message if user can apply and hasn't already applied
+    // Only fill default message when user can apply and hasn't already applied
     // Set it only once when job loads (check if applyMessage is still empty)
     if (canApply && user.defaultMessage && user.defaultMessage.trim().length > 0) {
       setApplyMessage((prev) => {
@@ -467,14 +475,14 @@ export default function JobDetailPage() {
   function handleApplyClick() {
     // If user is not logged in, redirect to login
     if (!user) {
-      const returnUrl = `/job/${id}`;
+      const returnUrl = job ? jobPath(job) : `/job/${slugId}`;
       router.push(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
       return;
     }
 
     // If user is logged in but not a freelancer, redirect to login (they need to switch account)
     if (user.accountType !== "FREELANCER") {
-      const returnUrl = `/job/${id}`;
+      const returnUrl = job ? jobPath(job) : `/job/${slugId}`;
       router.push(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
       return;
     }
@@ -778,7 +786,7 @@ export default function JobDetailPage() {
                 deadlinePassed={deadlinePassed}
                 canClose={canClose}
                 closeSubmitting={closeSubmitting}
-                jobId={job.id}
+                job={job}
                 onApplyClick={handleApplyClick}
                 onClose={handleClose}
                 t={t}
@@ -858,7 +866,7 @@ export default function JobDetailPage() {
           <div className="flex gap-4">
             {prevNext.prev ? (
               <Link
-                href={`/job/${prevNext.prev.id}`}
+                href={jobPath(prevNext.prev)}
                 className="group flex-1 rounded-lg border bg-muted/30 p-4 transition-colors hover:bg-muted/50"
               >
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1.5">
@@ -874,7 +882,7 @@ export default function JobDetailPage() {
             )}
             {prevNext.next ? (
               <Link
-                href={`/job/${prevNext.next.id}`}
+                href={jobPath(prevNext.next)}
                 className="group flex-1 rounded-lg border bg-muted/30 p-4 transition-colors hover:bg-muted/50 text-right"
               >
                 <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground mb-1.5">
@@ -907,7 +915,7 @@ export default function JobDetailPage() {
               deadlinePassed={deadlinePassed}
               canClose={canClose}
               closeSubmitting={closeSubmitting}
-              jobId={job.id}
+              job={job}
               onApplyClick={handleApplyClick}
               onClose={handleClose}
               t={t}

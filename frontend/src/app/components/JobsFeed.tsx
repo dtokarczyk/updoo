@@ -13,6 +13,7 @@ import {
   type JobLanguage,
   type PaginationInfo,
 } from "@/lib/api";
+import { jobPathEdit } from "@/lib/job-url";
 import { JobPost } from "@/app/components/JobPost";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "@/hooks/useTranslations";
@@ -303,7 +304,7 @@ export function JobsFeed({
               isOwnJob ? (
                 <Button variant="outline" size="icon-lg" asChild>
                   <Link
-                    href={`/job/${job.id}/edit`}
+                    href={jobPathEdit(job)}
                     aria-label={t("jobs.editJob")}
                   >
                     <Pencil className="h-4 w-4" />

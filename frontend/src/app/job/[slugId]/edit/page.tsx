@@ -8,6 +8,7 @@ import {
   updateJob,
   type Job,
 } from "@/lib/api";
+import { jobPath, parseJobSlugId } from "@/lib/job-url";
 import {
   Card,
   CardContent,
@@ -22,7 +23,8 @@ export default function EditListingPage() {
   const router = useRouter();
   const params = useParams();
   const { t } = useTranslations();
-  const id = typeof params?.id === "string" ? params.id : "";
+  const slugId = typeof params?.slugId === "string" ? params.slugId : "";
+  const id = parseJobSlugId(slugId);
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,9 +59,9 @@ export default function EditListingPage() {
   }, [id, router]);
 
   const handleSubmit = async (data: Parameters<typeof updateJob>[1]) => {
-    if (!id) return;
-    await updateJob(id, data);
-    router.push("/");
+    if (!id || !job) return;
+    const updated = await updateJob(id, data);
+    router.push(jobPath(updated));
   };
 
   if (loading) {

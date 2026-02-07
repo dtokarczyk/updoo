@@ -100,7 +100,7 @@ export function JobForm({ initialData, onSubmit, mode, loading: externalLoading 
   const [language, setLanguage] = useState<JobLanguage>("POLISH");
   const [billingType, setBillingType] = useState<BillingType | "">("");
   const [hoursPerWeek, setHoursPerWeek] = useState<HoursPerWeek | "">("");
-  const [rate, setRate] = useState("1000");
+  const [rate, setRate] = useState("");
   const [rateNegotiable, setRateNegotiable] = useState(false);
   const [currency, setCurrency] = useState("PLN");
   const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel | "">("");
@@ -165,7 +165,11 @@ export function JobForm({ initialData, onSubmit, mode, loading: externalLoading 
       setLanguage(initialData.language ?? "POLISH");
       setBillingType(initialData.billingType);
       setHoursPerWeek(initialData.hoursPerWeek ?? "");
-      setRate(initialData.rate ?? "1000");
+      setRate(
+        initialData.rateNegotiable && (initialData.rate === "0" || initialData.rate === "" || !initialData.rate)
+          ? ""
+          : (initialData.rate ?? "1000")
+      );
       setRateNegotiable(initialData.rateNegotiable ?? false);
       setCurrency(initialData.currency ?? "PLN");
       setExperienceLevel(initialData.experienceLevel);
@@ -196,7 +200,11 @@ export function JobForm({ initialData, onSubmit, mode, loading: externalLoading 
         setLanguage(draft.language ?? "POLISH");
         setBillingType(draft.billingType);
         setHoursPerWeek(draft.hoursPerWeek ?? "");
-        setRate(draft.rate.toString());
+        setRate(
+          draft.rateNegotiable && (draft.rate === 0 || draft.rate == null)
+            ? ""
+            : (draft.rate?.toString() ?? "")
+        );
         setRateNegotiable(draft.rateNegotiable ?? false);
         setCurrency(draft.currency ?? "PLN");
         setExperienceLevel(draft.experienceLevel);
@@ -325,8 +333,9 @@ export function JobForm({ initialData, onSubmit, mode, loading: externalLoading 
     if (billingType === "HOURLY" && !hoursPerWeek) {
       newErrors.hoursPerWeek = t("jobs.selectHoursPerWeek");
     }
+    // Rate is optional: empty or invalid => treat as "do negocjacji" (rateNegotiable), no validation error
     const rateNum = parseFloat(rate.replace(",", "."));
-    if (!rate || isNaN(rateNum) || rateNum < 0) {
+    if (rate.trim() !== "" && (isNaN(rateNum) || rateNum < 0)) {
       newErrors.rate = t("jobs.invalidRate");
     }
     const allowedOfferDays = [7, 14, 21, 30];
@@ -347,6 +356,9 @@ export function JobForm({ initialData, onSubmit, mode, loading: externalLoading 
     }
 
     const rateNum = parseFloat(rate.replace(",", "."));
+    const rateOmitted = rate.trim() === "" || isNaN(rateNum) || rateNum < 0;
+    const effectiveRate = rateOmitted ? 0 : rateNum;
+    const effectiveRateNegotiable = rateNegotiable || rateOmitted;
     setSubmitting(true);
     try {
       await onSubmit({
@@ -356,8 +368,8 @@ export function JobForm({ initialData, onSubmit, mode, loading: externalLoading 
         language,
         billingType: billingType as BillingType,
         hoursPerWeek: billingType === "HOURLY" ? (hoursPerWeek as HoursPerWeek) : undefined,
-        rate: rateNum,
-        rateNegotiable,
+        rate: effectiveRate,
+        rateNegotiable: effectiveRateNegotiable,
         currency,
         experienceLevel: experienceLevel as ExperienceLevel,
         locationId: locationId || undefined,
@@ -758,7 +770,7 @@ export function JobForm({ initialData, onSubmit, mode, loading: externalLoading 
                         setErrors((prev) => ({ ...prev, rate: "" }));
                       }
                     }}
-                    placeholder="0"
+                    placeholder={t("jobs.rateOptionalPlaceholder")}
                     disabled={submitting}
                     className={cn("h-11 text-base", errors.rate && "border-destructive")}
                     aria-invalid={!!errors.rate}

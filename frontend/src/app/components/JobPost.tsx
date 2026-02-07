@@ -137,15 +137,12 @@ export function JobPost({
   const metaDeadlineLeft = job.deadline ? formatTimeLeftUntil(job.deadline, locale, t) : "";
   const firstFieldLabel = EXPERIENCE_LABELS[job.experienceLevel] ?? job.experienceLevel;
   const firstFieldSub = t("jobs.experienceLevel");
-  const secondFieldLabel = formatRate(
-    job.rate,
-    job.currency,
-    job.billingType
-  );
+  const showNegotiable = Boolean(job.rateNegotiable);
+  const secondFieldLabel = showNegotiable
+    ? t("jobs.negotiable")
+    : formatRate(job.rate, job.currency, job.billingType);
   const rateLabel = job.billingType === "HOURLY" ? t("jobs.hourlyRate") : t("jobs.rate");
-  const secondFieldSub = job.rateNegotiable
-    ? `${rateLabel} (${t("jobs.negotiable")})`
-    : rateLabel;
+  const secondFieldSub = showNegotiable ? rateLabel : rateLabel;
 
   return (
     <Card
@@ -246,10 +243,12 @@ export function JobPost({
                 <span className="text-emerald-600 dark:text-emerald-400">
                   {secondFieldLabel}
                 </span>
-                <span className="ml-1">
-                  {job.currency}
-                  {job.billingType === "HOURLY" ? "/h" : ""}
-                </span>
+                {!showNegotiable && (
+                  <span className="ml-1">
+                    {job.currency}
+                    {job.billingType === "HOURLY" ? "/h" : ""}
+                  </span>
+                )}
               </p>
               <p className="text-sm text-muted-foreground">{secondFieldSub}</p>
             </div>

@@ -575,15 +575,13 @@ export default function JobDetailPage() {
               icon={Banknote}
               label={t("jobs.rate")}
               value={
-                <>
-                  {formatRate(job.rate, job.currency, job.billingType)}
-                  {job.rateNegotiable && (
-                    <span className="text-muted-foreground font-normal">
-                      {" "}
-                      · {t("jobs.negotiable")}
-                    </span>
-                  )}
-                </>
+                job.rateNegotiable ? (
+                  <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+                    {t("jobs.negotiable")}
+                  </span>
+                ) : (
+                  formatRate(job.rate, job.currency, job.billingType)
+                )
               }
             />
             <DetailRow
@@ -794,15 +792,13 @@ export default function JobDetailPage() {
               icon={Banknote}
               label={t("jobs.rate")}
               value={
-                <>
-                  {formatRate(job.rate, job.currency, job.billingType)}
-                  {job.rateNegotiable && (
-                    <span className="text-muted-foreground font-normal">
-                      {" "}
-                      · {t("jobs.negotiable")}
-                    </span>
-                  )}
-                </>
+                job.rateNegotiable ? (
+                  <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+                    {t("jobs.negotiable")}
+                  </span>
+                ) : (
+                  formatRate(job.rate, job.currency, job.billingType)
+                )
               }
             />
             <DetailRow

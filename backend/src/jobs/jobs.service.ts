@@ -3,6 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { FavoritesService } from './favorites.service';
 import { CreateJobDto } from './dto/create-job.dto';
+import { maskAuthorSurname } from './author-helpers';
 import { BillingType, HoursPerWeek, ExperienceLevel, ProjectType, JobStatus, JobLanguage, AccountType } from '@prisma/client';
 import { ContentGeneratorService } from '../content-generator/content-generator.service';
 
@@ -339,6 +340,7 @@ export class JobsService implements OnModuleInit {
     if (!result) return null;
     return {
       ...result,
+      author: maskAuthorSurname(result.author),
       category: this.getCategoryWithTranslation(result.category, userLanguage),
     };
   }
@@ -460,6 +462,7 @@ export class JobsService implements OnModuleInit {
       const { _count, ...rest } = item;
       const base = {
         ...rest,
+        author: maskAuthorSurname(item.author),
         category: this.getCategoryWithTranslation(item.category, userLanguage),
         isFavorite: favoriteIds.has(item.id),
         currentUserApplied: appliedIds.has(item.id),
@@ -557,6 +560,7 @@ export class JobsService implements OnModuleInit {
     const { applications: _app, ...rest } = job;
     const result = {
       ...rest,
+      author: maskAuthorSurname(job.author),
       category: this.getCategoryWithTranslation(job.category, userLanguage),
       applications: applicationsForResponse,
       currentUserApplied,
@@ -817,6 +821,7 @@ export class JobsService implements OnModuleInit {
       message: app.message ?? undefined,
       job: {
         ...app.job,
+        author: maskAuthorSurname(app.job.author),
         category: this.getCategoryWithTranslation(app.job.category, userLanguage),
       },
     }));
@@ -851,6 +856,7 @@ export class JobsService implements OnModuleInit {
       const { _count, ...rest } = job;
       return {
         ...rest,
+        author: maskAuthorSurname(job.author),
         category: this.getCategoryWithTranslation(job.category, userLanguage),
         applicationsCount: _count?.applications ?? 0,
       };
@@ -993,6 +999,7 @@ export class JobsService implements OnModuleInit {
     if (!result) return null;
     return {
       ...result,
+      author: maskAuthorSurname(result.author),
       category: this.getCategoryWithTranslation(result.category, userLanguage),
     };
   }
@@ -1025,6 +1032,7 @@ export class JobsService implements OnModuleInit {
     });
     return {
       ...result,
+      author: maskAuthorSurname(result.author),
       category: this.getCategoryWithTranslation(result.category, userLanguage),
     };
   }
@@ -1066,6 +1074,7 @@ export class JobsService implements OnModuleInit {
     });
     return {
       ...result,
+      author: maskAuthorSurname(result.author),
       category: this.getCategoryWithTranslation(result.category, userLanguage),
     };
   }
@@ -1134,6 +1143,7 @@ export class JobsService implements OnModuleInit {
 
     const items = jobs.map((item) => ({
       ...item,
+      author: maskAuthorSurname(item.author),
       category: this.getCategoryWithTranslation(item.category, userLanguage),
       isFavorite: favoriteIds.has(item.id),
       currentUserApplied: false,

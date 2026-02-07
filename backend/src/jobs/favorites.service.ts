@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { JobStatus } from '@prisma/client';
+import { maskAuthorSurname } from './author-helpers';
 
 @Injectable()
 export class FavoritesService {
@@ -69,6 +70,7 @@ export class FavoritesService {
       .filter((j) => j.status === JobStatus.PUBLISHED)
       .map((l) => ({
         ...l,
+        author: maskAuthorSurname(l.author),
         category: {
           id: l.category.id,
           slug: l.category.slug,

@@ -13,7 +13,7 @@ import {
   ValidateIf,
   ArrayMaxSize,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 
 export enum BillingTypeDto {
   FIXED = 'FIXED',
@@ -70,10 +70,14 @@ export class CreateJobDto {
   @IsNotEmpty({ message: 'validation.hoursPerWeekRequired' })
   hoursPerWeek?: HoursPerWeekDto;
 
-  @IsNumber()
+  @IsOptional()
+  @Transform(({ value }) =>
+    value === '' || value === undefined || value === null ? null : Number(value),
+  )
+  @ValidateIf((_o, v) => v != null && v !== '')
+  @IsNumber({ allowNaN: false }, { message: 'validation.rateNonNegative' })
   @Min(0, { message: 'validation.rateNonNegative' })
-  @Type(() => Number)
-  rate: number;
+  rate?: number | null;
 
   @IsOptional()
   @IsBoolean()

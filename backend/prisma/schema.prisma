@@ -117,7 +117,7 @@ model Job {
   language        JobLanguage @default(POLISH)
   billingType     BillingType
   hoursPerWeek    HoursPerWeek?   // when HOURLY
-  rate            Decimal        @db.Decimal(12, 2)
+  rate            Decimal?       @db.Decimal(12, 2)
   rateNegotiable  Boolean        @default(false)
   currency        String         @db.VarChar(3)
   experienceLevel ExperienceLevel

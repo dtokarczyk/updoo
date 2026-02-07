@@ -575,7 +575,7 @@ export interface CreateJobPayload {
   language?: JobLanguage;
   billingType: BillingType;
   hoursPerWeek?: HoursPerWeek;
-  rate: number;
+  rate: number | null;
   rateNegotiable?: boolean;
   currency: string;
   experienceLevel: ExperienceLevel;

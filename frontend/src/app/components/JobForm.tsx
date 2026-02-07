@@ -383,7 +383,7 @@ export function JobForm({
 
     const rateNum = parseFloat(rate.replace(',', '.'));
     const rateOmitted = rate.trim() === '' || isNaN(rateNum) || rateNum < 0;
-    const effectiveRate = rateOmitted ? 0 : rateNum;
+    const effectiveRate: number | null = rateOmitted ? null : rateNum;
     const effectiveRateNegotiable = rateNegotiable || rateOmitted;
     setSubmitting(true);
     try {

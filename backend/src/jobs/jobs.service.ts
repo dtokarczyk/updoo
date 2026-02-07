@@ -292,7 +292,7 @@ export class JobsService implements OnModuleInit {
         hoursPerWeek: dto.billingType === 'HOURLY' && dto.hoursPerWeek
           ? (dto.hoursPerWeek as HoursPerWeek)
           : null,
-        rate: dto.rate,
+        rate: dto.rate ?? null,
         rateNegotiable: dto.rateNegotiable ?? false,
         currency: dto.currency.toUpperCase().slice(0, 3),
         experienceLevel: dto.experienceLevel as ExperienceLevel,
@@ -951,7 +951,7 @@ export class JobsService implements OnModuleInit {
         hoursPerWeek: dto.billingType === 'HOURLY' && dto.hoursPerWeek
           ? (dto.hoursPerWeek as HoursPerWeek)
           : null,
-        rate: dto.rate,
+        rate: dto.rate ?? null,
         rateNegotiable: dto.rateNegotiable ?? false,
         currency: dto.currency.toUpperCase().slice(0, 3),
         experienceLevel: dto.experienceLevel as ExperienceLevel,

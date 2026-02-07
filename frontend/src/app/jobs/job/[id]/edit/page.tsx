@@ -192,10 +192,10 @@ export default function EditListingPage() {
 
   const filteredSkills = skillInput.trim()
     ? skills.filter(
-        (s) =>
-          s.name.toLowerCase().includes(skillInput.toLowerCase()) &&
-          !selectedSkills.some((sel) => sel.id === s.id),
-      )
+      (s) =>
+        s.name.toLowerCase().includes(skillInput.toLowerCase()) &&
+        !selectedSkills.some((sel) => sel.id === s.id),
+    )
     : [];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -207,10 +207,13 @@ export default function EditListingPage() {
       return;
     }
     const rateNum = parseFloat(rate.replace(',', '.'));
-    if (isNaN(rateNum) || rateNum < 0) {
+    const rateOmitted = rate.trim() === '' || isNaN(rateNum) || rateNum < 0;
+    if (!rateOmitted && rateNum < 0) {
       setError('Podaj poprawną stawkę');
       return;
     }
+    const effectiveRate: number | null = rateOmitted ? null : rateNum;
+    const effectiveRateNegotiable = rateNegotiable || rateOmitted;
     if (billingType === 'HOURLY' && !hoursPerWeek) {
       setError('Przy rozliczeniu godzinowym wybierz ilość godzin tygodniowo');
       return;
@@ -230,8 +233,8 @@ export default function EditListingPage() {
         billingType,
         hoursPerWeek:
           billingType === 'HOURLY' ? (hoursPerWeek as HoursPerWeek) : undefined,
-        rate: rateNum,
-        rateNegotiable,
+        rate: effectiveRate,
+        rateNegotiable: effectiveRateNegotiable,
         currency,
         experienceLevel,
         locationId: locationId || undefined,

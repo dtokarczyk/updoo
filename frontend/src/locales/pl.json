@@ -253,7 +253,18 @@
   },
   "homepage": {
     "heroText": "Najłatwiejszy sposób na połączenie firm i najlepszych freelancerów",
-    "welcomeTitle": "Najłatwiejszy sposób na połączenie firm i najlepszych freelancerów"
+    "welcomeTitle": "Najłatwiejszy sposób na połączenie firm i najlepszych freelancerów",
+    "heroFeature1": "Publikowanie ofert pracy jest zawsze bezpłatne.",
+    "heroFeature2": "Publikuj i zatrudniaj szybko",
+    "heroFeature3": "Oceń wykonawcę na końcu współpracy",
+    "heroAiBadge": "Tworzenie wspierane AI",
+    "createFreeProfile": "Założ darmowy profil",
+    "forHiring": "Szukam wykonawcy",
+    "forFindingJobs": "Szukam zleceń",
+    "heroTextFindingJobs": "Znajdź zlecenia i współpracę dopasowaną do Twoich umiejętności",
+    "heroFeature1FindingJobs": "Znajdź zleceniodawców i pracę dorywczą",
+    "heroFeature2FindingJobs": "Zaprezentuj się swoim profilem",
+    "heroFeature3FindingJobs": "Oceń współpracę po zakończeniu"
   },
   "accountTypes": {
     "client": "Klient",

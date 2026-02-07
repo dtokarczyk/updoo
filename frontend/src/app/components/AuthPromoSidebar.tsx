@@ -51,10 +51,10 @@ export function AuthPromoSidebar({ initialLocale }: AuthPromoSidebarProps) {
       </div>
 
       {/* Add job posting – above login */}
-      <Button className="w-full mb-4" size="lg" asChild>
-        <Link href="/job/new">
-          <Plus className="mr-2 h-4 w-4" />
-          {t('jobs.createJob')}
+      <Button className="w-full mb-4 min-w-0" size="lg" asChild>
+        <Link href="/job/new" className="flex items-center justify-center gap-1.5">
+          <Plus className="h-4 w-4 shrink-0" />
+          <span className="min-w-0 truncate">{t('jobs.createJob')}</span>
         </Link>
       </Button>
 

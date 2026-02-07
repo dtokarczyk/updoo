@@ -97,7 +97,7 @@
   },
   "jobs": {
     "jobs": "Ogłoszenia",
-    "headerSampleWithCategory": "Zobacz {count} ogłoszeń {category} opublikowanych na Oferi",
+    "headerSampleWithCategory": "Zobacz {count} ogłoszeń w kategorii {category} opublikowanych na Oferi",
     "headerSampleWithoutCategory": "Zobacz {count} ogłoszeń opublikowanych na Oferi",
     "newJob": "Nowe ogłoszenie",
     "createJob": "Utwórz darmowe ogłoszenie",

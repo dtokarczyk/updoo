@@ -33,11 +33,11 @@ export function HeroBanner({
         </h1>
 
         <div>
-          <div className="flex ml-4 gap-1">
+          <div className="flex mx-4 gap-1">
             <button
               type="button"
               onClick={() => setHeroTab("hiring")}
-              className={`rounded-t-lg cursor-pointer text-lg font-semibold transition-colors p-3 ${heroTab === "hiring"
+              className={`w-full rounded-t-lg cursor-pointer text-lg font-bold transition-colors p-3 ${heroTab === "hiring"
                 ? "bg-white text-black"
                 : "bg-white/10 backdrop-blur-md border-t border-x border-white/20 text-white/90 hover:bg-white/15"
                 }`}
@@ -47,7 +47,7 @@ export function HeroBanner({
             <button
               type="button"
               onClick={() => setHeroTab("finding")}
-              className={`rounded-t-lg cursor-pointer text-lg font-semibold transition-colors p-3 ${heroTab === "finding"
+              className={`w-full rounded-t-lg cursor-pointer text-lg font-bold transition-colors p-3 ${heroTab === "finding"
                 ? "bg-white text-black"
                 : "bg-white/10 backdrop-blur-md border-t border-x border-white/20 text-white/90 hover:bg-white/15"
                 }`}
@@ -90,13 +90,13 @@ export function HeroBanner({
             </div>
             <div className="flex justify-center">
               {heroTab === "hiring" ? (
-                <Button asChild size="lg" variant="default" className="text-lg px-8 py-6">
+                <Button asChild size="lg" variant="default" className="text-lg px-8 py-6 bg-white text-black hover:bg-gray-100 focus-visible:ring-white/20">
                   <Link href="/job/new">
                     {t("jobs.createJob")}
                   </Link>
                 </Button>
               ) : (
-                <Button asChild size="lg" variant="default" className="text-lg px-8 py-6">
+                <Button asChild size="lg" variant="default" className="text-lg px-8 py-6 bg-white text-black hover:bg-gray-100 focus-visible:ring-white/20">
                   <Link href="/register">
                     {t("homepage.createFreeProfile")}
                   </Link>

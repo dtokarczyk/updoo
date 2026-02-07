@@ -97,7 +97,7 @@ export function CategoriesSidebarMobile({
         {currentCategorySlug && (
           <li>
             <Link
-              href="/jobs/all/1"
+              href="/"
               onClick={() => setOpen(false)}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 text-xl font-semibold transition-colors",

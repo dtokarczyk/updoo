@@ -77,8 +77,11 @@ export function JobsSectionHeader({
     }
 
     const search = searchParams.toString();
-    return `/jobs/${encodeURIComponent(categorySlugForRouting)}/${nextPage}${search ? `?${search}` : ""
-      }`;
+    const base =
+      categorySlugForRouting === "all" && nextPage === 1
+        ? "/"
+        : `/jobs/${encodeURIComponent(categorySlugForRouting)}/${nextPage}`;
+    return `${base}${search ? `?${search}` : ""}`;
   };
 
   useEffect(() => {

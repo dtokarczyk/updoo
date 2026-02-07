@@ -47,7 +47,7 @@ export function CategoriesSidebarDesktop({
       <ul className="space-y-1">
         <li>
           <Link
-            href="/jobs/all/1"
+            href="/"
             className={cn(
               "flex items-center gap-3 py-1.5 text-xl font-semibold transition-colors",
               !currentCategorySlug

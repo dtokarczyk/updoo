@@ -1,18 +1,9 @@
-import { redirect } from "next/navigation";
+import { getLocaleFromRequest } from "@/lib/i18n";
+import { getCategoriesServer } from "@/lib/categories-server";
+import { OffersPageClient } from "@/app/jobs/[category]/[page]/OffersPageClient";
 
-function parsePage(raw: string | undefined): number {
-  const n = raw ? Number.parseInt(raw, 10) : 1;
-  return Number.isFinite(n) && n > 0 ? n : 1;
-}
-
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: Promise<{ category?: string; page?: string }>;
-}) {
-  const params = await searchParams;
-  const slug = params?.category || "all";
-  const page = parsePage(params?.page);
-  const target = `/jobs/${encodeURIComponent(slug)}/${page}`;
-  redirect(target);
+export default async function Home() {
+  const categories = await getCategoriesServer();
+  const locale = await getLocaleFromRequest();
+  return <OffersPageClient categories={categories} initialLocale={locale} />;
 }

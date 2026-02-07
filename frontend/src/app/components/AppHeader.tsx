@@ -87,7 +87,7 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
                   router.back();
                 } else {
                   // Fallback to default offers list when history is not available.
-                  router.push("/jobs/all/1");
+                  router.push("/");
                 }
               }}
             >

@@ -1,33 +1,11 @@
 import type { Metadata } from "next";
-import { sortCategoriesByOrder, type Category } from "@/lib/api";
 import { OffersPageClient } from "./OffersPageClient";
 import { getLocaleFromRequest } from "@/lib/i18n";
 import { getMetadataConfig, allCategoriesLabelByLocale } from "@/lib/metadata-config";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+import { getCategoriesServer } from "@/lib/categories-server";
 
 // Cache the page (and categories) for 60 seconds.
 export const revalidate = 60;
-
-async function getCategoriesServer(): Promise<Category[]> {
-  const locale = await getLocaleFromRequest();
-
-  const res = await fetch(`${API_URL}/jobs/categories`, {
-    // Revalidate categories periodically so they do not have to be
-    // fetched on every client render.
-    next: { revalidate },
-    headers: {
-      "Accept-Language": locale,
-    },
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch categories");
-  }
-
-  const data = (await res.json()) as Category[];
-  return sortCategoriesByOrder(data);
-}
 
 function parsePageParam(raw: string | undefined): number {
   const n = raw ? Number.parseInt(raw, 10) : 1;
@@ -48,7 +26,7 @@ export async function generateMetadata({
     categorySlug === "all" || !categorySlug
       ? allCategoriesLabelByLocale[locale]
       : categories.find((c) => c.slug === categorySlug)?.name ??
-        allCategoriesLabelByLocale[locale];
+      allCategoriesLabelByLocale[locale];
 
   const meta = getMetadataConfig(locale).offersCategory(
     categoryDisplayName,

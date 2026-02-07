@@ -165,8 +165,10 @@ export function JobsFeed({
       searchParams.set("skills", skillIds.join(","));
     }
     const search = searchParams.toString();
-    const target = `/jobs/${encodeURIComponent(categorySlug)}/${newPage}${search ? `?${search}` : ""
-      }`;
+    const target =
+      categorySlug === "all" && newPage === 1
+        ? `/${search ? `?${search}` : ""}`
+        : `/jobs/${encodeURIComponent(categorySlug)}/${newPage}${search ? `?${search}` : ""}`;
     router.replace(target);
   };
 

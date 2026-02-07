@@ -4,6 +4,7 @@ import { Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeScript } from "@/app/components/ThemeScript";
 import { ThemeProvider } from "@/lib/theme";
+import { BetaBar } from "@/app/components/BetaBar";
 import { AppHeader } from "@/app/components/AppHeader";
 import { AppFooter } from "@/app/components/AppFooter";
 import { getLocaleFromRequest } from "@/lib/i18n";
@@ -55,6 +56,7 @@ export default async function RootLayout({
         <ThemeScript />
         <ThemeProvider>
           <div className="flex min-h-screen flex-col font-sans w-full overflow-x-hidden lg:overflow-x-visible">
+            <BetaBar initialLocale={locale} />
             <AppHeader initialLocale={locale} />
             <main className="flex-1 w-full overflow-x-hidden lg:overflow-x-visible">{children}</main>
             <AppFooter initialLocale={locale} />

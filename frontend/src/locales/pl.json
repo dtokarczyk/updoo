@@ -248,11 +248,12 @@
   "branding": {
     "logotypeTagline": "Publikuj i szukaj ofert dla freelancerów"
   },
+  "beta": {
+    "bar": "🥳 Cieszymy się, że jesteś z nami od początku. Trwają testy wersji beta. Jeśli widzisz jakiś błąd - odezwij się do nas."
+  },
   "homepage": {
     "heroText": "Najłatwiejszy sposób na połączenie firm i najlepszych freelancerów",
-    "welcomeTitle": "Najłatwiejszy sposób na połączenie firm i najlepszych freelancerów",
-    "betaTitle": "Wersja beta",
-    "welcomeBody": "Startujemy w wersji beta i zapraszamy pierwszych wykonawców. Ogłoszenia będą dodawane stopniowo, a osoby, które założą konto już teraz, znajdą się w gronie pierwszych użytkowników i jako pierwsze otrzymają dostęp do nowych zleceń oraz powiadomienia o ich publikacji."
+    "welcomeTitle": "Najłatwiejszy sposób na połączenie firm i najlepszych freelancerów"
   },
   "accountTypes": {
     "client": "Klient",

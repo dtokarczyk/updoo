@@ -17,7 +17,6 @@ import { t as translate } from "@/lib/translations";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 function parsePageParam(raw: string | undefined): number {
   const n = raw ? Number.parseInt(raw, 10) : 1;
@@ -110,21 +109,6 @@ function OffersPageContent({
             </div>
           </div>
         </div>
-      )}
-
-      {isHomePage && (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-base font-semibold">
-              {t("homepage.betaTitle")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <p className="text-sm text-muted-foreground md:text-base">
-              {t("homepage.welcomeBody")}
-            </p>
-          </CardContent>
-        </Card>
       )}
 
       <JobsSectionHeader

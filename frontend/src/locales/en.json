@@ -249,11 +249,12 @@
   "branding": {
     "logotypeTagline": "Publish and search offers for freelancers"
   },
+  "beta": {
+    "bar": "🥳 We're glad you're with us from the start. We're testing the beta. If you spot a bug - let us know."
+  },
   "homepage": {
     "heroText": "The easiest way to connect businesses and top freelancers",
-    "welcomeTitle": "The easiest way to connect companies and the best freelancers",
-    "betaTitle": "Beta version",
-    "welcomeBody": "We're launching in beta and inviting the first freelancers. Job listings will be added gradually. People who create an account now will be among the first users and will get early access to new jobs plus notifications when they are published."
+    "welcomeTitle": "The easiest way to connect companies and the best freelancers"
   },
   "accountTypes": {
     "client": "Client",

@@ -484,6 +484,56 @@ export async function getJobPrevNext(id: string): Promise<JobPrevNext> {
   return res.json();
 }
 
+/**
+ * Server-side job fetch. Accepts locale and optional token (no localStorage).
+ * Returns null on 404 or error so server can show not-found.
+ */
+export async function getJobServer(
+  id: string,
+  locale: string,
+  token?: string | null,
+): Promise<Job | null> {
+  try {
+    const headers: HeadersInit = {
+      'Accept-Language': locale === 'en' ? 'en' : 'pl',
+    };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const res = await fetch(`${API_URL}/jobs/${id}`, {
+      headers,
+      cache: 'no-store',
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as Job;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Server-side prev/next fetch. Accepts locale and optional token.
+ * Returns empty prev/next on error.
+ */
+export async function getJobPrevNextServer(
+  id: string,
+  locale: string,
+  token?: string | null,
+): Promise<JobPrevNext> {
+  try {
+    const headers: HeadersInit = {
+      'Accept-Language': locale === 'en' ? 'en' : 'pl',
+    };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const res = await fetch(`${API_URL}/jobs/${id}/prev-next`, {
+      headers,
+      cache: 'no-store',
+    });
+    if (!res.ok) return { prev: null, next: null };
+    return (await res.json()) as JobPrevNext;
+  } catch {
+    return { prev: null, next: null };
+  }
+}
+
 export async function publishJob(jobId: string): Promise<Job> {
   const token = getToken();
   if (!token) throw new Error('Not authenticated');

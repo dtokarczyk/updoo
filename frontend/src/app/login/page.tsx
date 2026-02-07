@@ -28,12 +28,14 @@ import {
   needsOnboarding,
   getDraftJob,
 } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from '@/hooks/useTranslations';
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t } = useTranslations();
+  const { refreshAuth } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -56,6 +58,7 @@ function LoginForm() {
     try {
       const data = await apiLogin(email, password);
       setAuth(data);
+      refreshAuth();
 
       // Check if user is CLIENT and has draft - show modal to continue editing
       const draft = getDraftJob();

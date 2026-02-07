@@ -16,11 +16,13 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { register as apiRegister, setAuth } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from '@/hooks/useTranslations';
 
 export default function RegisterPage() {
   const router = useRouter();
   const { t } = useTranslations();
+  const { refreshAuth } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -48,6 +50,7 @@ export default function RegisterPage() {
         termsAccepted,
       );
       setAuth(data);
+      refreshAuth();
       router.push('/onboarding');
       router.refresh();
     } catch (err) {

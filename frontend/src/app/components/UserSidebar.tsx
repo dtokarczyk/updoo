@@ -2,17 +2,13 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { pl, enUS } from 'date-fns/locale';
 import {
   getUserApplications,
   getUserJobs,
-  getToken,
-  getStoredUser,
-  clearAuth,
-  type AuthUser,
   type UserApplication,
   type Job,
 } from '@/lib/api';
@@ -21,6 +17,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/hooks/useTranslations';
 import { UserDropdown } from '@/app/components/HomeNav';
+import { useAuth } from '@/contexts/AuthContext';
 import type { Locale } from '@/lib/i18n';
 
 interface UserSidebarProps {
@@ -30,37 +27,16 @@ interface UserSidebarProps {
 
 export function UserSidebar({ initialLocale }: UserSidebarProps) {
   const router = useRouter();
-  const pathname = usePathname();
   const { t, locale } = useTranslations();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const { user, isLoggedIn, logout } = useAuth();
   const [applications, setApplications] = useState<UserApplication[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
-  const [mounted, setMounted] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Initialize auth state on mount
   useEffect(() => {
-    setMounted(true);
-    const token = getToken();
-    const u = getStoredUser();
-    setUser(u);
-    setIsLoggedIn(!!token);
-  }, []);
-
-  // Refresh auth state when pathname changes (e.g., after login redirect)
-  useEffect(() => {
-    if (!mounted) return;
-    const token = getToken();
-    const u = getStoredUser();
-    setUser(u);
-    setIsLoggedIn(!!token);
-  }, [pathname, mounted]);
-
-  useEffect(() => {
-    if (!mounted || !isLoggedIn || !user) {
+    if (!isLoggedIn || !user) {
       setLoading(false);
       return;
     }
@@ -92,7 +68,7 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
     } else {
       setLoading(false);
     }
-  }, [mounted, isLoggedIn, user]);
+  }, [isLoggedIn, user]);
 
   useEffect(() => {
     if (!dropdownOpen) return;
@@ -110,14 +86,12 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
 
   const handleLogout = () => {
     setDropdownOpen(false);
-    clearAuth();
-    setUser(null);
-    setIsLoggedIn(false);
+    logout();
     router.push('/');
     router.refresh();
   };
 
-  if (!mounted || !isLoggedIn) {
+  if (!isLoggedIn) {
     return null;
   }
 
@@ -239,11 +213,10 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
                       className="block p-3 rounded-lg border border-border bg-card hover:bg-muted transition-colors"
                     >
                       <h4
-                        className={`text-sm font-medium line-clamp-2 mb-1 ${
-                          isClosed
+                        className={`text-sm font-medium line-clamp-2 mb-1 ${isClosed
                             ? 'text-muted-foreground line-through'
                             : 'text-foreground'
-                        }`}
+                          }`}
                       >
                         {job.title}
                       </h4>

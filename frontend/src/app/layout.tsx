@@ -4,6 +4,7 @@ import { Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { ThemeScript } from '@/app/components/ThemeScript';
 import { ThemeProvider } from '@/lib/theme';
+import { AuthProvider } from '@/contexts/AuthContext';
 import { BetaBar } from '@/app/components/BetaBar';
 import { AppHeader } from '@/app/components/AppHeader';
 import { AppFooter } from '@/app/components/AppFooter';
@@ -59,6 +60,7 @@ export default async function RootLayout({
       >
         <ThemeScript />
         <ThemeProvider>
+          <AuthProvider>
           <div className="flex min-h-screen flex-col font-sans w-full lg:overflow-x-visible">
             <BetaBar initialLocale={locale} />
             <AppHeader initialLocale={locale} />
@@ -67,6 +69,7 @@ export default async function RootLayout({
             </main>
             <AppFooter initialLocale={locale} />
           </div>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -2,16 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import {
-  getToken,
-  getStoredUser,
-  clearAuth,
-  type AuthUser,
-  type AccountType,
-} from '@/lib/api';
+import { useRouter } from 'next/navigation';
+import { type AuthUser, type AccountType } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from '@/hooks/useTranslations';
 
 function accountTypeLabel(
@@ -169,23 +164,11 @@ export function HomeNav({
   placement = 'header',
 }: HomeNavProps) {
   const router = useRouter();
-  const pathname = usePathname();
   const { t, locale } = useTranslations();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [canCreateListing, setCanCreateListing] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const { user, isLoggedIn, logout } = useAuth();
+  const canCreateListing = isLoggedIn && user?.accountType === 'CLIENT';
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setMounted(true);
-    const token = getToken();
-    const u = getStoredUser();
-    setUser(u);
-    setIsLoggedIn(!!token);
-    setCanCreateListing(!!token && u?.accountType === 'CLIENT');
-  }, []);
 
   useEffect(() => {
     if (!dropdownOpen) return;
@@ -203,16 +186,13 @@ export function HomeNav({
 
   const handleLogout = () => {
     setDropdownOpen(false);
-    clearAuth();
-    setUser(null);
-    setIsLoggedIn(false);
-    setCanCreateListing(false);
+    logout();
     router.push('/');
     router.refresh();
   };
 
   if (placement === 'sidebar') {
-    if (!mounted || !isLoggedIn) return null;
+    if (!isLoggedIn) return null;
     return (
       <UserDropdown
         user={user}
@@ -225,12 +205,6 @@ export function HomeNav({
         fullWidth
       />
     );
-  }
-
-  if (!mounted) {
-    if (showCreateOnly) return null;
-    // Don't show login/register buttons in header - they're in AuthBottomBar on mobile
-    return null;
   }
 
   if (showCreateOnly) {

@@ -139,10 +139,16 @@ export const AUTH_TOKEN_KEY = 'auth_token';
 export const AUTH_USER_KEY = 'auth_user';
 export const DRAFT_JOB_KEY = 'draft_job';
 
+/** Cookie name for auth token so server can pass it when fetching draft jobs. */
+export const AUTH_TOKEN_COOKIE = 'auth_token';
+
+const AUTH_COOKIE_MAX_AGE_DAYS = 7;
+
 export function setAuth(data: AuthResponse): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem(AUTH_TOKEN_KEY, data.access_token);
   localStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.user));
+  document.cookie = `${AUTH_TOKEN_COOKIE}=${encodeURIComponent(data.access_token)}; path=/; max-age=${AUTH_COOKIE_MAX_AGE_DAYS * 24 * 60 * 60}; SameSite=Lax`;
 }
 
 export function getToken(): string | null {
@@ -170,6 +176,7 @@ export function clearAuth(): void {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(AUTH_TOKEN_KEY);
   localStorage.removeItem(AUTH_USER_KEY);
+  document.cookie = `${AUTH_TOKEN_COOKIE}=; path=/; max-age=0`;
 }
 
 // Draft job functions

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState, Suspense, useEffect } from "react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useState, Suspense, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Card,
   CardContent,
@@ -13,7 +13,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -21,20 +21,26 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { login as apiLogin, setAuth, needsOnboarding, getDraftJob } from "@/lib/api";
-import { useTranslations } from "@/hooks/useTranslations";
+} from '@/components/ui/dialog';
+import {
+  login as apiLogin,
+  setAuth,
+  needsOnboarding,
+  getDraftJob,
+} from '@/lib/api';
+import { useTranslations } from '@/hooks/useTranslations';
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t } = useTranslations();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showDraftModal, setShowDraftModal] = useState(false);
-  const [showDraftAfterLoginModal, setShowDraftAfterLoginModal] = useState(false);
+  const [showDraftAfterLoginModal, setShowDraftAfterLoginModal] =
+    useState(false);
 
   useEffect(() => {
     const draft = getDraftJob();
@@ -45,7 +51,7 @@ function LoginForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
+    setError('');
     setLoading(true);
     try {
       const data = await apiLogin(email, password);
@@ -53,22 +59,22 @@ function LoginForm() {
 
       // Check if user is CLIENT and has draft - show modal to continue editing
       const draft = getDraftJob();
-      if (data.user.accountType === "CLIENT" && draft) {
+      if (data.user.accountType === 'CLIENT' && draft) {
         setLoading(false);
         setShowDraftAfterLoginModal(true);
         return;
       }
 
       // Check for returnUrl parameter
-      const returnUrl = searchParams.get("returnUrl");
+      const returnUrl = searchParams.get('returnUrl');
       if (returnUrl) {
         router.push(returnUrl);
       } else {
-        router.push(needsOnboarding(data.user) ? "/onboarding" : "/");
+        router.push(needsOnboarding(data.user) ? '/onboarding' : '/');
       }
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("auth.loginFailed"));
+      setError(err instanceof Error ? err.message : t('auth.loginFailed'));
       setLoading(false);
     }
   }
@@ -79,8 +85,8 @@ function LoginForm() {
         <div className="w-full max-w-md space-y-6">
           <Card className="w-full">
             <CardHeader>
-              <CardTitle className="text-3xl">{t("auth.login")}</CardTitle>
-              <CardDescription>{t("auth.enterEmailPassword")}</CardDescription>
+              <CardTitle className="text-3xl">{t('auth.login')}</CardTitle>
+              <CardDescription>{t('auth.enterEmailPassword')}</CardDescription>
             </CardHeader>
             <form onSubmit={handleSubmit}>
               <CardContent className="space-y-4">
@@ -90,11 +96,11 @@ function LoginForm() {
                   </p>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="email">{t("auth.email")}</Label>
+                  <Label htmlFor="email">{t('auth.email')}</Label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder={t("auth.emailPlaceholder")}
+                    placeholder={t('auth.emailPlaceholder')}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -105,11 +111,11 @@ function LoginForm() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">{t("auth.password")}</Label>
+                  <Label htmlFor="password">{t('auth.password')}</Label>
                   <Input
                     id="password"
                     type="password"
-                    placeholder={t("auth.passwordPlaceholder")}
+                    placeholder={t('auth.passwordPlaceholder')}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -121,7 +127,7 @@ function LoginForm() {
               </CardContent>
               <CardFooter className="mt-6 flex flex-col gap-4">
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? t("auth.signingIn") : t("auth.logIn")}
+                  {loading ? t('auth.signingIn') : t('auth.logIn')}
                 </Button>
               </CardFooter>
             </form>
@@ -129,9 +135,11 @@ function LoginForm() {
 
           <div className="rounded-2xl border border-border bg-card p-6">
             <div className="mt-2 space-y-4">
-              <h2 className="text-2xl font-semibold">{t("auth.dontHaveAccount")}</h2>
+              <h2 className="text-2xl font-semibold">
+                {t('auth.dontHaveAccount')}
+              </h2>
               <Button asChild variant="secondary" size="lg" className="w-full">
-                <Link href="/register">{t("auth.register")}</Link>
+                <Link href="/register">{t('auth.register')}</Link>
               </Button>
             </div>
           </div>
@@ -142,9 +150,9 @@ function LoginForm() {
       <Dialog open={showDraftModal} onOpenChange={setShowDraftModal}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("jobs.draftModal.beforeLoginTitle")}</DialogTitle>
+            <DialogTitle>{t('jobs.draftModal.beforeLoginTitle')}</DialogTitle>
             <DialogDescription>
-              {t("jobs.draftModal.beforeLoginDescription")}
+              {t('jobs.draftModal.beforeLoginDescription')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-col sm:flex-row gap-2">
@@ -152,19 +160,22 @@ function LoginForm() {
               onClick={() => setShowDraftModal(false)}
               className="w-full sm:w-auto"
             >
-              {t("common.continue")}
+              {t('common.continue')}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Modal after login asking if user wants to continue editing */}
-      <Dialog open={showDraftAfterLoginModal} onOpenChange={setShowDraftAfterLoginModal}>
+      <Dialog
+        open={showDraftAfterLoginModal}
+        onOpenChange={setShowDraftAfterLoginModal}
+      >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("jobs.draftModal.afterLoginTitle")}</DialogTitle>
+            <DialogTitle>{t('jobs.draftModal.afterLoginTitle')}</DialogTitle>
             <DialogDescription>
-              {t("jobs.draftModal.afterLoginDescription")}
+              {t('jobs.draftModal.afterLoginDescription')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-col sm:flex-row gap-2">
@@ -172,27 +183,27 @@ function LoginForm() {
               variant="outline"
               onClick={() => {
                 setShowDraftAfterLoginModal(false);
-                const returnUrl = searchParams.get("returnUrl");
+                const returnUrl = searchParams.get('returnUrl');
                 if (returnUrl) {
                   router.push(returnUrl);
                 } else {
-                  router.push("/");
+                  router.push('/');
                 }
                 router.refresh();
               }}
               className="w-full sm:w-auto"
             >
-              {t("common.cancel")}
+              {t('common.cancel')}
             </Button>
             <Button
               onClick={() => {
                 setShowDraftAfterLoginModal(false);
-                router.push("/job/new");
+                router.push('/job/new');
                 router.refresh();
               }}
               className="w-full sm:w-auto"
             >
-              {t("jobs.draftModal.continueEditing")}
+              {t('jobs.draftModal.continueEditing')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -203,15 +214,17 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={
-      <div className="flex justify-center p-4 pt-12">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-3xl">Loading...</CardTitle>
-          </CardHeader>
-        </Card>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex justify-center p-4 pt-12">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle className="text-3xl">Loading...</CardTitle>
+            </CardHeader>
+          </Card>
+        </div>
+      }
+    >
       <LoginForm />
     </Suspense>
   );

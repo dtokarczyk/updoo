@@ -1,8 +1,8 @@
-import { t } from "@/lib/translations";
-import type { Locale } from "@/lib/i18n";
+import { t } from '@/lib/translations';
+import type { Locale } from '@/lib/i18n';
 
 export function BetaBar({ initialLocale }: { initialLocale: Locale }) {
-  const text = t(initialLocale, "beta.bar");
+  const text = t(initialLocale, 'beta.bar');
   return (
     <div
       role="banner"

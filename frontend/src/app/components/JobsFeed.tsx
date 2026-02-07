@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Pencil, ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useState, useCallback } from "react";
-import ReactCountryFlag from "react-country-flag";
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Pencil, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useEffect, useState, useCallback } from 'react';
+import ReactCountryFlag from 'react-country-flag';
 import {
   getJobsFeed,
   publishJob,
@@ -12,14 +12,14 @@ import {
   type Job,
   type JobLanguage,
   type PaginationInfo,
-} from "@/lib/api";
-import { jobPathEdit } from "@/lib/job-url";
-import { JobPost } from "@/app/components/JobPost";
-import { Button } from "@/components/ui/button";
-import { useTranslations } from "@/hooks/useTranslations";
+} from '@/lib/api';
+import { jobPathEdit } from '@/lib/job-url';
+import { JobPost } from '@/app/components/JobPost';
+import { Button } from '@/components/ui/button';
+import { useTranslations } from '@/hooks/useTranslations';
 
-const VISITED_JOBS_KEY = "visitedJobs";
-const FEED_STATE_KEY = "jobsFeedState";
+const VISITED_JOBS_KEY = 'visitedJobs';
+const FEED_STATE_KEY = 'jobsFeedState';
 
 type FeedState = {
   page: number;
@@ -29,13 +29,13 @@ type FeedState = {
 };
 
 function readVisitedJobs(): Set<string> {
-  if (typeof window === "undefined") return new Set();
+  if (typeof window === 'undefined') return new Set();
   try {
     const raw = window.localStorage.getItem(VISITED_JOBS_KEY);
     if (!raw) return new Set();
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return new Set();
-    return new Set(parsed.filter((v) => typeof v === "string"));
+    return new Set(parsed.filter((v) => typeof v === 'string'));
   } catch {
     return new Set();
   }
@@ -43,31 +43,32 @@ function readVisitedJobs(): Set<string> {
 
 function writeVisitedJobs(ids: Set<string>) {
   try {
-    window.localStorage.setItem(VISITED_JOBS_KEY, JSON.stringify(Array.from(ids)));
+    window.localStorage.setItem(
+      VISITED_JOBS_KEY,
+      JSON.stringify(Array.from(ids)),
+    );
   } catch {
     // Ignore storage errors (e.g. private mode / quota)
   }
 }
 
 function readFeedState(): FeedState | null {
-  if (typeof window === "undefined") return null;
+  if (typeof window === 'undefined') return null;
   try {
     const raw = window.sessionStorage.getItem(FEED_STATE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<FeedState>;
-    if (typeof parsed.page !== "number") return null;
+    if (typeof parsed.page !== 'number') return null;
     return {
       page: parsed.page,
       categoryId:
-        typeof parsed.categoryId === "string"
-          ? parsed.categoryId
-          : undefined,
+        typeof parsed.categoryId === 'string' ? parsed.categoryId : undefined,
       language:
-        parsed.language === "POLISH" || parsed.language === "ENGLISH"
+        parsed.language === 'POLISH' || parsed.language === 'ENGLISH'
           ? parsed.language
           : undefined,
       skillIds: Array.isArray(parsed.skillIds)
-        ? parsed.skillIds.filter((v): v is string => typeof v === "string")
+        ? parsed.skillIds.filter((v): v is string => typeof v === 'string')
         : undefined,
     };
   } catch {
@@ -127,12 +128,12 @@ export function JobsFeed({
           onCountChange?.(res.pagination.total);
         })
         .catch(() => {
-          setError(t("jobs.failedToLoad"));
+          setError(t('jobs.failedToLoad'));
           onCountChange?.(0);
         })
         .finally(() => setLoading(false));
     },
-    [categoryId, language, skillIds, onCountChange, page]
+    [categoryId, language, skillIds, onCountChange, page],
   );
 
   useEffect(() => {
@@ -143,7 +144,7 @@ export function JobsFeed({
       (restored.categoryId ?? undefined) === (categoryId ?? undefined) &&
       (restored.language ?? undefined) === (language ?? undefined) &&
       JSON.stringify(restored.skillIds ?? []) ===
-      JSON.stringify(skillIds ?? []) &&
+        JSON.stringify(skillIds ?? []) &&
       restored.page === page;
 
     if (restored && matchesFilters) {
@@ -158,17 +159,17 @@ export function JobsFeed({
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || (pagination && newPage > pagination.totalPages)) return;
     const searchParams = new URLSearchParams();
-    if (language && (language === "ENGLISH" || language === "POLISH")) {
-      searchParams.set("language", language);
+    if (language && (language === 'ENGLISH' || language === 'POLISH')) {
+      searchParams.set('language', language);
     }
     if (skillIds && skillIds.length > 0) {
-      searchParams.set("skills", skillIds.join(","));
+      searchParams.set('skills', skillIds.join(','));
     }
     const search = searchParams.toString();
     const target =
-      categorySlug === "all" && newPage === 1
-        ? `/${search ? `?${search}` : ""}`
-        : `/jobs/${encodeURIComponent(categorySlug)}/${newPage}${search ? `?${search}` : ""}`;
+      categorySlug === 'all' && newPage === 1
+        ? `/${search ? `?${search}` : ''}`
+        : `/jobs/${encodeURIComponent(categorySlug)}/${newPage}${search ? `?${search}` : ''}`;
     router.replace(target);
   };
 
@@ -195,7 +196,7 @@ export function JobsFeed({
     setPublishingId(jobId);
     publishJob(jobId)
       .then(() => loadFeed(page))
-      .catch(() => setError(t("jobs.failedToPublish")))
+      .catch(() => setError(t('jobs.failedToPublish')))
       .finally(() => setPublishingId(null));
   };
 
@@ -223,10 +224,7 @@ export function JobsFeed({
               <div className="h-4 w-3/4 rounded-md bg-muted/80" />
               <div className="flex flex-wrap gap-2">
                 {Array.from({ length: 3 }).map((__, j) => (
-                  <div
-                    key={j}
-                    className="h-7 w-16 rounded-full bg-muted/80"
-                  />
+                  <div key={j} className="h-7 w-16 rounded-full bg-muted/80" />
                 ))}
               </div>
               <div className="h-10 w-32 rounded-md bg-muted/80" />
@@ -238,15 +236,13 @@ export function JobsFeed({
   }
 
   if (error) {
-    return (
-      <div className="py-8 text-center text-destructive">{error}</div>
-    );
+    return <div className="py-8 text-center text-destructive">{error}</div>;
   }
 
   if (jobs.length === 0) {
     return (
       <div className="py-12 text-center text-muted-foreground rounded-lg border border-dashed">
-        {t("jobs.noJobs")}
+        {t('jobs.noJobs')}
       </div>
     );
   }
@@ -254,14 +250,14 @@ export function JobsFeed({
   return (
     <div className="space-y-4">
       {jobs.map((job) => {
-        const isDraft = job.status === "DRAFT";
-        const isClosed = job.status === "CLOSED";
-        const canPublish = user?.accountType === "ADMIN" && isDraft;
-        const isAdmin = user?.accountType === "ADMIN";
+        const isDraft = job.status === 'DRAFT';
+        const isClosed = job.status === 'CLOSED';
+        const canPublish = user?.accountType === 'ADMIN' && isDraft;
+        const isAdmin = user?.accountType === 'ADMIN';
         const isOwnJob = isAdmin || user?.id === job.authorId;
         const isVisited = visitedIds.has(job.id);
         const isApplied =
-          !!job.currentUserApplied && user?.accountType === "FREELANCER";
+          !!job.currentUserApplied && user?.accountType === 'FREELANCER';
         const isFavorite = !!job.isFavorite;
         return (
           <JobPost
@@ -277,17 +273,15 @@ export function JobsFeed({
             onFavoriteToggle={(jobId) =>
               setJobs((prev) =>
                 prev.map((j) =>
-                  j.id === jobId
-                    ? { ...j, isFavorite: !j.isFavorite }
-                    : j
-                )
+                  j.id === jobId ? { ...j, isFavorite: !j.isFavorite } : j,
+                ),
               )
             }
             headerAction={
               <div className="flex items-center gap-2">
                 {isApplied && (
                   <span className="rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-100 px-2 py-0.5 text-xs font-medium">
-                    {t("jobs.appliedShort")}
+                    {t('jobs.appliedShort')}
                   </span>
                 )}
                 <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
@@ -296,20 +290,19 @@ export function JobsFeed({
                 <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                   <ReactCountryFlag
                     svg
-                    countryCode={job.language === "ENGLISH" ? "GB" : "PL"}
-                    style={{ width: "1em", height: "1em" }}
+                    countryCode={job.language === 'ENGLISH' ? 'GB' : 'PL'}
+                    style={{ width: '1em', height: '1em' }}
                   />
-                  {job.language === "ENGLISH" ? t("jobs.english") : t("jobs.polish")}
+                  {job.language === 'ENGLISH'
+                    ? t('jobs.english')
+                    : t('jobs.polish')}
                 </span>
               </div>
             }
             headerRightAction={
               isOwnJob ? (
                 <Button variant="outline" size="icon-lg" asChild>
-                  <Link
-                    href={jobPathEdit(job)}
-                    aria-label={t("jobs.editJob")}
-                  >
+                  <Link href={jobPathEdit(job)} aria-label={t('jobs.editJob')}>
                     <Pencil className="h-4 w-4" />
                   </Link>
                 </Button>
@@ -319,7 +312,7 @@ export function JobsFeed({
               isDraft ? (
                 <div className="flex w-full flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 dark:border-amber-400/30 dark:bg-amber-500/15">
                   <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                    {t("jobs.waitingForAdmin")}
+                    {t('jobs.waitingForAdmin')}
                   </p>
                   {canPublish && (
                     <Button
@@ -329,7 +322,9 @@ export function JobsFeed({
                       onClick={() => handlePublish(job.id)}
                       disabled={publishingId === job.id}
                     >
-                      {publishingId === job.id ? t("jobs.publishing") : t("jobs.publish")}
+                      {publishingId === job.id
+                        ? t('jobs.publishing')
+                        : t('jobs.publish')}
                     </Button>
                   )}
                 </div>
@@ -349,34 +344,37 @@ export function JobsFeed({
             disabled={!pagination.hasPreviousPage}
           >
             <ChevronLeft className="h-4 w-4 sm:mr-1" />
-            <span className="hidden sm:inline">{t("jobs.previous")}</span>
+            <span className="hidden sm:inline">{t('jobs.previous')}</span>
           </Button>
 
           <div className="flex flex-wrap items-center justify-center gap-1">
-            {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-              let pageNum: number;
-              if (pagination.totalPages <= 5) {
-                pageNum = i + 1;
-              } else if (page <= 3) {
-                pageNum = i + 1;
-              } else if (page >= pagination.totalPages - 2) {
-                pageNum = pagination.totalPages - 4 + i;
-              } else {
-                pageNum = page - 2 + i;
-              }
+            {Array.from(
+              { length: Math.min(5, pagination.totalPages) },
+              (_, i) => {
+                let pageNum: number;
+                if (pagination.totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (page <= 3) {
+                  pageNum = i + 1;
+                } else if (page >= pagination.totalPages - 2) {
+                  pageNum = pagination.totalPages - 4 + i;
+                } else {
+                  pageNum = page - 2 + i;
+                }
 
-              return (
-                <Button
-                  key={pageNum}
-                  variant={pageNum === page ? "default" : "outline"}
-                  size="sm"
-                  className="min-w-10 cursor-pointer"
-                  onClick={() => handlePageChange(pageNum)}
-                >
-                  {pageNum}
-                </Button>
-              );
-            })}
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={pageNum === page ? 'default' : 'outline'}
+                    size="sm"
+                    className="min-w-10 cursor-pointer"
+                    onClick={() => handlePageChange(pageNum)}
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              },
+            )}
           </div>
 
           <Button
@@ -386,7 +384,7 @@ export function JobsFeed({
             onClick={() => handlePageChange(page + 1)}
             disabled={!pagination.hasNextPage}
           >
-            <span className="hidden sm:inline">{t("jobs.next")}</span>
+            <span className="hidden sm:inline">{t('jobs.next')}</span>
             <ChevronRight className="h-4 w-4 sm:ml-1" />
           </Button>
         </div>
@@ -394,7 +392,8 @@ export function JobsFeed({
 
       {pagination && (
         <div className="text-center text-sm text-muted-foreground pt-2">
-          {t("jobs.page")} {pagination.page} {t("jobs.of")} {pagination.totalPages} ({pagination.total} {t("jobs.jobsCount")})
+          {t('jobs.page')} {pagination.page} {t('jobs.of')}{' '}
+          {pagination.totalPages} ({pagination.total} {t('jobs.jobsCount')})
         </div>
       )}
     </div>

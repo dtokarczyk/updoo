@@ -1,24 +1,33 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
-import { formatDistanceToNow } from "date-fns";
-import { pl, enUS } from "date-fns/locale";
-import { getUserApplications, getUserJobs, getToken, getStoredUser, clearAuth, type AuthUser, type UserApplication, type Job } from "@/lib/api";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { useTranslations } from "@/hooks/useTranslations";
-import { UserDropdown, displayName } from "@/app/components/HomeNav";
-import type { Locale } from "@/lib/i18n";
+import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
+import { formatDistanceToNow } from 'date-fns';
+import { pl, enUS } from 'date-fns/locale';
+import {
+  getUserApplications,
+  getUserJobs,
+  getToken,
+  getStoredUser,
+  clearAuth,
+  type AuthUser,
+  type UserApplication,
+  type Job,
+} from '@/lib/api';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { useTranslations } from '@/hooks/useTranslations';
+import { UserDropdown, displayName } from '@/app/components/HomeNav';
+import type { Locale } from '@/lib/i18n';
 import {
   DrawerClose,
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
-} from "@/components/ui/drawer";
-import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
-import { UserSidebar } from "./UserSidebar";
+} from '@/components/ui/drawer';
+import { Button } from '@/components/ui/button';
+import { X } from 'lucide-react';
+import { UserSidebar } from './UserSidebar';
 
 interface UserDrawerContentProps {
   /** Initial locale from server to avoid hydration mismatch */
@@ -26,7 +35,10 @@ interface UserDrawerContentProps {
   onClose: () => void;
 }
 
-export function UserDrawerContent({ initialLocale, onClose }: UserDrawerContentProps) {
+export function UserDrawerContent({
+  initialLocale,
+  onClose,
+}: UserDrawerContentProps) {
   const router = useRouter();
   const { t, locale } = useTranslations();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -65,24 +77,24 @@ export function UserDrawerContent({ initialLocale, onClose }: UserDrawerContentP
 
     const accountType = user.accountType;
 
-    if (accountType === "FREELANCER") {
+    if (accountType === 'FREELANCER') {
       getUserApplications()
         .then((data) => {
           setApplications(data);
         })
         .catch((err) => {
-          console.error("Failed to load applications:", err);
+          console.error('Failed to load applications:', err);
         })
         .finally(() => {
           setLoading(false);
         });
-    } else if (accountType === "CLIENT") {
+    } else if (accountType === 'CLIENT') {
       getUserJobs()
         .then((data) => {
           setJobs(data);
         })
         .catch((err) => {
-          console.error("Failed to load jobs:", err);
+          console.error('Failed to load jobs:', err);
         })
         .finally(() => {
           setLoading(false);
@@ -97,12 +109,15 @@ export function UserDrawerContent({ initialLocale, onClose }: UserDrawerContentP
   useEffect(() => {
     if (!dropdownOpen) return;
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setDropdownOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [dropdownOpen]);
 
   const handleLogout = () => {
@@ -111,7 +126,7 @@ export function UserDrawerContent({ initialLocale, onClose }: UserDrawerContentP
     setUser(null);
     setIsLoggedIn(false);
     onClose();
-    router.push("/");
+    router.push('/');
     router.refresh();
   };
 
@@ -123,7 +138,7 @@ export function UserDrawerContent({ initialLocale, onClose }: UserDrawerContentP
     <DrawerContent className="h-full max-w-sm overflow-y-auto">
       <DrawerHeader className="border-b border-border">
         <div className="flex items-center justify-between">
-          <DrawerTitle>{t("profile.editProfile")}</DrawerTitle>
+          <DrawerTitle>{t('profile.editProfile')}</DrawerTitle>
           <DrawerClose asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8">
               <X className="h-4 w-4" />
@@ -134,7 +149,6 @@ export function UserDrawerContent({ initialLocale, onClose }: UserDrawerContentP
       </DrawerHeader>
 
       <div className="p-4">
-
         <UserSidebar initialLocale={initialLocale} />
       </div>
     </DrawerContent>

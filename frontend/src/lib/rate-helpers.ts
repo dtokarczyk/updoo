@@ -5,20 +5,23 @@
 export function getBlurredRatePlaceholder(
   jobId: string,
   billingType: string,
-  currency?: string
+  currency?: string,
 ): string {
   let hash = 0;
-  for (let i = 0; i < jobId.length; i++) hash = (hash * 31 + jobId.charCodeAt(i)) >>> 0;
-  const isHourly = billingType === "HOURLY";
+  for (let i = 0; i < jobId.length; i++)
+    hash = (hash * 31 + jobId.charCodeAt(i)) >>> 0;
+  const isHourly = billingType === 'HOURLY';
   const min = isHourly ? 50 : 1000;
   const max = isHourly ? 250 : 12000;
   const value = min + (hash % (max - min + 1));
-  const formatted = value.toLocaleString("pl-PL", {
+  const formatted = value.toLocaleString('pl-PL', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   });
   if (currency) {
-    return billingType === "HOURLY" ? `${formatted} ${currency}/h` : `${formatted} ${currency}`;
+    return billingType === 'HOURLY'
+      ? `${formatted} ${currency}/h`
+      : `${formatted} ${currency}`;
   }
   return formatted;
 }
@@ -27,29 +30,29 @@ export function getBlurredRatePlaceholder(
 export function formatRateValue(
   rate: string,
   currency: string,
-  billingType: string
+  billingType: string,
 ): string {
   const r = parseFloat(rate);
-  if (Number.isNaN(r)) return "";
-  const formatted = r.toLocaleString("pl-PL", {
+  if (Number.isNaN(r)) return '';
+  const formatted = r.toLocaleString('pl-PL', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   });
-  return billingType === "HOURLY"
+  return billingType === 'HOURLY'
     ? `${formatted} ${currency}/h`
     : `${formatted} ${currency}`;
 }
 
 export type RateDisplayResult =
-  | { type: "blur"; placeholder: string }
-  | { type: "rate"; formatted: string }
-  | { type: "negotiable" };
+  | { type: 'blur'; placeholder: string }
+  | { type: 'rate'; formatted: string }
+  | { type: 'negotiable' };
 
 /** Whether job has a non-empty, valid numeric rate. */
 function hasRate(rate: string | null): boolean {
   if (rate == null) return false;
   const s = String(rate).trim();
-  if (s === "") return false;
+  if (s === '') return false;
   return !Number.isNaN(parseFloat(s));
 }
 
@@ -63,19 +66,23 @@ export function getRateDisplay(
     rate: string | null;
     currency: string;
     billingType: string;
-  }
+  },
 ): RateDisplayResult {
   if (!isLoggedIn) {
     return {
-      type: "blur",
-      placeholder: getBlurredRatePlaceholder(job.id, job.billingType, job.currency),
+      type: 'blur',
+      placeholder: getBlurredRatePlaceholder(
+        job.id,
+        job.billingType,
+        job.currency,
+      ),
     };
   }
   if (hasRate(job.rate)) {
     return {
-      type: "rate",
+      type: 'rate',
       formatted: formatRateValue(job.rate!, job.currency, job.billingType),
     };
   }
-  return { type: "negotiable" };
+  return { type: 'negotiable' };
 }

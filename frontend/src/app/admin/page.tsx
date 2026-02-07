@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { getStoredUser, generateAiJob, type AuthUser } from "@/lib/api";
-import { Button } from "@/components/ui/button";
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { getStoredUser, generateAiJob, type AuthUser } from '@/lib/api';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { useTranslations } from "@/hooks/useTranslations";
+} from '@/components/ui/card';
+import { useTranslations } from '@/hooks/useTranslations';
 
 export default function AdminPage() {
   const router = useRouter();
@@ -25,11 +25,11 @@ export default function AdminPage() {
   useEffect(() => {
     const storedUser = getStoredUser();
     if (!storedUser) {
-      router.replace("/login");
+      router.replace('/login');
       return;
     }
-    if (storedUser.accountType !== "ADMIN") {
-      router.replace("/");
+    if (storedUser.accountType !== 'ADMIN') {
+      router.replace('/');
       return;
     }
     setUser(storedUser);
@@ -43,10 +43,10 @@ export default function AdminPage() {
 
     try {
       const result = await generateAiJob();
-      setMessage(result.message || "Oferta została wygenerowana pomyślnie");
+      setMessage(result.message || 'Oferta została wygenerowana pomyślnie');
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Nie udało się wygenerować oferty"
+        err instanceof Error ? err.message : 'Nie udało się wygenerować oferty',
       );
     } finally {
       setGenerating(false);
@@ -85,7 +85,7 @@ export default function AdminPage() {
                 disabled={generating}
                 className="w-full"
               >
-                {generating ? "Generowanie..." : "Wygeneruj ofertę z AI"}
+                {generating ? 'Generowanie...' : 'Wygeneruj ofertę z AI'}
               </Button>
             </div>
 

@@ -1,9 +1,9 @@
-import type { Metadata } from "next";
-import { getLocaleFromRequest } from "@/lib/i18n";
-import { getMetadataConfig } from "@/lib/metadata-config";
-import { parseJobSlugId } from "@/lib/job-url";
+import type { Metadata } from 'next';
+import { getLocaleFromRequest } from '@/lib/i18n';
+import { getMetadataConfig } from '@/lib/metadata-config';
+import { parseJobSlugId } from '@/lib/job-url';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 interface JobResponse {
   id: string;
@@ -14,12 +14,12 @@ interface JobResponse {
 
 async function fetchJobForMeta(
   id: string,
-  locale: string
+  locale: string,
 ): Promise<JobResponse | null> {
   try {
     const res = await fetch(`${API_URL}/jobs/${id}`, {
-      headers: { "Accept-Language": locale },
-      cache: "no-store",
+      headers: { 'Accept-Language': locale },
+      cache: 'no-store',
     });
     if (!res.ok) return null;
     return (await res.json()) as JobResponse;
@@ -29,9 +29,9 @@ async function fetchJobForMeta(
 }
 
 function truncateDescription(text: string, maxLength: number): string {
-  const plain = text.replace(/\s+/g, " ").trim();
+  const plain = text.replace(/\s+/g, ' ').trim();
   if (plain.length <= maxLength) return plain;
-  return plain.slice(0, maxLength - 3) + "...";
+  return plain.slice(0, maxLength - 3) + '...';
 }
 
 export async function generateMetadata({

@@ -25,9 +25,7 @@ export function getDeadlineDuration(msLeft: number): {
   minutes: number;
 } {
   const days = Math.floor(msLeft / (24 * 60 * 60 * 1000));
-  const hours = Math.floor(
-    (msLeft % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000)
-  );
+  const hours = Math.floor((msLeft % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
   const minutes = Math.floor((msLeft % (60 * 60 * 1000)) / (60 * 1000));
   return { days, hours, minutes };
 }
@@ -37,19 +35,14 @@ export function getDeadlineDuration(msLeft: number): {
  */
 export function isDeadlineSoon(
   msLeft: number | null,
-  isClosed?: boolean
+  isClosed?: boolean,
 ): boolean {
-  return (
-    !isClosed &&
-    msLeft !== null &&
-    msLeft > 0 &&
-    msLeft < HOURS_24_MS
-  );
+  return !isClosed && msLeft !== null && msLeft > 0 && msLeft < HOURS_24_MS;
 }
 
 export type TranslateFn = (
   key: string,
-  params?: Record<string, string | number>
+  params?: Record<string, string | number>,
 ) => string;
 
 /**
@@ -58,19 +51,19 @@ export type TranslateFn = (
  */
 export function formatDeadlineRemaining(
   deadline: string | null,
-  t: TranslateFn
+  t: TranslateFn,
 ): string | null {
   if (!deadline) return null;
   const msLeft = getDeadlineMsLeft(deadline);
-  if (msLeft === null) return ""; // invalid date
-  if (msLeft <= 0) return t("jobs.deadlinePassed");
+  if (msLeft === null) return ''; // invalid date
+  if (msLeft <= 0) return t('jobs.deadlinePassed');
   const { days, hours, minutes } = getDeadlineDuration(msLeft);
 
   if (days > 0) {
-    if (days === 1) return t("jobs.deadlineRemaining1");
-    if (days < 5) return t("jobs.deadlineRemainingFew", { days });
-    return t("jobs.deadlineRemainingMany", { days });
+    if (days === 1) return t('jobs.deadlineRemaining1');
+    if (days < 5) return t('jobs.deadlineRemainingFew', { days });
+    return t('jobs.deadlineRemainingMany', { days });
   }
-  if (hours > 0) return t("jobs.deadlineRemainingHours", { hours });
-  return t("jobs.deadlineRemainingMinutes", { minutes });
+  if (hours > 0) return t('jobs.deadlineRemainingHours', { hours });
+  return t('jobs.deadlineRemainingMinutes', { minutes });
 }

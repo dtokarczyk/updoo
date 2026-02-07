@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { LanguageToggle } from "@/components/LanguageToggle";
-import type { Locale } from "@/lib/i18n";
-import { t } from "@/lib/translations";
+import Link from 'next/link';
+import { LanguageToggle } from '@/components/LanguageToggle';
+import type { Locale } from '@/lib/i18n';
+import { t } from '@/lib/translations';
 
 export function AppFooter({ initialLocale }: { initialLocale: Locale }) {
   const year = new Date().getFullYear();
@@ -21,7 +21,7 @@ export function AppFooter({ initialLocale }: { initialLocale: Locale }) {
             </Link>
           </div>
           <p className="text-xs text-muted-foreground">
-            {t(initialLocale, "footer.copyright", { year })}
+            {t(initialLocale, 'footer.copyright', { year })}
           </p>
         </div>
       </div>

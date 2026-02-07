@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { JobsFeed } from "@/app/components/JobsFeed";
-import type { JobLanguage, PopularSkill } from "@/lib/api";
-import { getPopularSkillsForCategory } from "@/lib/api";
-import { useTranslations } from "@/hooks/useTranslations";
-import { useRouter } from "next/navigation";
-import ReactCountryFlag from "react-country-flag";
-import { Button } from "@/components/ui/button";
-import { getUserLocale, type Locale } from "@/lib/i18n";
-import { t as translate } from "@/lib/translations";
+import { useEffect, useState } from 'react';
+import { JobsFeed } from '@/app/components/JobsFeed';
+import type { JobLanguage, PopularSkill } from '@/lib/api';
+import { getPopularSkillsForCategory } from '@/lib/api';
+import { useTranslations } from '@/hooks/useTranslations';
+import { useRouter } from 'next/navigation';
+import ReactCountryFlag from 'react-country-flag';
+import { Button } from '@/components/ui/button';
+import { getUserLocale, type Locale } from '@/lib/i18n';
+import { t as translate } from '@/lib/translations';
 
 export function JobsSectionHeader({
   sectionTitle,
@@ -35,7 +35,9 @@ export function JobsSectionHeader({
 
   // Use initialLocale from server during SSR to avoid hydration mismatch
   // After hydration, use client locale which may differ if user preferences changed
-  const [locale, setLocaleState] = useState<Locale>(initialLocale ?? clientLocale);
+  const [locale, setLocaleState] = useState<Locale>(
+    initialLocale ?? clientLocale,
+  );
 
   // Update locale after mount if client locale differs from initial locale
   useEffect(() => {
@@ -51,17 +53,17 @@ export function JobsSectionHeader({
   };
   const router = useRouter();
   const [count, setCount] = useState<number | null>(null);
-  const [language, setLanguage] = useState<"" | JobLanguage>(
-    initialLanguage ?? ""
+  const [language, setLanguage] = useState<'' | JobLanguage>(
+    initialLanguage ?? '',
   );
   const [popularSkills, setPopularSkills] = useState<PopularSkill[]>([]);
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>(
-    initialSkillIds ?? []
+    initialSkillIds ?? [],
   );
 
   const buildUrl = (opts?: {
     page?: number;
-    language?: "" | JobLanguage;
+    language?: '' | JobLanguage;
     skillIds?: string[];
   }) => {
     const nextPage = opts?.page ?? 1;
@@ -69,19 +71,22 @@ export function JobsSectionHeader({
     const nextSkillIds = opts?.skillIds ?? selectedSkillIds;
 
     const searchParams = new URLSearchParams();
-    if (nextLanguage && (nextLanguage === "ENGLISH" || nextLanguage === "POLISH")) {
-      searchParams.set("language", nextLanguage);
+    if (
+      nextLanguage &&
+      (nextLanguage === 'ENGLISH' || nextLanguage === 'POLISH')
+    ) {
+      searchParams.set('language', nextLanguage);
     }
     if (nextSkillIds.length > 0) {
-      searchParams.set("skills", nextSkillIds.join(","));
+      searchParams.set('skills', nextSkillIds.join(','));
     }
 
     const search = searchParams.toString();
     const base =
-      categorySlugForRouting === "all" && nextPage === 1
-        ? "/"
+      categorySlugForRouting === 'all' && nextPage === 1
+        ? '/'
         : `/jobs/${encodeURIComponent(categorySlugForRouting)}/${nextPage}`;
-    return `${base}${search ? `?${search}` : ""}`;
+    return `${base}${search ? `?${search}` : ''}`;
   };
 
   useEffect(() => {
@@ -97,7 +102,7 @@ export function JobsSectionHeader({
         setPopularSkills(skills);
         // Ensure selected skills always belong to current popular list.
         setSelectedSkillIds((prev) =>
-          prev.filter((id) => skills.some((s) => s.id === id))
+          prev.filter((id) => skills.some((s) => s.id === id)),
         );
       })
       .catch(() => {
@@ -111,14 +116,14 @@ export function JobsSectionHeader({
   }, [categoryId]);
 
   const LANGUAGE_OPTIONS: {
-    value: "" | JobLanguage;
+    value: '' | JobLanguage;
     label: string;
     countryCode?: string;
   }[] = [
-      { value: "", label: t("jobs.allLanguages") },
-      { value: "ENGLISH", label: t("jobs.english"), countryCode: "GB" },
-      { value: "POLISH", label: t("jobs.polish"), countryCode: "PL" },
-    ];
+    { value: '', label: t('jobs.allLanguages') },
+    { value: 'ENGLISH', label: t('jobs.english'), countryCode: 'GB' },
+    { value: 'POLISH', label: t('jobs.polish'), countryCode: 'PL' },
+  ];
 
   return (
     <section
@@ -129,11 +134,11 @@ export function JobsSectionHeader({
         {count !== null && (
           <h2 className="text-2xl font-semibold tracking-tight text-foreground">
             {categoryName
-              ? t("jobs.headerSampleWithCategory", {
-                category: categoryName,
-                count,
-              })
-              : t("jobs.headerSampleWithoutCategory", { count })}
+              ? t('jobs.headerSampleWithCategory', {
+                  category: categoryName,
+                  count,
+                })
+              : t('jobs.headerSampleWithoutCategory', { count })}
           </h2>
         )}
 
@@ -141,17 +146,21 @@ export function JobsSectionHeader({
           <div className="flex flex-wrap items-center gap-1">
             {LANGUAGE_OPTIONS.map((opt) => {
               const isActive = language === opt.value;
-              if (opt.value === "") {
+              if (opt.value === '') {
                 return (
                   <Button
                     key="all-languages"
                     type="button"
                     size="sm"
-                    variant={isActive ? "default" : "outline"}
+                    variant={isActive ? 'default' : 'outline'}
                     className="rounded-full px-3 py-1 text-xs cursor-pointer"
                     onClick={() => {
-                      setLanguage("");
-                      const target = buildUrl({ page: 1, language: "", skillIds: selectedSkillIds });
+                      setLanguage('');
+                      const target = buildUrl({
+                        page: 1,
+                        language: '',
+                        skillIds: selectedSkillIds,
+                      });
                       router.replace(target, { scroll: false });
                     }}
                   >
@@ -164,15 +173,15 @@ export function JobsSectionHeader({
                   key={opt.value}
                   type="button"
                   size="sm"
-                  variant={isActive ? "default" : "outline"}
+                  variant={isActive ? 'default' : 'outline'}
                   className="rounded-full px-3 py-1 text-xs flex items-center gap-1 cursor-pointer"
                   onClick={() => {
                     const nextValue =
-                      language === opt.value ? "" : (opt.value as JobLanguage);
-                    setLanguage(nextValue as "" | JobLanguage);
+                      language === opt.value ? '' : (opt.value as JobLanguage);
+                    setLanguage(nextValue as '' | JobLanguage);
                     const target = buildUrl({
                       page: 1,
-                      language: nextValue as "" | JobLanguage,
+                      language: nextValue as '' | JobLanguage,
                       skillIds: selectedSkillIds,
                     });
                     router.replace(target, { scroll: false });
@@ -185,7 +194,7 @@ export function JobsSectionHeader({
                       svg
                       countryCode={opt.countryCode}
                       className="mr-1"
-                      style={{ width: "1em", height: "1em" }}
+                      style={{ width: '1em', height: '1em' }}
                     />
                   )}
                   <span>{opt.label}</span>
@@ -204,7 +213,7 @@ export function JobsSectionHeader({
                   key={skill.id}
                   type="button"
                   size="sm"
-                  variant={isActive ? "default" : "outline"}
+                  variant={isActive ? 'default' : 'outline'}
                   className="rounded-full px-3 py-1 text-xs cursor-pointer"
                   onClick={() => {
                     const exists = selectedSkillIds.includes(skill.id);

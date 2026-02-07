@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { getUserLocale, type Locale } from "@/lib/i18n";
-import { t as translate } from "@/lib/translations";
+import { getUserLocale, type Locale } from '@/lib/i18n';
+import { t as translate } from '@/lib/translations';
 
 export function useTranslations() {
   const locale = getUserLocale();

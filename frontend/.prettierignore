@@ -1,0 +1,16 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.*
+
+# Build outputs
+.next
+out
+build
+
+# Cache
+.turbo
+
+# Misc
+*.lock
+*.tsbuildinfo

@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Card,
   CardContent,
@@ -12,10 +12,10 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Textarea } from "@/components/ui/textarea";
+} from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
 import {
   getStoredUser,
   updateProfile,
@@ -24,37 +24,39 @@ import {
   clearAuth,
   getSkills,
   type Skill,
-} from "@/lib/api";
-import { useTranslations } from "@/hooks/useTranslations";
+} from '@/lib/api';
+import { useTranslations } from '@/hooks/useTranslations';
 
 export default function ProfileEditPage() {
   const router = useRouter();
   const { t } = useTranslations();
-  const [name, setName] = useState("");
-  const [surname, setSurname] = useState("");
-  const [email, setEmail] = useState("");
-  const [oldPassword, setOldPassword] = useState("");
-  const [password, setPassword] = useState("");
-  const [passwordConfirm, setPasswordConfirm] = useState("");
-  const [error, setError] = useState("");
+  const [name, setName] = useState('');
+  const [surname, setSurname] = useState('');
+  const [email, setEmail] = useState('');
+  const [oldPassword, setOldPassword] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [skillsLoading, setSkillsLoading] = useState(false);
-  const [skillsError, setSkillsError] = useState("");
+  const [skillsError, setSkillsError] = useState('');
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
-  const [skillsSearch, setSkillsSearch] = useState("");
-  const [defaultMessage, setDefaultMessage] = useState("");
-  const [accountType, setAccountType] = useState<"CLIENT" | "FREELANCER" | "ADMIN" | null>(null);
+  const [skillsSearch, setSkillsSearch] = useState('');
+  const [defaultMessage, setDefaultMessage] = useState('');
+  const [accountType, setAccountType] = useState<
+    'CLIENT' | 'FREELANCER' | 'ADMIN' | null
+  >(null);
 
   useEffect(() => {
     setMounted(true);
     const user = getStoredUser();
     if (user) {
-      setName(user.name ?? "");
-      setSurname(user.surname ?? "");
-      setEmail(user.email ?? "");
+      setName(user.name ?? '');
+      setSurname(user.surname ?? '');
+      setEmail(user.email ?? '');
       setAccountType(user.accountType);
       if (Array.isArray(user.skills)) {
         setSelectedSkillIds(user.skills.map((skill) => skill.id));
@@ -68,7 +70,7 @@ export default function ProfileEditPage() {
   useEffect(() => {
     if (!mounted) return;
     if (!getToken()) {
-      router.replace("/login");
+      router.replace('/login');
       return;
     }
   }, [mounted, router]);
@@ -77,7 +79,7 @@ export default function ProfileEditPage() {
     if (!mounted) return;
     let cancelled = false;
     async function loadSkills() {
-      setSkillsError("");
+      setSkillsError('');
       setSkillsLoading(true);
       try {
         const allSkills = await getSkills();
@@ -87,7 +89,7 @@ export default function ProfileEditPage() {
       } catch (err) {
         if (!cancelled) {
           setSkillsError(
-            err instanceof Error ? err.message : "Failed to load skills"
+            err instanceof Error ? err.message : 'Failed to load skills',
           );
         }
       } finally {
@@ -104,7 +106,7 @@ export default function ProfileEditPage() {
 
   function toggleSkill(id: string) {
     setSelectedSkillIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
   }
 
@@ -112,12 +114,12 @@ export default function ProfileEditPage() {
     skillsSearch.trim().length === 0
       ? skills
       : skills.filter((skill) =>
-        skill.name.toLowerCase().includes(skillsSearch.trim().toLowerCase())
-      );
+          skill.name.toLowerCase().includes(skillsSearch.trim().toLowerCase()),
+        );
 
   async function handleBasicSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
+    setError('');
     setSuccess(false);
     setLoading(true);
     try {
@@ -125,14 +127,16 @@ export default function ProfileEditPage() {
         name: name.trim() || undefined,
         surname: surname.trim() || undefined,
         email: email.trim() || undefined,
-        ...(accountType === "FREELANCER" && { defaultMessage: defaultMessage.trim() || undefined }),
+        ...(accountType === 'FREELANCER' && {
+          defaultMessage: defaultMessage.trim() || undefined,
+        }),
       };
       const { user: updated } = await updateProfile(payload);
       updateStoredUser(updated);
       setSuccess(true);
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("profile.saveFailed"));
+      setError(err instanceof Error ? err.message : t('profile.saveFailed'));
     } finally {
       setLoading(false);
     }
@@ -140,7 +144,7 @@ export default function ProfileEditPage() {
 
   async function handleSkillsSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
+    setError('');
     setSuccess(false);
     setLoading(true);
     try {
@@ -152,7 +156,7 @@ export default function ProfileEditPage() {
       setSuccess(true);
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("profile.saveFailed"));
+      setError(err instanceof Error ? err.message : t('profile.saveFailed'));
     } finally {
       setLoading(false);
     }
@@ -160,14 +164,14 @@ export default function ProfileEditPage() {
 
   async function handlePasswordSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
+    setError('');
     setSuccess(false);
     if (!oldPassword.trim() || !password.trim() || !passwordConfirm.trim()) {
-      setError(t("profile.passwordBothRequired"));
+      setError(t('profile.passwordBothRequired'));
       return;
     }
     if (password.trim() !== passwordConfirm.trim()) {
-      setError(t("profile.passwordMismatch"));
+      setError(t('profile.passwordMismatch'));
       return;
     }
     setLoading(true);
@@ -178,15 +182,15 @@ export default function ProfileEditPage() {
       };
       const { user: updated } = await updateProfile(payload);
       updateStoredUser(updated);
-      setOldPassword("");
-      setPassword("");
-      setPasswordConfirm("");
+      setOldPassword('');
+      setPassword('');
+      setPasswordConfirm('');
       setSuccess(true);
       clearAuth();
-      router.push("/login");
+      router.push('/login');
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("profile.saveFailed"));
+      setError(err instanceof Error ? err.message : t('profile.saveFailed'));
     } finally {
       setLoading(false);
     }
@@ -200,22 +204,16 @@ export default function ProfileEditPage() {
     <div className="flex min-h-full flex-1 items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>{t("profile.editProfile")}</CardTitle>
-          <CardDescription>
-            {t("profile.editProfileDesc")}
-          </CardDescription>
+          <CardTitle>{t('profile.editProfile')}</CardTitle>
+          <CardDescription>{t('profile.editProfileDesc')}</CardDescription>
         </CardHeader>
         <Tabs defaultValue="basic">
           <CardContent className="space-y-4">
             <TabsList className="w-full justify-start">
-              <TabsTrigger value="basic">
-                {t("profile.tabBasic")}
-              </TabsTrigger>
-              <TabsTrigger value="skills">
-                {t("profile.tabSkills")}
-              </TabsTrigger>
+              <TabsTrigger value="basic">{t('profile.tabBasic')}</TabsTrigger>
+              <TabsTrigger value="skills">{t('profile.tabSkills')}</TabsTrigger>
               <TabsTrigger value="password">
-                {t("profile.tabPassword")}
+                {t('profile.tabPassword')}
               </TabsTrigger>
             </TabsList>
             {error && (
@@ -225,17 +223,17 @@ export default function ProfileEditPage() {
             )}
             {success && (
               <p className="text-sm text-green-600 dark:text-green-400 rounded-md bg-green-500/10 px-3 py-2">
-                {t("profile.profileSaved")}
+                {t('profile.profileSaved')}
               </p>
             )}
             <TabsContent value="basic" className="space-y-4">
               <form onSubmit={handleBasicSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">{t("auth.name")}</Label>
+                  <Label htmlFor="name">{t('auth.name')}</Label>
                   <Input
                     id="name"
                     type="text"
-                    placeholder={t("auth.name")}
+                    placeholder={t('auth.name')}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     autoComplete="given-name"
@@ -243,11 +241,11 @@ export default function ProfileEditPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="surname">{t("auth.surname")}</Label>
+                  <Label htmlFor="surname">{t('auth.surname')}</Label>
                   <Input
                     id="surname"
                     type="text"
-                    placeholder={t("auth.surname")}
+                    placeholder={t('auth.surname')}
                     value={surname}
                     onChange={(e) => setSurname(e.target.value)}
                     autoComplete="family-name"
@@ -255,23 +253,25 @@ export default function ProfileEditPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">{t("auth.email")}</Label>
+                  <Label htmlFor="email">{t('auth.email')}</Label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder={t("auth.email")}
+                    placeholder={t('auth.email')}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     autoComplete="email"
                     disabled={loading}
                   />
                 </div>
-                {accountType === "FREELANCER" && (
+                {accountType === 'FREELANCER' && (
                   <div className="space-y-2">
-                    <Label htmlFor="defaultMessage">{t("profile.defaultMessage")}</Label>
+                    <Label htmlFor="defaultMessage">
+                      {t('profile.defaultMessage')}
+                    </Label>
                     <Textarea
                       id="defaultMessage"
-                      placeholder={t("profile.defaultMessagePlaceholder")}
+                      placeholder={t('profile.defaultMessagePlaceholder')}
                       value={defaultMessage}
                       onChange={(e) => setDefaultMessage(e.target.value)}
                       rows={8}
@@ -279,13 +279,13 @@ export default function ProfileEditPage() {
                       className="resize-none"
                     />
                     <p className="text-xs text-muted-foreground">
-                      {t("profile.defaultMessageDesc")}
+                      {t('profile.defaultMessageDesc')}
                     </p>
                   </div>
                 )}
                 <CardFooter className="px-0">
                   <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? t("common.saving") : t("common.save")}
+                    {loading ? t('common.saving') : t('common.save')}
                   </Button>
                 </CardFooter>
               </form>
@@ -294,12 +294,12 @@ export default function ProfileEditPage() {
             <TabsContent value="skills" className="space-y-4">
               <form onSubmit={handleSkillsSubmit} className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  {t("onboarding.freelancerSkillsDesc")}
+                  {t('onboarding.freelancerSkillsDesc')}
                 </p>
                 <Input
                   type="text"
                   placeholder={t(
-                    "onboarding.freelancerSkillsSearchPlaceholder"
+                    'onboarding.freelancerSkillsSearchPlaceholder',
                   )}
                   value={skillsSearch}
                   onChange={(e) => setSkillsSearch(e.target.value)}
@@ -308,14 +308,14 @@ export default function ProfileEditPage() {
                 <div className="max-h-72 space-y-2 overflow-y-auto rounded-md border p-3">
                   {skillsLoading && (
                     <p className="text-sm text-muted-foreground">
-                      {t("common.loading")}
+                      {t('common.loading')}
                     </p>
                   )}
                   {!skillsLoading && filteredSkills.length === 0 && (
                     <p className="text-sm text-muted-foreground">
                       {skillsSearch.trim().length > 0
-                        ? t("onboarding.freelancerSkillsNoResults")
-                        : t("onboarding.freelancerSkillsEmpty")}
+                        ? t('onboarding.freelancerSkillsNoResults')
+                        : t('onboarding.freelancerSkillsEmpty')}
                     </p>
                   )}
                   {!skillsLoading &&
@@ -340,7 +340,7 @@ export default function ProfileEditPage() {
                 </div>
                 <CardFooter className="px-0">
                   <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? t("common.saving") : t("common.save")}
+                    {loading ? t('common.saving') : t('common.save')}
                   </Button>
                 </CardFooter>
               </form>
@@ -350,12 +350,12 @@ export default function ProfileEditPage() {
               <form onSubmit={handlePasswordSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="oldPassword">
-                    {t("profile.currentPassword")}
+                    {t('profile.currentPassword')}
                   </Label>
                   <Input
                     id="oldPassword"
                     type="password"
-                    placeholder={t("profile.currentPasswordPlaceholder")}
+                    placeholder={t('profile.currentPasswordPlaceholder')}
                     value={oldPassword}
                     onChange={(e) => setOldPassword(e.target.value)}
                     autoComplete="current-password"
@@ -363,11 +363,11 @@ export default function ProfileEditPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">{t("profile.newPassword")}</Label>
+                  <Label htmlFor="password">{t('profile.newPassword')}</Label>
                   <Input
                     id="password"
                     type="password"
-                    placeholder={t("profile.passwordPlaceholder")}
+                    placeholder={t('profile.passwordPlaceholder')}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     autoComplete="new-password"
@@ -376,24 +376,24 @@ export default function ProfileEditPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="passwordConfirm">
-                    {t("profile.newPasswordConfirm")}
+                    {t('profile.newPasswordConfirm')}
                   </Label>
                   <Input
                     id="passwordConfirm"
                     type="password"
-                    placeholder={t("profile.passwordPlaceholder")}
+                    placeholder={t('profile.passwordPlaceholder')}
                     value={passwordConfirm}
                     onChange={(e) => setPasswordConfirm(e.target.value)}
                     autoComplete="new-password"
                     disabled={loading}
                   />
                   <p className="text-xs text-muted-foreground">
-                    {t("profile.passwordMinLength")}
+                    {t('profile.passwordMinLength')}
                   </p>
                 </div>
                 <CardFooter className="px-0">
                   <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? t("common.saving") : t("common.save")}
+                    {loading ? t('common.saving') : t('common.save')}
                   </Button>
                 </CardFooter>
               </form>

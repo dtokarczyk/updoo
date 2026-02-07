@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { LanguageToggle } from "@/components/LanguageToggle";
-import { AuthButtons } from "@/app/components/AuthButtons";
-import { useTranslations } from "@/hooks/useTranslations";
-import { getUserLocale, type Locale } from "@/lib/i18n";
-import { t as translate } from "@/lib/translations";
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { LanguageToggle } from '@/components/LanguageToggle';
+import { AuthButtons } from '@/app/components/AuthButtons';
+import { useTranslations } from '@/hooks/useTranslations';
+import { getUserLocale, type Locale } from '@/lib/i18n';
+import { t as translate } from '@/lib/translations';
 import {
   DrawerClose,
   DrawerContent,
   DrawerHeader,
-} from "@/components/ui/drawer";
-import { Plus, X } from "lucide-react";
+} from '@/components/ui/drawer';
+import { Plus, X } from 'lucide-react';
 
 interface AuthDrawerContentProps {
   /** Initial locale from server to avoid hydration mismatch */
@@ -22,12 +22,17 @@ interface AuthDrawerContentProps {
   onClose: () => void;
 }
 
-export function AuthDrawerContent({ initialLocale, onClose }: AuthDrawerContentProps) {
+export function AuthDrawerContent({
+  initialLocale,
+  onClose,
+}: AuthDrawerContentProps) {
   const { locale: clientLocale } = useTranslations();
 
   // Use initialLocale from server during SSR to avoid hydration mismatch
   // After hydration, use client locale which may differ if user preferences changed
-  const [locale, setLocaleState] = useState<Locale>(initialLocale ?? clientLocale);
+  const [locale, setLocaleState] = useState<Locale>(
+    initialLocale ?? clientLocale,
+  );
 
   // Update locale after mount if client locale differs from initial locale
   useEffect(() => {
@@ -58,25 +63,32 @@ export function AuthDrawerContent({ initialLocale, onClose }: AuthDrawerContentP
       <div className="flex-1 overflow-y-auto p-6">
         {/* Theme and language toggles above the container (same as sidebar) */}
         <div className="flex items-center justify-end gap-2 mb-4">
-          <LanguageToggle initialLocale={initialLocale} iconOnly className="h-[44px] w-[44px] px-0" />
+          <LanguageToggle
+            initialLocale={initialLocale}
+            iconOnly
+            className="h-[44px] w-[44px] px-0"
+          />
           <ThemeToggle className="h-[44px] w-[44px] px-0" />
         </div>
         {/* Add job posting – above login (same as sidebar) */}
         <Button className="w-full mb-4" size="lg" asChild>
           <Link href="/job/new" onClick={onClose}>
             <Plus className="mr-2 h-4 w-4" />
-            {t("jobs.createJob")}
+            {t('jobs.createJob')}
           </Link>
         </Button>
         <div className="rounded-2xl border p-6">
           <h2 className="text-lg font-semibold tracking-tight text-foreground">
-            {t("auth.promoTitle")}
+            {t('auth.promoTitle')}
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            {t("auth.promoDescription")}
+            {t('auth.promoDescription')}
           </p>
           <div className="mt-4">
-            <AuthButtons initialLocale={initialLocale} onButtonClick={onClose} />
+            <AuthButtons
+              initialLocale={initialLocale}
+              onButtonClick={onClose}
+            />
           </div>
         </div>
       </div>

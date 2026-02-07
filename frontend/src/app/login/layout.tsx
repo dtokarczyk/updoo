@@ -1,6 +1,6 @@
-import type { Metadata } from "next";
-import { getLocaleFromRequest } from "@/lib/i18n";
-import { getMetadataConfig } from "@/lib/metadata-config";
+import type { Metadata } from 'next';
+import { getLocaleFromRequest } from '@/lib/i18n';
+import { getMetadataConfig } from '@/lib/metadata-config';
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocaleFromRequest();

@@ -1,18 +1,24 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { createJob, getStoredUser, saveDraftJob, getDraftJob, clearDraftJob } from "@/lib/api";
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import {
+  createJob,
+  getStoredUser,
+  saveDraftJob,
+  getDraftJob,
+  clearDraftJob,
+} from '@/lib/api';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { useTranslations } from "@/hooks/useTranslations";
-import { JobForm } from "@/app/components/JobForm";
-import type { CreateJobPayload } from "@/lib/api";
+} from '@/components/ui/card';
+import { useTranslations } from '@/hooks/useTranslations';
+import { JobForm } from '@/app/components/JobForm';
+import type { CreateJobPayload } from '@/lib/api';
 
 export default function NewListingPage() {
   const router = useRouter();
@@ -21,8 +27,8 @@ export default function NewListingPage() {
   useEffect(() => {
     const user = getStoredUser();
     // Only redirect if user is logged in but not a CLIENT
-    if (user && user.accountType !== "CLIENT") {
-      router.replace("/");
+    if (user && user.accountType !== 'CLIENT') {
+      router.replace('/');
       return;
     }
   }, [router]);
@@ -31,9 +37,9 @@ export default function NewListingPage() {
     const user = getStoredUser();
 
     // If user is not logged in, save to localStorage and redirect to login
-    if (!user || user.accountType !== "CLIENT") {
+    if (!user || user.accountType !== 'CLIENT') {
       saveDraftJob(data);
-      router.push("/login?returnUrl=/job/new&hasDraft=true");
+      router.push('/login?returnUrl=/job/new&hasDraft=true');
       return;
     }
 
@@ -41,7 +47,7 @@ export default function NewListingPage() {
     await createJob(data);
     // Clear draft after successful creation
     clearDraftJob();
-    router.push("/");
+    router.push('/');
   };
 
   return (
@@ -49,9 +55,11 @@ export default function NewListingPage() {
       <main className="max-w-4xl mx-auto">
         <Card>
           <CardHeader>
-            <CardTitle className="text-3xl font-bold">{t("jobs.newJobForm.title")}</CardTitle>
+            <CardTitle className="text-3xl font-bold">
+              {t('jobs.newJobForm.title')}
+            </CardTitle>
             <CardDescription>
-              {t("jobs.newJobForm.description")}
+              {t('jobs.newJobForm.description')}
             </CardDescription>
           </CardHeader>
           <CardContent>

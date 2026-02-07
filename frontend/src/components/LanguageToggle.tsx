@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { useTranslations } from "@/hooks/useTranslations";
-import { setLocale, getUserLocale, type Locale } from "@/lib/i18n";
-import { t as translate } from "@/lib/translations";
-import ReactCountryFlag from "react-country-flag";
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { useTranslations } from '@/hooks/useTranslations';
+import { setLocale, getUserLocale, type Locale } from '@/lib/i18n';
+import { t as translate } from '@/lib/translations';
+import ReactCountryFlag from 'react-country-flag';
 
 interface LanguageToggleProps {
   className?: string;
-  size?: "default" | "sm" | "lg" | "icon" | "icon-sm" | "icon-lg";
+  size?: 'default' | 'sm' | 'lg' | 'icon' | 'icon-sm' | 'icon-lg';
   /** Show full language names (English/Polish) instead of codes (EN/PL) */
   showFullName?: boolean;
   /** Show only flag icon without text */
@@ -21,16 +21,18 @@ interface LanguageToggleProps {
 
 export function LanguageToggle({
   className,
-  size = "icon-sm",
+  size = 'icon-sm',
   showFullName = false,
   iconOnly = false,
-  initialLocale
+  initialLocale,
 }: LanguageToggleProps) {
   const { locale: clientLocale, t: clientT } = useTranslations();
 
   // Use initialLocale from server during SSR to avoid hydration mismatch
   // After hydration, use client locale which may differ if user preferences changed
-  const [locale, setLocaleState] = useState<Locale>(initialLocale ?? clientLocale);
+  const [locale, setLocaleState] = useState<Locale>(
+    initialLocale ?? clientLocale,
+  );
   const [mounted, setMounted] = useState(false);
 
   // Update locale after mount if client locale differs from initial locale
@@ -48,16 +50,18 @@ export function LanguageToggle({
   };
 
   const toggleLanguage = async () => {
-    const nextLocale: Locale = locale === "pl" ? "en" : "pl";
+    const nextLocale: Locale = locale === 'pl' ? 'en' : 'pl';
     await setLocale(nextLocale);
     // Reload the entire page to ensure all server components use the new locale
     window.location.reload();
   };
 
-  const nextLocale: Locale = locale === "pl" ? "en" : "pl";
-  const nextFlag = nextLocale === "pl" ? "PL" : "GB";
+  const nextLocale: Locale = locale === 'pl' ? 'en' : 'pl';
+  const nextFlag = nextLocale === 'pl' ? 'PL' : 'GB';
   const displayText = showFullName
-    ? (nextLocale === "pl" ? t("jobs.polish") : t("jobs.english"))
+    ? nextLocale === 'pl'
+      ? t('jobs.polish')
+      : t('jobs.english')
     : nextLocale.toUpperCase();
 
   return (
@@ -66,19 +70,24 @@ export function LanguageToggle({
       variant="outline"
       size={size}
       onClick={toggleLanguage}
-      className={cn("shrink-0 gap-1.5 cursor-pointer", className)}
-      aria-label={t("common.changeLanguage")}
-      title={`${t("common.changeLanguage")} (${nextLocale.toUpperCase()})`}
+      className={cn('shrink-0 gap-1.5 cursor-pointer', className)}
+      aria-label={t('common.changeLanguage')}
+      title={`${t('common.changeLanguage')} (${nextLocale.toUpperCase()})`}
       suppressHydrationWarning
     >
       <ReactCountryFlag
         svg
         countryCode={nextFlag}
-        style={{ width: "1em", height: "1em" }}
+        style={{ width: '1em', height: '1em' }}
         aria-hidden
       />
       {!iconOnly && (
-        <span className={showFullName ? "text-sm font-medium" : "text-xs font-medium"} suppressHydrationWarning>
+        <span
+          className={
+            showFullName ? 'text-sm font-medium' : 'text-xs font-medium'
+          }
+          suppressHydrationWarning
+        >
           {displayText}
         </span>
       )}

@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { Suspense, useEffect, useMemo, useState } from "react";
-import { useParams, useSearchParams } from "next/navigation";
-import { LanguageToggle } from "@/components/LanguageToggle";
-import { OnboardingRedirect } from "@/app/components/OnboardingRedirect";
-import { CategoriesSidebar } from "@/app/components/CategoriesSidebar";
-import { CategoriesSidebarMobile } from "@/app/components/CategoriesSidebarMobile";
-import { JobsSectionHeader } from "@/app/components/JobsSectionHeader";
-import { AuthPromoSidebar } from "@/app/components/AuthPromoSidebar";
-import { AuthBottomBar } from "@/app/components/AuthBottomBar";
-import { UserSidebar } from "@/app/components/UserSidebar";
-import { Logotype } from "@/app/components/Logotype";
-import { HeroBanner } from "@/app/components/HeroBanner";
-import { getToken, type Category, type JobLanguage } from "@/lib/api";
-import { useTranslations } from "@/hooks/useTranslations";
-import { getUserLocale, type Locale } from "@/lib/i18n";
-import { t as translate } from "@/lib/translations";
+import { Suspense, useEffect, useMemo, useState } from 'react';
+import { useParams, useSearchParams } from 'next/navigation';
+import { LanguageToggle } from '@/components/LanguageToggle';
+import { OnboardingRedirect } from '@/app/components/OnboardingRedirect';
+import { CategoriesSidebar } from '@/app/components/CategoriesSidebar';
+import { CategoriesSidebarMobile } from '@/app/components/CategoriesSidebarMobile';
+import { JobsSectionHeader } from '@/app/components/JobsSectionHeader';
+import { AuthPromoSidebar } from '@/app/components/AuthPromoSidebar';
+import { AuthBottomBar } from '@/app/components/AuthBottomBar';
+import { UserSidebar } from '@/app/components/UserSidebar';
+import { Logotype } from '@/app/components/Logotype';
+import { HeroBanner } from '@/app/components/HeroBanner';
+import { getToken, type Category, type JobLanguage } from '@/lib/api';
+import { useTranslations } from '@/hooks/useTranslations';
+import { getUserLocale, type Locale } from '@/lib/i18n';
+import { t as translate } from '@/lib/translations';
 
 function parsePageParam(raw: string | undefined): number {
   const n = raw ? Number.parseInt(raw, 10) : 1;
@@ -47,7 +47,9 @@ function OffersPageContent({
 
   // Use initialLocale from server during SSR to avoid hydration mismatch
   // After hydration, use client locale which may differ if user preferences changed
-  const [locale, setLocaleState] = useState<Locale>(initialLocale ?? clientLocale);
+  const [locale, setLocaleState] = useState<Locale>(
+    initialLocale ?? clientLocale,
+  );
 
   // Update locale after mount if client locale differs from initial locale
   useEffect(() => {
@@ -63,19 +65,19 @@ function OffersPageContent({
   };
 
   const { initialLanguage, initialSkillIds } = useMemo(() => {
-    const languageParam = searchParams.get("language");
-    const rawSkills = searchParams.get("skills");
+    const languageParam = searchParams.get('language');
+    const rawSkills = searchParams.get('skills');
 
     const normalizedLanguage =
-      languageParam === "ENGLISH" || languageParam === "POLISH"
+      languageParam === 'ENGLISH' || languageParam === 'POLISH'
         ? (languageParam as JobLanguage)
         : undefined;
 
     const skillIds = rawSkills
       ? rawSkills
-        .split(",")
-        .map((id) => id.trim())
-        .filter(Boolean)
+          .split(',')
+          .map((id) => id.trim())
+          .filter(Boolean)
       : [];
 
     return {
@@ -97,7 +99,7 @@ function OffersPageContent({
       </div>
 
       <JobsSectionHeader
-        sectionTitle={t("jobs.jobs")}
+        sectionTitle={t('jobs.jobs')}
         categoryId={categoryId}
         categorySlugForRouting={routingCategorySlug}
         page={page}
@@ -120,13 +122,13 @@ export function OffersPageClient({
   const { t } = useTranslations();
   const params = useParams<{ category: string; page: string }>();
   const categoryParam =
-    typeof params.category === "string" && params.category.length > 0
+    typeof params.category === 'string' && params.category.length > 0
       ? params.category
-      : "all";
+      : 'all';
   const pageParam =
-    typeof params.page === "string" && params.page.length > 0
+    typeof params.page === 'string' && params.page.length > 0
       ? params.page
-      : "1";
+      : '1';
   const page = parsePageParam(pageParam);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -137,7 +139,7 @@ export function OffersPageClient({
   }, []);
 
   const effectiveCategorySlug =
-    categoryParam === "all" ? undefined : categoryParam;
+    categoryParam === 'all' ? undefined : categoryParam;
   const hasMatchingCategory =
     effectiveCategorySlug &&
     categories.some((c) => c.slug === effectiveCategorySlug);
@@ -151,8 +153,8 @@ export function OffersPageClient({
   const categoryId = selectedCategory?.id;
   const categoryNameForHeader = selectedCategory?.name;
 
-  const routingCategorySlug = resolvedCategorySlug ?? "all";
-  const isHomePage = routingCategorySlug === "all" && page === 1;
+  const routingCategorySlug = resolvedCategorySlug ?? 'all';
+  const isHomePage = routingCategorySlug === 'all' && page === 1;
 
   return (
     <OnboardingRedirect>
@@ -198,4 +200,3 @@ export function OffersPageClient({
     </OnboardingRedirect>
   );
 }
-

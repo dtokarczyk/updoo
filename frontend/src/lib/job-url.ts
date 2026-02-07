@@ -10,14 +10,16 @@ const CUID_LENGTH = 25;
  * Slugify job title for URL segment: lowercase, hyphens, alphanumeric only.
  */
 export function slugify(title: string): string {
-  return title
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .replace(/-+/g, "-") || "job";
+  return (
+    title
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .replace(/-+/g, '-') || 'job'
+  );
 }
 
 /**
@@ -41,7 +43,7 @@ export function jobPathEdit(job: { id: string; title: string }): string {
  * Backward compat: if segment is exactly CUID_LENGTH and alphanumeric, treat as raw id.
  */
 export function parseJobSlugId(slugId: string): string {
-  if (!slugId) return "";
+  if (!slugId) return '';
   if (slugId.length === CUID_LENGTH && /^[a-z0-9]+$/i.test(slugId)) {
     return slugId;
   }

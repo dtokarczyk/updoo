@@ -1,8 +1,8 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
-export type AccountType = "CLIENT" | "FREELANCER" | "ADMIN";
+export type AccountType = 'CLIENT' | 'FREELANCER' | 'ADMIN';
 
-export type UserLanguage = "POLISH" | "ENGLISH";
+export type UserLanguage = 'POLISH' | 'ENGLISH';
 
 export interface AuthUser {
   id: string;
@@ -26,26 +26,26 @@ export async function register(
   email: string,
   password: string,
   confirmPassword: string,
-  termsAccepted: boolean
+  termsAccepted: boolean,
 ): Promise<AuthResponse> {
-  const headers: HeadersInit = { "Content-Type": "application/json" };
+  const headers: HeadersInit = { 'Content-Type': 'application/json' };
 
   // Add Accept-Language header based on user locale
-  if (typeof window !== "undefined") {
-    const { getUserLocale } = await import("./i18n");
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
     const locale = getUserLocale();
-    headers["Accept-Language"] = locale;
+    headers['Accept-Language'] = locale;
   }
 
   const res = await fetch(`${API_URL}/auth/register`, {
-    method: "POST",
+    method: 'POST',
     headers,
     body: JSON.stringify({ email, password, confirmPassword, termsAccepted }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
-    throw new Error(msg ?? "Registration failed");
+    throw new Error(msg ?? 'Registration failed');
   }
   return res.json();
 }
@@ -66,10 +66,10 @@ export interface UpdateProfilePayload {
 }
 
 export async function updateProfile(
-  payload: UpdateProfilePayload
+  payload: UpdateProfilePayload,
 ): Promise<{ user: AuthUser }> {
   const token = getToken();
-  if (!token) throw new Error("Not authenticated");
+  if (!token) throw new Error('Not authenticated');
   const body: Record<string, unknown> = {};
   if (payload.name !== undefined) body.name = payload.name;
   if (payload.surname !== undefined) body.surname = payload.surname;
@@ -81,76 +81,77 @@ export async function updateProfile(
     body.oldPassword = payload.oldPassword;
   if (payload.language !== undefined) body.language = payload.language;
   if (payload.skillIds !== undefined) body.skillIds = payload.skillIds;
-  if (payload.defaultMessage !== undefined) body.defaultMessage = payload.defaultMessage;
+  if (payload.defaultMessage !== undefined)
+    body.defaultMessage = payload.defaultMessage;
 
   const headers: HeadersInit = {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
     Authorization: `Bearer ${token}`,
   };
 
   // Add Accept-Language header based on user locale
-  if (typeof window !== "undefined") {
-    const { getUserLocale } = await import("./i18n");
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
     const locale = getUserLocale();
-    headers["Accept-Language"] = locale;
+    headers['Accept-Language'] = locale;
   }
 
   const res = await fetch(`${API_URL}/auth/profile`, {
-    method: "PATCH",
+    method: 'PATCH',
     headers,
     body: JSON.stringify(body),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
-    throw new Error(msg ?? "Update failed");
+    throw new Error(msg ?? 'Update failed');
   }
   return res.json();
 }
 
 export async function login(
   email: string,
-  password: string
+  password: string,
 ): Promise<AuthResponse> {
-  const headers: HeadersInit = { "Content-Type": "application/json" };
+  const headers: HeadersInit = { 'Content-Type': 'application/json' };
 
   // Add Accept-Language header based on user locale
-  if (typeof window !== "undefined") {
-    const { getUserLocale } = await import("./i18n");
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
     const locale = getUserLocale();
-    headers["Accept-Language"] = locale;
+    headers['Accept-Language'] = locale;
   }
 
   const res = await fetch(`${API_URL}/auth/login`, {
-    method: "POST",
+    method: 'POST',
     headers,
     body: JSON.stringify({ email, password }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
-    throw new Error(msg ?? "Login failed");
+    throw new Error(msg ?? 'Login failed');
   }
   return res.json();
 }
 
-export const AUTH_TOKEN_KEY = "auth_token";
-export const AUTH_USER_KEY = "auth_user";
-export const DRAFT_JOB_KEY = "draft_job";
+export const AUTH_TOKEN_KEY = 'auth_token';
+export const AUTH_USER_KEY = 'auth_user';
+export const DRAFT_JOB_KEY = 'draft_job';
 
 export function setAuth(data: AuthResponse): void {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
   localStorage.setItem(AUTH_TOKEN_KEY, data.access_token);
   localStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.user));
 }
 
 export function getToken(): string | null {
-  if (typeof window === "undefined") return null;
+  if (typeof window === 'undefined') return null;
   return localStorage.getItem(AUTH_TOKEN_KEY);
 }
 
 export function getStoredUser(): AuthUser | null {
-  if (typeof window === "undefined") return null;
+  if (typeof window === 'undefined') return null;
   const raw = localStorage.getItem(AUTH_USER_KEY);
   if (!raw) return null;
   try {
@@ -161,24 +162,24 @@ export function getStoredUser(): AuthUser | null {
 }
 
 export function updateStoredUser(user: AuthUser): void {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
   localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
 }
 
 export function clearAuth(): void {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
   localStorage.removeItem(AUTH_TOKEN_KEY);
   localStorage.removeItem(AUTH_USER_KEY);
 }
 
 // Draft job functions
 export function saveDraftJob(payload: CreateJobPayload): void {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
   localStorage.setItem(DRAFT_JOB_KEY, JSON.stringify(payload));
 }
 
 export function getDraftJob(): CreateJobPayload | null {
-  if (typeof window === "undefined") return null;
+  if (typeof window === 'undefined') return null;
   const raw = localStorage.getItem(DRAFT_JOB_KEY);
   if (!raw) return null;
   try {
@@ -189,7 +190,7 @@ export function getDraftJob(): CreateJobPayload | null {
 }
 
 export function clearDraftJob(): void {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
   localStorage.removeItem(DRAFT_JOB_KEY);
 }
 
@@ -197,11 +198,12 @@ export function clearDraftJob(): void {
 export function needsOnboarding(user: AuthUser | null): boolean {
   if (user == null) return false;
   if (user.name == null || user.accountType == null) return true;
-  if (user.accountType === "FREELANCER") {
+  if (user.accountType === 'FREELANCER') {
     const skillsCount = user.skills?.length ?? 0;
     if (skillsCount === 0) return true;
     // Check if defaultMessage is missing (null or empty string)
-    if (user.defaultMessage == null || user.defaultMessage.trim() === "") return true;
+    if (user.defaultMessage == null || user.defaultMessage.trim() === '')
+      return true;
   }
   return false;
 }
@@ -210,12 +212,12 @@ export function needsOnboarding(user: AuthUser | null): boolean {
 
 /** Display order: 1. Wszystkie (link only), 2. Programowanie, 3. Design, 4. Marketing, 5. Pisanie, 6. Prace biurowe, 7. Inne */
 const CATEGORY_ORDER = [
-  "programming",
-  "design",
-  "marketing",
-  "writing",
-  "office-working",
-  "other",
+  'programming',
+  'design',
+  'marketing',
+  'writing',
+  'office-working',
+  'other',
 ];
 
 export function sortCategoriesByOrder(categories: Category[]): Category[] {
@@ -250,12 +252,16 @@ export interface PopularSkill extends Skill {
   count: number;
 }
 
-export type JobStatus = "DRAFT" | "PUBLISHED" | "CLOSED";
-export type JobLanguage = "ENGLISH" | "POLISH";
-export type BillingType = "FIXED" | "HOURLY";
-export type HoursPerWeek = "LESS_THAN_10" | "FROM_11_TO_20" | "FROM_21_TO_30" | "MORE_THAN_30";
-export type ExperienceLevel = "JUNIOR" | "MID" | "SENIOR";
-export type ProjectType = "ONE_TIME" | "CONTINUOUS";
+export type JobStatus = 'DRAFT' | 'PUBLISHED' | 'CLOSED';
+export type JobLanguage = 'ENGLISH' | 'POLISH';
+export type BillingType = 'FIXED' | 'HOURLY';
+export type HoursPerWeek =
+  | 'LESS_THAN_10'
+  | 'FROM_11_TO_20'
+  | 'FROM_21_TO_30'
+  | 'MORE_THAN_30';
+export type ExperienceLevel = 'JUNIOR' | 'MID' | 'SENIOR';
+export type ProjectType = 'ONE_TIME' | 'CONTINUOUS';
 
 export interface JobAuthor {
   id: string;
@@ -271,7 +277,7 @@ export function authorDisplayName(author: JobAuthor): string {
   if (n && s) return `${n} ${s}`;
   if (n) return n;
   if (s) return s;
-  return author.email || "";
+  return author.email || '';
 }
 
 export interface JobSkillRelation {
@@ -303,14 +309,12 @@ export interface JobApplicationDisplay {
   createdAt: string;
 }
 
-export type JobApplication =
-  | JobApplicationFull
-  | JobApplicationDisplay;
+export type JobApplication = JobApplicationFull | JobApplicationDisplay;
 
 export function isApplicationFull(
-  app: JobApplication
+  app: JobApplication,
 ): app is JobApplicationFull {
-  return "freelancer" in app;
+  return 'freelancer' in app;
 }
 
 export interface Job {
@@ -361,14 +365,14 @@ export interface JobsFeedResponse {
 }
 
 export async function getPopularSkillsForCategory(
-  categoryId: string
+  categoryId: string,
 ): Promise<PopularSkill[]> {
   const params = new URLSearchParams();
-  params.set("categoryId", categoryId);
+  params.set('categoryId', categoryId);
   const res = await fetch(
-    `${API_URL}/jobs/popular-skills?${params.toString()}`
+    `${API_URL}/jobs/popular-skills?${params.toString()}`,
   );
-  if (!res.ok) throw new Error("Failed to fetch popular skills");
+  if (!res.ok) throw new Error('Failed to fetch popular skills');
   return res.json();
 }
 
@@ -378,26 +382,26 @@ export async function getCategories(): Promise<Category[]> {
   if (token) headers.Authorization = `Bearer ${token}`;
 
   // Add Accept-Language header based on user locale
-  if (typeof window !== "undefined") {
-    const { getUserLocale } = await import("./i18n");
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
     const locale = getUserLocale();
-    headers["Accept-Language"] = locale;
+    headers['Accept-Language'] = locale;
   }
 
   const res = await fetch(`${API_URL}/jobs/categories`, { headers });
-  if (!res.ok) throw new Error("Failed to fetch categories");
+  if (!res.ok) throw new Error('Failed to fetch categories');
   return res.json();
 }
 
 export async function getLocations(): Promise<Location[]> {
   const res = await fetch(`${API_URL}/jobs/locations`);
-  if (!res.ok) throw new Error("Failed to fetch locations");
+  if (!res.ok) throw new Error('Failed to fetch locations');
   return res.json();
 }
 
 export async function getSkills(): Promise<Skill[]> {
   const res = await fetch(`${API_URL}/jobs/skills`);
-  if (!res.ok) throw new Error("Failed to fetch skills");
+  if (!res.ok) throw new Error('Failed to fetch skills');
   return res.json();
 }
 
@@ -405,18 +409,18 @@ export async function getJobsFeed(
   page: number = 1,
   pageSize: number = 15,
   categoryId?: string,
-  language?: JobLanguage | "" | undefined,
-  skillIds?: string[]
+  language?: JobLanguage | '' | undefined,
+  skillIds?: string[],
 ): Promise<JobsFeedResponse> {
   const params = new URLSearchParams();
-  params.set("page", String(page));
-  params.set("pageSize", String(pageSize));
-  if (categoryId) params.set("categoryId", categoryId);
-  if (language === "POLISH" || language === "ENGLISH") {
-    params.set("language", language as JobLanguage);
+  params.set('page', String(page));
+  params.set('pageSize', String(pageSize));
+  if (categoryId) params.set('categoryId', categoryId);
+  if (language === 'POLISH' || language === 'ENGLISH') {
+    params.set('language', language as JobLanguage);
   }
   if (skillIds && skillIds.length > 0) {
-    params.set("skillIds", skillIds.join(","));
+    params.set('skillIds', skillIds.join(','));
   }
   const url = `${API_URL}/jobs/feed?${params.toString()}`;
   const headers: HeadersInit = {};
@@ -424,14 +428,14 @@ export async function getJobsFeed(
   if (token) headers.Authorization = `Bearer ${token}`;
 
   // Add Accept-Language header based on user locale
-  if (typeof window !== "undefined") {
-    const { getUserLocale } = await import("./i18n");
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
     const locale = getUserLocale();
-    headers["Accept-Language"] = locale;
+    headers['Accept-Language'] = locale;
   }
 
   const res = await fetch(url, { headers });
-  if (!res.ok) throw new Error("Failed to fetch jobs");
+  if (!res.ok) throw new Error('Failed to fetch jobs');
   return res.json();
 }
 
@@ -441,16 +445,16 @@ export async function getJob(id: string): Promise<Job> {
   if (token) headers.Authorization = `Bearer ${token}`;
 
   // Add Accept-Language header based on user locale
-  if (typeof window !== "undefined") {
-    const { getUserLocale } = await import("./i18n");
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
     const locale = getUserLocale();
-    headers["Accept-Language"] = locale;
+    headers['Accept-Language'] = locale;
   }
 
   const res = await fetch(`${API_URL}/jobs/${id}`, { headers });
   if (!res.ok) {
-    if (res.status === 404) throw new Error("Oferta nie istnieje");
-    throw new Error("Failed to fetch job");
+    if (res.status === 404) throw new Error('Oferta nie istnieje');
+    throw new Error('Failed to fetch job');
   }
   return res.json();
 }
@@ -466,25 +470,25 @@ export async function getJobPrevNext(id: string): Promise<JobPrevNext> {
   if (token) headers.Authorization = `Bearer ${token}`;
 
   // Add Accept-Language header based on user locale
-  if (typeof window !== "undefined") {
-    const { getUserLocale } = await import("./i18n");
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
     const locale = getUserLocale();
-    headers["Accept-Language"] = locale;
+    headers['Accept-Language'] = locale;
   }
 
   const res = await fetch(`${API_URL}/jobs/${id}/prev-next`, { headers });
   if (!res.ok) {
-    if (res.status === 404) throw new Error("Oferta nie istnieje");
-    throw new Error("Failed to fetch prev/next jobs");
+    if (res.status === 404) throw new Error('Oferta nie istnieje');
+    throw new Error('Failed to fetch prev/next jobs');
   }
   return res.json();
 }
 
 export async function publishJob(jobId: string): Promise<Job> {
   const token = getToken();
-  if (!token) throw new Error("Not authenticated");
+  if (!token) throw new Error('Not authenticated');
   const res = await fetch(`${API_URL}/jobs/${jobId}/publish`, {
-    method: "PATCH",
+    method: 'PATCH',
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -492,16 +496,16 @@ export async function publishJob(jobId: string): Promise<Job> {
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
-    throw new Error(msg ?? "Failed to publish job");
+    throw new Error(msg ?? 'Failed to publish job');
   }
   return res.json();
 }
 
 export async function closeJob(jobId: string): Promise<Job> {
   const token = getToken();
-  if (!token) throw new Error("Not authenticated");
+  if (!token) throw new Error('Not authenticated');
   const res = await fetch(`${API_URL}/jobs/${jobId}/close`, {
-    method: "PATCH",
+    method: 'PATCH',
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -509,7 +513,7 @@ export async function closeJob(jobId: string): Promise<Job> {
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
-    throw new Error(msg ?? "Failed to close job");
+    throw new Error(msg ?? 'Failed to close job');
   }
   return res.json();
 }
@@ -536,168 +540,168 @@ export interface CreateJobPayload {
 
 export async function createJob(payload: CreateJobPayload): Promise<Job> {
   const token = getToken();
-  if (!token) throw new Error("Not authenticated");
+  if (!token) throw new Error('Not authenticated');
 
   const headers: HeadersInit = {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
     Authorization: `Bearer ${token}`,
   };
 
   // Add Accept-Language header based on user locale
-  if (typeof window !== "undefined") {
-    const { getUserLocale } = await import("./i18n");
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
     const locale = getUserLocale();
-    headers["Accept-Language"] = locale;
+    headers['Accept-Language'] = locale;
   }
 
   const res = await fetch(`${API_URL}/jobs`, {
-    method: "POST",
+    method: 'POST',
     headers,
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
-    throw new Error(msg ?? "Failed to create job");
+    throw new Error(msg ?? 'Failed to create job');
   }
   return res.json();
 }
 
 export async function updateJob(
   id: string,
-  payload: CreateJobPayload
+  payload: CreateJobPayload,
 ): Promise<Job> {
   const token = getToken();
-  if (!token) throw new Error("Not authenticated");
+  if (!token) throw new Error('Not authenticated');
 
   const headers: HeadersInit = {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
     Authorization: `Bearer ${token}`,
   };
 
   // Add Accept-Language header based on user locale
-  if (typeof window !== "undefined") {
-    const { getUserLocale } = await import("./i18n");
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
     const locale = getUserLocale();
-    headers["Accept-Language"] = locale;
+    headers['Accept-Language'] = locale;
   }
 
   const res = await fetch(`${API_URL}/jobs/${id}`, {
-    method: "PATCH",
+    method: 'PATCH',
     headers,
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
-    throw new Error(msg ?? "Failed to update job");
+    throw new Error(msg ?? 'Failed to update job');
   }
   return res.json();
 }
 
 export async function applyToJob(
   jobId: string,
-  message?: string
+  message?: string,
 ): Promise<{ ok: boolean }> {
   const token = getToken();
-  if (!token) throw new Error("Zaloguj się, aby zgłosić się do oferty");
+  if (!token) throw new Error('Zaloguj się, aby zgłosić się do oferty');
 
   const headers: HeadersInit = {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
     Authorization: `Bearer ${token}`,
   };
 
   // Add Accept-Language header based on user locale
-  if (typeof window !== "undefined") {
-    const { getUserLocale } = await import("./i18n");
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
     const locale = getUserLocale();
-    headers["Accept-Language"] = locale;
+    headers['Accept-Language'] = locale;
   }
 
   const res = await fetch(`${API_URL}/jobs/${jobId}/apply`, {
-    method: "POST",
+    method: 'POST',
     headers,
     body: JSON.stringify({ message: message?.trim() || undefined }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
-    throw new Error(msg ?? "Nie udało się zgłosić do oferty");
+    throw new Error(msg ?? 'Nie udało się zgłosić do oferty');
   }
   return res.json();
 }
 
 export async function addFavorite(jobId: string): Promise<{ ok: boolean }> {
   const token = getToken();
-  if (!token) throw new Error("Zaloguj się, aby zapisać ofertę");
+  if (!token) throw new Error('Zaloguj się, aby zapisać ofertę');
   const res = await fetch(`${API_URL}/jobs/${jobId}/favorite`, {
-    method: "POST",
+    method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
-    throw new Error(msg ?? "Nie udało się dodać do ulubionych");
+    throw new Error(msg ?? 'Nie udało się dodać do ulubionych');
   }
   return res.json();
 }
 
 export async function removeFavorite(jobId: string): Promise<{ ok: boolean }> {
   const token = getToken();
-  if (!token) throw new Error("Not authenticated");
+  if (!token) throw new Error('Not authenticated');
   const res = await fetch(`${API_URL}/jobs/${jobId}/favorite`, {
-    method: "DELETE",
+    method: 'DELETE',
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
-    throw new Error(msg ?? "Nie udało się usunąć z ulubionych");
+    throw new Error(msg ?? 'Nie udało się usunąć z ulubionych');
   }
   return res.json();
 }
 
 export async function getFavoritesJobs(): Promise<Job[]> {
   const token = getToken();
-  if (!token) throw new Error("Zaloguj się, aby zobaczyć ulubione");
+  if (!token) throw new Error('Zaloguj się, aby zobaczyć ulubione');
   const headers: HeadersInit = { Authorization: `Bearer ${token}` };
 
   // Add Accept-Language header based on user locale
-  if (typeof window !== "undefined") {
-    const { getUserLocale } = await import("./i18n");
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
     const locale = getUserLocale();
-    headers["Accept-Language"] = locale;
+    headers['Accept-Language'] = locale;
   }
 
   const res = await fetch(`${API_URL}/jobs/favorites`, { headers });
-  if (!res.ok) throw new Error("Nie udało się załadować ulubionych");
+  if (!res.ok) throw new Error('Nie udało się załadować ulubionych');
   return res.json();
 }
 
 export async function getPendingJobs(
   page: number = 1,
-  pageSize: number = 15
+  pageSize: number = 15,
 ): Promise<JobsFeedResponse> {
   const token = getToken();
-  if (!token) throw new Error("Not authenticated");
+  if (!token) throw new Error('Not authenticated');
   const params = new URLSearchParams();
-  params.set("page", String(page));
-  params.set("pageSize", String(pageSize));
+  params.set('page', String(page));
+  params.set('pageSize', String(pageSize));
   const url = `${API_URL}/jobs/pending?${params.toString()}`;
   const headers: HeadersInit = { Authorization: `Bearer ${token}` };
 
   // Add Accept-Language header based on user locale
-  if (typeof window !== "undefined") {
-    const { getUserLocale } = await import("./i18n");
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
     const locale = getUserLocale();
-    headers["Accept-Language"] = locale;
+    headers['Accept-Language'] = locale;
   }
 
   const res = await fetch(url, { headers });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
-    throw new Error(msg ?? "Failed to fetch pending jobs");
+    throw new Error(msg ?? 'Failed to fetch pending jobs');
   }
   return res.json();
 }
@@ -711,56 +715,56 @@ export interface UserApplication {
 
 export async function getUserApplications(): Promise<UserApplication[]> {
   const token = getToken();
-  if (!token) throw new Error("Not authenticated");
+  if (!token) throw new Error('Not authenticated');
   const headers: HeadersInit = { Authorization: `Bearer ${token}` };
 
   // Add Accept-Language header based on user locale
-  if (typeof window !== "undefined") {
-    const { getUserLocale } = await import("./i18n");
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
     const locale = getUserLocale();
-    headers["Accept-Language"] = locale;
+    headers['Accept-Language'] = locale;
   }
 
   const res = await fetch(`${API_URL}/jobs/my-applications`, { headers });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
-    throw new Error(msg ?? "Failed to fetch user applications");
+    throw new Error(msg ?? 'Failed to fetch user applications');
   }
   return res.json();
 }
 
 export async function getUserJobs(): Promise<Job[]> {
   const token = getToken();
-  if (!token) throw new Error("Not authenticated");
+  if (!token) throw new Error('Not authenticated');
   const headers: HeadersInit = { Authorization: `Bearer ${token}` };
 
   // Add Accept-Language header based on user locale
-  if (typeof window !== "undefined") {
-    const { getUserLocale } = await import("./i18n");
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
     const locale = getUserLocale();
-    headers["Accept-Language"] = locale;
+    headers['Accept-Language'] = locale;
   }
 
   const res = await fetch(`${API_URL}/jobs/my-jobs`, { headers });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
-    throw new Error(msg ?? "Failed to fetch user jobs");
+    throw new Error(msg ?? 'Failed to fetch user jobs');
   }
   return res.json();
 }
 
-export async function generateAiJob(): Promise<{ 
-  ok: boolean; 
+export async function generateAiJob(): Promise<{
+  ok: boolean;
   message: string;
   jobId?: string;
   categorySlug?: string;
 }> {
   const token = getToken();
-  if (!token) throw new Error("Not authenticated");
+  if (!token) throw new Error('Not authenticated');
   const res = await fetch(`${API_URL}/content-generator/generate-job`, {
-    method: "POST",
+    method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -768,7 +772,7 @@ export async function generateAiJob(): Promise<{
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
-    throw new Error(msg ?? "Failed to generate job");
+    throw new Error(msg ?? 'Failed to generate job');
   }
   return res.json();
 }

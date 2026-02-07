@@ -1,18 +1,27 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
-import { Plus } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { pl, enUS } from "date-fns/locale";
-import { getUserApplications, getUserJobs, getToken, getStoredUser, clearAuth, type AuthUser, type UserApplication, type Job } from "@/lib/api";
-import { jobPath } from "@/lib/job-url";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { Button } from "@/components/ui/button";
-import { useTranslations } from "@/hooks/useTranslations";
-import { UserDropdown } from "@/app/components/HomeNav";
-import type { Locale } from "@/lib/i18n";
+import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
+import { Plus } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { pl, enUS } from 'date-fns/locale';
+import {
+  getUserApplications,
+  getUserJobs,
+  getToken,
+  getStoredUser,
+  clearAuth,
+  type AuthUser,
+  type UserApplication,
+  type Job,
+} from '@/lib/api';
+import { jobPath } from '@/lib/job-url';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { Button } from '@/components/ui/button';
+import { useTranslations } from '@/hooks/useTranslations';
+import { UserDropdown } from '@/app/components/HomeNav';
+import type { Locale } from '@/lib/i18n';
 
 interface UserSidebarProps {
   /** Initial locale from server to avoid hydration mismatch */
@@ -58,24 +67,24 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
 
     const accountType = user.accountType;
 
-    if (accountType === "FREELANCER") {
+    if (accountType === 'FREELANCER') {
       getUserApplications()
         .then((data) => {
           setApplications(data);
         })
         .catch((err) => {
-          console.error("Failed to load applications:", err);
+          console.error('Failed to load applications:', err);
         })
         .finally(() => {
           setLoading(false);
         });
-    } else if (accountType === "CLIENT") {
+    } else if (accountType === 'CLIENT') {
       getUserJobs()
         .then((data) => {
           setJobs(data);
         })
         .catch((err) => {
-          console.error("Failed to load jobs:", err);
+          console.error('Failed to load jobs:', err);
         })
         .finally(() => {
           setLoading(false);
@@ -88,12 +97,15 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
   useEffect(() => {
     if (!dropdownOpen) return;
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setDropdownOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [dropdownOpen]);
 
   const handleLogout = () => {
@@ -101,7 +113,7 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
     clearAuth();
     setUser(null);
     setIsLoggedIn(false);
-    router.push("/");
+    router.push('/');
     router.refresh();
   };
 
@@ -109,10 +121,13 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
     return null;
   }
 
-  const dateFnsLocale = locale === "en" ? enUS : pl;
+  const dateFnsLocale = locale === 'en' ? enUS : pl;
 
   function formatPostedAgo(iso: string): string {
-    return formatDistanceToNow(new Date(iso), { addSuffix: true, locale: dateFnsLocale });
+    return formatDistanceToNow(new Date(iso), {
+      addSuffix: true,
+      locale: dateFnsLocale,
+    });
   }
 
   return (
@@ -136,20 +151,30 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
         </div>
       </div>
 
-      {user?.accountType === "CLIENT" && (
+      {user?.accountType === 'CLIENT' && (
         <div className="mb-4">
-          <Button asChild variant="default" size="lg" className="w-full justify-start">
+          <Button
+            asChild
+            variant="default"
+            size="lg"
+            className="w-full justify-start"
+          >
             <Link href="/job/new">
               <Plus className="size-5 shrink-0" aria-hidden />
-              {t("jobs.newJob")}
+              {t('jobs.newJob')}
             </Link>
           </Button>
         </div>
       )}
 
-      {user?.accountType === "ADMIN" && (
+      {user?.accountType === 'ADMIN' && (
         <div className="mb-4">
-          <Button asChild variant="outline" size="lg" className="w-full justify-start">
+          <Button
+            asChild
+            variant="outline"
+            size="lg"
+            className="w-full justify-start"
+          >
             <Link href="/admin">
               <Plus className="size-5 shrink-0" aria-hidden />
               Panel administracyjny
@@ -162,16 +187,18 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
       {user?.accountType && (
         <div>
           <h3 className="text-sm font-semibold text-foreground mb-3">
-            {user.accountType === "FREELANCER"
-              ? t("jobs.recentApplications")
-              : t("jobs.myJobs")}
+            {user.accountType === 'FREELANCER'
+              ? t('jobs.recentApplications')
+              : t('jobs.myJobs')}
           </h3>
           {loading ? (
-            <div className="text-sm text-muted-foreground">{t("common.loading")}</div>
-          ) : user.accountType === "FREELANCER" ? (
+            <div className="text-sm text-muted-foreground">
+              {t('common.loading')}
+            </div>
+          ) : user.accountType === 'FREELANCER' ? (
             applications.length === 0 ? (
               <div className="text-sm text-muted-foreground">
-                {t("jobs.noApplications")}
+                {t('jobs.noApplications')}
               </div>
             ) : (
               <div className="space-y-2">
@@ -196,15 +223,15 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
                 ))}
               </div>
             )
-          ) : user.accountType === "CLIENT" ? (
+          ) : user.accountType === 'CLIENT' ? (
             jobs.length === 0 ? (
               <div className="text-sm text-muted-foreground py-2">
-                {t("jobs.noJobs")}
+                {t('jobs.noJobs')}
               </div>
             ) : (
               <div className="space-y-2">
                 {jobs.map((job) => {
-                  const isClosed = job.status === "CLOSED";
+                  const isClosed = job.status === 'CLOSED';
                   return (
                     <Link
                       key={job.id}
@@ -212,10 +239,11 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
                       className="block p-3 rounded-lg border border-border bg-card hover:bg-muted transition-colors"
                     >
                       <h4
-                        className={`text-sm font-medium line-clamp-2 mb-1 ${isClosed
-                            ? "text-muted-foreground line-through"
-                            : "text-foreground"
-                          }`}
+                        className={`text-sm font-medium line-clamp-2 mb-1 ${
+                          isClosed
+                            ? 'text-muted-foreground line-through'
+                            : 'text-foreground'
+                        }`}
                       >
                         {job.title}
                       </h4>

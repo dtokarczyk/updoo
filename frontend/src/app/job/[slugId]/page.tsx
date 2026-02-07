@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState, useRef } from "react";
-import ReactCountryFlag from "react-country-flag";
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState, useRef } from 'react';
+import ReactCountryFlag from 'react-country-flag';
 import {
   ArrowLeft,
   ArrowRight,
@@ -22,7 +22,7 @@ import {
   Laptop,
   BarChart3,
   X,
-} from "lucide-react";
+} from 'lucide-react';
 import {
   getJob,
   getJobPrevNext,
@@ -34,56 +34,57 @@ import {
   type Job,
   type JobPrevNext,
   type JobApplication,
-} from "@/lib/api";
-import { jobPath, jobPathEdit, parseJobSlugId } from "@/lib/job-url";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { useTranslations } from "@/hooks/useTranslations";
-import { format } from "date-fns";
-import { pl, enUS } from "date-fns/locale";
+} from '@/lib/api';
+import { jobPath, jobPathEdit, parseJobSlugId } from '@/lib/job-url';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { useTranslations } from '@/hooks/useTranslations';
+import { format } from 'date-fns';
+import { pl, enUS } from 'date-fns/locale';
 import {
   getDeadlineMsLeft,
   formatDeadlineRemaining,
   isDeadlineSoon,
-} from "@/lib/deadline-utils";
-import { getRateDisplay } from "@/lib/rate-helpers";
+} from '@/lib/deadline-utils';
+import { getRateDisplay } from '@/lib/rate-helpers';
 
 const BILLING_LABELS: Record<string, string> = {
-  FIXED: "Ryczałt",
-  HOURLY: "Godzinowo",
+  FIXED: 'Ryczałt',
+  HOURLY: 'Godzinowo',
 };
 
 const HOURS_LABELS: Record<string, string> = {
-  LESS_THAN_10: "< 10 h/tydz.",
-  FROM_11_TO_20: "11–20 h/tydz.",
-  FROM_21_TO_30: "21–30 h/tydz.",
-  MORE_THAN_30: "> 30 h/tydz.",
+  LESS_THAN_10: '< 10 h/tydz.',
+  FROM_11_TO_20: '11–20 h/tydz.',
+  FROM_21_TO_30: '21–30 h/tydz.',
+  MORE_THAN_30: '> 30 h/tydz.',
 };
 
 const EXPERIENCE_LABELS: Record<string, string> = {
-  JUNIOR: "Junior",
-  MID: "Mid",
-  SENIOR: "Senior",
+  JUNIOR: 'Junior',
+  MID: 'Mid',
+  SENIOR: 'Senior',
 };
 
 const PROJECT_TYPE_LABELS: Record<string, string> = {
-  ONE_TIME: "Jednorazowy",
-  CONTINUOUS: "Ciągły",
+  ONE_TIME: 'Jednorazowy',
+  CONTINUOUS: 'Ciągły',
 };
 
-function formatDate(iso: string, locale: "pl" | "en"): string {
-  const dateFnsLocale = locale === "en" ? enUS : pl;
+function formatDate(iso: string, locale: 'pl' | 'en'): string {
+  const dateFnsLocale = locale === 'en' ? enUS : pl;
   const date = new Date(iso);
-  const dateFormat = locale === "en" ? "d MMMM yyyy 'at' HH:mm" : "d MMMM yyyy 'o' HH:mm";
+  const dateFormat =
+    locale === 'en' ? "d MMMM yyyy 'at' HH:mm" : "d MMMM yyyy 'o' HH:mm";
   return format(date, dateFormat, { locale: dateFnsLocale });
 }
 
-function formatApplicationDateTime(iso: string, locale: "pl" | "en"): string {
-  const dateFnsLocale = locale === "en" ? enUS : pl;
+function formatApplicationDateTime(iso: string, locale: 'pl' | 'en'): string {
+  const dateFnsLocale = locale === 'en' ? enUS : pl;
   const date = new Date(iso);
   const dateTimeFormat =
-    locale === "en" ? "d MMM yyyy, HH:mm" : "d MMM yyyy, HH:mm";
+    locale === 'en' ? 'd MMM yyyy, HH:mm' : 'd MMM yyyy, HH:mm';
   return format(date, dateTimeFormat, { locale: dateFnsLocale });
 }
 
@@ -93,13 +94,13 @@ function applicationDisplayName(app: JobApplication): string {
     if (name && surname) return `${name} ${surname.charAt(0)}.`;
     if (name) return name;
     if (surname) return `${surname.charAt(0)}.`;
-    return app.freelancer.email ?? "?";
+    return app.freelancer.email ?? '?';
   }
-  return "freelancerDisplayName" in app && app.freelancerDisplayName
+  return 'freelancerDisplayName' in app && app.freelancerDisplayName
     ? app.freelancerDisplayName
-    : "freelancerInitials" in app
-      ? (app.freelancerInitials ?? "?")
-      : "?";
+    : 'freelancerInitials' in app
+      ? (app.freelancerInitials ?? '?')
+      : '?';
 }
 
 function DetailRow({
@@ -113,7 +114,7 @@ function DetailRow({
   value: React.ReactNode;
   valueClassName?: string;
 }) {
-  if (value == null || value === "") return null;
+  if (value == null || value === '') return null;
   return (
     <div className="flex gap-3 items-start">
       <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
@@ -123,7 +124,7 @@ function DetailRow({
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           {label}
         </p>
-        <p className={cn("text-sm font-medium", valueClassName)}>{value}</p>
+        <p className={cn('text-sm font-medium', valueClassName)}>{value}</p>
       </div>
     </div>
   );
@@ -139,16 +140,18 @@ function JobRateValue({
   t: (key: string) => string;
 }) {
   const rd = getRateDisplay(!!user, job);
-  if (rd.type === "negotiable") {
+  if (rd.type === 'negotiable') {
     return (
       <span className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
-        {t("jobs.negotiable")}
+        {t('jobs.negotiable')}
       </span>
     );
   }
-  if (rd.type === "blur") {
+  if (rd.type === 'blur') {
     return (
-      <span className="blur-sm select-none text-emerald-600 dark:text-emerald-400">{rd.placeholder}</span>
+      <span className="blur-sm select-none text-emerald-600 dark:text-emerald-400">
+        {rd.placeholder}
+      </span>
     );
   }
   return (
@@ -173,7 +176,7 @@ function JobActions({
   onApplyClick,
   onClose,
   t,
-  layout = "column",
+  layout = 'column',
 }: {
   isOwnJob: boolean;
   isAdmin: boolean;
@@ -189,17 +192,18 @@ function JobActions({
   onApplyClick: () => void;
   onClose: () => void;
   t: (key: string, params?: Record<string, string | number>) => string;
-  layout?: "column" | "row";
+  layout?: 'column' | 'row';
 }) {
   const isOwnerOrAdmin = isOwnJob || isAdmin;
-  const isFreelancerCanSee = !isDraft && !isClosed && user?.accountType === "FREELANCER";
+  const isFreelancerCanSee =
+    !isDraft && !isClosed && user?.accountType === 'FREELANCER';
   const isGuestApplyCta = !user && !isDraft && !isClosed;
 
   if (!isOwnerOrAdmin && !isFreelancerCanSee && !isGuestApplyCta) {
     return null;
   }
 
-  const containerClassName = layout === "row" ? "flex gap-2" : "space-y-2";
+  const containerClassName = layout === 'row' ? 'flex gap-2' : 'space-y-2';
   const loginUrl = `/login?returnUrl=${encodeURIComponent(jobPath(job))}`;
 
   return (
@@ -209,7 +213,7 @@ function JobActions({
           <Button className="w-full" size="lg" asChild>
             <Link href={jobPathEdit(job)}>
               <Pencil className="mr-2 h-4 w-4" />
-              {t("jobs.edit")}
+              {t('jobs.edit')}
             </Link>
           </Button>
           {canClose && (
@@ -221,7 +225,7 @@ function JobActions({
               disabled={closeSubmitting}
             >
               <X className="mr-2 h-4 w-4" />
-              {closeSubmitting ? t("jobs.closing") : t("jobs.close")}
+              {closeSubmitting ? t('jobs.closing') : t('jobs.close')}
             </Button>
           )}
         </>
@@ -229,26 +233,26 @@ function JobActions({
         <Button className="w-full" size="lg" asChild>
           <Link href={loginUrl}>
             <Send className="mr-2 h-4 w-4" />
-            {t("jobs.apply")}
+            {t('jobs.apply')}
           </Link>
         </Button>
       ) : canApply ? (
         <Button onClick={onApplyClick} className="w-full" size="lg">
           <Send className="mr-2 h-4 w-4" />
-          {t("jobs.apply")}
+          {t('jobs.apply')}
         </Button>
       ) : currentUserApplied === true ? (
         <Button disabled className="w-full" size="lg" variant="outline">
-          {t("jobs.appliedShort")}
+          {t('jobs.appliedShort')}
         </Button>
       ) : deadlinePassed ? (
         <Button disabled className="w-full" size="lg" variant="outline">
-          {t("jobs.deadlinePassed")}
+          {t('jobs.deadlinePassed')}
         </Button>
       ) : (
         <Button onClick={onApplyClick} className="w-full" size="lg">
           <Send className="mr-2 h-4 w-4" />
-          {t("jobs.apply")}
+          {t('jobs.apply')}
         </Button>
       )}
     </div>
@@ -259,17 +263,17 @@ export default function JobDetailPage() {
   const { t, locale } = useTranslations();
   const params = useParams();
   const router = useRouter();
-  const slugId = typeof params?.slugId === "string" ? params.slugId : "";
+  const slugId = typeof params?.slugId === 'string' ? params.slugId : '';
   const id = parseJobSlugId(slugId);
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [applyMessage, setApplyMessage] = useState("");
+  const [applyMessage, setApplyMessage] = useState('');
   const [applySubmitting, setApplySubmitting] = useState(false);
   const [applyError, setApplyError] = useState<string | null>(null);
-  const [lastApplicationMessage, setLastApplicationMessage] = useState<string | null>(
-    null
-  );
+  const [lastApplicationMessage, setLastApplicationMessage] = useState<
+    string | null
+  >(null);
   const [prevNext, setPrevNext] = useState<JobPrevNext | null>(null);
   const [closeSubmitting, setCloseSubmitting] = useState(false);
   const user = getStoredUser();
@@ -290,14 +294,18 @@ export default function JobDetailPage() {
         const backendMessage = data.currentUserApplicationMessage;
         if (backendMessage && backendMessage.trim().length > 0) {
           setLastApplicationMessage(backendMessage);
-        } else if (data.currentUserApplied && data.applications && data.applications.length > 0) {
+        } else if (
+          data.currentUserApplied &&
+          data.applications &&
+          data.applications.length > 0
+        ) {
           const maybeOwnApplication = data.applications.find(isApplicationFull);
           if (maybeOwnApplication && maybeOwnApplication.message) {
             setLastApplicationMessage(maybeOwnApplication.message);
           }
         }
       })
-      .catch((e) => setError(e instanceof Error ? e.message : "Błąd ładowania"))
+      .catch((e) => setError(e instanceof Error ? e.message : 'Błąd ładowania'))
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -312,11 +320,11 @@ export default function JobDetailPage() {
     if (!job || !user) return;
 
     const isOwnJob = user.id === job.authorId;
-    const isDraft = job.status === "DRAFT";
+    const isDraft = job.status === 'DRAFT';
     const deadlineMsLeft = getDeadlineMsLeft(job.deadline);
     const deadlinePassed = deadlineMsLeft !== null && deadlineMsLeft <= 0;
     const canApply =
-      user.accountType === "FREELANCER" &&
+      user.accountType === 'FREELANCER' &&
       !isOwnJob &&
       !isDraft &&
       !deadlinePassed &&
@@ -324,11 +332,15 @@ export default function JobDetailPage() {
 
     // Only fill default message when user can apply and hasn't already applied
     // Set it only once when job loads (check if applyMessage is still empty)
-    if (canApply && user.defaultMessage && user.defaultMessage.trim().length > 0) {
+    if (
+      canApply &&
+      user.defaultMessage &&
+      user.defaultMessage.trim().length > 0
+    ) {
       setApplyMessage((prev) => {
         // Only set if previous value is empty (don't overwrite user's edits)
         if (prev.trim().length === 0) {
-          return user.defaultMessage || "";
+          return user.defaultMessage || '';
         }
         return prev;
       });
@@ -407,11 +419,13 @@ export default function JobDetailPage() {
   if (error || !job) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
-        <p className="mb-4 text-destructive">{error ?? t("jobs.jobNotFound")}</p>
+        <p className="mb-4 text-destructive">
+          {error ?? t('jobs.jobNotFound')}
+        </p>
         <Button variant="outline" asChild>
           <Link href="/offers/all/1">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            {t("jobs.backToList")}
+            {t('jobs.backToList')}
           </Link>
         </Button>
       </div>
@@ -420,14 +434,14 @@ export default function JobDetailPage() {
 
   const skills = job.skills?.map((r) => r.skill.name) ?? [];
   const isOwnJob = user?.id === job.authorId;
-  const isAdmin = user?.accountType === "ADMIN";
-  const isDraft = job.status === "DRAFT";
-  const isClosed = job.status === "CLOSED";
+  const isAdmin = user?.accountType === 'ADMIN';
+  const isDraft = job.status === 'DRAFT';
+  const isClosed = job.status === 'CLOSED';
   const deadlineMsLeft = getDeadlineMsLeft(job.deadline);
   const deadlinePassed = deadlineMsLeft !== null && deadlineMsLeft <= 0;
   const deadlineSoon = isDeadlineSoon(deadlineMsLeft, isClosed);
   const canApply =
-    user?.accountType === "FREELANCER" &&
+    user?.accountType === 'FREELANCER' &&
     !isOwnJob &&
     !isDraft &&
     !isClosed &&
@@ -454,9 +468,9 @@ export default function JobDetailPage() {
       ) {
         setLastApplicationMessage(updated.currentUserApplicationMessage);
       }
-      setApplyMessage("");
+      setApplyMessage('');
     } catch (e) {
-      setApplyError(e instanceof Error ? e.message : "Błąd zgłoszenia");
+      setApplyError(e instanceof Error ? e.message : 'Błąd zgłoszenia');
     } finally {
       setApplySubmitting(false);
     }
@@ -471,7 +485,7 @@ export default function JobDetailPage() {
     }
 
     // If user is logged in but not a freelancer, redirect to login (they need to switch account)
-    if (user.accountType !== "FREELANCER") {
+    if (user.accountType !== 'FREELANCER') {
       const returnUrl = job ? jobPath(job) : `/job/${slugId}`;
       router.push(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
       return;
@@ -479,10 +493,13 @@ export default function JobDetailPage() {
 
     // If user can apply, scroll to form
     if (canApply && applyFormRef.current) {
-      applyFormRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      applyFormRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
       // Focus on textarea after scroll
       setTimeout(() => {
-        const textarea = applyFormRef.current?.querySelector("textarea");
+        const textarea = applyFormRef.current?.querySelector('textarea');
         if (textarea) {
           textarea.focus();
         }
@@ -497,7 +514,7 @@ export default function JobDetailPage() {
       const updated = await closeJob(id);
       setJob(updated);
     } catch (e) {
-      alert(e instanceof Error ? e.message : "Błąd zamykania oferty");
+      alert(e instanceof Error ? e.message : 'Błąd zamykania oferty');
     } finally {
       setCloseSubmitting(false);
     }
@@ -511,7 +528,9 @@ export default function JobDetailPage() {
           {/* Header with title and meta - left column only */}
           <div className="space-y-4">
             <div>
-              <h1 className="text-4xl font-semibold leading-tight">{job.title}</h1>
+              <h1 className="text-4xl font-semibold leading-tight">
+                {job.title}
+              </h1>
               <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1.5">
                   <User className="h-3.5 w-3.5" />
@@ -531,20 +550,22 @@ export default function JobDetailPage() {
               <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
                 <ReactCountryFlag
                   svg
-                  countryCode={job.language === "ENGLISH" ? "GB" : "PL"}
-                  style={{ width: "1em", height: "1em" }}
+                  countryCode={job.language === 'ENGLISH' ? 'GB' : 'PL'}
+                  style={{ width: '1em', height: '1em' }}
                 />
-                {job.language === "ENGLISH" ? t("jobs.english") : t("jobs.polish")}
+                {job.language === 'ENGLISH'
+                  ? t('jobs.english')
+                  : t('jobs.polish')}
               </span>
             </div>
             {isDraft && (
               <div className="rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 px-3 py-2 text-sm">
-                {t("jobs.draftVisibleOnlyToYou")}
+                {t('jobs.draftVisibleOnlyToYou')}
               </div>
             )}
             {isClosed && (
               <div className="rounded-lg bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200 px-3 py-2 text-sm">
-                {t("jobs.closed")}
+                {t('jobs.closed')}
                 {job.closedAt && (
                   <span className="ml-2">
                     ({formatDate(job.closedAt, locale)})
@@ -558,43 +579,41 @@ export default function JobDetailPage() {
           <section className="block lg:hidden space-y-6 border-t pt-6">
             <DetailRow
               icon={Banknote}
-              label={t("jobs.rate")}
+              label={t('jobs.rate')}
               value={<JobRateValue user={user} job={job} t={t} />}
             />
             <DetailRow
               icon={Briefcase}
-              label={t("jobs.billingType")}
+              label={t('jobs.billingType')}
               value={BILLING_LABELS[job.billingType] ?? job.billingType}
             />
-            {job.billingType === "HOURLY" && job.hoursPerWeek && (
+            {job.billingType === 'HOURLY' && job.hoursPerWeek && (
               <DetailRow
                 icon={Clock}
-                label={t("jobs.hoursPerWeek")}
+                label={t('jobs.hoursPerWeek')}
                 value={HOURS_LABELS[job.hoursPerWeek] ?? job.hoursPerWeek}
               />
             )}
             <DetailRow
               icon={BarChart3}
-              label={t("jobs.experienceLevel")}
+              label={t('jobs.experienceLevel')}
               value={
                 EXPERIENCE_LABELS[job.experienceLevel] ?? job.experienceLevel
               }
             />
             <DetailRow
               icon={Briefcase}
-              label={t("jobs.projectType")}
-              value={
-                PROJECT_TYPE_LABELS[job.projectType] ?? job.projectType
-              }
+              label={t('jobs.projectType')}
+              value={PROJECT_TYPE_LABELS[job.projectType] ?? job.projectType}
             />
             {job.deadline && (
               <DetailRow
                 icon={Clock}
-                label={t("jobs.deadline")}
+                label={t('jobs.deadline')}
                 value={formatDeadlineRemaining(job.deadline, t) ?? undefined}
                 valueClassName={
                   deadlineSoon
-                    ? "font-bold text-red-600 dark:text-red-400"
+                    ? 'font-bold text-red-600 dark:text-red-400'
                     : undefined
                 }
               />
@@ -602,15 +621,15 @@ export default function JobDetailPage() {
             {job.location && (
               <DetailRow
                 icon={MapPin}
-                label={t("jobs.location")}
+                label={t('jobs.location')}
                 value={job.location.name}
               />
             )}
             {job.isRemote && (
               <DetailRow
                 icon={Laptop}
-                label={t("jobs.remoteWork")}
-                value={t("common.yes")}
+                label={t('jobs.remoteWork')}
+                value={t('common.yes')}
               />
             )}
           </section>
@@ -624,7 +643,7 @@ export default function JobDetailPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                    {t("jobs.skills")}
+                    {t('jobs.skills')}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {skills.map((name) => (
@@ -649,7 +668,7 @@ export default function JobDetailPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
-                  {t("jobs.description")}
+                  {t('jobs.description')}
                 </p>
                 <p className="text-base whitespace-pre-wrap leading-relaxed">
                   {job.description}
@@ -664,12 +683,12 @@ export default function JobDetailPage() {
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
-                {t("jobs.applicationsCount", { count: applications.length })}
+                {t('jobs.applicationsCount', { count: applications.length })}
               </p>
               <ul className="space-y-2 mb-6">
                 {applications.length === 0 ? (
                   <p className="text-sm text-muted-foreground py-2">
-                    {t("jobs.noApplicationsYetBeFirst")}
+                    {t('jobs.noApplicationsYetBeFirst')}
                   </p>
                 ) : (
                   applications.map((app) => (
@@ -688,14 +707,14 @@ export default function JobDetailPage() {
                 )}
               </ul>
 
-              {user?.accountType === "FREELANCER" && !isOwnJob && !isDraft && (
+              {user?.accountType === 'FREELANCER' && !isOwnJob && !isDraft && (
                 <div ref={applyFormRef}>
                   {job.currentUserApplied ? (
                     <div className="space-y-3">
                       {lastApplicationMessage && (
                         <div className="rounded-lg border bg-muted/40 px-3 py-2">
                           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
-                            {t("jobs.applicationMessageContent")}
+                            {t('jobs.applicationMessageContent')}
                           </p>
                           <p className="text-sm whitespace-pre-wrap leading-relaxed">
                             {lastApplicationMessage}
@@ -705,15 +724,15 @@ export default function JobDetailPage() {
                     </div>
                   ) : deadlinePassed ? (
                     <p className="text-sm text-muted-foreground">
-                      {t("jobs.deadlinePassedMessage")}
+                      {t('jobs.deadlinePassedMessage')}
                     </p>
                   ) : (
                     <form onSubmit={handleApply} className="space-y-3">
                       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
-                        {t("jobs.applyToJob")}
+                        {t('jobs.applyToJob')}
                       </p>
                       <Textarea
-                        placeholder={t("jobs.applyMessagePlaceholder")}
+                        placeholder={t('jobs.applyMessagePlaceholder')}
                         value={applyMessage}
                         onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                           setApplyMessage(e.target.value)
@@ -729,11 +748,11 @@ export default function JobDetailPage() {
                       <div className="flex justify-end">
                         <Button type="submit" disabled={applySubmitting}>
                           {applySubmitting ? (
-                            t("jobs.applying")
+                            t('jobs.applying')
                           ) : (
                             <>
                               <Send className="mr-1.5 h-3.5 w-3.5" />
-                              {t("common.submit")}
+                              {t('common.submit')}
                             </>
                           )}
                         </Button>
@@ -772,43 +791,41 @@ export default function JobDetailPage() {
 
             <DetailRow
               icon={Banknote}
-              label={t("jobs.rate")}
+              label={t('jobs.rate')}
               value={<JobRateValue user={user} job={job} t={t} />}
             />
             <DetailRow
               icon={Briefcase}
-              label={t("jobs.billingType")}
+              label={t('jobs.billingType')}
               value={BILLING_LABELS[job.billingType] ?? job.billingType}
             />
-            {job.billingType === "HOURLY" && job.hoursPerWeek && (
+            {job.billingType === 'HOURLY' && job.hoursPerWeek && (
               <DetailRow
                 icon={Clock}
-                label={t("jobs.hoursPerWeek")}
+                label={t('jobs.hoursPerWeek')}
                 value={HOURS_LABELS[job.hoursPerWeek] ?? job.hoursPerWeek}
               />
             )}
             <DetailRow
               icon={BarChart3}
-              label={t("jobs.experienceLevel")}
+              label={t('jobs.experienceLevel')}
               value={
                 EXPERIENCE_LABELS[job.experienceLevel] ?? job.experienceLevel
               }
             />
             <DetailRow
               icon={Briefcase}
-              label={t("jobs.projectType")}
-              value={
-                PROJECT_TYPE_LABELS[job.projectType] ?? job.projectType
-              }
+              label={t('jobs.projectType')}
+              value={PROJECT_TYPE_LABELS[job.projectType] ?? job.projectType}
             />
             {job.deadline && (
               <DetailRow
                 icon={Clock}
-                label={t("jobs.deadline")}
+                label={t('jobs.deadline')}
                 value={formatDeadlineRemaining(job.deadline, t) ?? undefined}
                 valueClassName={
                   deadlineSoon
-                    ? "font-bold text-red-600 dark:text-red-400"
+                    ? 'font-bold text-red-600 dark:text-red-400'
                     : undefined
                 }
               />
@@ -816,15 +833,15 @@ export default function JobDetailPage() {
             {job.location && (
               <DetailRow
                 icon={MapPin}
-                label={t("jobs.location")}
+                label={t('jobs.location')}
                 value={job.location.name}
               />
             )}
             {job.isRemote && (
               <DetailRow
                 icon={Laptop}
-                label={t("jobs.remoteWork")}
-                value={t("common.yes")}
+                label={t('jobs.remoteWork')}
+                value={t('common.yes')}
               />
             )}
           </div>
@@ -842,7 +859,7 @@ export default function JobDetailPage() {
               >
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1.5">
                   <ArrowLeft className="h-4 w-4" />
-                  <span>{t("jobs.previous")}</span>
+                  <span>{t('jobs.previous')}</span>
                 </div>
                 <p className="font-medium text-foreground line-clamp-2 group-hover:text-primary transition-colors">
                   {prevNext.prev.title}
@@ -857,7 +874,7 @@ export default function JobDetailPage() {
                 className="group flex-1 rounded-lg border bg-muted/30 p-4 transition-colors hover:bg-muted/50 text-right"
               >
                 <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground mb-1.5">
-                  <span>{t("jobs.next")}</span>
+                  <span>{t('jobs.next')}</span>
                   <ArrowRight className="h-4 w-4" />
                 </div>
                 <p className="font-medium text-foreground line-clamp-2 group-hover:text-primary transition-colors">
@@ -872,7 +889,10 @@ export default function JobDetailPage() {
       )}
 
       {/* Sticky CTA button (mobile) – owner/admin, freelancer apply, or guest → login */}
-      {((isOwnJob || isAdmin) || canApply || (!user && !isDraft && !isClosed)) && (
+      {(isOwnJob ||
+        isAdmin ||
+        canApply ||
+        (!user && !isDraft && !isClosed)) && (
         <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
           <div className="mx-auto max-w-4xl">
             <JobActions

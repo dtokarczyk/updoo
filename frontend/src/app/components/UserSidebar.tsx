@@ -203,25 +203,33 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
               </div>
             ) : (
               <div className="space-y-2">
-                {jobs.map((job) => (
-                  <Link
-                    key={job.id}
-                    href={jobPath(job)}
-                    className="block p-3 rounded-lg border border-border bg-card hover:bg-muted transition-colors"
-                  >
-                    <h4 className="text-sm font-medium text-foreground line-clamp-2 mb-1">
-                      {job.title}
-                    </h4>
-                    <p className="text-xs text-muted-foreground">
-                      {formatPostedAgo(job.createdAt)}
-                    </p>
-                    {job.category && (
-                      <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">
-                        {job.category.name}
-                      </span>
-                    )}
-                  </Link>
-                ))}
+                {jobs.map((job) => {
+                  const isClosed = job.status === "CLOSED";
+                  return (
+                    <Link
+                      key={job.id}
+                      href={jobPath(job)}
+                      className="block p-3 rounded-lg border border-border bg-card hover:bg-muted transition-colors"
+                    >
+                      <h4
+                        className={`text-sm font-medium line-clamp-2 mb-1 ${isClosed
+                            ? "text-muted-foreground line-through"
+                            : "text-foreground"
+                          }`}
+                      >
+                        {job.title}
+                      </h4>
+                      <p className="text-xs text-muted-foreground">
+                        {formatPostedAgo(job.createdAt)}
+                      </p>
+                      {job.category && (
+                        <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">
+                          {job.category.name}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
               </div>
             )
           ) : null}

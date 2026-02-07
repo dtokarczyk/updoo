@@ -107,7 +107,7 @@ export function JobPost({
   const borderStateClass = [
     isDraft ? "border-alert" : "",
     isApplied && !isDraft ? "border-success" : "",
-    !isVisited && !isDraft && !isApplied ? "border-primary" : "",
+    !isVisited && !isDraft && !isApplied && !isClosed ? "border-primary" : "",
   ].filter(Boolean).join(" ");
 
   const [favoriteLoading, setFavoriteLoading] = useState(false);
@@ -193,7 +193,12 @@ export function JobPost({
 
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <CardTitle className="text-xl font-bold leading-tight text-foreground">
+            <CardTitle
+              className={cn(
+                "text-xl font-bold leading-tight",
+                isClosed ? "text-muted-foreground line-through" : "text-foreground"
+              )}
+            >
               <Link
                 href={jobPath(job)}
                 className="hover:underline focus:outline-none focus:underline"
@@ -208,7 +213,7 @@ export function JobPost({
                 {t("jobs.published")} {metaPosted}
               </span>
               {isClosed && (
-                <span className="inline-flex items-center gap-1.5 font-medium text-red-600 dark:text-red-400">
+                <span className="inline-flex items-center gap-1.5 font-medium text-muted-foreground">
                   {t("jobs.closed")}
                 </span>
               )}
@@ -223,14 +228,23 @@ export function JobPost({
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent
+        className={cn("space-y-4", isClosed && "text-muted-foreground")}
+      >
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="flex gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
               <Clock className="h-5 w-5 text-muted-foreground" />
             </div>
             <div className="min-w-0">
-              <p className="font-semibold text-foreground">{firstFieldLabel}</p>
+              <p
+                className={cn(
+                  "font-semibold",
+                  isClosed ? "text-muted-foreground" : "text-foreground"
+                )}
+              >
+                {firstFieldLabel}
+              </p>
               <p className="text-sm text-muted-foreground">{firstFieldSub}</p>
             </div>
           </div>
@@ -239,8 +253,17 @@ export function JobPost({
               <Settings2 className="h-5 w-5 text-muted-foreground" />
             </div>
             <div className="min-w-0">
-              <p className="font-semibold text-foreground">
-                <span className="text-emerald-600 dark:text-emerald-400">
+              <p
+                className={cn(
+                  "font-semibold",
+                  isClosed ? "text-muted-foreground" : "text-foreground"
+                )}
+              >
+                <span
+                  className={cn(
+                    !isClosed && "text-emerald-600 dark:text-emerald-400"
+                  )}
+                >
                   {secondFieldLabel}
                 </span>
                 {!showNegotiable && (
@@ -255,7 +278,14 @@ export function JobPost({
           </div>
         </div>
 
-        <p className="text-sm text-foreground">{shortDescription}</p>
+        <p
+          className={cn(
+            "text-sm",
+            isClosed ? "text-muted-foreground" : "text-foreground"
+          )}
+        >
+          {shortDescription}
+        </p>
 
         {skills.length > 0 ? (
           <div className="flex flex-wrap items-end justify-between gap-3">
@@ -263,7 +293,10 @@ export function JobPost({
               {skills.map((name) => (
                 <span
                   key={name}
-                  className="rounded-full bg-muted px-3 py-1 text-sm text-foreground"
+                  className={cn(
+                    "rounded-full bg-muted px-3 py-1 text-sm",
+                    isClosed ? "text-muted-foreground" : "text-foreground"
+                  )}
                 >
                   {name}
                 </span>

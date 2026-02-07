@@ -2,13 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Gift, Zap, Star } from "lucide-react";
 
 type HeroTab = "hiring" | "finding";
 
-const HERO_IMAGE_SRC = "/images/hero.png";
+const HERO_VIDEO_SRC = "/videos/video-hero.mp4";
 
 export function HeroBanner({
   t,
@@ -19,13 +18,13 @@ export function HeroBanner({
 
   return (
     <div className="relative w-full max-w-full h-auto min-h-[70vh] max-h-[80vh] md:max-h-none md:min-h-128 lg:min-h-144 rounded-xl overflow-hidden mb-6">
-      <Image
-        src={HERO_IMAGE_SRC}
-        alt=""
-        fill
-        className="object-cover"
-        priority
-        sizes="100vw"
+      <video
+        src={HERO_VIDEO_SRC}
+        className="absolute inset-0 w-full h-full object-cover"
+        autoPlay
+        muted
+        loop
+        playsInline
         aria-hidden
       />
       <div className="absolute inset-0 bg-black/40 flex flex-col justify-between p-5 pb-5">

@@ -37,14 +37,14 @@
     "alreadyHaveAccount": "Masz już konto?",
     "loginFailed": "Logowanie nie powiodło się",
     "registrationFailed": "Rejestracja nie powiodła się",
-    "promoTitle": "Dopiero zaczynasz korzystać z Updoo?",
+    "promoTitle": "Dopiero zaczynasz korzystać z Oferi?",
     "promoDescription": "Załóż konto, aby szybciej znajdować oferty idealnie dopasowane do Ciebie.",
     "promoCtaRegister": "Utwórz konto",
     "promoCtaLogin": "Mam już konto – zaloguj się",
     "signUp": "Zarejestruj się",
     "signIn": "Zaloguj się",
     "alreadyHaveAccountText": "Mam już konto",
-    "promoBarText": "Masz lub chcesz założyć konto w Updoo?",
+    "promoBarText": "Masz lub chcesz założyć konto w Oferi?",
     "confirmPassword": "Powtórz hasło",
     "passwordsMustMatch": "Hasła muszą być takie same.",
     "mustAcceptTerms": "Musisz zaakceptować regulamin i politykę prywatności.",
@@ -97,8 +97,8 @@
   },
   "jobs": {
     "jobs": "Ogłoszenia",
-    "headerSampleWithCategory": "Zobacz {count} ogłoszeń {category} opublikowanych na Updoo",
-    "headerSampleWithoutCategory": "Zobacz {count} ogłoszeń opublikowanych na Updoo",
+    "headerSampleWithCategory": "Zobacz {count} ogłoszeń {category} opublikowanych na Oferi",
+    "headerSampleWithoutCategory": "Zobacz {count} ogłoszeń opublikowanych na Oferi",
     "newJob": "Nowe ogłoszenie",
     "createJob": "Utwórz darmowe ogłoszenie",
     "editJob": "Edytuj ogłoszenie",
@@ -280,6 +280,6 @@
     "approve": "Zatwierdź"
   },
   "footer": {
-    "copyright": "© {year} Updoo. Wszelkie prawa zastrzeżone."
+    "copyright": "© {year} Oferi. Wszelkie prawa zastrzeżone."
   }
 }

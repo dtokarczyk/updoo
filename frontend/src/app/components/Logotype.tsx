@@ -40,7 +40,7 @@ export function Logotype({ className, initialLocale }: LogotypeProps) {
       href="/"
       className={`flex flex-col text-xl font-semibold text-foreground focus:outline-none ${className ?? ""}`}
     >
-      <span className="font-black text-3xl tracking-tighter">Updoo</span>
+      <span className="font-black text-3xl tracking-tighter">Oferi</span>
       <span className="mt-0.5 text-xs text-muted-foreground md:hidden" suppressHydrationWarning>
         {taglineShort}
       </span>

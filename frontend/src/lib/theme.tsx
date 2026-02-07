@@ -10,7 +10,7 @@ import {
 
 export type Theme = "light" | "dark";
 
-const STORAGE_KEY = "updoo-theme";
+const STORAGE_KEY = "oferi-theme";
 
 type ThemeContextValue = {
   theme: Theme;

@@ -37,7 +37,7 @@ export function HeroBanner({
             <button
               type="button"
               onClick={() => setHeroTab("hiring")}
-              className={`w-full rounded-t-lg cursor-pointer text-lg font-bold transition-colors p-3 ${heroTab === "hiring"
+              className={`w-full rounded-t-lg cursor-pointer text-lg font-bold leading-none transition-colors p-3 ${heroTab === "hiring"
                 ? "bg-white text-black"
                 : "bg-white/10 backdrop-blur-md border-t border-x border-white/20 text-white/90 hover:bg-white/15"
                 }`}
@@ -47,7 +47,7 @@ export function HeroBanner({
             <button
               type="button"
               onClick={() => setHeroTab("finding")}
-              className={`w-full rounded-t-lg cursor-pointer text-lg font-bold transition-colors p-3 ${heroTab === "finding"
+              className={`w-full rounded-t-lg cursor-pointer text-lg font-bold leading-none transition-colors p-3 ${heroTab === "finding"
                 ? "bg-white text-black"
                 : "bg-white/10 backdrop-blur-md border-t border-x border-white/20 text-white/90 hover:bg-white/15"
                 }`}
@@ -61,7 +61,7 @@ export function HeroBanner({
                 <div className="flex shrink-0 items-center justify-center w-11 h-11 rounded-full bg-white/20 text-white">
                   <Gift className="w-5 h-5" aria-hidden />
                 </div>
-                <p className="text-sm font-medium text-white/95 leading-tight">
+                <p className="text-sm font-medium text-white/95 leading-none">
                   {heroTab === "hiring"
                     ? t("homepage.heroFeature1")
                     : t("homepage.heroFeature1FindingJobs")}
@@ -71,7 +71,7 @@ export function HeroBanner({
                 <div className="flex shrink-0 items-center justify-center w-11 h-11 rounded-full bg-white/20 text-white">
                   <Zap className="w-5 h-5" aria-hidden />
                 </div>
-                <p className="text-sm font-medium text-white/95 leading-tight">
+                <p className="text-sm font-medium text-white/95 leading-none">
                   {heroTab === "hiring"
                     ? t("homepage.heroFeature2")
                     : t("homepage.heroFeature2FindingJobs")}
@@ -81,7 +81,7 @@ export function HeroBanner({
                 <div className="flex shrink-0 items-center justify-center w-11 h-11 rounded-full bg-white/20 text-white">
                   <Star className="w-5 h-5" aria-hidden />
                 </div>
-                <p className="text-sm font-medium text-white/95 leading-tight">
+                <p className="text-sm font-medium text-white/95 leading-none">
                   {heroTab === "hiring"
                     ? t("homepage.heroFeature3")
                     : t("homepage.heroFeature3FindingJobs")}

@@ -37,14 +37,14 @@
     "alreadyHaveAccount": "Already have an account?",
     "loginFailed": "Login failed",
     "registrationFailed": "Registration failed",
-    "promoTitle": "New to Updoo?",
+    "promoTitle": "New to Oferi?",
     "promoDescription": "Create an account to quickly find jobs perfectly matched to you.",
     "promoCtaRegister": "Create account",
     "promoCtaLogin": "I already have an account – log in",
     "signUp": "Sign Up",
     "signIn": "Sign In",
     "alreadyHaveAccountText": "I already have an account",
-    "promoBarText": "Do you have or want to create an Updoo account?",
+    "promoBarText": "Do you have or want to create an Oferi account?",
     "confirmPassword": "Repeat password",
     "passwordsMustMatch": "Passwords must match.",
     "mustAcceptTerms": "You must accept the terms and privacy policy.",
@@ -97,8 +97,8 @@
   },
   "jobs": {
     "jobs": "Jobs",
-    "headerSampleWithCategory": "Check out a sample of the {count} {category} jobs posted on Updoo",
-    "headerSampleWithoutCategory": "Check out a sample of the {count} jobs posted on Updoo",
+    "headerSampleWithCategory": "Check out a sample of the {count} {category} jobs posted on Oferi",
+    "headerSampleWithoutCategory": "Check out a sample of the {count} jobs posted on Oferi",
     "newJob": "New job",
     "createJob": "Add a job",
     "editJob": "Edit job",
@@ -281,6 +281,6 @@
     "approve": "Approve"
   },
   "footer": {
-    "copyright": "© {year} Updoo. All rights reserved."
+    "copyright": "© {year} Oferi. All rights reserved."
   }
 }

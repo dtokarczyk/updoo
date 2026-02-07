@@ -1,4 +1,4 @@
-# Updoo – Boilerplate
+# Oferi – Boilerplate
 
 Monorepo z aplikacją **backend** (NestJS) i **frontend** (Next.js).
 
@@ -10,7 +10,7 @@ Monorepo z aplikacją **backend** (NestJS) i **frontend** (Next.js).
 ## Struktura
 
 ```
-updoo/
+Oferi/
 ├── backend/   # NestJS API (port 3001)
 ├── frontend/  # Next.js app (port 3000)
 └── README.md

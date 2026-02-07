@@ -25,7 +25,7 @@ export const viewport: Viewport = {
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocaleFromRequest();
   const meta = getMetadataConfig(locale).default;
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://updoo.pl";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://oferi.pl";
   return {
     metadataBase: new URL(baseUrl),
     title: {
@@ -55,7 +55,7 @@ export default async function RootLayout({
       >
         <ThemeScript />
         <ThemeProvider>
-          <div className="flex min-h-screen flex-col font-sans w-full overflow-x-hidden lg:overflow-x-visible">
+          <div className="flex min-h-screen flex-col font-sans w-full lg:overflow-x-visible">
             <BetaBar initialLocale={locale} />
             <AppHeader initialLocale={locale} />
             <main className="flex-1 w-full overflow-x-hidden lg:overflow-x-visible">{children}</main>

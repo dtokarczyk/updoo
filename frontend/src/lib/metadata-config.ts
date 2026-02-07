@@ -19,6 +19,7 @@ const metadataByLocale: Record<
   Locale,
   {
     default: DefaultMeta;
+    home: PageMeta;
     login: PageMeta;
     register: PageMeta;
     admin: PageMeta;
@@ -38,6 +39,11 @@ const metadataByLocale: Record<
       template: "%s | Updoo",
       description:
         "Publikuj i szukaj ofert dla freelancerów. Połącz firmy z najlepszymi wykonawcami.",
+    },
+    home: {
+      title: "Updoo - Oferty dla freelancerów | Znajdź zlecenia lub zatrudnij najlepszych",
+      description:
+        "Platforma łącząca firmy z freelancerami. Przeglądaj ogłoszenia, publikuj oferty i znajdź idealne zlecenie lub wykonawcę. Szybko, prosto, bez pośredników.",
     },
     login: {
       title: "Logowanie",
@@ -99,6 +105,11 @@ const metadataByLocale: Record<
       template: "%s | Updoo",
       description:
         "Publish and find freelancer job offers. Connect companies with the best contractors.",
+    },
+    home: {
+      title: "Updoo - Freelancer Job Board | Find Gigs or Hire Top Talent",
+      description:
+        "The platform connecting companies with freelancers. Browse job listings, post offers, and find the perfect gig or contractor. Fast, simple, no middlemen.",
     },
     login: {
       title: "Login",

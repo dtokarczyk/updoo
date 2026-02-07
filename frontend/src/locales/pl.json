@@ -246,7 +246,8 @@
     }
   },
   "branding": {
-    "logotypeTagline": "Publikuj i szukaj ofert dla freelancerów"
+    "logotypeTagline": "Publikuj i szukaj ofert dla freelancerów",
+    "logotypeTaglineShort": "Oferty dla freelancerów"
   },
   "beta": {
     "bar": "🥳 Cieszymy się, że jesteś z nami od początku. Trwają testy wersji beta. Jeśli widzisz jakiś błąd - odezwij się do nas."

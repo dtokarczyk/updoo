@@ -20,6 +20,9 @@ export function Logotype({ className, initialLocale }: LogotypeProps) {
   const [tagline, setTagline] = useState<string>(
     translate(initialLocale, "branding.logotypeTagline")
   );
+  const [taglineShort, setTaglineShort] = useState<string>(
+    translate(initialLocale, "branding.logotypeTaglineShort")
+  );
 
   // Update tagline after mount if client locale differs from initial locale
   useEffect(() => {
@@ -27,17 +30,21 @@ export function Logotype({ className, initialLocale }: LogotypeProps) {
     const currentLocale = getUserLocale();
     if (currentLocale !== initialLocale) {
       setTagline(translate(currentLocale, "branding.logotypeTagline"));
+      setTaglineShort(translate(currentLocale, "branding.logotypeTaglineShort"));
     }
   }, [initialLocale]);
 
-  // Renders Updoo logo with a single localized tagline.
+  // Renders Updoo logo with localized tagline (short on mobile, full on desktop).
   return (
     <Link
       href="/"
       className={`flex flex-col text-xl font-semibold text-foreground focus:outline-none ${className ?? ""}`}
     >
       <span className="font-black text-3xl tracking-tighter">Updoo</span>
-      <span className="mt-0.5 text-xs text-muted-foreground" suppressHydrationWarning>
+      <span className="mt-0.5 text-xs text-muted-foreground md:hidden" suppressHydrationWarning>
+        {taglineShort}
+      </span>
+      <span className="mt-0.5 text-xs text-muted-foreground hidden md:block" suppressHydrationWarning>
         {tagline}
       </span>
     </Link>

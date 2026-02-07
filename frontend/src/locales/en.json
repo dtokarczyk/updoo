@@ -247,7 +247,8 @@
     }
   },
   "branding": {
-    "logotypeTagline": "Publish and search offers for freelancers"
+    "logotypeTagline": "Publish and search offers for freelancers",
+    "logotypeTaglineShort": "Offers for freelancers"
   },
   "beta": {
     "bar": "🥳 We're glad you're with us from the start. We're testing the beta. If you spot a bug - let us know."

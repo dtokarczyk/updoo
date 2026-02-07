@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Gift, Zap, Star } from "lucide-react";
 
 type HeroTab = "hiring" | "finding";
+
+const HERO_VIDEO_SRC = "/videos/video-hero.mp4";
 
 export function HeroBanner({
   t,
@@ -17,12 +18,14 @@ export function HeroBanner({
 
   return (
     <div className="relative w-full max-w-full h-auto min-h-[70vh] max-h-[80vh] md:max-h-none md:min-h-128 lg:min-h-144 rounded-xl overflow-hidden mb-6">
-      <Image
-        src="/images/u2844336958_freelancer_woman_at_work_good_mood_macbook_reflex_h_86dbbfef-0bcd-4592-94db-4b415b4965c4.png"
-        alt=""
-        fill
-        className="object-cover"
-        priority
+      <video
+        src={HERO_VIDEO_SRC}
+        className="absolute inset-0 w-full h-full object-cover"
+        autoPlay
+        muted
+        loop
+        playsInline
+        aria-hidden
       />
       <div className="absolute inset-0 bg-black/40 flex flex-col justify-between p-5 pb-5">
         <h1 className="text-3xl lg:text-4xl font-black pr-7 pl-4 pt-4 text-white text-left mb-4">

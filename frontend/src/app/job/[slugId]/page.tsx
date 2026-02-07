@@ -47,7 +47,7 @@ import {
   formatDeadlineRemaining,
   isDeadlineSoon,
 } from "@/lib/deadline-utils";
-import { getBlurredRatePlaceholder } from "@/lib/rate-helpers";
+import { getRateDisplay } from "@/lib/rate-helpers";
 
 const BILLING_LABELS: Record<string, string> = {
   FIXED: "Ryczałt",
@@ -102,18 +102,6 @@ function applicationDisplayName(app: JobApplication): string {
       : "?";
 }
 
-function formatRate(rate: string, currency: string, billingType: string) {
-  const r = parseFloat(rate);
-  if (Number.isNaN(r)) return "";
-  const formatted = r.toLocaleString("pl-PL", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  });
-  return billingType === "HOURLY"
-    ? `${formatted} ${currency}/h`
-    : `${formatted} ${currency}`;
-}
-
 function DetailRow({
   icon: Icon,
   label,
@@ -138,6 +126,35 @@ function DetailRow({
         <p className={cn("text-sm font-medium", valueClassName)}>{value}</p>
       </div>
     </div>
+  );
+}
+
+function JobRateValue({
+  user,
+  job,
+  t,
+}: {
+  user: ReturnType<typeof getStoredUser>;
+  job: Job;
+  t: (key: string) => string;
+}) {
+  const rd = getRateDisplay(!!user, job);
+  if (rd.type === "negotiable") {
+    return (
+      <span className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
+        {t("jobs.negotiable")}
+      </span>
+    );
+  }
+  if (rd.type === "blur") {
+    return (
+      <span className="blur-sm select-none text-emerald-600 dark:text-emerald-400">{rd.placeholder}</span>
+    );
+  }
+  return (
+    <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+      {rd.formatted}
+    </span>
   );
 }
 
@@ -542,19 +559,7 @@ export default function JobDetailPage() {
             <DetailRow
               icon={Banknote}
               label={t("jobs.rate")}
-              value={
-                job.rateNegotiable ? (
-                  <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                    {t("jobs.negotiable")}
-                  </span>
-                ) : !user || job.rate == null ? (
-                  <span className="blur-sm select-none">
-                    {getBlurredRatePlaceholder(job.id, job.billingType, job.currency)}
-                  </span>
-                ) : (
-                  formatRate(job.rate, job.currency, job.billingType)
-                )
-              }
+              value={<JobRateValue user={user} job={job} t={t} />}
             />
             <DetailRow
               icon={Briefcase}
@@ -768,19 +773,7 @@ export default function JobDetailPage() {
             <DetailRow
               icon={Banknote}
               label={t("jobs.rate")}
-              value={
-                job.rateNegotiable ? (
-                  <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                    {t("jobs.negotiable")}
-                  </span>
-                ) : !user || job.rate == null ? (
-                  <span className="blur-sm select-none">
-                    {getBlurredRatePlaceholder(job.id, job.billingType, job.currency)}
-                  </span>
-                ) : (
-                  formatRate(job.rate, job.currency, job.billingType)
-                )
-              }
+              value={<JobRateValue user={user} job={job} t={t} />}
             />
             <DetailRow
               icon={Briefcase}

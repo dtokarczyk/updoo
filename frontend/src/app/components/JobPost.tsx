@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { getBlurredRatePlaceholder } from "@/lib/rate-helpers";
+import { getRateDisplay } from "@/lib/rate-helpers";
 import { useTranslations } from "@/hooks/useTranslations";
 
 const EXPERIENCE_LABELS: Record<string, string> = {
@@ -35,17 +35,6 @@ const LISTING_DESCRIPTION_MAX_LENGTH = 200;
 function truncateDescription(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength).trimEnd() + "…";
-}
-
-function formatRate(rate: string, currency: string, billingType: string): string {
-  const r = parseFloat(rate);
-  if (Number.isNaN(r)) return "";
-  const rounded = Math.round(r);
-  const formatted = rounded.toLocaleString("pl-PL", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  });
-  return formatted;
 }
 
 /** Deterministic "random" number from jobId for blurred rate placeholder (unauthenticated users). */
@@ -132,15 +121,15 @@ export function JobPost({
 
   const firstFieldLabel = EXPERIENCE_LABELS[job.experienceLevel] ?? job.experienceLevel;
   const firstFieldSub = t("jobs.experienceLevel");
-  const showNegotiable = Boolean(job.rateNegotiable);
-  const rateHidden = Boolean(!isLoggedIn || (job.rate == null && !showNegotiable));
-  const secondFieldLabel = showNegotiable
-    ? t("jobs.negotiable")
-    : rateHidden
-      ? getBlurredRatePlaceholder(job.id, job.billingType)
-      : formatRate(job.rate!, job.currency, job.billingType);
+  const rateDisplay = getRateDisplay(isLoggedIn, job);
+  const secondFieldLabel =
+    rateDisplay.type === "negotiable"
+      ? t("jobs.negotiable")
+      : rateDisplay.type === "blur"
+        ? rateDisplay.placeholder
+        : rateDisplay.formatted;
   const rateLabel = job.billingType === "HOURLY" ? t("jobs.hourlyRate") : t("jobs.rate");
-  const secondFieldSub = showNegotiable ? rateLabel : rateLabel;
+  const secondFieldSub = rateLabel;
 
   return (
     <Card
@@ -267,18 +256,12 @@ export function JobPost({
               >
                 <span
                   className={cn(
-                    !isClosed && "text-emerald-600 dark:text-emerald-400",
-                    rateHidden && "blur-sm select-none"
+                    "text-emerald-600 dark:text-emerald-400",
+                    rateDisplay.type === "blur" && "blur-sm select-none"
                   )}
                 >
                   {secondFieldLabel}
                 </span>
-                {!showNegotiable && (
-                  <span className="ml-1">
-                    {job.currency}
-                    {job.billingType === "HOURLY" ? "/h" : ""}
-                  </span>
-                )}
               </p>
               <p className="text-sm text-muted-foreground">{secondFieldSub}</p>
             </div>

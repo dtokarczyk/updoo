@@ -267,6 +267,7 @@ export function JobsFeed({
           <JobPost
             key={job.id}
             job={job}
+            isLoggedIn={!!user}
             isDraft={isDraft}
             isClosed={isClosed}
             isVisited={isVisited}

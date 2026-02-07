@@ -58,7 +58,7 @@ export class JobsController {
 
   @Get('feed')
   @UseGuards(OptionalJwtAuthGuard)
-  getFeed(
+  async getFeed(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('categoryId') categoryId?: string,
@@ -76,7 +76,12 @@ export class JobsController {
     const parsedSkillIds = skillIds
       ? skillIds.split(',').map((id) => id.trim()).filter(Boolean)
       : undefined;
-    return this.jobsService.getFeed(pageNum, pageSizeNum, user?.id, user?.accountType === 'ADMIN', categoryId, language, parsedSkillIds, finalLanguage);
+    const result = await this.jobsService.getFeed(pageNum, pageSizeNum, user?.id, user?.accountType === 'ADMIN', categoryId, language, parsedSkillIds, finalLanguage);
+    // Ensure rate is never sent to unauthenticated clients (controller-level guard)
+    if (!user) {
+      result.items = result.items.map(({ rate: _r, ...item }) => ({ ...item, rate: null }));
+    }
+    return result;
   }
 
   @Get('popular-skills')
@@ -148,7 +153,7 @@ export class JobsController {
 
   @Get(':id')
   @UseGuards(OptionalJwtAuthGuard)
-  getJob(
+  async getJob(
     @Param('id') id: string,
     @Headers('accept-language') acceptLanguage?: string,
     @GetUser() user?: JwtUser,
@@ -157,7 +162,13 @@ export class JobsController {
     const headerLanguage = acceptLanguage ? parseLanguageFromHeader(acceptLanguage) : null;
     const userLanguage = (user?.language || 'POLISH') as JobLanguage;
     const finalLanguage = headerLanguage || userLanguage;
-    return this.jobsService.getJob(id, user?.id, user?.accountType === 'ADMIN', finalLanguage);
+    const result = await this.jobsService.getJob(id, user?.id, user?.accountType === 'ADMIN', finalLanguage);
+    // Ensure rate is never sent to unauthenticated clients (controller-level guard)
+    if (!user) {
+      const { rate: _r, ...rest } = result;
+      return { ...rest, rate: null };
+    }
+    return result;
   }
 
   @Get(':id/prev-next')

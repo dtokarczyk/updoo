@@ -323,7 +323,7 @@ export interface Job {
   language: JobLanguage;
   billingType: BillingType;
   hoursPerWeek: HoursPerWeek | null;
-  rate: string;
+  rate: string | null;
   rateNegotiable?: boolean;
   currency: string;
   experienceLevel: ExperienceLevel;

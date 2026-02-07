@@ -47,6 +47,7 @@ import {
   formatDeadlineRemaining,
   isDeadlineSoon,
 } from "@/lib/deadline-utils";
+import { getBlurredRatePlaceholder } from "@/lib/rate-helpers";
 
 const BILLING_LABELS: Record<string, string> = {
   FIXED: "Ryczałt",
@@ -546,6 +547,10 @@ export default function JobDetailPage() {
                   <span className="text-emerald-600 dark:text-emerald-400 font-medium">
                     {t("jobs.negotiable")}
                   </span>
+                ) : !user || job.rate == null ? (
+                  <span className="blur-sm select-none">
+                    {getBlurredRatePlaceholder(job.id, job.billingType, job.currency)}
+                  </span>
                 ) : (
                   formatRate(job.rate, job.currency, job.billingType)
                 )
@@ -767,6 +772,10 @@ export default function JobDetailPage() {
                 job.rateNegotiable ? (
                   <span className="text-emerald-600 dark:text-emerald-400 font-medium">
                     {t("jobs.negotiable")}
+                  </span>
+                ) : !user || job.rate == null ? (
+                  <span className="blur-sm select-none">
+                    {getBlurredRatePlaceholder(job.id, job.billingType, job.currency)}
                   </span>
                 ) : (
                   formatRate(job.rate, job.currency, job.billingType)

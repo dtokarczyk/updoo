@@ -458,13 +458,19 @@ export class JobsService implements OnModuleInit {
 
     const items = jobs.map((item) => {
       const { _count, ...rest } = item;
-      return {
+      const base = {
         ...rest,
         category: this.getCategoryWithTranslation(item.category, userLanguage),
         isFavorite: favoriteIds.has(item.id),
         currentUserApplied: appliedIds.has(item.id),
         applicationsCount: _count?.applications ?? 0,
       };
+      // Hide rate for unauthenticated users (billing type stays visible)
+      if (!userId) {
+        const { rate: _rate, ...withoutRate } = base;
+        return { ...withoutRate, rate: null };
+      }
+      return base;
     });
 
     const totalPages = Math.ceil(total / pageSize);
@@ -549,7 +555,7 @@ export class JobsService implements OnModuleInit {
       ? (await this.favoritesService.getFavoriteJobIds(userId)).has(job.id)
       : false;
     const { applications: _app, ...rest } = job;
-    return {
+    const result = {
       ...rest,
       category: this.getCategoryWithTranslation(job.category, userLanguage),
       applications: applicationsForResponse,
@@ -557,6 +563,12 @@ export class JobsService implements OnModuleInit {
       currentUserApplicationMessage,
       isFavorite,
     };
+    // Hide rate for unauthenticated users (billing type stays visible)
+    if (!userId) {
+      const { rate: _rate, ...withoutRate } = result;
+      return { ...withoutRate, rate: null };
+    }
+    return result;
   }
 
   private getInitials(name: string | null, surname: string | null): string {

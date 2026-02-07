@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { getBlurredRatePlaceholder } from "@/lib/rate-helpers";
 import { useTranslations } from "@/hooks/useTranslations";
 
 const EXPERIENCE_LABELS: Record<string, string> = {
@@ -47,6 +48,7 @@ function formatRate(rate: string, currency: string, billingType: string): string
   return formatted;
 }
 
+/** Deterministic "random" number from jobId for blurred rate placeholder (unauthenticated users). */
 function formatPostedAgo(iso: string, locale: "pl" | "en"): string {
   const dateFnsLocale = locale === "en" ? enUS : pl;
   return formatDistanceToNow(new Date(iso), { addSuffix: true, locale: dateFnsLocale });
@@ -65,6 +67,8 @@ export function JobPost({
   showFavorite,
   className,
   footer,
+  /** When false, rate is always shown blurred (for unauthenticated users). */
+  isLoggedIn = true,
 }: {
   job: Job;
   headerAction?: React.ReactNode;
@@ -85,6 +89,8 @@ export function JobPost({
   className?: string;
   /** Optional footer content (e.g. draft admin bar, actions). */
   footer?: React.ReactNode;
+  /** When false, rate is always shown blurred (for unauthenticated users). */
+  isLoggedIn?: boolean;
 }) {
   const isFavorite = Boolean(job.isFavorite);
 
@@ -127,9 +133,12 @@ export function JobPost({
   const firstFieldLabel = EXPERIENCE_LABELS[job.experienceLevel] ?? job.experienceLevel;
   const firstFieldSub = t("jobs.experienceLevel");
   const showNegotiable = Boolean(job.rateNegotiable);
+  const rateHidden = Boolean(!isLoggedIn || (job.rate == null && !showNegotiable));
   const secondFieldLabel = showNegotiable
     ? t("jobs.negotiable")
-    : formatRate(job.rate, job.currency, job.billingType);
+    : rateHidden
+      ? getBlurredRatePlaceholder(job.id, job.billingType)
+      : formatRate(job.rate!, job.currency, job.billingType);
   const rateLabel = job.billingType === "HOURLY" ? t("jobs.hourlyRate") : t("jobs.rate");
   const secondFieldSub = showNegotiable ? rateLabel : rateLabel;
 
@@ -258,7 +267,8 @@ export function JobPost({
               >
                 <span
                   className={cn(
-                    !isClosed && "text-emerald-600 dark:text-emerald-400"
+                    !isClosed && "text-emerald-600 dark:text-emerald-400",
+                    rateHidden && "blur-sm select-none"
                   )}
                 >
                   {secondFieldLabel}

@@ -1,9 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Plus } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { AuthButtons } from "@/app/components/AuthButtons";
+import { Button } from "@/components/ui/button";
 import { useTranslations } from "@/hooks/useTranslations";
 import { getUserLocale, type Locale } from "@/lib/i18n";
 import { t as translate } from "@/lib/translations";
@@ -40,6 +43,14 @@ export function AuthPromoSidebar({ initialLocale }: AuthPromoSidebarProps) {
         <LanguageToggle initialLocale={initialLocale} iconOnly className="h-[44px] w-[44px] px-0" />
         <ThemeToggle className="h-[44px] w-[44px] px-0" />
       </div>
+
+      {/* Add job posting – above login */}
+      <Button className="w-full mb-4" size="lg" asChild>
+        <Link href="/job/new">
+          <Plus className="mr-2 h-4 w-4" />
+          {t("jobs.createJob")}
+        </Link>
+      </Button>
 
       <div className="rounded-2xl border p-6">
         <h2 className="text-lg font-semibold tracking-tight text-foreground">

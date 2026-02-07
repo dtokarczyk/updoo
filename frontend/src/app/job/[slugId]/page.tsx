@@ -173,15 +173,16 @@ function JobActions({
   t: (key: string, params?: Record<string, string | number>) => string;
   layout?: "column" | "row";
 }) {
-  // Don't render if no actions available
   const isOwnerOrAdmin = isOwnJob || isAdmin;
   const isFreelancerCanSee = !isDraft && !isClosed && user?.accountType === "FREELANCER";
+  const isGuestApplyCta = !user && !isDraft && !isClosed;
 
-  if (!isOwnerOrAdmin && !isFreelancerCanSee) {
+  if (!isOwnerOrAdmin && !isFreelancerCanSee && !isGuestApplyCta) {
     return null;
   }
 
   const containerClassName = layout === "row" ? "flex gap-2" : "space-y-2";
+  const loginUrl = `/login?returnUrl=${encodeURIComponent(jobPath(job))}`;
 
   return (
     <div className={containerClassName}>
@@ -206,6 +207,13 @@ function JobActions({
             </Button>
           )}
         </>
+      ) : isGuestApplyCta ? (
+        <Button className="w-full" size="lg" asChild>
+          <Link href={loginUrl}>
+            <Send className="mr-2 h-4 w-4" />
+            {t("jobs.apply")}
+          </Link>
+        </Button>
       ) : canApply ? (
         <Button onClick={onApplyClick} className="w-full" size="lg">
           <Send className="mr-2 h-4 w-4" />
@@ -861,8 +869,8 @@ export default function JobDetailPage() {
         </section>
       )}
 
-      {/* Sticky CTA button */}
-      {((isOwnJob || isAdmin) || canApply) && (
+      {/* Sticky CTA button (mobile) – owner/admin, freelancer apply, or guest → login */}
+      {((isOwnJob || isAdmin) || canApply || (!user && !isDraft && !isClosed)) && (
         <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
           <div className="mx-auto max-w-4xl">
             <JobActions

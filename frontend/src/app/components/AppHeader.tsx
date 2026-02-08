@@ -12,6 +12,7 @@ import type { Locale } from '@/lib/i18n';
 import { UserDrawerContent } from '@/app/components/UserDrawer';
 import { AuthDrawerContent } from '@/app/components/AuthDrawer';
 import { Drawer, DrawerTrigger } from '@/components/ui/drawer';
+import { initials } from '@/app/components/HomeNav';
 
 export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
   const pathname = usePathname();
@@ -22,7 +23,7 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
   const topBarVisible = !isListings && !isHome;
 
   const { t } = useTranslations();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, user } = useAuth();
   const [authDrawerOpen, setAuthDrawerOpen] = useState(false);
 
   return (
@@ -72,9 +73,18 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
               <Button
                 variant="outline"
                 size="icon-lg"
-                aria-label="Open login menu"
+                aria-label={isLoggedIn && user ? t('profile.editProfile') : 'Open login menu'}
               >
-                <User className="h-5 w-5" />
+                {isLoggedIn && user ? (
+                  <span
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground"
+                    aria-hidden
+                  >
+                    {initials(user)}
+                  </span>
+                ) : (
+                  <User className="h-5 w-5" />
+                )}
               </Button>
             </DrawerTrigger>
 

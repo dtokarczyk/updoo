@@ -222,7 +222,7 @@ export function JobPost({
                   className={cn(
                     'inline-flex items-center gap-1.5',
                     isDeadlineSoon &&
-                    'font-bold text-red-600 dark:text-red-400',
+                      'font-bold text-red-600 dark:text-red-400',
                   )}
                 >
                   <Clock
@@ -322,12 +322,7 @@ export function JobPost({
               ))}
             </div>
 
-            <Button
-              asChild
-              variant="outline"
-              size="lg"
-              className="shrink-0"
-            >
+            <Button asChild variant="outline" size="lg" className="shrink-0">
               <Link href={jobPath(job)} onClick={onNavigate}>
                 {t('jobs.seeMore')}
               </Link>

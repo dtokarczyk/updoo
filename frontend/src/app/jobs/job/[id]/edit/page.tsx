@@ -192,10 +192,10 @@ export default function EditListingPage() {
 
   const filteredSkills = skillInput.trim()
     ? skills.filter(
-      (s) =>
-        s.name.toLowerCase().includes(skillInput.toLowerCase()) &&
-        !selectedSkills.some((sel) => sel.id === s.id),
-    )
+        (s) =>
+          s.name.toLowerCase().includes(skillInput.toLowerCase()) &&
+          !selectedSkills.some((sel) => sel.id === s.id),
+      )
     : [];
 
   const handleSubmit = async (e: React.FormEvent) => {

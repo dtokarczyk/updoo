@@ -213,10 +213,11 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
                       className="block p-3 rounded-lg border border-border bg-card hover:bg-muted transition-colors"
                     >
                       <h4
-                        className={`text-sm font-medium line-clamp-2 mb-1 ${isClosed
+                        className={`text-sm font-medium line-clamp-2 mb-1 ${
+                          isClosed
                             ? 'text-muted-foreground line-through'
                             : 'text-foreground'
-                          }`}
+                        }`}
                       >
                         {job.title}
                       </h4>

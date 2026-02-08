@@ -33,6 +33,8 @@ export default function ProfileEditPage() {
   const [name, setName] = useState('');
   const [surname, setSurname] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [nipCompany, setNipCompany] = useState('');
   const [oldPassword, setOldPassword] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
@@ -59,6 +61,8 @@ export default function ProfileEditPage() {
       setName(user.name ?? '');
       setSurname(user.surname ?? '');
       setEmail(user.email ?? '');
+      setPhone(user.phone ?? '');
+      setNipCompany(user.nipCompany ?? '');
       setAccountType(user.accountType);
       setHasPassword(user.hasPassword !== false);
       if (Array.isArray(user.skills)) {
@@ -130,6 +134,8 @@ export default function ProfileEditPage() {
         name: name.trim() || undefined,
         surname: surname.trim() || undefined,
         email: email.trim() || undefined,
+        phone: phone.trim() || undefined,
+        nipCompany: nipCompany.trim(),
         ...(accountType === 'FREELANCER' && {
           defaultMessage: defaultMessage.trim() || undefined,
         }),
@@ -274,6 +280,37 @@ export default function ProfileEditPage() {
                     disabled={loading}
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">{t('profile.phone')}</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder={t('onboarding.phonePlaceholder')}
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    autoComplete="tel"
+                    disabled={loading}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t('profile.phoneDesc')}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="nipCompany">{t('profile.nipCompany')}</Label>
+                  <Input
+                    id="nipCompany"
+                    type="text"
+                    placeholder={t('profile.nipCompanyPlaceholder')}
+                    value={nipCompany}
+                    onChange={(e) =>
+                      setNipCompany(
+                        e.target.value.replace(/\D/g, '').slice(0, 10),
+                      )
+                    }
+                    disabled={loading}
+                    maxLength={10}
+                  />
+                </div>
                 {accountType === 'FREELANCER' && (
                   <div className="space-y-2">
                     <Label htmlFor="defaultMessage">
@@ -381,7 +418,9 @@ export default function ProfileEditPage() {
                 )}
                 <div className="space-y-2">
                   <Label htmlFor="password">
-                    {hasPassword ? t('profile.newPassword') : t('profile.setPassword')}
+                    {hasPassword
+                      ? t('profile.newPassword')
+                      : t('profile.setPassword')}
                   </Label>
                   <Input
                     id="password"
@@ -412,7 +451,11 @@ export default function ProfileEditPage() {
                 </div>
                 <CardFooter className="px-0">
                   <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? t('common.saving') : (hasPassword ? t('common.save') : t('profile.setPassword'))}
+                    {loading
+                      ? t('common.saving')
+                      : hasPassword
+                        ? t('common.save')
+                        : t('profile.setPassword')}
                   </Button>
                 </CardFooter>
               </form>

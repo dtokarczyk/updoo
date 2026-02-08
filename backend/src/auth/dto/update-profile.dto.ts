@@ -43,4 +43,12 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   defaultMessage?: string;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @IsOptional()
+  @IsString()
+  nipCompany?: string;
 }

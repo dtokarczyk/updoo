@@ -63,16 +63,16 @@ export default async function RootLayout({
         <ThemeScript />
         <ThemeProvider>
           <TooltipProvider delayDuration={200}>
-          <AuthProvider>
-          <div className="flex min-h-screen flex-col font-sans w-full lg:overflow-x-visible">
-            <BetaBar initialLocale={locale} />
-            <AppHeader initialLocale={locale} />
-            <main className="flex-1 w-full overflow-x-hidden lg:overflow-x-visible">
-              <OnboardingRedirect>{children}</OnboardingRedirect>
-            </main>
-            <AppFooter initialLocale={locale} />
-          </div>
-          </AuthProvider>
+            <AuthProvider>
+              <div className="flex min-h-screen flex-col font-sans w-full lg:overflow-x-visible">
+                <BetaBar initialLocale={locale} />
+                <AppHeader initialLocale={locale} />
+                <main className="flex-1 w-full overflow-x-hidden lg:overflow-x-visible">
+                  <OnboardingRedirect>{children}</OnboardingRedirect>
+                </main>
+                <AppFooter initialLocale={locale} />
+              </div>
+            </AuthProvider>
           </TooltipProvider>
         </ThemeProvider>
       </body>

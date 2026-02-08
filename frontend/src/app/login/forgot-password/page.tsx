@@ -41,7 +41,9 @@ export default function ForgotPasswordPage() {
       <div className="flex justify-center p-4 pt-12">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-3xl">{t('auth.forgotPasswordTitle')}</CardTitle>
+            <CardTitle className="text-3xl">
+              {t('auth.forgotPasswordTitle')}
+            </CardTitle>
             <CardDescription>{t('auth.forgotPasswordSuccess')}</CardDescription>
           </CardHeader>
         </Card>
@@ -53,7 +55,9 @@ export default function ForgotPasswordPage() {
     <div className="flex justify-center p-4 pt-12">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-3xl">{t('auth.forgotPasswordTitle')}</CardTitle>
+          <CardTitle className="text-3xl">
+            {t('auth.forgotPasswordTitle')}
+          </CardTitle>
           <CardDescription>{t('auth.forgotPasswordDesc')}</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>

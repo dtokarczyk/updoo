@@ -169,7 +169,11 @@ function LoginForm() {
                 </div>
               </CardContent>
               <CardFooter className="mt-6 flex flex-col gap-4">
-                <Button type="submit" className="w-full h-12" disabled={loading}>
+                <Button
+                  type="submit"
+                  className="w-full h-12"
+                  disabled={loading}
+                >
                   {loading ? t('auth.signingIn') : t('auth.logIn')}
                 </Button>
                 <p className="text-center text-sm text-muted-foreground">

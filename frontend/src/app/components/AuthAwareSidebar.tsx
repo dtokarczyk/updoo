@@ -12,11 +12,7 @@ import type { Locale } from '@/lib/i18n';
  * UI in a single client boundary. Uses global auth context so it reacts
  * to login/logout across the app.
  */
-export function AuthAwareSidebar({
-  initialLocale,
-}: {
-  initialLocale: Locale;
-}) {
+export function AuthAwareSidebar({ initialLocale }: { initialLocale: Locale }) {
   const { isLoggedIn } = useAuth();
 
   return (

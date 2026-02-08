@@ -1,0 +1,6 @@
+export { StepPhone } from './StepPhone';
+export { StepName } from './StepName';
+export { StepAccountType } from './StepAccountType';
+export { StepCompany } from './StepCompany';
+export { StepSkills } from './StepSkills';
+export { StepDefaultMessage } from './StepDefaultMessage';

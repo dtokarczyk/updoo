@@ -23,9 +23,10 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-function parseSearchParams(
-  searchParams: { language?: string; skills?: string },
-): { initialLanguage?: JobLanguage; initialSkillIds: string[] } {
+function parseSearchParams(searchParams: {
+  language?: string;
+  skills?: string;
+}): { initialLanguage?: JobLanguage; initialSkillIds: string[] } {
   const languageParam = searchParams.language;
   const rawSkills = searchParams.skills;
 
@@ -35,7 +36,10 @@ function parseSearchParams(
       : undefined;
 
   const initialSkillIds = rawSkills
-    ? rawSkills.split(',').map((id) => id.trim()).filter(Boolean)
+    ? rawSkills
+        .split(',')
+        .map((id) => id.trim())
+        .filter(Boolean)
     : [];
 
   return { initialLanguage, initialSkillIds };

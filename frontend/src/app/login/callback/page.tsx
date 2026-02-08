@@ -25,7 +25,10 @@ function LoaderCard({ title, message }: { title: string; message: string }) {
           <CardTitle>{title}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col items-center gap-4">
-          <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" aria-hidden />
+          <Loader2
+            className="h-10 w-10 animate-spin text-muted-foreground"
+            aria-hidden
+          />
           <p className="text-muted-foreground">{message}</p>
         </CardContent>
       </Card>
@@ -49,7 +52,9 @@ function LoginCallbackContent() {
     let isActive = true;
     const fromParams = searchParams.get('returnUrl');
     const fromStorage =
-      typeof window !== 'undefined' ? sessionStorage.getItem(OAUTH_RETURN_URL_KEY) : null;
+      typeof window !== 'undefined'
+        ? sessionStorage.getItem(OAUTH_RETURN_URL_KEY)
+        : null;
     const returnUrl = fromParams || fromStorage || null;
     if (typeof window !== 'undefined' && fromStorage) {
       sessionStorage.removeItem(OAUTH_RETURN_URL_KEY);
@@ -61,7 +66,8 @@ function LoginCallbackContent() {
         window.location.href = '/login';
       }, 3000);
       return () => {
-        if (redirectTimeoutRef.current) clearTimeout(redirectTimeoutRef.current);
+        if (redirectTimeoutRef.current)
+          clearTimeout(redirectTimeoutRef.current);
         hasHandledRef.current = false;
       };
     }
@@ -96,7 +102,11 @@ function LoginCallbackContent() {
         refreshAuth();
         const target =
           returnUrl ||
-          (needsAgreementsAcceptance ? '/accept-agreements' : needsOnboarding(user) ? '/onboarding' : '/');
+          (needsAgreementsAcceptance
+            ? '/accept-agreements'
+            : needsOnboarding(user)
+              ? '/onboarding'
+              : '/');
         window.location.href = target;
       })
       .catch((err) => {
@@ -124,7 +134,9 @@ function LoginCallbackContent() {
       <div className="flex justify-center p-4 pt-12">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-destructive">{t('common.error')}</CardTitle>
+            <CardTitle className="text-destructive">
+              {t('common.error')}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">{error}</p>
@@ -137,9 +149,7 @@ function LoginCallbackContent() {
     );
   }
 
-  return (
-    <LoaderCard title={t('auth.login')} message={t('auth.signingIn')} />
-  );
+  return <LoaderCard title={t('auth.login')} message={t('auth.signingIn')} />;
 }
 
 function LoginCallbackFallback() {

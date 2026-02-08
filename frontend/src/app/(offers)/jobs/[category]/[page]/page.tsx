@@ -15,10 +15,10 @@ function parsePageParam(raw: string | undefined): number {
   return Number.isFinite(n) && n > 0 ? n : 1;
 }
 
-function parseSearchParams(resolved: {
-  language?: string;
-  skills?: string;
-}): { initialLanguage?: JobLanguage; initialSkillIds: string[] } {
+function parseSearchParams(resolved: { language?: string; skills?: string }): {
+  initialLanguage?: JobLanguage;
+  initialSkillIds: string[];
+} {
   const languageParam = resolved.language;
   const rawSkills = resolved.skills;
 
@@ -28,7 +28,10 @@ function parseSearchParams(resolved: {
       : undefined;
 
   const initialSkillIds = rawSkills
-    ? rawSkills.split(',').map((id) => id.trim()).filter(Boolean)
+    ? rawSkills
+        .split(',')
+        .map((id) => id.trim())
+        .filter(Boolean)
     : [];
 
   return { initialLanguage, initialSkillIds };
@@ -48,7 +51,7 @@ export async function generateMetadata({
     categorySlug === 'all' || !categorySlug
       ? allCategoriesLabelByLocale[locale]
       : (categories.find((c) => c.slug === categorySlug)?.name ??
-          allCategoriesLabelByLocale[locale]);
+        allCategoriesLabelByLocale[locale]);
 
   const meta = getMetadataConfig(locale).offersCategory(
     categoryDisplayName,

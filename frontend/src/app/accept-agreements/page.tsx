@@ -75,7 +75,9 @@ export default function AcceptAgreementsPage() {
       router.push(needsOnboarding(user) ? '/onboarding' : '/');
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('agreements.acceptFailed'));
+      setError(
+        err instanceof Error ? err.message : t('agreements.acceptFailed'),
+      );
     } finally {
       setSubmitting(false);
     }

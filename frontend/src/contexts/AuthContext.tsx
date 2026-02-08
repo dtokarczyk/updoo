@@ -8,12 +8,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import {
-  getToken,
-  getStoredUser,
-  clearAuth,
-  type AuthUser,
-} from '@/lib/api';
+import { getToken, getStoredUser, clearAuth, type AuthUser } from '@/lib/api';
 
 interface AuthContextValue {
   user: AuthUser | null;
@@ -34,8 +29,12 @@ function getInitialAuth() {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(() => getInitialAuth().user);
-  const [isLoggedIn, setIsLoggedIn] = useState(() => getInitialAuth().isLoggedIn);
+  const [user, setUser] = useState<AuthUser | null>(
+    () => getInitialAuth().user,
+  );
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    () => getInitialAuth().isLoggedIn,
+  );
 
   const refreshAuth = useCallback(() => {
     const token = getToken();
@@ -61,9 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout,
   };
 
-  return (
-    <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth(): AuthContextValue {

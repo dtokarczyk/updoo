@@ -58,6 +58,10 @@ model User {
   googleId      String?         @unique
   name          String?
   surname       String?
+  /** Phone number – used only for important notifications about application status. */
+  phone         String?
+  /** NIP (company tax ID) when user has a company. */
+  nipCompany    String?
   accountType   AccountType?
   language      JobLanguage @default(POLISH)
   defaultMessage String?        @db.Text

@@ -9,6 +9,10 @@ export interface AuthUser {
   email: string;
   name: string | null;
   surname: string | null;
+  /** Phone number – used only for important notifications about application status. */
+  phone?: string | null;
+  /** NIP (company tax ID) when user has a company. */
+  nipCompany?: string | null;
   accountType: AccountType | null;
   language: UserLanguage;
   /** Default message for freelancer applications (with portfolio links). */
@@ -60,6 +64,8 @@ export interface UpdateProfilePayload {
   name?: string;
   surname?: string;
   email?: string;
+  phone?: string;
+  nipCompany?: string;
   accountType?: AccountType;
   password?: string;
   /** Current password, required when changing password. */
@@ -80,6 +86,8 @@ export async function updateProfile(
   if (payload.name !== undefined) body.name = payload.name;
   if (payload.surname !== undefined) body.surname = payload.surname;
   if (payload.email !== undefined) body.email = payload.email;
+  if (payload.phone !== undefined) body.phone = payload.phone;
+  if (payload.nipCompany !== undefined) body.nipCompany = payload.nipCompany;
   if (payload.accountType !== undefined) body.accountType = payload.accountType;
   if (payload.password !== undefined && payload.password.trim())
     body.password = payload.password;
@@ -142,7 +150,9 @@ export async function login(
 }
 
 /** Request password reset email. Always returns success message to avoid email enumeration. */
-export async function requestPasswordReset(email: string): Promise<{ message: string }> {
+export async function requestPasswordReset(
+  email: string,
+): Promise<{ message: string }> {
   const headers: HeadersInit = { 'Content-Type': 'application/json' };
   if (typeof window !== 'undefined') {
     const { getUserLocale } = await import('./i18n');
@@ -201,7 +211,9 @@ export interface ProfileResponse {
 }
 
 /** Fetch current user with a given token (e.g. after OAuth callback). */
-export async function getProfileWithToken(token: string): Promise<ProfileResponse> {
+export async function getProfileWithToken(
+  token: string,
+): Promise<ProfileResponse> {
   const headers: HeadersInit = {
     Authorization: `Bearer ${token}`,
   };
@@ -295,17 +307,11 @@ export function clearDraftJob(): void {
   localStorage.removeItem(DRAFT_JOB_KEY);
 }
 
-/** True if user has not completed onboarding (missing name or account type). */
+/** True if user has not completed basic onboarding (name, surname, account type). Rest is validated inside onboarding flow. */
 export function needsOnboarding(user: AuthUser | null): boolean {
   if (user == null) return false;
-  if (user.name == null || user.accountType == null) return true;
-  if (user.accountType === 'FREELANCER') {
-    const skillsCount = user.skills?.length ?? 0;
-    if (skillsCount === 0) return true;
-    // Check if defaultMessage is missing (null or empty string)
-    if (user.defaultMessage == null || user.defaultMessage.trim() === '')
-      return true;
-  }
+  if (user.name == null || user.surname == null || user.accountType == null)
+    return true;
   return false;
 }
 

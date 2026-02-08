@@ -56,7 +56,9 @@ function ResetPasswordForm() {
       <div className="flex justify-center p-4 pt-12">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-3xl">{t('auth.resetPasswordTitle')}</CardTitle>
+            <CardTitle className="text-3xl">
+              {t('auth.resetPasswordTitle')}
+            </CardTitle>
             <CardDescription>{t('auth.resetPasswordSuccess')}</CardDescription>
           </CardHeader>
         </Card>
@@ -69,12 +71,16 @@ function ResetPasswordForm() {
       <div className="flex justify-center p-4 pt-12">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-3xl">{t('auth.resetPasswordTitle')}</CardTitle>
+            <CardTitle className="text-3xl">
+              {t('auth.resetPasswordTitle')}
+            </CardTitle>
             <CardDescription>{t('auth.noResetToken')}</CardDescription>
           </CardHeader>
           <CardFooter>
             <Button asChild variant="outline" className="w-full h-12">
-              <Link href="/login/forgot-password">{t('auth.forgotPasswordTitle')}</Link>
+              <Link href="/login/forgot-password">
+                {t('auth.forgotPasswordTitle')}
+              </Link>
             </Button>
           </CardFooter>
         </Card>
@@ -86,7 +92,9 @@ function ResetPasswordForm() {
     <div className="flex justify-center p-4 pt-12">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-3xl">{t('auth.resetPasswordTitle')}</CardTitle>
+          <CardTitle className="text-3xl">
+            {t('auth.resetPasswordTitle')}
+          </CardTitle>
           <CardDescription>{t('auth.resetPasswordDesc')}</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -113,7 +121,9 @@ function ResetPasswordForm() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">{t('auth.confirmPassword')}</Label>
+              <Label htmlFor="confirmPassword">
+                {t('auth.confirmPassword')}
+              </Label>
               <Input
                 id="confirmPassword"
                 type="password"

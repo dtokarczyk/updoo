@@ -50,12 +50,7 @@ function RegisterForm() {
     }
     setLoading(true);
     try {
-      const data = await apiRegister(
-        email,
-        password,
-        confirmPassword,
-        true,
-      );
+      const data = await apiRegister(email, password, confirmPassword, true);
       setAuth(data);
       refreshAuth();
       router.push('/onboarding');
@@ -214,11 +209,7 @@ function RegisterForm() {
               </div>
             </CardContent>
             <CardFooter className="mt-6 flex flex-col gap-4">
-              <Button
-                type="submit"
-                className="w-full h-12"
-                disabled={loading}
-              >
+              <Button type="submit" className="w-full h-12" disabled={loading}>
                 {loading ? t('auth.registering') : t('auth.register')}
               </Button>
               <p className="text-sm text-muted-foreground text-center">

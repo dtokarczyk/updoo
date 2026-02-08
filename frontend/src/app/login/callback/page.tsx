@@ -7,6 +7,7 @@ import {
   getProfileWithToken,
   setAuth,
   needsOnboarding,
+  needsAgreementsAcceptance,
   OAUTH_RETURN_URL_KEY,
 } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
@@ -89,13 +90,19 @@ function LoginCallbackContent() {
     }, PROFILE_FETCH_TIMEOUT_MS);
 
     getProfileWithToken(token)
-      .then(({ user }) => {
+      .then(({ user, requiredTermsVersion, requiredPrivacyPolicyVersion }) => {
         if (cancelled) return;
         clearTimeout(timeoutId);
         setAuth({ access_token: token, user });
         refreshAuth();
+        const needsAgreements = needsAgreementsAcceptance(
+          user,
+          requiredTermsVersion,
+          requiredPrivacyPolicyVersion,
+        );
         const target =
-          returnUrl || (needsOnboarding(user) ? '/onboarding' : '/');
+          returnUrl ||
+          (needsAgreements ? '/accept-agreements' : needsOnboarding(user) ? '/onboarding' : '/');
         window.location.href = target;
       })
       .catch((err) => {

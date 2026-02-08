@@ -17,6 +17,10 @@ export interface AuthUser {
   skills?: Skill[];
   /** False when user signed in with Google only and has not set a password yet. */
   hasPassword?: boolean;
+  /** Timestamp (version) of accepted terms of service, or null if not accepted. */
+  acceptedTermsVersion?: string | null;
+  /** Timestamp (version) of accepted privacy policy, or null if not accepted. */
+  acceptedPrivacyPolicyVersion?: string | null;
 }
 
 export interface AuthResponse {
@@ -191,8 +195,14 @@ export function getGoogleAuthUrl(): string {
 /** SessionStorage key for returnUrl when redirecting to OAuth (e.g. Google). */
 export const OAUTH_RETURN_URL_KEY = 'oauth_return_url';
 
+export interface ProfileResponse {
+  user: AuthUser;
+  requiredTermsVersion: string | null;
+  requiredPrivacyPolicyVersion: string | null;
+}
+
 /** Fetch current user with a given token (e.g. after OAuth callback). */
-export async function getProfileWithToken(token: string): Promise<{ user: AuthUser }> {
+export async function getProfileWithToken(token: string): Promise<ProfileResponse> {
   const headers: HeadersInit = {
     Authorization: `Bearer ${token}`,
   };
@@ -211,6 +221,13 @@ export async function getProfileWithToken(token: string): Promise<{ user: AuthUs
     throw new Error(msg ?? 'Failed to load profile');
   }
   return res.json();
+}
+
+/** Fetch profile (user + required agreement versions). Requires auth. */
+export async function getProfile(): Promise<ProfileResponse | null> {
+  const token = getToken();
+  if (!token) return null;
+  return getProfileWithToken(token);
 }
 
 export const AUTH_TOKEN_KEY = 'auth_token';
@@ -291,6 +308,81 @@ export function needsOnboarding(user: AuthUser | null): boolean {
       return true;
   }
   return false;
+}
+
+/** True if user has not accepted current terms and privacy policy. */
+export function needsAgreementsAcceptance(
+  user: AuthUser | null,
+  requiredTermsVersion: string | null,
+  requiredPrivacyPolicyVersion: string | null,
+): boolean {
+  if (user == null) return false;
+  if (requiredTermsVersion == null && requiredPrivacyPolicyVersion == null)
+    return false;
+  if (
+    requiredTermsVersion != null &&
+    user.acceptedTermsVersion !== requiredTermsVersion
+  )
+    return true;
+  if (
+    requiredPrivacyPolicyVersion != null &&
+    user.acceptedPrivacyPolicyVersion !== requiredPrivacyPolicyVersion
+  )
+    return true;
+  return false;
+}
+
+export interface AgreementsVersions {
+  termsVersion: string | null;
+  privacyPolicyVersion: string | null;
+}
+
+export async function getAgreementsVersions(): Promise<AgreementsVersions> {
+  const res = await fetch(`${API_URL}/agreements/versions`);
+  if (!res.ok) throw new Error('Failed to fetch agreement versions');
+  return res.json();
+}
+
+export async function getTermsContent(version: string): Promise<string> {
+  const res = await fetch(`${API_URL}/agreements/terms-of-service/${version}`);
+  if (!res.ok) throw new Error('Failed to fetch terms');
+  const data = await res.json();
+  return data.content ?? '';
+}
+
+export async function getPrivacyPolicyContent(version: string): Promise<string> {
+  const res = await fetch(`${API_URL}/agreements/privacy-policy/${version}`);
+  if (!res.ok) throw new Error('Failed to fetch privacy policy');
+  const data = await res.json();
+  return data.content ?? '';
+}
+
+export async function acceptAgreements(
+  termsVersion: string,
+  privacyPolicyVersion: string,
+): Promise<{ user: AuthUser }> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  };
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
+    const locale = getUserLocale();
+    headers['Accept-Language'] = locale;
+  }
+  const res = await fetch(`${API_URL}/auth/accept-agreements`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ termsVersion, privacyPolicyVersion }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to accept agreements');
+  }
+  return res.json();
 }
 
 // Jobs & categories

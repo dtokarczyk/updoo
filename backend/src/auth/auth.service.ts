@@ -9,11 +9,13 @@ import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
+import { AgreementsService } from '../agreements/agreements.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { AcceptAgreementsDto } from './dto/accept-agreements.dto';
 import { I18nService, SupportedLanguage } from '../i18n/i18n.service';
 
 export interface JwtPayload {
@@ -32,6 +34,10 @@ export interface AuthResponseUser {
   skills: { id: string; name: string }[];
   /** False when user signed up with Google only and has not set a password yet. */
   hasPassword: boolean;
+  /** Timestamp (version) of accepted terms of service, or null if not accepted. */
+  acceptedTermsVersion: string | null;
+  /** Timestamp (version) of accepted privacy policy, or null if not accepted. */
+  acceptedPrivacyPolicyVersion: string | null;
 }
 
 export interface AuthResponse {
@@ -57,6 +63,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly emailService: EmailService,
+    private readonly agreementsService: AgreementsService,
     private readonly i18nService: I18nService,
   ) { }
 
@@ -162,11 +169,14 @@ export class AuthService {
     if (existing) {
       throw new ConflictException('User with this email already exists');
     }
+    const { termsVersion, privacyPolicyVersion } = this.agreementsService.getCurrentVersions();
     const hashedPassword = await bcrypt.hash(dto.password, this.saltRounds);
     const user = await this.prisma.user.create({
       data: {
         email: dto.email.toLowerCase(),
         password: hashedPassword,
+        acceptedTermsVersion: termsVersion ?? undefined,
+        acceptedPrivacyPolicyVersion: privacyPolicyVersion ?? undefined,
       },
     });
     const withRelations = await this.prisma.user.findUnique({
@@ -189,6 +199,8 @@ export class AuthService {
         defaultMessage: user.defaultMessage,
         skills: [],
         hasPassword: !!user.password,
+        acceptedTermsVersion: user.acceptedTermsVersion,
+        acceptedPrivacyPolicyVersion: user.acceptedPrivacyPolicyVersion,
       });
     }
     const skillsFromUser = (withRelations as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
@@ -205,6 +217,8 @@ export class AuthService {
         name: relation.skill.name,
       })),
       hasPassword: !!withRelations.password,
+      acceptedTermsVersion: withRelations.acceptedTermsVersion,
+      acceptedPrivacyPolicyVersion: withRelations.acceptedPrivacyPolicyVersion,
     });
   }
 
@@ -238,6 +252,8 @@ export class AuthService {
         name: relation.skill.name,
       })),
       hasPassword: true,
+      acceptedTermsVersion: user.acceptedTermsVersion,
+      acceptedPrivacyPolicyVersion: user.acceptedPrivacyPolicyVersion,
     });
   }
 
@@ -275,6 +291,8 @@ export class AuthService {
         defaultMessage: user.defaultMessage,
         skills: skillsFromUser.map((r) => ({ id: r.skill.id, name: r.skill.name })),
         hasPassword: !!user.password,
+        acceptedTermsVersion: user.acceptedTermsVersion,
+        acceptedPrivacyPolicyVersion: user.acceptedPrivacyPolicyVersion,
       });
     }
 
@@ -301,6 +319,8 @@ export class AuthService {
         defaultMessage: user.defaultMessage,
         skills: skillsFromUser.map((r) => ({ id: r.skill.id, name: r.skill.name })),
         hasPassword: !!user.password,
+        acceptedTermsVersion: user.acceptedTermsVersion,
+        acceptedPrivacyPolicyVersion: user.acceptedPrivacyPolicyVersion,
       });
     }
 
@@ -330,6 +350,8 @@ export class AuthService {
         defaultMessage: newUser.defaultMessage,
         skills: [],
         hasPassword: false,
+        acceptedTermsVersion: newUser.acceptedTermsVersion,
+        acceptedPrivacyPolicyVersion: newUser.acceptedPrivacyPolicyVersion,
       });
     }
     const skillsFromUser = (withRelations as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
@@ -343,6 +365,8 @@ export class AuthService {
       defaultMessage: withRelations.defaultMessage,
       skills: skillsFromUser.map((r) => ({ id: r.skill.id, name: r.skill.name })),
       hasPassword: !!withRelations.password,
+      acceptedTermsVersion: withRelations.acceptedTermsVersion,
+      acceptedPrivacyPolicyVersion: withRelations.acceptedPrivacyPolicyVersion,
     });
   }
 
@@ -422,6 +446,8 @@ export class AuthService {
           name: relation.skill.name,
         })),
         hasPassword: !!user.password,
+        acceptedTermsVersion: user.acceptedTermsVersion,
+        acceptedPrivacyPolicyVersion: user.acceptedPrivacyPolicyVersion,
       },
     };
   }
@@ -450,6 +476,51 @@ export class AuthService {
         name: relation.skill.name,
       })),
       hasPassword: !!user.password,
+      acceptedTermsVersion: user.acceptedTermsVersion,
+      acceptedPrivacyPolicyVersion: user.acceptedPrivacyPolicyVersion,
+    };
+  }
+
+  /** Accept current terms and privacy policy. Versions must match current required versions. */
+  async acceptAgreements(
+    userId: string,
+    dto: AcceptAgreementsDto,
+  ): Promise<{ user: AuthResponse['user'] }> {
+    const current = this.agreementsService.getCurrentVersions();
+    if (
+      current.termsVersion !== dto.termsVersion ||
+      current.privacyPolicyVersion !== dto.privacyPolicyVersion
+    ) {
+      throw new BadRequestException(
+        'Submitted versions do not match current required versions. Please refresh and accept the latest documents.',
+      );
+    }
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        acceptedTermsVersion: dto.termsVersion,
+        acceptedPrivacyPolicyVersion: dto.privacyPolicyVersion,
+      },
+      include: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ...({ skills: { include: { skill: true } } } as any),
+      },
+    });
+    const skillsFromUser = (user as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        surname: user.surname,
+        accountType: user.accountType,
+        language: user.language,
+        defaultMessage: user.defaultMessage,
+        skills: skillsFromUser.map((r) => ({ id: r.skill.id, name: r.skill.name })),
+        hasPassword: !!user.password,
+        acceptedTermsVersion: user.acceptedTermsVersion,
+        acceptedPrivacyPolicyVersion: user.acceptedPrivacyPolicyVersion,
+      },
     };
   }
 
@@ -468,6 +539,8 @@ export class AuthService {
         defaultMessage: user.defaultMessage,
         skills: user.skills,
         hasPassword: user.hasPassword,
+        acceptedTermsVersion: user.acceptedTermsVersion,
+        acceptedPrivacyPolicyVersion: user.acceptedPrivacyPolicyVersion,
       },
     };
   }

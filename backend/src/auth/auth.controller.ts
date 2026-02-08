@@ -2,12 +2,15 @@ import { Body, Controller, Get, Headers, Patch, Post, Req, Res, UnauthorizedExce
 import type { Response } from 'express';
 import { Request } from 'express';
 import { AuthService, AuthResponse } from './auth.service';
+import { AgreementsService } from '../agreements/agreements.service';
 import { GetUser } from './get-user.decorator';
 import type { JwtUser } from './get-user.decorator';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { AgreementsAcceptedGuard } from './agreements-accepted.guard';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { AcceptAgreementsDto } from './dto/accept-agreements.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -17,6 +20,7 @@ import { I18nService, SupportedLanguage } from '../i18n/i18n.service';
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
+    private readonly agreementsService: AgreementsService,
     private readonly i18nService: I18nService,
   ) { }
 
@@ -76,20 +80,38 @@ export class AuthController {
 
   @Get('profile')
   @UseGuards(JwtAuthGuard)
-  async getProfile(@GetUser() user: JwtUser): Promise<{ user: AuthResponse['user'] }> {
+  async getProfile(@GetUser() user: JwtUser): Promise<{
+    user: AuthResponse['user'];
+    requiredTermsVersion: string | null;
+    requiredPrivacyPolicyVersion: string | null;
+  }> {
     const full = await this.authService.validateUser({ sub: user.id, email: user.email });
     if (!full) {
       throw new UnauthorizedException();
     }
-    return { user: full };
+    const versions = this.agreementsService.getCurrentVersions();
+    return {
+      user: full,
+      requiredTermsVersion: versions.termsVersion,
+      requiredPrivacyPolicyVersion: versions.privacyPolicyVersion,
+    };
   }
 
   @Patch('profile')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
   async updateProfile(
     @GetUser() user: JwtUser,
     @Body() dto: UpdateProfileDto,
   ): Promise<{ user: AuthResponse['user'] }> {
     return this.authService.updateProfile(user.id, dto);
+  }
+
+  @Post('accept-agreements')
+  @UseGuards(JwtAuthGuard)
+  async acceptAgreements(
+    @GetUser() user: JwtUser,
+    @Body() dto: AcceptAgreementsDto,
+  ): Promise<{ user: AuthResponse['user'] }> {
+    return this.authService.acceptAgreements(user.id, dto);
   }
 }

@@ -1,4 +1,5 @@
 import { Controller, Post, UseGuards, ForbiddenException } from '@nestjs/common';
+import { AgreementsAcceptedGuard } from '../auth/agreements-accepted.guard';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { GetUser } from '../auth/get-user.decorator';
 import type { JwtUser } from '../auth/get-user.decorator';
@@ -11,7 +12,7 @@ export class ContentGeneratorController {
   ) { }
 
   @Post('generate-job')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
   async generateJob(@GetUser() user: JwtUser) {
     if (user.accountType !== 'ADMIN') {
       throw new ForbiddenException('Only admin users can generate jobs');

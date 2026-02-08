@@ -9,6 +9,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { BetaBar } from '@/app/components/BetaBar';
 import { AppHeader } from '@/app/components/AppHeader';
 import { AppFooter } from '@/app/components/AppFooter';
+import { OnboardingRedirect } from '@/app/components/OnboardingRedirect';
 import { getLocaleFromRequest } from '@/lib/i18n';
 import { getMetadataConfig } from '@/lib/metadata-config';
 
@@ -67,7 +68,7 @@ export default async function RootLayout({
             <BetaBar initialLocale={locale} />
             <AppHeader initialLocale={locale} />
             <main className="flex-1 w-full overflow-x-hidden lg:overflow-x-visible">
-              {children}
+              <OnboardingRedirect>{children}</OnboardingRedirect>
             </main>
             <AppFooter initialLocale={locale} />
           </div>

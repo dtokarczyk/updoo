@@ -2,11 +2,31 @@
 
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { getStoredUser, getToken, needsOnboarding } from '@/lib/api';
+import {
+  getStoredUser,
+  getToken,
+  getAgreementsVersions,
+  needsOnboarding,
+  needsAgreementsAcceptance,
+} from '@/lib/api';
+
+const SKIP_AGREEMENTS_PATHS = [
+  '/accept-agreements',
+  '/agreements',
+  '/login',
+  '/register',
+  '/onboarding',
+];
+
+function shouldSkipAgreementsCheck(pathname: string): boolean {
+  return SKIP_AGREEMENTS_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(p + '/'),
+  );
+}
 
 /**
- * Redirects to /onboarding when user is logged in but has not completed
- * onboarding (missing name or account type). Only runs on pathname "/".
+ * Redirects when user is logged in but has not accepted current agreements
+ * (→ /accept-agreements) or, only on "/", has not completed onboarding (→ /onboarding).
  */
 export function OnboardingRedirect({
   children,
@@ -17,13 +37,35 @@ export function OnboardingRedirect({
   const pathname = usePathname();
 
   useEffect(() => {
-    if (pathname !== '/') return;
+    if (shouldSkipAgreementsCheck(pathname)) return;
     const token = getToken();
     if (!token) return;
     const user = getStoredUser();
-    if (needsOnboarding(user)) {
-      router.replace('/onboarding');
-    }
+    if (!user) return;
+    let cancelled = false;
+    getAgreementsVersions()
+      .then((versions) => {
+        if (cancelled) return;
+        if (
+          needsAgreementsAcceptance(
+            user,
+            versions.termsVersion,
+            versions.privacyPolicyVersion,
+          )
+        ) {
+          router.replace('/accept-agreements');
+          return;
+        }
+        if (pathname === '/' && needsOnboarding(user)) {
+          router.replace('/onboarding');
+        }
+      })
+      .catch(() => {
+        if (!cancelled) router.replace('/accept-agreements');
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [pathname, router]);
 
   return <>{children}</>;

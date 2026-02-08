@@ -49,7 +49,12 @@
     "confirmPassword": "Powtórz hasło",
     "passwordsMustMatch": "Hasła muszą być takie same.",
     "mustAcceptTerms": "Musisz zaakceptować regulamin i politykę prywatności.",
-    "termsLabel": "Akceptuję regulamin i politykę prywatności",
+    "termsLabel": "Akceptuję regulamin",
+    "privacyLabel": "Akceptuję politykę prywatności",
+    "termsLabelBefore": "Akceptuję",
+    "privacyLabelBefore": "Akceptuję",
+    "termsLink": "regulamin",
+    "privacyLink": "politykę prywatności",
     "loginWithGoogle": "Kontynuuj z Google",
     "googleAuthFailed": "Logowanie przez Google nie powiodło się.",
     "redirectingToLogin": "Za chwilę zostaniesz przekierowany na stronę logowania.",
@@ -113,6 +118,19 @@
     "freelancerDefaultMessageDesc": "Utwórz wiadomość powitalną z linkami do portfolio. Będziesz mógł ją personalizować podczas każdej wysyłki.",
     "freelancerDefaultMessagePlaceholder": "Cześć! Jestem zainteresowany/a tą ofertą. Oto linki do mojego portfolio:\n\n- Portfolio: https://example.com\n- GitHub: https://github.com/username\n\nChętnie odpowiem na pytania!",
     "freelancerDefaultMessageHint": "Możesz zmienić tę wiadomość później w ustawieniach profilu."
+  },
+  "agreements": {
+    "title": "Akceptacja regulaminu i polityki prywatności",
+    "description": "Aby korzystać z serwisu, musisz zaakceptować aktualny regulamin oraz politykę prywatności. Bez tej akceptacji nie możesz korzystać z serwisu.",
+    "lastUpdate": "Ostatnia aktualizacja: {date}",
+    "termsLabel": "Akceptuję regulamin",
+    "privacyLabel": "Akceptuję politykę prywatności",
+    "viewTerms": "Zobacz regulamin",
+    "viewPrivacy": "Zobacz politykę prywatności",
+    "accept": "Akceptuję i przechodzę dalej",
+    "accepting": "Zapisywanie…",
+    "acceptFailed": "Nie udało się zapisać akceptacji. Odśwież stronę i spróbuj ponownie.",
+    "mustAcceptBoth": "Zaznacz oba pola, aby kontynuować."
   },
   "jobs": {
     "jobs": "Ogłoszenia",
@@ -300,6 +318,8 @@
     "approve": "Zatwierdź"
   },
   "footer": {
-    "copyright": "© {year} Oferi. Wszelkie prawa zastrzeżone."
+    "copyright": "© {year} Oferi. Wszelkie prawa zastrzeżone.",
+    "terms": "Regulamin",
+    "privacy": "Polityka prywatności"
   }
 }

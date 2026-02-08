@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Headers, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { GetUser } from '../auth/get-user.decorator';
 import type { JwtUser } from '../auth/get-user.decorator';
+import { AgreementsAcceptedGuard } from '../auth/agreements-accepted.guard';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
 import { ApplyToJobDto } from './dto/apply-to-job.dto';
@@ -34,7 +35,7 @@ export class JobsController {
   ) { }
 
   @Get('categories')
-  @UseGuards(OptionalJwtAuthGuard)
+  @UseGuards(OptionalJwtAuthGuard, AgreementsAcceptedGuard)
   getCategories(
     @Headers('accept-language') acceptLanguage?: string,
     @GetUser() user?: JwtUser,
@@ -57,7 +58,7 @@ export class JobsController {
   }
 
   @Get('feed')
-  @UseGuards(OptionalJwtAuthGuard)
+  @UseGuards(OptionalJwtAuthGuard, AgreementsAcceptedGuard)
   async getFeed(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
@@ -96,7 +97,7 @@ export class JobsController {
   }
 
   @Get('favorites')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
   getFavorites(
     @GetUser() user: JwtUser,
     @Headers('accept-language') acceptLanguage: string | undefined,
@@ -109,7 +110,7 @@ export class JobsController {
   }
 
   @Get('my-applications')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
   getMyApplications(
     @GetUser() user: JwtUser,
     @Headers('accept-language') acceptLanguage?: string,
@@ -122,7 +123,7 @@ export class JobsController {
   }
 
   @Get('my-jobs')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
   getMyJobs(
     @GetUser() user: JwtUser,
     @Headers('accept-language') acceptLanguage?: string,
@@ -135,7 +136,7 @@ export class JobsController {
   }
 
   @Get('pending')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
   getPendingJobs(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
@@ -152,7 +153,7 @@ export class JobsController {
   }
 
   @Get(':id')
-  @UseGuards(OptionalJwtAuthGuard)
+  @UseGuards(OptionalJwtAuthGuard, AgreementsAcceptedGuard)
   async getJob(
     @Param('id') id: string,
     @Headers('accept-language') acceptLanguage?: string,
@@ -172,7 +173,7 @@ export class JobsController {
   }
 
   @Get(':id/prev-next')
-  @UseGuards(OptionalJwtAuthGuard)
+  @UseGuards(OptionalJwtAuthGuard, AgreementsAcceptedGuard)
   getPrevNextJob(
     @Param('id') id: string,
     @Headers('accept-language') acceptLanguage?: string,
@@ -186,7 +187,7 @@ export class JobsController {
   }
 
   @Post(':id/apply')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
   applyToJob(
     @Param('id') id: string,
     @GetUser() user: JwtUser,
@@ -196,26 +197,26 @@ export class JobsController {
   }
 
   @Post(':id/favorite')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
   addFavorite(@Param('id') id: string, @GetUser() user: JwtUser) {
     return this.favoritesService.addFavorite(user.id, id);
   }
 
   @Delete(':id/favorite')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
   removeFavorite(@Param('id') id: string, @GetUser() user: JwtUser) {
     return this.favoritesService.removeFavorite(user.id, id);
   }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
   createJob(@GetUser() user: JwtUser, @Body() dto: CreateJobDto) {
     const userLanguage = (user.language || 'POLISH') as JobLanguage;
     return this.jobsService.createJob(user.id, user.accountType, dto, userLanguage);
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
   updateJob(
     @Param('id') id: string,
     @GetUser() user: JwtUser,
@@ -226,14 +227,14 @@ export class JobsController {
   }
 
   @Patch(':id/publish')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
   publishJob(@Param('id') id: string, @GetUser() user: JwtUser) {
     const userLanguage = (user.language || 'POLISH') as JobLanguage;
     return this.jobsService.publishJob(id, user.id, user.accountType === 'ADMIN', userLanguage);
   }
 
   @Patch(':id/close')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
   closeJob(@Param('id') id: string, @GetUser() user: JwtUser) {
     const userLanguage = (user.language || 'POLISH') as JobLanguage;
     return this.jobsService.closeJob(id, user.id, user.accountType, userLanguage);

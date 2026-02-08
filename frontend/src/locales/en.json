@@ -49,7 +49,12 @@
     "confirmPassword": "Repeat password",
     "passwordsMustMatch": "Passwords must match.",
     "mustAcceptTerms": "You must accept the terms and privacy policy.",
-    "termsLabel": "I accept the Terms and Privacy Policy",
+    "termsLabel": "I accept the terms of service",
+    "privacyLabel": "I accept the privacy policy",
+    "termsLabelBefore": "I accept the",
+    "privacyLabelBefore": "I accept the",
+    "termsLink": "terms of service",
+    "privacyLink": "privacy policy",
     "loginWithGoogle": "Continue with Google",
     "googleAuthFailed": "Google sign-in failed.",
     "redirectingToLogin": "You will be redirected to the login page shortly.",
@@ -113,6 +118,19 @@
     "freelancerDefaultMessageDesc": "Create a welcome message with portfolio links. You can personalize it during each submission.",
     "freelancerDefaultMessagePlaceholder": "Hello! I'm interested in this offer. Here are links to my portfolio:\n\n- Portfolio: https://example.com\n- GitHub: https://github.com/username\n\nI'm happy to answer any questions!",
     "freelancerDefaultMessageHint": "You can change this message later in profile settings."
+  },
+  "agreements": {
+    "title": "Accept Terms and Privacy Policy",
+    "description": "To use the service you must accept the current terms of service and privacy policy. Without this acceptance you cannot use the service.",
+    "lastUpdate": "Last update: {date}",
+    "termsLabel": "I accept the terms of service",
+    "privacyLabel": "I accept the privacy policy",
+    "viewTerms": "View terms of service",
+    "viewPrivacy": "View privacy policy",
+    "accept": "I accept and continue",
+    "accepting": "Saving…",
+    "acceptFailed": "Failed to save acceptance. Refresh the page and try again.",
+    "mustAcceptBoth": "Check both boxes to continue."
   },
   "jobs": {
     "jobs": "Jobs",
@@ -301,6 +319,8 @@
     "approve": "Approve"
   },
   "footer": {
-    "copyright": "© {year} Oferi. All rights reserved."
+    "copyright": "© {year} Oferi. All rights reserved.",
+    "terms": "Terms of service",
+    "privacy": "Privacy policy"
   }
 }

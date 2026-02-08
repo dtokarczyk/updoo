@@ -107,7 +107,7 @@ export class AuthService {
         ...({ skills: { include: { skill: true } } } as any),
       },
     });
-    if (!user) {
+    if (!user || !user.password) {
       throw new UnauthorizedException('Invalid email or password');
     }
     const isMatch = await bcrypt.compare(dto.password, user.password);
@@ -127,6 +127,107 @@ export class AuthService {
         id: relation.skill.id,
         name: relation.skill.name,
       })),
+    });
+  }
+
+  /** Find or create user from Google OAuth profile; returns JWT + user. */
+  async loginOrCreateFromGoogle(profile: {
+    id: string;
+    emails?: { value: string; verified?: boolean }[];
+    displayName?: string;
+    name?: { givenName?: string; familyName?: string };
+  }): Promise<AuthResponse> {
+    const email = profile.emails?.[0]?.value?.toLowerCase();
+    if (!email) {
+      throw new BadRequestException('Google profile has no email');
+    }
+    const googleId = profile.id;
+    const name = profile.name?.givenName ?? profile.displayName?.split(' ')[0] ?? null;
+    const surname = profile.name?.familyName ?? (profile.displayName?.split(' ').slice(1).join(' ') || null);
+
+    let user = await this.prisma.user.findUnique({
+      where: { googleId },
+      include: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ...({ skills: { include: { skill: true } } } as any),
+      },
+    });
+    if (user) {
+      const skillsFromUser = (user as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
+      return this.buildAuthResponse({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        surname: user.surname,
+        accountType: user.accountType,
+        language: user.language,
+        defaultMessage: user.defaultMessage,
+        skills: skillsFromUser.map((r) => ({ id: r.skill.id, name: r.skill.name })),
+      });
+    }
+
+    user = await this.prisma.user.findUnique({
+      where: { email },
+      include: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ...({ skills: { include: { skill: true } } } as any),
+      },
+    });
+    if (user) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { googleId },
+      });
+      const skillsFromUser = (user as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
+      return this.buildAuthResponse({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        surname: user.surname,
+        accountType: user.accountType,
+        language: user.language,
+        defaultMessage: user.defaultMessage,
+        skills: skillsFromUser.map((r) => ({ id: r.skill.id, name: r.skill.name })),
+      });
+    }
+
+    const newUser = await this.prisma.user.create({
+      data: {
+        email,
+        googleId,
+        name,
+        surname,
+      },
+    });
+    const withRelations = await this.prisma.user.findUnique({
+      where: { id: newUser.id },
+      include: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ...({ skills: { include: { skill: true } } } as any),
+      },
+    });
+    if (!withRelations) {
+      return this.buildAuthResponse({
+        id: newUser.id,
+        email: newUser.email,
+        name: newUser.name,
+        surname: newUser.surname,
+        accountType: newUser.accountType,
+        language: newUser.language,
+        defaultMessage: newUser.defaultMessage,
+        skills: [],
+      });
+    }
+    const skillsFromUser = (withRelations as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
+    return this.buildAuthResponse({
+      id: withRelations.id,
+      email: withRelations.email,
+      name: withRelations.name,
+      surname: withRelations.surname,
+      accountType: withRelations.accountType,
+      language: withRelations.language,
+      defaultMessage: withRelations.defaultMessage,
+      skills: skillsFromUser.map((r) => ({ id: r.skill.id, name: r.skill.name })),
     });
   }
 
@@ -160,6 +261,9 @@ export class AuthService {
       });
       if (!existingUser) {
         throw new UnauthorizedException('Invalid user');
+      }
+      if (!existingUser.password) {
+        throw new UnauthorizedException('Cannot set password for OAuth-only account');
       }
       if (!dto.oldPassword || !dto.oldPassword.trim()) {
         throw new UnauthorizedException('Current password is required');

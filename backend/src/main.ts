@@ -1,4 +1,10 @@
-import 'dotenv/config';
+import * as path from 'path';
+import { config } from 'dotenv';
+
+// Load .env from backend directory so it works when run from project root
+config({ path: path.join(__dirname, '..', '.env') });
+config(); // fallback: cwd .env
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { I18nValidationPipe } from './i18n/i18n-validation.pipe';

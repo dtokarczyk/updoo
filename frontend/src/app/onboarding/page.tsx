@@ -71,13 +71,9 @@ export default function OnboardingPage() {
       return;
     }
     setUser(stored);
-    if (stored.name != null) {
-      setName(stored.name);
-      setStep(STEP_ACCOUNT_TYPE);
-    }
-    if (stored.surname != null) {
-      setSurname(stored.surname);
-    }
+    // Pre-fill name and surname (e.g. from Google) but always show step 1 so user can confirm/edit
+    if (stored.name != null) setName(stored.name);
+    if (stored.surname != null) setSurname(stored.surname);
     if (stored.accountType != null) {
       setAccountType(stored.accountType);
     }

@@ -135,6 +135,36 @@ export async function login(
   return res.json();
 }
 
+/** URL to redirect to for Google OAuth (backend initiates flow). */
+export function getGoogleAuthUrl(): string {
+  return `${API_URL}/auth/google`;
+}
+
+/** SessionStorage key for returnUrl when redirecting to OAuth (e.g. Google). */
+export const OAUTH_RETURN_URL_KEY = 'oauth_return_url';
+
+/** Fetch current user with a given token (e.g. after OAuth callback). */
+export async function getProfileWithToken(token: string): Promise<{ user: AuthUser }> {
+  const headers: HeadersInit = {
+    Authorization: `Bearer ${token}`,
+  };
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
+    const locale = getUserLocale();
+    headers['Accept-Language'] = locale;
+  }
+  const res = await fetch(`${API_URL}/auth/profile`, {
+    method: 'GET',
+    headers,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to load profile');
+  }
+  return res.json();
+}
+
 export const AUTH_TOKEN_KEY = 'auth_token';
 export const AUTH_USER_KEY = 'auth_user';
 export const DRAFT_JOB_KEY = 'draft_job';

@@ -48,7 +48,12 @@
     "confirmPassword": "Powtórz hasło",
     "passwordsMustMatch": "Hasła muszą być takie same.",
     "mustAcceptTerms": "Musisz zaakceptować regulamin i politykę prywatności.",
-    "termsLabel": "Akceptuję regulamin i politykę prywatności"
+    "termsLabel": "Akceptuję regulamin i politykę prywatności",
+    "loginWithGoogle": "Zaloguj się przez Google",
+    "googleAuthFailed": "Logowanie przez Google nie powiodło się.",
+    "redirectingToLogin": "Za chwilę zostaniesz przekierowany na stronę logowania.",
+    "profileFetchTimeout": "Pobieranie profilu trwa zbyt długo. Sprawdź, czy backend działa (np. na porcie 3001).",
+    "or": "lub"
   },
   "profile": {
     "editProfile": "Edycja profilu",

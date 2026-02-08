@@ -27,6 +27,8 @@ import {
   setAuth,
   needsOnboarding,
   getDraftJob,
+  getGoogleAuthUrl,
+  OAUTH_RETURN_URL_KEY,
 } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from '@/hooks/useTranslations';
@@ -131,6 +133,28 @@ function LoginForm() {
               <CardFooter className="mt-6 flex flex-col gap-4">
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? t('auth.signingIn') : t('auth.logIn')}
+                </Button>
+                <div className="relative flex items-center gap-2">
+                  <span className="flex-1 border-t border-border" />
+                  <span className="text-xs text-muted-foreground">
+                    {t('auth.or')}
+                  </span>
+                  <span className="flex-1 border-t border-border" />
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  disabled={loading}
+                  onClick={() => {
+                    const returnUrl = searchParams.get('returnUrl');
+                    if (returnUrl && typeof window !== 'undefined') {
+                      sessionStorage.setItem(OAUTH_RETURN_URL_KEY, returnUrl);
+                    }
+                    window.location.href = getGoogleAuthUrl();
+                  }}
+                >
+                  {t('auth.loginWithGoogle')}
                 </Button>
               </CardFooter>
             </form>

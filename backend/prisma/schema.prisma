@@ -52,7 +52,10 @@ enum JobLanguage {
 model User {
   id            String          @id @default(cuid())
   email         String          @unique
-  password      String
+  /** Null for OAuth-only users (e.g. Google). */
+  password      String?
+  /** Google OAuth sub (subject) – unique per Google account. */
+  googleId      String?         @unique
   name          String?
   surname       String?
   accountType   AccountType?

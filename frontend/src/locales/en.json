@@ -48,7 +48,12 @@
     "confirmPassword": "Repeat password",
     "passwordsMustMatch": "Passwords must match.",
     "mustAcceptTerms": "You must accept the terms and privacy policy.",
-    "termsLabel": "I accept the Terms and Privacy Policy"
+    "termsLabel": "I accept the Terms and Privacy Policy",
+    "loginWithGoogle": "Log in with Google",
+    "googleAuthFailed": "Google sign-in failed.",
+    "redirectingToLogin": "You will be redirected to the login page shortly.",
+    "profileFetchTimeout": "Loading profile is taking too long. Check if the backend is running (e.g. on port 3001).",
+    "or": "or"
   },
   "profile": {
     "editProfile": "Edit profile",

@@ -5,9 +5,8 @@ import { useRouter, usePathname } from 'next/navigation';
 import {
   getStoredUser,
   getToken,
-  getAgreementsVersions,
+  getProfile,
   needsOnboarding,
-  needsAgreementsAcceptance,
 } from '@/lib/api';
 
 const SKIP_AGREEMENTS_PATHS = [
@@ -43,20 +42,14 @@ export function OnboardingRedirect({
     const user = getStoredUser();
     if (!user) return;
     let cancelled = false;
-    getAgreementsVersions()
-      .then((versions) => {
-        if (cancelled) return;
-        if (
-          needsAgreementsAcceptance(
-            user,
-            versions.termsVersion,
-            versions.privacyPolicyVersion,
-          )
-        ) {
+    getProfile()
+      .then((profile) => {
+        if (cancelled || !profile) return;
+        if (profile.needsAgreementsAcceptance) {
           router.replace('/accept-agreements');
           return;
         }
-        if (pathname === '/' && needsOnboarding(user)) {
+        if (pathname === '/' && needsOnboarding(profile.user)) {
           router.replace('/onboarding');
         }
       })

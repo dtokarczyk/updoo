@@ -10,7 +10,6 @@ import { AgreementsAcceptedGuard } from './agreements-accepted.guard';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { AcceptAgreementsDto } from './dto/accept-agreements.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -82,18 +81,21 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async getProfile(@GetUser() user: JwtUser): Promise<{
     user: AuthResponse['user'];
-    requiredTermsVersion: string | null;
-    requiredPrivacyPolicyVersion: string | null;
+    needsAgreementsAcceptance: boolean;
   }> {
     const full = await this.authService.validateUser({ sub: user.id, email: user.email });
     if (!full) {
       throw new UnauthorizedException();
     }
-    const versions = this.agreementsService.getCurrentVersions();
+    const current = this.agreementsService.getCurrentVersions();
+    const needsAgreementsAcceptance =
+      full.acceptedTermsVersion == null ||
+      full.acceptedPrivacyPolicyVersion == null ||
+      (current.termsVersion != null && full.acceptedTermsVersion !== current.termsVersion) ||
+      (current.privacyPolicyVersion != null && full.acceptedPrivacyPolicyVersion !== current.privacyPolicyVersion);
     return {
       user: full,
-      requiredTermsVersion: versions.termsVersion,
-      requiredPrivacyPolicyVersion: versions.privacyPolicyVersion,
+      needsAgreementsAcceptance,
     };
   }
 
@@ -108,10 +110,7 @@ export class AuthController {
 
   @Post('accept-agreements')
   @UseGuards(JwtAuthGuard)
-  async acceptAgreements(
-    @GetUser() user: JwtUser,
-    @Body() dto: AcceptAgreementsDto,
-  ): Promise<{ user: AuthResponse['user'] }> {
-    return this.authService.acceptAgreements(user.id, dto);
+  async acceptAgreements(@GetUser() user: JwtUser): Promise<{ user: AuthResponse['user'] }> {
+    return this.authService.acceptAgreements(user.id);
   }
 }

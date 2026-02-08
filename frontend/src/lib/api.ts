@@ -197,8 +197,7 @@ export const OAUTH_RETURN_URL_KEY = 'oauth_return_url';
 
 export interface ProfileResponse {
   user: AuthUser;
-  requiredTermsVersion: string | null;
-  requiredPrivacyPolicyVersion: string | null;
+  needsAgreementsAcceptance: boolean;
 }
 
 /** Fetch current user with a given token (e.g. after OAuth callback). */
@@ -310,57 +309,24 @@ export function needsOnboarding(user: AuthUser | null): boolean {
   return false;
 }
 
-/** True if user has not accepted current terms and privacy policy. */
-export function needsAgreementsAcceptance(
-  user: AuthUser | null,
-  requiredTermsVersion: string | null,
-  requiredPrivacyPolicyVersion: string | null,
-): boolean {
-  if (user == null) return false;
-  if (requiredTermsVersion == null && requiredPrivacyPolicyVersion == null)
-    return false;
-  if (
-    requiredTermsVersion != null &&
-    user.acceptedTermsVersion !== requiredTermsVersion
-  )
-    return true;
-  if (
-    requiredPrivacyPolicyVersion != null &&
-    user.acceptedPrivacyPolicyVersion !== requiredPrivacyPolicyVersion
-  )
-    return true;
-  return false;
-}
-
-export interface AgreementsVersions {
-  termsVersion: string | null;
-  privacyPolicyVersion: string | null;
-}
-
-export async function getAgreementsVersions(): Promise<AgreementsVersions> {
-  const res = await fetch(`${API_URL}/agreements/versions`);
-  if (!res.ok) throw new Error('Failed to fetch agreement versions');
-  return res.json();
-}
-
-export async function getTermsContent(version: string): Promise<string> {
-  const res = await fetch(`${API_URL}/agreements/terms-of-service/${version}`);
+/** Current terms of service markdown from API. */
+export async function getTermsContent(): Promise<string> {
+  const res = await fetch(`${API_URL}/agreements/terms`);
   if (!res.ok) throw new Error('Failed to fetch terms');
   const data = await res.json();
   return data.content ?? '';
 }
 
-export async function getPrivacyPolicyContent(version: string): Promise<string> {
-  const res = await fetch(`${API_URL}/agreements/privacy-policy/${version}`);
+/** Current privacy policy markdown from API. */
+export async function getPrivacyPolicyContent(): Promise<string> {
+  const res = await fetch(`${API_URL}/agreements/privacy-policy`);
   if (!res.ok) throw new Error('Failed to fetch privacy policy');
   const data = await res.json();
   return data.content ?? '';
 }
 
-export async function acceptAgreements(
-  termsVersion: string,
-  privacyPolicyVersion: string,
-): Promise<{ user: AuthUser }> {
+/** Accept current terms and privacy policy. Backend records current versions. */
+export async function acceptAgreements(): Promise<{ user: AuthUser }> {
   const token = getToken();
   if (!token) throw new Error('Not authenticated');
   const headers: HeadersInit = {
@@ -375,7 +341,7 @@ export async function acceptAgreements(
   const res = await fetch(`${API_URL}/auth/accept-agreements`, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ termsVersion, privacyPolicyVersion }),
+    body: JSON.stringify({}),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -13,13 +13,23 @@ export interface CurrentVersions {
 
 @Injectable()
 export class AgreementsService {
-  /** Base path: backend/src/agreements when running from backend root. */
+  /** Base path: directory containing terms-of-service/ and privacy-policy/. Works from dist/ (with copied .md assets) or from src/. */
   private getBasePath(): string {
-    const fromSrc = path.join(process.cwd(), 'src', AGREEMENTS_DIR);
-    if (fs.existsSync(fromSrc)) return fromSrc;
-    const fromDist = path.join(process.cwd(), 'dist', 'src', AGREEMENTS_DIR);
-    if (fs.existsSync(fromDist)) return fromDist;
-    return path.join(process.cwd(), 'src', AGREEMENTS_DIR);
+    // 1) Same dir as this file has terms-of-service/ (e.g. dist/src/agreements or legacy dist/agreements)
+    const sameDir = path.join(__dirname, TERMS_DIR);
+    if (fs.existsSync(sameDir)) return __dirname;
+    // 2) Nest copies assets to dist/agreements/ – when __dirname is dist/src/agreements, dist/agreements is sibling of dist/src
+    const distAgreements = path.join(__dirname, '..', '..', AGREEMENTS_DIR);
+    if (fs.existsSync(path.join(distAgreements, TERMS_DIR))) return distAgreements;
+    // 3) Source tree: backend/src/agreements (when __dirname is dist/src/agreements)
+    const fromSrc = path.join(__dirname, '..', '..', 'src', AGREEMENTS_DIR);
+    if (fs.existsSync(path.join(fromSrc, TERMS_DIR))) return fromSrc;
+    // 4) CWD-based (e.g. running from backend/ or monorepo root)
+    const fromCwd = path.join(process.cwd(), 'src', AGREEMENTS_DIR);
+    if (fs.existsSync(path.join(fromCwd, TERMS_DIR))) return fromCwd;
+    const fromCwdBackend = path.join(process.cwd(), 'backend', 'src', AGREEMENTS_DIR);
+    if (fs.existsSync(path.join(fromCwdBackend, TERMS_DIR))) return fromCwdBackend;
+    return fromSrc;
   }
 
   /** Get latest version (filename without .md) from a subdir, or null if empty. */
@@ -37,6 +47,7 @@ export class AgreementsService {
     return versions[0] ?? null;
   }
 
+  /** Used internally by guard and auth (register/accept). Not exposed to API. */
   getCurrentVersions(): CurrentVersions {
     return {
       termsVersion: this.getLatestVersion(TERMS_DIR),
@@ -44,19 +55,21 @@ export class AgreementsService {
     };
   }
 
-  getTermsContent(version: string): string {
+  /** Current terms of service markdown for display. Returns empty string if no file. */
+  getCurrentTermsContent(): string {
+    const version = this.getLatestVersion(TERMS_DIR);
+    if (version == null) return '';
     const filePath = path.join(this.getBasePath(), TERMS_DIR, `${version}.md`);
-    if (!fs.existsSync(filePath)) {
-      throw new NotFoundException(`Terms of service version ${version} not found`);
-    }
+    if (!fs.existsSync(filePath)) return '';
     return fs.readFileSync(filePath, 'utf-8');
   }
 
-  getPrivacyPolicyContent(version: string): string {
+  /** Current privacy policy markdown for display. Returns empty string if no file. */
+  getCurrentPrivacyPolicyContent(): string {
+    const version = this.getLatestVersion(PRIVACY_DIR);
+    if (version == null) return '';
     const filePath = path.join(this.getBasePath(), PRIVACY_DIR, `${version}.md`);
-    if (!fs.existsSync(filePath)) {
-      throw new NotFoundException(`Privacy policy version ${version} not found`);
-    }
+    if (!fs.existsSync(filePath)) return '';
     return fs.readFileSync(filePath, 'utf-8');
   }
 }

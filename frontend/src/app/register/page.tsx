@@ -19,7 +19,6 @@ import {
   register as apiRegister,
   setAuth,
   getGoogleAuthUrl,
-  getAgreementsVersions,
   OAUTH_RETURN_URL_KEY,
 } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
@@ -35,19 +34,8 @@ function RegisterForm() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [termsChecked, setTermsChecked] = useState(false);
   const [privacyChecked, setPrivacyChecked] = useState(false);
-  const [termsVersion, setTermsVersion] = useState<string | null>(null);
-  const [privacyVersion, setPrivacyVersion] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    getAgreementsVersions()
-      .then((v) => {
-        setTermsVersion(v.termsVersion);
-        setPrivacyVersion(v.privacyPolicyVersion);
-      })
-      .catch(() => {});
-  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -174,60 +162,56 @@ function RegisterForm() {
                   className="h-12 text-base px-4"
                 />
               </div>
-              {termsVersion != null && (
-                <div className="flex items-start gap-2">
-                  <Checkbox
-                    id="terms"
-                    checked={termsChecked}
-                    onCheckedChange={(c) => setTermsChecked(Boolean(c))}
-                    disabled={loading}
-                    aria-describedby="terms-desc"
-                  />
-                  <Label
-                    htmlFor="terms"
-                    id="terms-desc"
-                    className="text-sm font-normal cursor-pointer"
+              <div className="flex items-start gap-2">
+                <Checkbox
+                  id="terms"
+                  checked={termsChecked}
+                  onCheckedChange={(c) => setTermsChecked(Boolean(c))}
+                  disabled={loading}
+                  aria-describedby="terms-desc"
+                />
+                <Label
+                  htmlFor="terms"
+                  id="terms-desc"
+                  className="text-sm font-normal cursor-pointer"
+                >
+                  {t('auth.termsLabelBefore')}{' '}
+                  <Link
+                    href="/agreements/terms"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline hover:underline"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    {t('auth.termsLabelBefore')}{' '}
-                    <Link
-                      href={`/agreements/terms/${termsVersion}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary underline hover:underline"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {t('auth.termsLink')}
-                    </Link>
-                  </Label>
-                </div>
-              )}
-              {privacyVersion != null && (
-                <div className="flex items-start gap-2">
-                  <Checkbox
-                    id="privacy"
-                    checked={privacyChecked}
-                    onCheckedChange={(c) => setPrivacyChecked(Boolean(c))}
-                    disabled={loading}
-                    aria-describedby="privacy-desc"
-                  />
-                  <Label
-                    htmlFor="privacy"
-                    id="privacy-desc"
-                    className="text-sm font-normal cursor-pointer"
+                    {t('auth.termsLink')}
+                  </Link>
+                </Label>
+              </div>
+              <div className="flex items-start gap-2">
+                <Checkbox
+                  id="privacy"
+                  checked={privacyChecked}
+                  onCheckedChange={(c) => setPrivacyChecked(Boolean(c))}
+                  disabled={loading}
+                  aria-describedby="privacy-desc"
+                />
+                <Label
+                  htmlFor="privacy"
+                  id="privacy-desc"
+                  className="text-sm font-normal cursor-pointer"
+                >
+                  {t('auth.privacyLabelBefore')}{' '}
+                  <Link
+                    href="/agreements/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline hover:underline"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    {t('auth.privacyLabelBefore')}{' '}
-                    <Link
-                      href={`/agreements/privacy/${privacyVersion}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary underline hover:underline"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {t('auth.privacyLink')}
-                    </Link>
-                  </Label>
-                </div>
-              )}
+                    {t('auth.privacyLink')}
+                  </Link>
+                </Label>
+              </div>
             </CardContent>
             <CardFooter className="mt-6 flex flex-col gap-4">
               <Button

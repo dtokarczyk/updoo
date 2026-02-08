@@ -15,7 +15,6 @@ import { RegisterDto } from './dto/register.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
-import { AcceptAgreementsDto } from './dto/accept-agreements.dto';
 import { I18nService, SupportedLanguage } from '../i18n/i18n.service';
 
 export interface JwtPayload {
@@ -481,25 +480,17 @@ export class AuthService {
     };
   }
 
-  /** Accept current terms and privacy policy. Versions must match current required versions. */
-  async acceptAgreements(
-    userId: string,
-    dto: AcceptAgreementsDto,
-  ): Promise<{ user: AuthResponse['user'] }> {
+  /** Accept current terms and privacy policy. Backend records current versions and acceptance timestamps. Uses 'none' when no document is configured. */
+  async acceptAgreements(userId: string): Promise<{ user: AuthResponse['user'] }> {
     const current = this.agreementsService.getCurrentVersions();
-    if (
-      current.termsVersion !== dto.termsVersion ||
-      current.privacyPolicyVersion !== dto.privacyPolicyVersion
-    ) {
-      throw new BadRequestException(
-        'Submitted versions do not match current required versions. Please refresh and accept the latest documents.',
-      );
-    }
+    const acceptedAt = new Date();
     const user = await this.prisma.user.update({
       where: { id: userId },
       data: {
-        acceptedTermsVersion: dto.termsVersion,
-        acceptedPrivacyPolicyVersion: dto.privacyPolicyVersion,
+        acceptedTermsVersion: current.termsVersion ?? 'none',
+        acceptedTermsAt: acceptedAt,
+        acceptedPrivacyPolicyVersion: current.privacyPolicyVersion ?? 'none',
+        acceptedPrivacyPolicyAt: acceptedAt,
       },
       include: {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

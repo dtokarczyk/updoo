@@ -31,6 +31,12 @@ export class AgreementsAcceptedGuard implements CanActivate {
     if (method === 'POST' && path.endsWith('/auth/accept-agreements')) {
       return true;
     }
+    // User must have explicitly accepted terms and privacy policy (no null)
+    if (user.acceptedTermsVersion == null || user.acceptedPrivacyPolicyVersion == null) {
+      throw new ForbiddenException(
+        'You must accept the terms of service and privacy policy to use this service.',
+      );
+    }
     const current = this.agreementsService.getCurrentVersions();
     if (
       current.termsVersion != null &&

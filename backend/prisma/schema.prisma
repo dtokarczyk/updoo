@@ -61,10 +61,14 @@ model User {
   accountType   AccountType?
   language      JobLanguage @default(POLISH)
   defaultMessage String?        @db.Text
-  /** Timestamp (version) of accepted terms of service, e.g. "1770551960". */
+  /** Version id of accepted terms of service, e.g. "1770551960". "none" when no document was configured. */
   acceptedTermsVersion      String?
-  /** Timestamp (version) of accepted privacy policy, e.g. "1770551960". */
+  /** When the user last accepted the terms of service. */
+  acceptedTermsAt            DateTime?
+  /** Version id of accepted privacy policy, e.g. "1770551960". "none" when no document was configured. */
   acceptedPrivacyPolicyVersion String?
+  /** When the user last accepted the privacy policy. */
+  acceptedPrivacyPolicyAt    DateTime?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   jobs          Job[]

@@ -1,26 +1,21 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { AgreementsService } from './agreements.service';
-import type { CurrentVersions } from './agreements.service';
 
 @Controller('agreements')
 export class AgreementsController {
   constructor(private readonly agreementsService: AgreementsService) {}
 
-  /** Public: current required versions (terms + privacy). No auth. */
-  @Get('versions')
-  getVersions(): CurrentVersions {
-    return this.agreementsService.getCurrentVersions();
-  }
-
-  @Get('terms-of-service/:version')
-  getTerms(@Param('version') version: string): { content: string } {
-    const content = this.agreementsService.getTermsContent(version);
+  /** Public: current terms of service markdown. No auth. */
+  @Get('terms')
+  getTerms(): { content: string } {
+    const content = this.agreementsService.getCurrentTermsContent();
     return { content };
   }
 
-  @Get('privacy-policy/:version')
-  getPrivacyPolicy(@Param('version') version: string): { content: string } {
-    const content = this.agreementsService.getPrivacyPolicyContent(version);
+  /** Public: current privacy policy markdown. No auth. */
+  @Get('privacy-policy')
+  getPrivacyPolicy(): { content: string } {
+    const content = this.agreementsService.getCurrentPrivacyPolicyContent();
     return { content };
   }
 }

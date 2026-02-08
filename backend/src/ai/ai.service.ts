@@ -9,9 +9,9 @@ export class AiService {
   private client: GoogleGenAI | null = null;
 
   constructor() {
-    this.apiKey = process.env.GOOGLE_AI_API_KEY ?? '';
+    this.apiKey = process.env.GOOGLE_API_KEY ?? '';
     if (!this.apiKey) {
-      this.logger.warn('GOOGLE_AI_API_KEY is not set. AI features will be disabled.');
+      this.logger.warn('GOOGLE_API_KEY is not set. AI features will be disabled.');
     } else {
       this.client = new GoogleGenAI({ apiKey: this.apiKey });
     }
@@ -29,7 +29,7 @@ export class AiService {
     args: Parameters<GoogleGenAI['models']['generateContent']>[0],
   ): Promise<string> {
     if (!this.client) {
-      throw new InternalServerErrorException('AI client is not configured. Missing GOOGLE_AI_API_KEY.');
+      throw new InternalServerErrorException('AI client is not configured. Missing GOOGLE_API_KEY.');
     }
 
     const model = this.getModelName(args.model);

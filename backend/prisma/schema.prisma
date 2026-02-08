@@ -202,3 +202,28 @@ model BenchmarkContent {
   file    String   @unique
   content String   @db.Text
 }
+
+enum MailerLogStatus {
+  PENDING
+  QUEUED
+  SENT
+  DELIVERED
+  FAILED
+  BOUNCED
+  OPENED
+  CLICKED
+  RECEIVED
+  SPAM_COMPLAINT
+}
+
+model MailerLog {
+  id             String          @id @default(cuid())
+  recipientEmail String
+  subject        String
+  content        String          @db.Text
+  status         MailerLogStatus @default(PENDING)
+  messageId      String?
+  errorMessage   String?         @db.Text
+  sentAt         DateTime?
+  createdAt      DateTime        @default(now())
+}

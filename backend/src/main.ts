@@ -6,13 +6,25 @@ config({ path: path.join(__dirname, '..', '.env') });
 config(); // fallback: cwd .env
 
 import { NestFactory } from '@nestjs/core';
+import { ExpressAdapter } from '@nestjs/platform-express';
+import express, { type Request } from 'express';
 import { AppModule } from './app.module';
 import { I18nValidationPipe } from './i18n/i18n-validation.pipe';
 
 const isDev = process.env.NODE_ENV === 'development';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  // Use custom Express instance so we can attach rawBody for MailerSend webhook signature verification
+  const server = express();
+  server.use(
+    express.json({
+      verify: (req: Request & { rawBody?: Buffer }, _res, buf) => {
+        req.rawBody = buf;
+      },
+    }),
+  );
+
+  const app = await NestFactory.create(AppModule, new ExpressAdapter(server), {
     logger: isDev
       ? ['log', 'error', 'warn', 'debug', 'verbose']
       : ['log', 'error', 'warn'],

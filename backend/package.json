@@ -26,7 +26,9 @@
     "script:generate-jobs": "ts-node --project tsconfig.json scripts/generate-random-jobs.ts",
     "script:seed-benchmarks": "ts-node --project tsconfig.json scripts/seed-benchmarks.ts",
     "script:seed-locations": "ts-node --project tsconfig.json scripts/seed-locations.ts",
-    "script:seed-skills": "ts-node --project tsconfig.json scripts/seed-skills.ts"
+    "script:seed-skills": "ts-node --project tsconfig.json scripts/seed-skills.ts",
+    "script:gmail-token": "ts-node --project tsconfig.json scripts/gmail-get-refresh-token.ts",
+    "script:mailersend-send-test": "ts-node --project tsconfig.json scripts/mailersend-send-test.ts"
   },
   "dependencies": {
     "@faker-js/faker": "^10.2.0",
@@ -43,6 +45,8 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
     "dotenv": "^17.2.3",
+    "googleapis": "^171.4.0",
+    "mailersend": "^2.6.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",

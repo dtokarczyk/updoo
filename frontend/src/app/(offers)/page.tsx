@@ -10,7 +10,7 @@ export const revalidate = 300;
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocaleFromRequest();
   const meta = getMetadataConfig(locale).home;
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://oferi.pl';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://oferto.pl';
   return {
     metadataBase: new URL(baseUrl),
     title: meta.title,
@@ -37,9 +37,9 @@ function parseSearchParams(searchParams: {
 
   const initialSkillIds = rawSkills
     ? rawSkills
-        .split(',')
-        .map((id) => id.trim())
-        .filter(Boolean)
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean)
     : [];
 
   return { initialLanguage, initialSkillIds };

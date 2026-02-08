@@ -38,14 +38,14 @@
     "alreadyHaveAccount": "Already have an account?",
     "loginFailed": "Login failed",
     "registrationFailed": "Registration failed",
-    "promoTitle": "New to Oferi?",
+    "promoTitle": "New to Oferto?",
     "promoDescription": "Create an account to quickly find jobs perfectly matched to you.",
     "promoCtaRegister": "Create account",
     "promoCtaLogin": "I already have an account – log in",
     "signUp": "Sign Up",
     "signIn": "Sign In",
     "alreadyHaveAccountText": "I already have an account",
-    "promoBarText": "Do you have or want to create an Oferi account?",
+    "promoBarText": "Do you have or want to create an Oferto account?",
     "confirmPassword": "Repeat password",
     "passwordsMustMatch": "Passwords must match.",
     "mustAcceptTerms": "You must accept the terms and privacy policy.",
@@ -151,8 +151,8 @@
   },
   "jobs": {
     "jobs": "Jobs",
-    "headerSampleWithCategory": "Check out a sample of the {count} {category} jobs posted on Oferi",
-    "headerSampleWithoutCategory": "Check out a sample of the {count} jobs posted on Oferi",
+    "headerSampleWithCategory": "Check out a sample of the {count} {category} jobs posted on Oferto",
+    "headerSampleWithoutCategory": "Check out a sample of the {count} jobs posted on Oferto",
     "newJob": "New job",
     "createJob": "Add a job",
     "editJob": "Edit job",
@@ -339,7 +339,7 @@
     "approve": "Approve"
   },
   "footer": {
-    "copyright": "© {year} Oferi. All rights reserved.",
+    "copyright": "© {year} Oferto. All rights reserved.",
     "terms": "Terms of service",
     "privacy": "Privacy policy"
   }

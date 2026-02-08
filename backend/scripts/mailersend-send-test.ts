@@ -16,7 +16,7 @@ import { MailerSend, EmailParams, Sender, Recipient } from 'mailersend';
 async function main(): Promise<void> {
   const apiKey = process.env.MAILERSEND_API_KEY?.trim();
   const fromEmail = process.env.MAILERSEND_FROM_EMAIL?.trim();
-  const fromName = process.env.MAILERSEND_FROM_NAME?.trim() || 'Oferi';
+  const fromName = process.env.MAILERSEND_FROM_NAME?.trim() || 'Oferto';
   const to =
     process.argv[2]?.trim() ||
     process.env.TEST_EMAIL_TO?.trim();
@@ -34,7 +34,7 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const subject = 'Test wiadomość – MailerSend (Oferi)';
+  const subject = 'Test wiadomość – MailerSend (Oferto)';
   const text =
     'To jest testowa wiadomość wysłana przez skrypt mailersend-send-test.\n\nJeśli ją widzisz, integracja z MailerSend działa poprawnie.';
   const html = `<p>${text.replace(/\n/g, '</p><p>')}</p>`;

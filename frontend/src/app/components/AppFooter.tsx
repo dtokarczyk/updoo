@@ -18,7 +18,7 @@ export function AppFooter({ initialLocale }: { initialLocale: Locale }) {
               href="/"
               className="text-sm font-medium text-foreground hover:underline focus:outline-none focus:underline"
             >
-              Oferi
+              Oferto
             </Link>
             <Link
               href="/agreements/terms"

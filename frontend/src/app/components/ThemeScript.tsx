@@ -5,7 +5,7 @@
 export function ThemeScript() {
   const script = `
 (function() {
-  var k = 'oferi-theme';
+  var k = 'oferto-theme';
   var stored = localStorage.getItem(k);
   var theme = (stored === 'dark' || stored === 'light')
     ? stored

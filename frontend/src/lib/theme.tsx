@@ -10,7 +10,7 @@ import {
 
 export type Theme = 'light' | 'dark';
 
-const STORAGE_KEY = 'oferi-theme';
+const STORAGE_KEY = 'oferto-theme';
 
 type ThemeContextValue = {
   theme: Theme;

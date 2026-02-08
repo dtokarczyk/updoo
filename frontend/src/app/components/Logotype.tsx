@@ -38,13 +38,13 @@ export function Logotype({ className, initialLocale }: LogotypeProps) {
     }
   }, [initialLocale]);
 
-  // Renders Oferi logo with localized tagline (short on mobile, full on desktop).
+  // Renders Oferto logo with localized tagline (short on mobile, full on desktop).
   return (
     <Link
       href="/"
       className={`flex flex-col text-xl font-semibold text-foreground focus:outline-none ${className ?? ''}`}
     >
-      <span className="font-black text-3xl tracking-tighter">Oferi</span>
+      <span className="font-black text-3xl tracking-tighter">Oferto</span>
       <span
         className="mt-0.5 text-xs text-muted-foreground md:hidden"
         suppressHydrationWarning

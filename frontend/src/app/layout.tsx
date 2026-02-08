@@ -5,6 +5,7 @@ import './globals.css';
 import { ThemeScript } from '@/app/components/ThemeScript';
 import { ThemeProvider } from '@/lib/theme';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { BetaBar } from '@/app/components/BetaBar';
 import { AppHeader } from '@/app/components/AppHeader';
 import { AppFooter } from '@/app/components/AppFooter';
@@ -60,6 +61,7 @@ export default async function RootLayout({
       >
         <ThemeScript />
         <ThemeProvider>
+          <TooltipProvider delayDuration={200}>
           <AuthProvider>
           <div className="flex min-h-screen flex-col font-sans w-full lg:overflow-x-visible">
             <BetaBar initialLocale={locale} />
@@ -70,6 +72,7 @@ export default async function RootLayout({
             <AppFooter initialLocale={locale} />
           </div>
           </AuthProvider>
+          </TooltipProvider>
         </ThemeProvider>
       </body>
     </html>

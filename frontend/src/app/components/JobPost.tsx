@@ -23,6 +23,11 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { getRateDisplay } from '@/lib/rate-helpers';
 import { useTranslations } from '@/hooks/useTranslations';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 const EXPERIENCE_LABELS: Record<string, string> = {
   JUNIOR: 'Junior',
@@ -266,14 +271,26 @@ export function JobPost({
                   isClosed ? 'text-muted-foreground' : 'text-foreground',
                 )}
               >
-                <span
-                  className={cn(
-                    'text-emerald-600 dark:text-emerald-400',
-                    rateDisplay.type === 'blur' && 'blur-sm select-none',
-                  )}
-                >
-                  {secondFieldLabel}
-                </span>
+                {rateDisplay.type === 'blur' ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Link
+                        href={`/login?returnUrl=${encodeURIComponent(jobPath(job))}`}
+                        className="cursor-pointer blur-sm select-none text-emerald-600 dark:text-emerald-400 hover:underline"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {secondFieldLabel}
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{t('jobs.loginToSeeRate')}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <span className="text-emerald-600 dark:text-emerald-400">
+                    {secondFieldLabel}
+                  </span>
+                )}
               </p>
               <p className="text-sm text-muted-foreground">{secondFieldSub}</p>
             </div>

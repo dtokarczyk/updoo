@@ -24,6 +24,11 @@ import {
   X,
 } from 'lucide-react';
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
   getJob,
   applyToJob,
   closeJob,
@@ -147,10 +152,21 @@ function JobRateValue({
     );
   }
   if (rd.type === 'blur') {
+    const loginUrl = `/login?returnUrl=${encodeURIComponent(jobPath(job))}`;
     return (
-      <span className="blur-sm select-none text-emerald-600 dark:text-emerald-400">
-        {rd.placeholder}
-      </span>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Link
+            href={loginUrl}
+            className="cursor-pointer blur-sm select-none text-emerald-600 dark:text-emerald-400 hover:underline"
+          >
+            {rd.placeholder}
+          </Link>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{t('jobs.loginToSeeRate')}</p>
+        </TooltipContent>
+      </Tooltip>
     );
   }
   return (

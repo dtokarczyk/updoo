@@ -36,6 +36,7 @@ import {
   type AuthUser,
 } from '@/lib/api';
 import { useTranslations } from '@/hooks/useTranslations';
+import { useAuth } from '@/contexts/AuthContext';
 
 const STEP_NAME = 1;
 const STEP_ACCOUNT_TYPE = 2;
@@ -45,6 +46,7 @@ const STEP_DEFAULT_MESSAGE = 4;
 export default function OnboardingPage() {
   const router = useRouter();
   const { t } = useTranslations();
+  const { refreshAuth } = useAuth();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [step, setStep] = useState(STEP_NAME);
   const [name, setName] = useState('');
@@ -174,6 +176,7 @@ export default function OnboardingPage() {
           setLoading(false);
           setShowDraftModal(true);
         } else {
+          refreshAuth();
           router.push('/');
           router.refresh();
         }
@@ -217,6 +220,7 @@ export default function OnboardingPage() {
         setLoading(false);
         setShowDraftModal(true);
       } else {
+        refreshAuth();
         router.push('/');
         router.refresh();
       }
@@ -527,6 +531,7 @@ export default function OnboardingPage() {
               variant="outline"
               onClick={() => {
                 setShowDraftModal(false);
+                refreshAuth();
                 router.push('/');
                 router.refresh();
               }}
@@ -537,6 +542,7 @@ export default function OnboardingPage() {
             <Button
               onClick={() => {
                 setShowDraftModal(false);
+                refreshAuth();
                 router.push('/job/new');
                 router.refresh();
               }}

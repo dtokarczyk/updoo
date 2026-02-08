@@ -133,11 +133,11 @@ export function JobsFeed({
         })
         .finally(() => setLoading(false));
     },
-    [categoryId, language, skillIds, onCountChange, page],
+    [categoryId, language, skillIds, onCountChange, page, t],
   );
 
   useEffect(() => {
-    setVisitedIds(readVisitedJobs());
+    queueMicrotask(() => setVisitedIds(readVisitedJobs()));
     const restored = readFeedState();
     const matchesFilters =
       restored &&
@@ -149,12 +149,12 @@ export function JobsFeed({
 
     if (restored && matchesFilters) {
       clearFeedState();
-      loadFeed(page);
+      queueMicrotask(() => loadFeed(page));
       return;
     }
 
-    loadFeed(page);
-  }, [loadFeed, categoryId, language, page]);
+    queueMicrotask(() => loadFeed(page));
+  }, [loadFeed, categoryId, language, page, skillIds]);
 
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || (pagination && newPage > pagination.totalPages)) return;
@@ -258,7 +258,6 @@ export function JobsFeed({
         const isVisited = visitedIds.has(job.id);
         const isApplied =
           !!job.currentUserApplied && user?.accountType === 'FREELANCER';
-        const isFavorite = !!job.isFavorite;
         return (
           <JobPost
             key={job.id}

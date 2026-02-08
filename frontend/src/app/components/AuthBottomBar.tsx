@@ -21,7 +21,7 @@ export function AuthBottomBar({ initialLocale }: { initialLocale: Locale }) {
   useEffect(() => {
     const currentLocale = getUserLocale();
     if (currentLocale !== initialLocale) {
-      setLocaleState(currentLocale);
+      queueMicrotask(() => setLocaleState(currentLocale));
     }
   }, [initialLocale]);
 

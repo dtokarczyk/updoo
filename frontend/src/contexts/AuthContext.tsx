@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    refreshAuth();
+    queueMicrotask(() => refreshAuth());
   }, [refreshAuth]);
 
   const value: AuthContextValue = {

@@ -26,6 +26,7 @@ export function SelectBox({
       type="button"
       onClick={onSelect}
       disabled={disabled}
+      data-value={value}
       className={cn(
         'relative w-full rounded-lg border-2 p-4 text-left transition-all',
         'hover:border-ring hover:bg-input/50',

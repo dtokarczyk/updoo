@@ -2,10 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus } from 'lucide-react';
 import { type Category, getStoredUser, getToken } from '@/lib/api';
 import { CategoryIcon } from '@/components/CategoryIcon';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { getUserLocale, type Locale } from '@/lib/i18n';
 import { t as translate } from '@/lib/translations';
@@ -24,17 +22,19 @@ export function CategoriesSidebarDesktop({
   const [locale, setLocaleState] = useState<Locale>(
     initialLocale ?? getUserLocale(),
   );
-  const [canCreateJob, setCanCreateJob] = useState(false);
+  const [, setCanCreateJob] = useState(false);
 
   // Update locale after mount if client locale differs from initial locale
   useEffect(() => {
     const currentLocale = getUserLocale();
     if (currentLocale !== initialLocale) {
-      setLocaleState(currentLocale);
+      queueMicrotask(() => setLocaleState(currentLocale));
     }
     const token = getToken();
     const user = getStoredUser();
-    setCanCreateJob(!!token && user?.accountType === 'CLIENT');
+    queueMicrotask(() =>
+      setCanCreateJob(!!token && user?.accountType === 'CLIENT'),
+    );
   }, [initialLocale]);
 
   // Use server locale for translations during SSR, client locale after mount

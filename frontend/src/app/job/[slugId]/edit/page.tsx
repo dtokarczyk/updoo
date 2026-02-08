@@ -36,8 +36,10 @@ export default function EditListingPage() {
       return;
     }
     if (!id) {
-      setLoading(false);
-      setError('Brak ID ogłoszenia');
+      queueMicrotask(() => {
+        setLoading(false);
+        setError('Brak ID ogłoszenia');
+      });
       return;
     }
     getJob(id)

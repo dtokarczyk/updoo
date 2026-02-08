@@ -15,8 +15,8 @@ import { useTranslations } from '@/hooks/useTranslations';
 
 export default function AdminPage() {
   const router = useRouter();
-  const { t } = useTranslations();
-  const [user, setUser] = useState<AuthUser | null>(null);
+  useTranslations();
+  const [, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [message, setMessage] = useState<string | null>(null);

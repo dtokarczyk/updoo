@@ -142,6 +142,7 @@ export function useOnboarding(
       cancelled = true;
     };
     // t omitted: used only for error message fallback; including it causes infinite loop (new ref every render)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- t causes infinite re-runs
   }, [state.step, state.availableSkills.length, accountType]);
 
   const filteredSkills = useMemo(

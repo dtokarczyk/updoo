@@ -1,5 +1,4 @@
 import type { Locale } from './i18n';
-import { defaultLocale } from './i18n';
 
 export function getLocalizedPath(path: string, locale: Locale): string {
   // Remove leading slash if present

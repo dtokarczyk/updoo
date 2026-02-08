@@ -1,6 +1,5 @@
 'use client';
 
-import { useFormContext } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -12,7 +11,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import type { Skill } from '@/lib/api';
-import type { OnboardingFormValues } from '../schemas';
 
 interface StepSkillsProps {
   skillsSearch: string;

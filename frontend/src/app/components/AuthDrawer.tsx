@@ -38,7 +38,7 @@ export function AuthDrawerContent({
   useEffect(() => {
     const currentLocale = getUserLocale();
     if (currentLocale !== initialLocale) {
-      setLocaleState(currentLocale);
+      queueMicrotask(() => setLocaleState(currentLocale));
     }
   }, [initialLocale]);
 

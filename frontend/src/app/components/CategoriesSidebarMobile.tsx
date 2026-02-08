@@ -29,7 +29,7 @@ export function CategoriesSidebarMobile({
   useEffect(() => {
     const currentLocale = getUserLocale();
     if (currentLocale !== initialLocale) {
-      setLocaleState(currentLocale);
+      queueMicrotask(() => setLocaleState(currentLocale));
     }
   }, [initialLocale]);
 
@@ -45,7 +45,9 @@ export function CategoriesSidebarMobile({
   useEffect(() => {
     const token = getToken();
     const user = getStoredUser();
-    setCanCreateJob(!!token && user?.accountType === 'CLIENT');
+    queueMicrotask(() =>
+      setCanCreateJob(!!token && user?.accountType === 'CLIENT'),
+    );
   }, []);
 
   const currentLabel = currentCategorySlug

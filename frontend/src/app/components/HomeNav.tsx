@@ -44,18 +44,7 @@ export function displayName(
   return user.email || t('profile.editProfile');
 }
 
-export function UserDropdown({
-  user,
-  dropdownOpen,
-  setDropdownOpen,
-  dropdownRef,
-  handleLogout,
-  openUp,
-  locale,
-  t,
-  iconOnly,
-  fullWidth,
-}: {
+export function UserDropdown(props: {
   user: AuthUser | null;
   dropdownOpen: boolean;
   setDropdownOpen: (v: boolean) => void;
@@ -67,6 +56,17 @@ export function UserDropdown({
   iconOnly?: boolean;
   fullWidth?: boolean;
 }) {
+  const {
+    user,
+    dropdownOpen,
+    setDropdownOpen,
+    dropdownRef,
+    handleLogout,
+    openUp,
+    t,
+    iconOnly,
+    fullWidth,
+  } = props;
   return (
     <div className={cn('relative', fullWidth && 'w-full')} ref={dropdownRef}>
       <button

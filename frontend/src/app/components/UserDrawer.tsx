@@ -19,10 +19,8 @@ interface UserDrawerContentProps {
   onClose: () => void;
 }
 
-export function UserDrawerContent({
-  initialLocale,
-  onClose,
-}: UserDrawerContentProps) {
+export function UserDrawerContent(props: UserDrawerContentProps) {
+  const { initialLocale } = props;
   const { t } = useTranslations();
   const { isLoggedIn } = useAuth();
 

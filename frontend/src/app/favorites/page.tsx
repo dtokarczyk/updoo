@@ -1,20 +1,17 @@
 'use client';
 
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
 import { getFavoritesJobs, getToken, type Job } from '@/lib/api';
 import { JobPost } from '@/app/components/JobPost';
-import { Button } from '@/components/ui/button';
 
 export default function FavoritesPage() {
   const router = useRouter();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
 
-  const loadFavorites = () => {
+  const loadFavorites = useCallback(() => {
     if (!getToken()) {
       router.push('/login');
       return;
@@ -25,15 +22,15 @@ export default function FavoritesPage() {
       .then(setJobs)
       .catch(() => setError('Nie udało się załadować ulubionych'))
       .finally(() => setLoading(false));
-  };
+  }, [router]);
 
   useEffect(() => {
     if (!getToken()) {
       router.push('/login');
       return;
     }
-    loadFavorites();
-  }, [router]);
+    queueMicrotask(() => loadFavorites());
+  }, [router, loadFavorites]);
 
   if (loading) {
     return (

@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { t as translateT } from '@/lib/translations';
 
-async function JobNotFound({ slugId }: { slugId: string }) {
+async function JobNotFound(_props: { slugId: string }) {
   const locale = await getLocaleFromRequest();
   const translate = (key: string) => translateT(locale, key);
 

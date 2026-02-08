@@ -115,7 +115,7 @@ export default function OnboardingPage() {
       step = STEP_DEFAULT_MESSAGE;
     else step = STEP_COMPANY;
     actions.init(stored, step);
-  }, [router, form, actions.init]);
+  }, [router, form, actions, actions.init, checkNeedsOnboarding]);
 
   if (state.user === null) return null;
 
@@ -169,7 +169,10 @@ export default function OnboardingPage() {
               availableSkills={state.availableSkills}
               skillsLoading={state.skillsLoading}
               skillsError={state.skillsError}
-              selectedSkillIds={form.watch('selectedSkillIds')}
+              selectedSkillIds={
+                /* eslint-disable-next-line react-hooks/incompatible-library -- form.watch() is not memoizable by design */
+                form.watch('selectedSkillIds')
+              }
               toggleSkill={actions.toggleSkill}
               filteredSkills={filteredSkills}
               onSubmit={actions.handleSkillsSubmit}

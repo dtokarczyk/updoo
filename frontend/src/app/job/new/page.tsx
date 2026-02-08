@@ -6,7 +6,6 @@ import {
   createJob,
   getStoredUser,
   saveDraftJob,
-  getDraftJob,
   clearDraftJob,
 } from '@/lib/api';
 import {

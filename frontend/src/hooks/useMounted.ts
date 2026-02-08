@@ -25,7 +25,7 @@ export function useMounted(): boolean {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    queueMicrotask(() => setMounted(true));
   }, []);
 
   return mounted;

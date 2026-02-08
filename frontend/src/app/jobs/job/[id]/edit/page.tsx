@@ -2,7 +2,6 @@
 
 import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
-import Link from 'next/link';
 import {
   getCategories,
   getLocations,

@@ -288,7 +288,7 @@ export function JobDetailClient({
   const { t, locale } = useTranslations();
   const router = useRouter();
   const [job, setJob] = useState<Job>(initialJob);
-  const [prevNext, setPrevNext] = useState<JobPrevNext>(initialPrevNext);
+  const [prevNext] = useState<JobPrevNext>(initialPrevNext);
   const [applyMessage, setApplyMessage] = useState('');
   const [applySubmitting, setApplySubmitting] = useState(false);
   const [applyError, setApplyError] = useState<string | null>(null);
@@ -322,7 +322,7 @@ export function JobDetailClient({
         }
       })
       .catch(() => {});
-  }, [id, user?.id]);
+  }, [id, user]);
 
   // Fill default message when job loads and user is freelancer
   useEffect(() => {

@@ -26,21 +26,21 @@ export function LanguageToggle({
   iconOnly = false,
   initialLocale,
 }: LanguageToggleProps) {
-  const { locale: clientLocale, t: clientT } = useTranslations();
+  const { locale: clientLocale } = useTranslations();
 
   // Use initialLocale from server during SSR to avoid hydration mismatch
   // After hydration, use client locale which may differ if user preferences changed
   const [locale, setLocaleState] = useState<Locale>(
     initialLocale ?? clientLocale,
   );
-  const [mounted, setMounted] = useState(false);
+  const [, setMounted] = useState(false);
 
   // Update locale after mount if client locale differs from initial locale
   useEffect(() => {
-    setMounted(true);
+    queueMicrotask(() => setMounted(true));
     const currentLocale = getUserLocale();
     if (currentLocale !== initialLocale) {
-      setLocaleState(currentLocale);
+      queueMicrotask(() => setLocaleState(currentLocale));
     }
   }, [initialLocale]);
 

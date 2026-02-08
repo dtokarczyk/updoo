@@ -2,6 +2,7 @@
 
 import { useState, Suspense, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,7 +50,7 @@ function LoginForm() {
   useEffect(() => {
     const draft = getDraftJob();
     if (draft) {
-      setShowDraftModal(true);
+      queueMicrotask(() => setShowDraftModal(true));
     }
   }, []);
 
@@ -107,10 +108,12 @@ function LoginForm() {
                   window.location.href = getGoogleAuthUrl();
                 }}
               >
-                <img
+                <Image
                   src="/icon/google.svg"
                   alt=""
-                  className="h-5 w-5 mr-2"
+                  width={20}
+                  height={20}
+                  className="mr-2"
                   aria-hidden
                 />
                 {t('auth.loginWithGoogle')}

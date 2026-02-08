@@ -12,7 +12,8 @@ const BROWSER_LOCALE_KEY = 'browser_locale';
 function detectBrowserLocale(): Locale {
   if (typeof window === 'undefined') return defaultLocale;
 
-  const browserLang = navigator.language || (navigator as any).userLanguage;
+  const nav = navigator as { language?: string; userLanguage?: string };
+  const browserLang = nav.language || nav.userLanguage;
   if (!browserLang) return defaultLocale;
 
   const langCode = browserLang.toLowerCase().split('-')[0];
@@ -100,7 +101,7 @@ export async function getLocaleFromRequest(): Promise<Locale> {
   // implementations without fighting type overloads.
   try {
     const { cookies } = await import('next/headers');
-    const cookieStore = (await (cookies() as any)) as {
+    const cookieStore = (await (cookies() as Promise<{ get?: (name: string) => { value?: string } | undefined }>)) as {
       get?: (name: string) => { value?: string } | undefined;
     };
     const cookieLocale = cookieStore.get?.('locale')?.value;
@@ -113,7 +114,7 @@ export async function getLocaleFromRequest(): Promise<Locale> {
 
   try {
     const { headers } = await import('next/headers');
-    const headersList = (await (headers() as any)) as {
+    const headersList = (await (headers() as Promise<{ get?: (name: string) => string | null | undefined }>)) as {
       get?: (name: string) => string | null | undefined;
     };
     const acceptLanguage = headersList.get?.('accept-language');

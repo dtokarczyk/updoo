@@ -42,14 +42,16 @@ function applyTheme(theme: Theme) {
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('light');
-  const [mounted, setMounted] = useState(false);
+  const [, setMounted] = useState(false);
 
   useEffect(() => {
     const stored = getStoredTheme();
     const resolved = stored ?? getSystemTheme();
-    setThemeState(resolved);
     applyTheme(resolved);
-    setMounted(true);
+    queueMicrotask(() => {
+      setThemeState(resolved);
+      setMounted(true);
+    });
   }, []);
 
   const setTheme = useCallback((next: Theme) => {

@@ -29,7 +29,7 @@ export function AuthPromoSidebar({ initialLocale }: AuthPromoSidebarProps) {
   useEffect(() => {
     const currentLocale = getUserLocale();
     if (currentLocale !== initialLocale) {
-      setLocaleState(currentLocale);
+      queueMicrotask(() => setLocaleState(currentLocale));
     }
   }, [initialLocale]);
 

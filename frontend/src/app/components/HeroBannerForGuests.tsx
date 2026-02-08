@@ -20,7 +20,7 @@ export function HeroBannerForGuests({
   const [isGuest, setIsGuest] = useState<boolean | null>(null);
 
   useEffect(() => {
-    setIsGuest(!getToken());
+    queueMicrotask(() => setIsGuest(!getToken()));
   }, []);
 
   if (!isHomePage) return null;

@@ -25,7 +25,7 @@ interface UserSidebarProps {
   initialLocale?: Locale;
 }
 
-export function UserSidebar({ initialLocale }: UserSidebarProps) {
+export function UserSidebar(_props: UserSidebarProps) {
   const router = useRouter();
   const { t, locale } = useTranslations();
   const { user, isLoggedIn, logout } = useAuth();
@@ -37,7 +37,7 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
 
   useEffect(() => {
     if (!isLoggedIn || !user) {
-      setLoading(false);
+      queueMicrotask(() => setLoading(false));
       return;
     }
 
@@ -66,7 +66,7 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
           setLoading(false);
         });
     } else {
-      setLoading(false);
+      queueMicrotask(() => setLoading(false));
     }
   }, [isLoggedIn, user]);
 
@@ -213,11 +213,10 @@ export function UserSidebar({ initialLocale }: UserSidebarProps) {
                       className="block p-3 rounded-lg border border-border bg-card hover:bg-muted transition-colors"
                     >
                       <h4
-                        className={`text-sm font-medium line-clamp-2 mb-1 ${
-                          isClosed
+                        className={`text-sm font-medium line-clamp-2 mb-1 ${isClosed
                             ? 'text-muted-foreground line-through'
                             : 'text-foreground'
-                        }`}
+                          }`}
                       >
                         {job.title}
                       </h4>

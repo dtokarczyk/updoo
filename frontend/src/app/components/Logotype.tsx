@@ -12,8 +12,8 @@ type LogotypeProps = {
 };
 
 export function Logotype({ className, initialLocale }: LogotypeProps) {
-  const { t, locale: clientLocale } = useTranslations();
-  const [mounted, setMounted] = useState(false);
+  useTranslations();
+  const [, setMounted] = useState(false);
 
   // Use initialLocale from server during SSR to avoid hydration mismatch
   // After hydration, use client locale which may differ if user preferences changed
@@ -26,13 +26,15 @@ export function Logotype({ className, initialLocale }: LogotypeProps) {
 
   // Update tagline after mount if client locale differs from initial locale
   useEffect(() => {
-    setMounted(true);
+    queueMicrotask(() => setMounted(true));
     const currentLocale = getUserLocale();
     if (currentLocale !== initialLocale) {
-      setTagline(translate(currentLocale, 'branding.logotypeTagline'));
-      setTaglineShort(
-        translate(currentLocale, 'branding.logotypeTaglineShort'),
-      );
+      queueMicrotask(() => {
+        setTagline(translate(currentLocale, 'branding.logotypeTagline'));
+        setTaglineShort(
+          translate(currentLocale, 'branding.logotypeTaglineShort'),
+        );
+      });
     }
   }, [initialLocale]);
 

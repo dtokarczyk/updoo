@@ -271,7 +271,7 @@ export function JobForm({
       })
       .catch(() => setErrors({ general: t('jobs.failedToLoadData') }))
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
   // Suggest hourly rate from category × experience level matrix (create mode, HOURLY billing)
   useEffect(() => {

@@ -44,7 +44,7 @@ export default function ProfileEditPage() {
   const [mounted, setMounted] = useState(false);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [skillsLoading, setSkillsLoading] = useState(false);
-  const [skillsError, setSkillsError] = useState('');
+  const [, setSkillsError] = useState('');
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
   const [skillsSearch, setSkillsSearch] = useState('');
   const [defaultMessage, setDefaultMessage] = useState('');

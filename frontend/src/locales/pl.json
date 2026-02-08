@@ -292,18 +292,21 @@
   },
   "homepage": {
     "heroText": "Najłatwiejszy sposób na połączenie firm i najlepszych freelancerów",
+    "heroBenefit1": "Zawsze darmowe ogłoszenia",
+    "heroBenefit2": "Brak prowizji od zleceń",
+    "heroBenefit3": "Ocena wykonawcy i zamawiającego",
     "welcomeTitle": "Najłatwiejszy sposób na połączenie firm i najlepszych freelancerów",
-    "heroFeature1": "Publikowanie ofert pracy jest zawsze bezpłatne.",
-    "heroFeature2": "Publikuj i zatrudniaj szybko",
-    "heroFeature3": "Oceń wykonawcę na końcu współpracy",
+    "heroFeature1": "Pomoc AI w pisaniu ofert",
+    "heroFeature2": "Łatwa publikacja",
+    "heroFeature3": "Znajdź dobrego freelancera",
     "heroAiBadge": "Tworzenie wspierane AI",
     "createFreeProfile": "Założ darmowy profil",
     "forHiring": "Szukam wykonawcy",
     "forFindingJobs": "Szukam zleceń",
     "heroTextFindingJobs": "Znajdź zlecenia i współpracę dopasowaną do Twoich umiejętności",
-    "heroFeature1FindingJobs": "Znajdź zleceniodawców i pracę dorywczą",
-    "heroFeature2FindingJobs": "Zaprezentuj się swoim profilem",
-    "heroFeature3FindingJobs": "Oceń współpracę po zakończeniu"
+    "heroFeature1FindingJobs": "Współpracuj z zweryfikowanymi firmami",
+    "heroFeature2FindingJobs": "Zaprezentuj swój profil",
+    "heroFeature3FindingJobs": "Znajdź pracę dorywczą"
   },
   "accountTypes": {
     "client": "Klient",

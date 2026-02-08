@@ -3,7 +3,15 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Gift, Zap, Star } from 'lucide-react';
+import {
+  Sparkles,
+  Upload,
+  Users,
+  ShieldCheck,
+  UserCircle,
+  Briefcase,
+  type LucideIcon,
+} from 'lucide-react';
 
 type HeroTab = 'hiring' | 'finding';
 
@@ -17,7 +25,7 @@ export function HeroBanner({
   const [heroTab, setHeroTab] = useState<HeroTab>('hiring');
 
   return (
-    <div className="relative w-full max-w-full h-auto min-h-[70vh] max-h-[80vh] md:max-h-none md:min-h-128 lg:min-h-144 rounded-xl overflow-hidden mb-6">
+    <div className="relative w-full max-w-full rounded-xl overflow-hidden mb-6">
       <video
         src={HERO_VIDEO_SRC}
         className="absolute inset-0 w-full h-full object-cover"
@@ -27,69 +35,85 @@ export function HeroBanner({
         playsInline
         aria-hidden
       />
-      <div className="absolute inset-0 bg-black/40 flex flex-col justify-between p-5 pb-5">
-        <h1 className="text-3xl lg:text-4xl font-black pr-7 pl-4 pt-4 text-white text-left mb-4">
-          {t('homepage.heroText')}
-        </h1>
+      <div className="relative bg-black/40 flex flex-col justify-between p-5 pb-5 md:min-h-[70vh]">
+        <div>
+          <h1 className="text-3xl lg:text-4xl font-black pr-7 pl-4 pt-4 text-white text-left mb-4">
+            {t('homepage.heroText')}
+          </h1>
+
+          <ul className="flex flex-col gap-2 pr-7 pl-4 mb-4 text-white/90 text-base lg:text-lg font-medium list-none">
+            <li className="flex items-center gap-3">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20 text-sm font-bold">
+                1
+              </span>
+              {t('homepage.heroBenefit1')}
+            </li>
+            <li className="flex items-center gap-3">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20 text-sm font-bold">
+                2
+              </span>
+              {t('homepage.heroBenefit2')}
+            </li>
+            <li className="flex items-center gap-3">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20 text-sm font-bold">
+                3
+              </span>
+              {t('homepage.heroBenefit3')}
+            </li>
+          </ul>
+        </div>
 
         <div>
           <div className="flex mx-4 gap-1">
             <button
               type="button"
               onClick={() => setHeroTab('hiring')}
-              className={`w-full rounded-t-lg cursor-pointer text-lg font-bold leading-none transition-colors p-3 ${
-                heroTab === 'hiring'
+              className={`w-full rounded-t-lg cursor-pointer text-lg font-bold leading-none transition-colors p-3 ${heroTab === 'hiring'
                   ? 'bg-white text-black'
                   : 'bg-white/10 backdrop-blur-md border-t border-x border-white/20 text-white/90 hover:bg-white/15'
-              }`}
+                }`}
             >
               {t('homepage.forHiring')}
             </button>
             <button
               type="button"
               onClick={() => setHeroTab('finding')}
-              className={`w-full rounded-t-lg cursor-pointer text-lg font-bold leading-none transition-colors p-3 ${
-                heroTab === 'finding'
+              className={`w-full rounded-t-lg cursor-pointer text-lg font-bold leading-none transition-colors p-3 ${heroTab === 'finding'
                   ? 'bg-white text-black'
                   : 'bg-white/10 backdrop-blur-md border-t border-x border-white/20 text-white/90 hover:bg-white/15'
-              }`}
+                }`}
             >
               {t('homepage.forFindingJobs')}
             </button>
           </div>
           <div className="w-full py-4 px-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-              <div className="flex items-center gap-3">
-                <div className="flex shrink-0 items-center justify-center w-11 h-11 rounded-full bg-white/20 text-white">
-                  <Gift className="w-5 h-5" aria-hidden />
+            {(() => {
+              const hiringIcons: LucideIcon[] = [Sparkles, Upload, Users];
+              const findingIcons: LucideIcon[] = [ShieldCheck, UserCircle, Briefcase];
+              const icons = heroTab === 'hiring' ? hiringIcons : findingIcons;
+              const labels =
+                heroTab === 'hiring'
+                  ? [t('homepage.heroFeature1'), t('homepage.heroFeature2'), t('homepage.heroFeature3')]
+                  : [
+                      t('homepage.heroFeature1FindingJobs'),
+                      t('homepage.heroFeature2FindingJobs'),
+                      t('homepage.heroFeature3FindingJobs'),
+                    ];
+              return (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                  {icons.map((Icon, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div className="flex shrink-0 items-center justify-center w-11 h-11 rounded-full bg-white/20 text-white">
+                        <Icon className="w-5 h-5" aria-hidden />
+                      </div>
+                      <p className="text-sm font-medium text-white/95 leading-none">
+                        {labels[i]}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-                <p className="text-sm font-medium text-white/95 leading-none">
-                  {heroTab === 'hiring'
-                    ? t('homepage.heroFeature1')
-                    : t('homepage.heroFeature1FindingJobs')}
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="flex shrink-0 items-center justify-center w-11 h-11 rounded-full bg-white/20 text-white">
-                  <Zap className="w-5 h-5" aria-hidden />
-                </div>
-                <p className="text-sm font-medium text-white/95 leading-none">
-                  {heroTab === 'hiring'
-                    ? t('homepage.heroFeature2')
-                    : t('homepage.heroFeature2FindingJobs')}
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="flex shrink-0 items-center justify-center w-11 h-11 rounded-full bg-white/20 text-white">
-                  <Star className="w-5 h-5" aria-hidden />
-                </div>
-                <p className="text-sm font-medium text-white/95 leading-none">
-                  {heroTab === 'hiring'
-                    ? t('homepage.heroFeature3')
-                    : t('homepage.heroFeature3FindingJobs')}
-                </p>
-              </div>
-            </div>
+              );
+            })()}
             <div className="flex justify-center">
               {heroTab === 'hiring' ? (
                 <Button

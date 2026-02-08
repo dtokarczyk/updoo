@@ -46,12 +46,12 @@ export function CategoriesSidebarDesktop({
 
   return (
     <nav className="hidden lg:block">
-      <ul className="space-y-1">
+      <ul className="space-y-2">
         <li>
           <Link
             href="/"
             className={cn(
-              'flex items-center gap-3 py-1.5 text-xl font-semibold transition-colors',
+              'flex items-center gap-3 text-xl font-semibold transition-colors',
               !currentCategorySlug
                 ? 'text-foreground'
                 : 'text-muted-foreground hover:text-foreground',
@@ -69,7 +69,7 @@ export function CategoriesSidebarDesktop({
             <Link
               href={`/jobs/${encodeURIComponent(cat.slug)}/1`}
               className={cn(
-                'flex items-center gap-3 py-1.5 text-xl font-semibold transition-colors',
+                'flex items-center gap-3 text-xl font-semibold transition-colors',
                 currentCategorySlug === cat.slug
                   ? 'text-foreground'
                   : 'text-muted-foreground hover:text-foreground',

@@ -222,7 +222,7 @@ export function JobPost({
                   className={cn(
                     'inline-flex items-center gap-1.5',
                     isDeadlineSoon &&
-                      'font-bold text-red-600 dark:text-red-400',
+                    'font-bold text-red-600 dark:text-red-400',
                   )}
                 >
                   <Clock
@@ -307,8 +307,8 @@ export function JobPost({
         </p>
 
         {skills.length > 0 ? (
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div className="flex flex-wrap gap-2">
+          <div className="flex items-end justify-between gap-3">
+            <div className="flex min-w-0 flex-1 flex-wrap gap-2">
               {skills.map((name) => (
                 <span
                   key={name}
@@ -326,7 +326,7 @@ export function JobPost({
               asChild
               variant="outline"
               size="lg"
-              className="mt-2 shrink-0"
+              className="shrink-0"
             >
               <Link href={jobPath(job)} onClick={onNavigate}>
                 {t('jobs.seeMore')}

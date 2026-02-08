@@ -54,7 +54,18 @@
     "googleAuthFailed": "Logowanie przez Google nie powiodło się.",
     "redirectingToLogin": "Za chwilę zostaniesz przekierowany na stronę logowania.",
     "profileFetchTimeout": "Pobieranie profilu trwa zbyt długo. Sprawdź, czy backend działa (np. na porcie 3001).",
-    "or": "lub"
+    "or": "lub",
+    "forgotPassword": "Zapomniałeś hasła?",
+    "forgotPasswordTitle": "Odzyskiwanie hasła",
+    "forgotPasswordDesc": "Wprowadź adres e-mail powiązany z kontem. Wyślemy link do ustawienia nowego hasła.",
+    "forgotPasswordSuccess": "Jeśli konto z tym adresem istnieje, otrzymasz e-mail z linkiem do ustawienia nowego hasła.",
+    "resetPasswordTitle": "Ustaw nowe hasło",
+    "resetPasswordDesc": "Wprowadź nowe hasło i potwierdź je. Link z e-maila jest ważny 1 godzinę.",
+    "resetPasswordSuccess": "Hasło zostało zmienione. Możesz się teraz zalogować.",
+    "backToLogin": "Powrót do logowania",
+    "sendResetLink": "Wyślij link",
+    "setNewPassword": "Ustaw hasło",
+    "noResetToken": "Brak linku do resetu. Użyj linku z e-maila lub poproś o nowy."
   },
   "profile": {
     "editProfile": "Edycja profilu",

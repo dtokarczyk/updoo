@@ -36,7 +36,7 @@ export function Logotype({ className, initialLocale }: LogotypeProps) {
     }
   }, [initialLocale]);
 
-  // Renders Updoo logo with localized tagline (short on mobile, full on desktop).
+  // Renders Oferi logo with localized tagline (short on mobile, full on desktop).
   return (
     <Link
       href="/"

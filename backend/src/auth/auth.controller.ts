@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Patch, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
 import type { Response } from 'express';
 import { Request } from 'express';
 import { AuthService, AuthResponse } from './auth.service';
@@ -8,11 +8,21 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { I18nService, SupportedLanguage } from '../i18n/i18n.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(
+    private readonly authService: AuthService,
+    private readonly i18nService: I18nService,
+  ) { }
+
+  private getLanguage(acceptLanguage?: string): SupportedLanguage {
+    return this.i18nService.parseLanguageFromHeader(acceptLanguage);
+  }
 
   @Post('register')
   async register(@Body() dto: RegisterDto): Promise<AuthResponse> {
@@ -22,6 +32,24 @@ export class AuthController {
   @Post('login')
   async login(@Body() dto: LoginDto): Promise<AuthResponse> {
     return this.authService.login(dto);
+  }
+
+  @Post('forgot-password')
+  async forgotPassword(
+    @Body() dto: ForgotPasswordDto,
+    @Headers('accept-language') acceptLanguage?: string,
+  ): Promise<{ message: string }> {
+    const lang = this.getLanguage(acceptLanguage);
+    return this.authService.requestPasswordReset(dto, lang);
+  }
+
+  @Post('reset-password')
+  async resetPassword(
+    @Body() dto: ResetPasswordDto,
+    @Headers('accept-language') acceptLanguage?: string,
+  ): Promise<{ message: string }> {
+    const lang = this.getLanguage(acceptLanguage);
+    return this.authService.resetPassword(dto, lang);
   }
 
   @Get('google')

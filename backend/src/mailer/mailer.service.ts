@@ -14,7 +14,7 @@ export class MailerService {
   constructor(private readonly mailerLogService: MailerLogService) {
     this.apiKey = process.env.MAILERSEND_API_KEY?.trim() ?? '';
     this.fromEmail = process.env.MAILERSEND_FROM_EMAIL?.trim() ?? '';
-    this.fromName = process.env.MAILERSEND_FROM_NAME?.trim() ?? 'Updoo';
+    this.fromName = process.env.MAILERSEND_FROM_NAME?.trim() ?? 'Oferi';
 
     if (!this.apiKey) {
       this.logger.warn(
@@ -151,7 +151,7 @@ export class MailerService {
 
   private parseFrom(from?: string): { email: string; name: string } {
     const defaultEmail = this.fromEmail || 'noreply@localhost';
-    const defaultName = this.fromName || 'Updoo';
+    const defaultName = this.fromName || 'Oferi';
     if (!from?.trim()) {
       return { email: defaultEmail, name: defaultName };
     }

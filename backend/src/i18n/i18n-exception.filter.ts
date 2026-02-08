@@ -225,6 +225,7 @@ export class I18nExceptionFilter implements ExceptionFilter {
       'Current password is required': 'errors.currentPasswordRequired',
       'Current password is incorrect': 'errors.currentPasswordIncorrect',
       'Invalid user': 'errors.invalidUser',
+      'Invalid or expired reset token': 'errors.invalidResetToken',
     };
 
     const translationKey = errorMap[message];

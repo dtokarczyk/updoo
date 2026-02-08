@@ -2,8 +2,8 @@
  * Test script: send one email via MailerSend using credentials from .env
  *
  * Usage (from backend directory):
- *   npm run script:mailersend-send-test
- *   npm run script:mailersend-send-test -- recipient@example.com
+ *   npm run script:gmail-send-test
+ *   npm run script:gmail-send-test -- recipient@example.com
  *
  * Or set TEST_EMAIL_TO in .env to always send to that address.
  *
@@ -29,14 +29,14 @@ async function main(): Promise<void> {
   }
   if (!to) {
     console.error(
-      'Provide recipient: npm run script:mailersend-send-test -- your@email.com  or set TEST_EMAIL_TO in .env',
+      'Provide recipient: npm run script:gmail-send-test -- your@email.com  or set TEST_EMAIL_TO in .env',
     );
     process.exit(1);
   }
 
   const subject = 'Test wiadomość – MailerSend (Oferi)';
   const text =
-    'To jest testowa wiadomość wysłana przez skrypt mailersend-send-test.\n\nJeśli ją widzisz, integracja z MailerSend działa poprawnie.';
+    'To jest testowa wiadomość wysłana przez skrypt gmail-send-test.\n\nJeśli ją widzisz, integracja z MailerSend działa poprawnie.';
   const html = `<p>${text.replace(/\n/g, '</p><p>')}</p>`;
 
   const mailerSend = new MailerSend({ apiKey });

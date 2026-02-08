@@ -31,6 +31,15 @@
     "invalidEmailOrPassword": "Invalid email or password",
     "currentPasswordRequired": "Current password is required",
     "currentPasswordIncorrect": "Current password is incorrect",
-    "invalidUser": "Invalid user"
+    "invalidUser": "Invalid user",
+    "invalidResetToken": "Invalid or expired reset link. Please request a new one."
+  },
+  "messages": {
+    "forgotPasswordSuccess": "If an account exists with this email, you will receive a link to set a new password.",
+    "resetPasswordSuccess": "Your password has been reset. You can now log in.",
+    "forgotPasswordEmailSubject": "Oferi – password reset",
+    "forgotPasswordEmailIntro": "We received a request to reset the password for the account associated with {email}.",
+    "forgotPasswordEmailCta": "Set new password",
+    "forgotPasswordEmailExpiry": "This link is valid for {hours} hour(s). If you did not request a reset, please ignore this message."
   }
 }

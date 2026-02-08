@@ -11,6 +11,9 @@ interface Translations {
   errors: {
     [key: string]: string;
   };
+  messages?: {
+    [key: string]: string;
+  };
 }
 
 @Injectable()

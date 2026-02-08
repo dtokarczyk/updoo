@@ -54,7 +54,18 @@
     "googleAuthFailed": "Google sign-in failed.",
     "redirectingToLogin": "You will be redirected to the login page shortly.",
     "profileFetchTimeout": "Loading profile is taking too long. Check if the backend is running (e.g. on port 3001).",
-    "or": "or"
+    "or": "or",
+    "forgotPassword": "Forgot password?",
+    "forgotPasswordTitle": "Forgot password",
+    "forgotPasswordDesc": "Enter the email address associated with your account. We will send you a link to set a new password.",
+    "forgotPasswordSuccess": "If an account exists with this email, you will receive a link to set a new password.",
+    "resetPasswordTitle": "Set new password",
+    "resetPasswordDesc": "Enter your new password and confirm it. The link from the email is valid for 1 hour.",
+    "resetPasswordSuccess": "Your password has been reset. You can now log in.",
+    "backToLogin": "Back to login",
+    "sendResetLink": "Send link",
+    "setNewPassword": "Set password",
+    "noResetToken": "No reset link. Use the link from the email or request a new one."
   },
   "profile": {
     "editProfile": "Edit profile",

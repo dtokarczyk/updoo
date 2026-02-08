@@ -21,6 +21,8 @@ const metadataByLocale: Record<
     default: DefaultMeta;
     home: PageMeta;
     login: PageMeta;
+    forgotPassword: PageMeta;
+    resetPassword: PageMeta;
     register: PageMeta;
     admin: PageMeta;
     favorites: PageMeta;
@@ -50,6 +52,15 @@ const metadataByLocale: Record<
       title: 'Logowanie',
       description:
         'Zaloguj się do Oferi. Wprowadź adres e-mail i hasło, aby uzyskać dostęp do ofert i swojego konta.',
+    },
+    forgotPassword: {
+      title: 'Odzyskiwanie hasła',
+      description:
+        'Wprowadź adres e-mail powiązany z kontem. Wyślemy link do ustawienia nowego hasła.',
+    },
+    resetPassword: {
+      title: 'Ustaw nowe hasło',
+      description: 'Wprowadź nowe hasło do konta w Oferi.',
     },
     register: {
       title: 'Rejestracja',
@@ -119,6 +130,15 @@ const metadataByLocale: Record<
       title: 'Login',
       description:
         'Log in to Oferi. Enter your email and password to access job offers and your account.',
+    },
+    forgotPassword: {
+      title: 'Forgot password',
+      description:
+        'Enter the email address associated with your account. We will send you a link to set a new password.',
+    },
+    resetPassword: {
+      title: 'Set new password',
+      description: 'Enter your new password for your Oferi account.',
     },
     register: {
       title: 'Register',

@@ -6,10 +6,15 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from '../email/email.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { I18nService, SupportedLanguage } from '../i18n/i18n.service';
 
 export interface JwtPayload {
   sub: string;
@@ -34,6 +39,16 @@ export interface AuthResponse {
   user: AuthResponseUser;
 }
 
+const PASSWORD_RESET_EXPIRY_HOURS = 1;
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 @Injectable()
 export class AuthService {
   private readonly saltRounds = 10;
@@ -41,7 +56,98 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly emailService: EmailService,
+    private readonly i18nService: I18nService,
   ) { }
+
+  /**
+   * Request password reset: find user by email (must have password), generate token,
+   * save expiry, send email with reset link. Always returns success to avoid email enumeration.
+   */
+  async requestPasswordReset(
+    dto: ForgotPasswordDto,
+    lang: SupportedLanguage,
+  ): Promise<{ message: string }> {
+    const email = dto.email.trim().toLowerCase();
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+    const successMessage = this.i18nService.translate(
+      'messages.forgotPasswordSuccess',
+      lang,
+    );
+    if (!user || !user.password) {
+      return { message: successMessage };
+    }
+
+    const token = randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + PASSWORD_RESET_EXPIRY_HOURS * 60 * 60 * 1000);
+
+    await this.prisma.passwordResetToken.deleteMany({ where: { userId: user.id } });
+    await this.prisma.passwordResetToken.create({
+      data: { userId: user.id, token, expiresAt },
+    });
+
+    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
+    const resetUrl = `${frontendUrl}/login/reset-password?token=${encodeURIComponent(token)}`;
+
+    const subject = this.i18nService.translate('messages.forgotPasswordEmailSubject', lang);
+    const intro = this.i18nService.translate('messages.forgotPasswordEmailIntro', lang, {
+      email: escapeHtml(email),
+    });
+    const cta = this.i18nService.translate('messages.forgotPasswordEmailCta', lang);
+    const expiry = this.i18nService.translate('messages.forgotPasswordEmailExpiry', lang, {
+      hours: String(PASSWORD_RESET_EXPIRY_HOURS),
+    });
+    const html = `
+      <p>${intro}</p>
+      <p><a href="${resetUrl}" style="display:inline-block;padding:10px 20px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px;">${cta}</a></p>
+      <p>${expiry}</p>
+      <p>Oferi</p>
+    `;
+    const text = `${subject}: ${resetUrl}\n\n${expiry}`;
+
+    if (this.emailService.isConfigured()) {
+      await this.emailService.sendHtml(user.email, subject, html, { text });
+    }
+
+    return { message: successMessage };
+  }
+
+  /**
+   * Reset password using token from email. Validates token and expiry, then updates password.
+   */
+  async resetPassword(
+    dto: ResetPasswordDto,
+    lang: SupportedLanguage,
+  ): Promise<{ message: string }> {
+    if (dto.newPassword !== dto.confirmPassword) {
+      throw new BadRequestException('Passwords do not match');
+    }
+
+    const resetRecord = await this.prisma.passwordResetToken.findFirst({
+      where: {
+        token: dto.token,
+        expiresAt: { gt: new Date() },
+      },
+      include: { user: true },
+    });
+    if (!resetRecord) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.newPassword, this.saltRounds);
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: resetRecord.userId },
+        data: { password: hashedPassword },
+      }),
+      this.prisma.passwordResetToken.delete({ where: { id: resetRecord.id } }),
+    ]);
+
+    const message = this.i18nService.translate('messages.resetPasswordSuccess', lang);
+    return { message };
+  }
 
   async register(dto: RegisterDto): Promise<AuthResponse> {
     if (dto.password !== dto.confirmPassword) {

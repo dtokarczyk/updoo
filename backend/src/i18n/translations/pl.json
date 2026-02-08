@@ -31,6 +31,15 @@
     "invalidEmailOrPassword": "Nieprawidłowy adres e-mail lub hasło",
     "currentPasswordRequired": "Aktualne hasło jest wymagane",
     "currentPasswordIncorrect": "Aktualne hasło jest nieprawidłowe",
-    "invalidUser": "Nieprawidłowy użytkownik"
+    "invalidUser": "Nieprawidłowy użytkownik",
+    "invalidResetToken": "Nieprawidłowy lub wygasły link do resetu hasła. Poproś o nowy link."
+  },
+  "messages": {
+    "forgotPasswordSuccess": "Jeśli konto z tym adresem e-mail istnieje, otrzymasz link do ustawienia nowego hasła.",
+    "resetPasswordSuccess": "Hasło zostało zmienione. Możesz się teraz zalogować.",
+    "forgotPasswordEmailSubject": "Oferi – reset hasła",
+    "forgotPasswordEmailIntro": "Otrzymaliśmy prośbę o zresetowanie hasła do konta powiązanego z adresem {email}.",
+    "forgotPasswordEmailCta": "Ustaw nowe hasło",
+    "forgotPasswordEmailExpiry": "Link jest ważny przez {hours} godz. Jeśli to nie Ty prosiłeś o reset, zignoruj tę wiadomość."
   }
 }

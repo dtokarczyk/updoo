@@ -137,6 +137,52 @@ export async function login(
   return res.json();
 }
 
+/** Request password reset email. Always returns success message to avoid email enumeration. */
+export async function requestPasswordReset(email: string): Promise<{ message: string }> {
+  const headers: HeadersInit = { 'Content-Type': 'application/json' };
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
+    const locale = getUserLocale();
+    headers['Accept-Language'] = locale;
+  }
+  const res = await fetch(`${API_URL}/auth/forgot-password`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ email: email.trim().toLowerCase() }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Request failed');
+  }
+  return res.json();
+}
+
+/** Reset password using token from email. */
+export async function resetPassword(
+  token: string,
+  newPassword: string,
+  confirmPassword: string,
+): Promise<{ message: string }> {
+  const headers: HeadersInit = { 'Content-Type': 'application/json' };
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
+    const locale = getUserLocale();
+    headers['Accept-Language'] = locale;
+  }
+  const res = await fetch(`${API_URL}/auth/reset-password`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ token, newPassword, confirmPassword }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Reset failed');
+  }
+  return res.json();
+}
+
 /** URL to redirect to for Google OAuth (backend initiates flow). */
 export function getGoogleAuthUrl(): string {
   return `${API_URL}/auth/google`;

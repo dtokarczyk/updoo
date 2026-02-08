@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,12 +15,18 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { register as apiRegister, setAuth } from '@/lib/api';
+import {
+  register as apiRegister,
+  setAuth,
+  getGoogleAuthUrl,
+  OAUTH_RETURN_URL_KEY,
+} from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from '@/hooks/useTranslations';
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t } = useTranslations();
   const { refreshAuth } = useAuth();
   const [email, setEmail] = useState('');
@@ -63,13 +69,44 @@ export default function RegisterPage() {
   }
 
   return (
-    <>
-      <div className="flex justify-center p-4 pt-12">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-3xl">{t('auth.register')}</CardTitle>
-            <CardDescription>{t('auth.enterDetails')}</CardDescription>
-          </CardHeader>
+    <div className="flex justify-center p-4 pt-12">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-3xl">{t('auth.register')}</CardTitle>
+          <CardDescription>{t('auth.enterDetails')}</CardDescription>
+        </CardHeader>
+        <div>
+          <div className="px-6 pb-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full h-12"
+              disabled={loading}
+              onClick={() => {
+                const returnUrl = searchParams.get('returnUrl');
+                if (returnUrl && typeof window !== 'undefined') {
+                  sessionStorage.setItem(OAUTH_RETURN_URL_KEY, returnUrl);
+                }
+                window.location.href = getGoogleAuthUrl();
+              }}
+            >
+              <img
+                src="/icon/google.svg"
+                alt=""
+                className="h-5 w-5 mr-2"
+                aria-hidden
+              />
+              {t('auth.loginWithGoogle')}
+            </Button>
+
+            <div className="relative flex items-center gap-2 my-4">
+              <span className="flex-1 border-t border-border" />
+              <span className="text-xs text-muted-foreground">
+                {t('auth.or')}
+              </span>
+              <span className="flex-1 border-t border-border" />
+            </div>
+          </div>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
               {error && (
@@ -139,22 +176,44 @@ export default function RegisterPage() {
               </div>
             </CardContent>
             <CardFooter className="mt-6 flex flex-col gap-4">
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button
+                type="submit"
+                className="w-full h-12"
+                disabled={loading}
+              >
                 {loading ? t('auth.registering') : t('auth.register')}
               </Button>
               <p className="text-sm text-muted-foreground text-center">
                 {t('auth.alreadyHaveAccount')}{' '}
                 <Link
                   href="/login"
-                  className="text-primary underline-offset-4 hover:underline"
+                  className="font-medium text-primary underline-offset-4 hover:underline"
                 >
                   {t('auth.logIn')}
                 </Link>
               </p>
             </CardFooter>
           </form>
-        </Card>
-      </div>
-    </>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center p-4 pt-12">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle className="text-3xl">Loading...</CardTitle>
+            </CardHeader>
+          </Card>
+        </div>
+      }
+    >
+      <RegisterForm />
+    </Suspense>
   );
 }

@@ -93,6 +93,36 @@ function LoginForm() {
               <CardTitle className="text-3xl">{t('auth.login')}</CardTitle>
               <CardDescription>{t('auth.enterEmailPassword')}</CardDescription>
             </CardHeader>
+            <div className="px-6 pb-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full h-12"
+                disabled={loading}
+                onClick={() => {
+                  const returnUrl = searchParams.get('returnUrl');
+                  if (returnUrl && typeof window !== 'undefined') {
+                    sessionStorage.setItem(OAUTH_RETURN_URL_KEY, returnUrl);
+                  }
+                  window.location.href = getGoogleAuthUrl();
+                }}
+              >
+                <img
+                  src="/icon/google.svg"
+                  alt=""
+                  className="h-5 w-5 mr-2"
+                  aria-hidden
+                />
+                {t('auth.loginWithGoogle')}
+              </Button>
+              <div className="relative flex items-center gap-2 my-2">
+                <span className="flex-1 border-t border-border" />
+                <span className="text-xs text-muted-foreground">
+                  {t('auth.or')}
+                </span>
+                <span className="flex-1 border-t border-border" />
+              </div>
+            </div>
             <form onSubmit={handleSubmit}>
               <CardContent className="space-y-4">
                 {error && (
@@ -131,45 +161,21 @@ function LoginForm() {
                 </div>
               </CardContent>
               <CardFooter className="mt-6 flex flex-col gap-4">
-                <Button type="submit" className="w-full" disabled={loading}>
+                <Button type="submit" className="w-full h-12" disabled={loading}>
                   {loading ? t('auth.signingIn') : t('auth.logIn')}
                 </Button>
-                <div className="relative flex items-center gap-2">
-                  <span className="flex-1 border-t border-border" />
-                  <span className="text-xs text-muted-foreground">
-                    {t('auth.or')}
-                  </span>
-                  <span className="flex-1 border-t border-border" />
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  disabled={loading}
-                  onClick={() => {
-                    const returnUrl = searchParams.get('returnUrl');
-                    if (returnUrl && typeof window !== 'undefined') {
-                      sessionStorage.setItem(OAUTH_RETURN_URL_KEY, returnUrl);
-                    }
-                    window.location.href = getGoogleAuthUrl();
-                  }}
-                >
-                  {t('auth.loginWithGoogle')}
-                </Button>
+                <p className="text-center text-sm text-muted-foreground">
+                  {t('auth.dontHaveAccountShort')}{' '}
+                  <Link
+                    href="/register"
+                    className="font-medium text-primary underline-offset-4 hover:underline"
+                  >
+                    {t('auth.signUp')}
+                  </Link>
+                </p>
               </CardFooter>
             </form>
           </Card>
-
-          <div className="rounded-2xl border border-border bg-card p-6">
-            <div className="mt-2 space-y-4">
-              <h2 className="text-2xl font-semibold">
-                {t('auth.dontHaveAccount')}
-              </h2>
-              <Button asChild variant="secondary" size="lg" className="w-full">
-                <Link href="/register">{t('auth.register')}</Link>
-              </Button>
-            </div>
-          </div>
         </div>
       </div>
 

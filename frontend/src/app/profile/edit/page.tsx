@@ -50,6 +50,8 @@ export default function ProfileEditPage() {
     'CLIENT' | 'FREELANCER' | 'ADMIN' | null
   >(null);
 
+  const [hasPassword, setHasPassword] = useState(true);
+
   useEffect(() => {
     setMounted(true);
     const user = getStoredUser();
@@ -58,6 +60,7 @@ export default function ProfileEditPage() {
       setSurname(user.surname ?? '');
       setEmail(user.email ?? '');
       setAccountType(user.accountType);
+      setHasPassword(user.hasPassword !== false);
       if (Array.isArray(user.skills)) {
         setSelectedSkillIds(user.skills.map((skill) => skill.id));
       }
@@ -166,7 +169,7 @@ export default function ProfileEditPage() {
     e.preventDefault();
     setError('');
     setSuccess(false);
-    if (!oldPassword.trim() || !password.trim() || !passwordConfirm.trim()) {
+    if (!password.trim() || !passwordConfirm.trim()) {
       setError(t('profile.passwordBothRequired'));
       return;
     }
@@ -174,21 +177,28 @@ export default function ProfileEditPage() {
       setError(t('profile.passwordMismatch'));
       return;
     }
+    if (hasPassword && !oldPassword.trim()) {
+      setError(t('profile.passwordBothRequired'));
+      return;
+    }
     setLoading(true);
     try {
       const payload: Parameters<typeof updateProfile>[0] = {
-        oldPassword: oldPassword.trim(),
+        ...(hasPassword && { oldPassword: oldPassword.trim() }),
         password: password.trim(),
       };
       const { user: updated } = await updateProfile(payload);
       updateStoredUser(updated);
+      setHasPassword(updated.hasPassword !== false);
       setOldPassword('');
       setPassword('');
       setPasswordConfirm('');
       setSuccess(true);
-      clearAuth();
-      router.push('/login');
-      router.refresh();
+      if (hasPassword) {
+        clearAuth();
+        router.push('/login');
+        router.refresh();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : t('profile.saveFailed'));
     } finally {
@@ -347,23 +357,32 @@ export default function ProfileEditPage() {
             </TabsContent>
 
             <TabsContent value="password" className="space-y-4">
+              {!hasPassword && (
+                <p className="text-sm text-muted-foreground rounded-md bg-muted/50 px-3 py-2">
+                  {t('profile.noPasswordGoogle')}
+                </p>
+              )}
               <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                {hasPassword && (
+                  <div className="space-y-2">
+                    <Label htmlFor="oldPassword">
+                      {t('profile.currentPassword')}
+                    </Label>
+                    <Input
+                      id="oldPassword"
+                      type="password"
+                      placeholder={t('profile.currentPasswordPlaceholder')}
+                      value={oldPassword}
+                      onChange={(e) => setOldPassword(e.target.value)}
+                      autoComplete="current-password"
+                      disabled={loading}
+                    />
+                  </div>
+                )}
                 <div className="space-y-2">
-                  <Label htmlFor="oldPassword">
-                    {t('profile.currentPassword')}
+                  <Label htmlFor="password">
+                    {hasPassword ? t('profile.newPassword') : t('profile.setPassword')}
                   </Label>
-                  <Input
-                    id="oldPassword"
-                    type="password"
-                    placeholder={t('profile.currentPasswordPlaceholder')}
-                    value={oldPassword}
-                    onChange={(e) => setOldPassword(e.target.value)}
-                    autoComplete="current-password"
-                    disabled={loading}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">{t('profile.newPassword')}</Label>
                   <Input
                     id="password"
                     type="password"
@@ -393,7 +412,7 @@ export default function ProfileEditPage() {
                 </div>
                 <CardFooter className="px-0">
                   <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? t('common.saving') : t('common.save')}
+                    {loading ? t('common.saving') : (hasPassword ? t('common.save') : t('profile.setPassword'))}
                   </Button>
                 </CardFooter>
               </form>

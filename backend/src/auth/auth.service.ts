@@ -25,6 +25,8 @@ export interface AuthResponseUser {
   language: string;
   defaultMessage: string | null;
   skills: { id: string; name: string }[];
+  /** False when user signed up with Google only and has not set a password yet. */
+  hasPassword: boolean;
 }
 
 export interface AuthResponse {
@@ -80,6 +82,7 @@ export class AuthService {
         language: user.language,
         defaultMessage: user.defaultMessage,
         skills: [],
+        hasPassword: !!user.password,
       });
     }
     const skillsFromUser = (withRelations as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
@@ -95,6 +98,7 @@ export class AuthService {
         id: relation.skill.id,
         name: relation.skill.name,
       })),
+      hasPassword: !!withRelations.password,
     });
   }
 
@@ -127,6 +131,7 @@ export class AuthService {
         id: relation.skill.id,
         name: relation.skill.name,
       })),
+      hasPassword: true,
     });
   }
 
@@ -163,6 +168,7 @@ export class AuthService {
         language: user.language,
         defaultMessage: user.defaultMessage,
         skills: skillsFromUser.map((r) => ({ id: r.skill.id, name: r.skill.name })),
+        hasPassword: !!user.password,
       });
     }
 
@@ -188,6 +194,7 @@ export class AuthService {
         language: user.language,
         defaultMessage: user.defaultMessage,
         skills: skillsFromUser.map((r) => ({ id: r.skill.id, name: r.skill.name })),
+        hasPassword: !!user.password,
       });
     }
 
@@ -216,6 +223,7 @@ export class AuthService {
         language: newUser.language,
         defaultMessage: newUser.defaultMessage,
         skills: [],
+        hasPassword: false,
       });
     }
     const skillsFromUser = (withRelations as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
@@ -228,6 +236,7 @@ export class AuthService {
       language: withRelations.language,
       defaultMessage: withRelations.defaultMessage,
       skills: skillsFromUser.map((r) => ({ id: r.skill.id, name: r.skill.name })),
+      hasPassword: !!withRelations.password,
     });
   }
 
@@ -262,18 +271,17 @@ export class AuthService {
       if (!existingUser) {
         throw new UnauthorizedException('Invalid user');
       }
-      if (!existingUser.password) {
-        throw new UnauthorizedException('Cannot set password for OAuth-only account');
-      }
-      if (!dto.oldPassword || !dto.oldPassword.trim()) {
-        throw new UnauthorizedException('Current password is required');
-      }
-      const isOldPasswordValid = await bcrypt.compare(
-        dto.oldPassword.trim(),
-        existingUser.password,
-      );
-      if (!isOldPasswordValid) {
-        throw new UnauthorizedException('Current password is incorrect');
+      if (existingUser.password) {
+        if (!dto.oldPassword || !dto.oldPassword.trim()) {
+          throw new UnauthorizedException('Current password is required');
+        }
+        const isOldPasswordValid = await bcrypt.compare(
+          dto.oldPassword.trim(),
+          existingUser.password,
+        );
+        if (!isOldPasswordValid) {
+          throw new UnauthorizedException('Current password is incorrect');
+        }
       }
       updateData.password = await bcrypt.hash(dto.password.trim(), this.saltRounds);
     }
@@ -307,6 +315,7 @@ export class AuthService {
           id: relation.skill.id,
           name: relation.skill.name,
         })),
+        hasPassword: !!user.password,
       },
     };
   }
@@ -334,6 +343,7 @@ export class AuthService {
         id: relation.skill.id,
         name: relation.skill.name,
       })),
+      hasPassword: !!user.password,
     };
   }
 
@@ -351,6 +361,7 @@ export class AuthService {
         language: user.language,
         defaultMessage: user.defaultMessage,
         skills: user.skills,
+        hasPassword: user.hasPassword,
       },
     };
   }

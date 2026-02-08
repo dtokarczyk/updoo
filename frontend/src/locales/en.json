@@ -70,6 +70,8 @@
     "tabBasic": "Basic data",
     "tabSkills": "Skills",
     "tabPassword": "Password",
+    "noPasswordGoogle": "You don't have a password because you signed in with Google. You can set a password by entering it twice – then you can log in with both Google and your password.",
+    "setPassword": "Set password",
     "passwordBothRequired": "Enter the new password in both fields.",
     "passwordMismatch": "Passwords do not match.",
     "newPasswordConfirm": "Repeat new password",

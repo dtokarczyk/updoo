@@ -15,6 +15,8 @@ export interface AuthUser {
   defaultMessage?: string | null;
   /** Skills directly attached to freelancer account. */
   skills?: Skill[];
+  /** False when user signed in with Google only and has not set a password yet. */
+  hasPassword?: boolean;
 }
 
 export interface AuthResponse {

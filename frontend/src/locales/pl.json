@@ -70,6 +70,8 @@
     "tabBasic": "Podstawowe dane",
     "tabSkills": "Umiejętności",
     "tabPassword": "Hasło",
+    "noPasswordGoogle": "Nie masz hasła, ponieważ zalogowałeś się przez Google. Możesz nadać hasło wpisując je dwa razy – wtedy będziesz mógł logować się zarówno przez Google, jak i hasłem.",
+    "setPassword": "Ustaw hasło",
     "passwordBothRequired": "Wpisz nowe hasło w oba pola.",
     "passwordMismatch": "Hasła nie są takie same.",
     "newPasswordConfirm": "Powtórz nowe hasło",

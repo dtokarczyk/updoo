@@ -9,6 +9,8 @@ import {
   needsOnboarding,
   getSkills,
   getDraftJob,
+  createContractorProfile,
+  getLocations,
   type AccountType,
   type Skill,
   type AuthUser,
@@ -23,6 +25,7 @@ import {
   stepCompanySchema,
   stepSkillsSchema,
   stepDefaultMessageSchema,
+  stepProfileFormSchema,
 } from './schemas';
 
 export const STEP_NAME = 0;
@@ -31,6 +34,8 @@ export const STEP_ACCOUNT_TYPE = 2;
 export const STEP_COMPANY = 3;
 export const STEP_SKILLS = 4;
 export const STEP_DEFAULT_MESSAGE = 5;
+export const STEP_PROFILE_QUESTION = 6;
+export const STEP_PROFILE_FORM = 7;
 
 export interface OnboardingState {
   user: AuthUser | null;
@@ -41,6 +46,7 @@ export interface OnboardingState {
   availableSkills: Skill[];
   skillsSearch: string;
   showDraftModal: boolean;
+  availableLocations: { id: string; name: string; slug: string }[];
 }
 
 type OnboardingAction =
@@ -52,7 +58,8 @@ type OnboardingAction =
   | { type: 'SET_AVAILABLE_SKILLS'; payload: Skill[] }
   | { type: 'SET_SKILLS_SEARCH'; payload: string }
   | { type: 'SET_SHOW_DRAFT_MODAL'; payload: boolean }
-  | { type: 'SET_USER'; payload: AuthUser };
+  | { type: 'SET_USER'; payload: AuthUser }
+  | { type: 'SET_AVAILABLE_LOCATIONS'; payload: { id: string; name: string; slug: string }[] };
 
 function onboardingReducer(
   state: OnboardingState,
@@ -81,6 +88,8 @@ function onboardingReducer(
       return { ...state, showDraftModal: action.payload };
     case 'SET_USER':
       return { ...state, user: action.payload };
+    case 'SET_AVAILABLE_LOCATIONS':
+      return { ...state, availableLocations: action.payload };
     default:
       return state;
   }
@@ -95,6 +104,7 @@ const initialState: OnboardingState = {
   availableSkills: [],
   skillsSearch: '',
   showDraftModal: false,
+  availableLocations: [],
 };
 
 export interface UseOnboardingOptions {
@@ -145,15 +155,35 @@ export function useOnboarding(
     // eslint-disable-next-line react-hooks/exhaustive-deps -- t causes infinite re-runs
   }, [state.step, state.availableSkills.length, accountType]);
 
+  useEffect(() => {
+    if (state.step !== STEP_PROFILE_FORM) return;
+    if (state.availableLocations.length > 0) return;
+    let cancelled = false;
+    async function loadLocations() {
+      try {
+        const locs = await getLocations();
+        if (!cancelled)
+          dispatch({ type: 'SET_AVAILABLE_LOCATIONS', payload: locs });
+      } catch {
+        if (!cancelled)
+          dispatch({ type: 'SET_AVAILABLE_LOCATIONS', payload: [] });
+      }
+    }
+    void loadLocations();
+    return () => {
+      cancelled = true;
+    };
+  }, [state.step, state.availableLocations.length]);
+
   const filteredSkills = useMemo(
     () =>
       state.skillsSearch.trim().length === 0
         ? state.availableSkills
         : state.availableSkills.filter((skill) =>
-            skill.name
-              .toLowerCase()
-              .includes(state.skillsSearch.trim().toLowerCase()),
-          ),
+          skill.name
+            .toLowerCase()
+            .includes(state.skillsSearch.trim().toLowerCase()),
+        ),
     [state.availableSkills, state.skillsSearch],
   );
 
@@ -317,9 +347,7 @@ export function useOnboarding(
         dispatch({ type: 'SET_STEP', payload: STEP_SKILLS });
       } else {
         dispatch({ type: 'SET_LOADING', payload: false });
-        const draft = getDraftJob();
-        if (draft) openDraftModal();
-        else finishOnboarding();
+        dispatch({ type: 'SET_STEP', payload: STEP_PROFILE_QUESTION });
       }
     } catch (err) {
       setError('root', {
@@ -387,10 +415,8 @@ export function useOnboarding(
       });
       updateStoredUser(updated);
       dispatch({ type: 'SET_USER', payload: updated });
-      const draft = getDraftJob();
       dispatch({ type: 'SET_LOADING', payload: false });
-      if (draft && updated.accountType === 'CLIENT') openDraftModal();
-      else finishOnboarding();
+      dispatch({ type: 'SET_STEP', payload: STEP_PROFILE_QUESTION });
     } catch (err) {
       setError('root', {
         message:
@@ -404,6 +430,66 @@ export function useOnboarding(
     getValues,
     setError,
     setValidationErrors,
+    t,
+  ]);
+
+  const handleProfileQuestionNo = useCallback(() => {
+    const draft = getDraftJob();
+    if (draft) openDraftModal();
+    else finishOnboarding();
+  }, [openDraftModal, finishOnboarding]);
+
+  const handleProfileQuestionYes = useCallback(() => {
+    dispatch({ type: 'SET_STEP', payload: STEP_PROFILE_FORM });
+  }, []);
+
+  const handleProfileFormSubmit = useCallback(async () => {
+    clearErrors();
+    dispatch({ type: 'SET_LOADING', payload: true });
+    const raw = getValues();
+    const result = stepProfileFormSchema.safeParse({
+      profileName: raw.profileName,
+      profileEmail: raw.profileEmail,
+      profileWebsite: raw.profileWebsite,
+      profilePhone: raw.profilePhone,
+      profileLocationId: raw.profileLocationId,
+      profileAboutUs: raw.profileAboutUs,
+    });
+    if (!result.success) {
+      const issues = result.error.issues;
+      clearErrors();
+      issues.forEach((issue) => {
+        const path0 = issue.path[0];
+        if (typeof path0 === 'string')
+          setError(path0 as keyof OnboardingFormValues, { message: issue.message });
+      });
+      dispatch({ type: 'SET_LOADING', payload: false });
+      return;
+    }
+    try {
+      await createContractorProfile({
+        name: result.data.profileName.trim(),
+        email: result.data.profileEmail?.trim() || undefined,
+        phone: result.data.profilePhone?.trim() || undefined,
+        website: result.data.profileWebsite?.trim() || undefined,
+        locationId: result.data.profileLocationId?.trim() || undefined,
+        aboutUs: result.data.profileAboutUs?.trim() || undefined,
+      });
+      const draft = getDraftJob();
+      dispatch({ type: 'SET_LOADING', payload: false });
+      if (draft) openDraftModal();
+      else finishOnboarding();
+    } catch (err) {
+      setError('root', {
+        message:
+          err instanceof Error ? err.message : t('onboarding.saveFailed'),
+      });
+      dispatch({ type: 'SET_LOADING', payload: false });
+    }
+  }, [
+    clearErrors,
+    getValues,
+    setError,
     t,
     openDraftModal,
     finishOnboarding,
@@ -437,6 +523,9 @@ export function useOnboarding(
       handleCompanySubmit,
       handleSkillsSubmit,
       handleDefaultMessageSubmit,
+      handleProfileQuestionNo,
+      handleProfileQuestionYes,
+      handleProfileFormSubmit,
       toggleSkill,
       openDraftModal,
       closeDraftModal,

@@ -7,6 +7,7 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
+    "view": "View",
     "back": "Back",
     "continue": "Continue",
     "submit": "Submit",
@@ -86,7 +87,12 @@
     "languageDesc": "Select interface language",
     "tabBasic": "Basic data",
     "tabSkills": "Skills",
+    "tabContractor": "Contractor profile",
     "tabPassword": "Password",
+    "contractorProfileDesc": "A contractor profile is your public profile (company or individual). You can create a profile or edit an existing one.",
+    "contractorProfileNone": "You don't have a contractor profile yet.",
+    "contractorProfileCreate": "Create contractor profile",
+    "contractorProfileCreateAnother": "Create another profile",
     "phone": "Phone number",
     "phoneDesc": "We use it only for important information about application status.",
     "nipCompany": "Company NIP",
@@ -134,7 +140,13 @@
     "freelancerDefaultMessageTitle": "Add default welcome message",
     "freelancerDefaultMessageDesc": "Create a welcome message with portfolio links. You can personalize it during each submission.",
     "freelancerDefaultMessagePlaceholder": "Hello! I'm interested in this offer. Here are links to my portfolio:\n\n- Portfolio: https://example.com\n- GitHub: https://github.com/username\n\nI'm happy to answer any questions!",
-    "freelancerDefaultMessageHint": "You can change this message later in profile settings."
+    "freelancerDefaultMessageHint": "You can change this message later in profile settings.",
+    "profileQuestionTitle": "Do you want to create a contractor profile?",
+    "profileQuestionDescription": "A company or individual profile lets you present yourself publicly. You can create it now or skip and come back later.",
+    "profileQuestionYes": "Yes, I want to create a profile",
+    "profileQuestionNo": "No, skip",
+    "profileQuestionSkip": "Skip",
+    "profileQuestionCreate": "Create profile"
   },
   "agreements": {
     "title": "Accept Terms and Privacy Policy",
@@ -148,6 +160,21 @@
     "accepting": "Saving…",
     "acceptFailed": "Failed to save acceptance. Refresh the page and try again.",
     "mustAcceptBoth": "Check both boxes to continue."
+  },
+  "company": {
+    "loadingProfile": "Loading profile…",
+    "profileNotFound": "Profile not found",
+    "profileNotFoundDesc": "This profile does not exist or is not yet verified.",
+    "backToHome": "Back to home",
+    "missingProfileId": "Missing profile identifier",
+    "pendingVerification": "Profile is pending verification. After verification it will be visible publicly.",
+    "verified": "Verified",
+    "owner": "Owner:",
+    "aboutUs": "About us",
+    "editTitle": "Edit contractor profile",
+    "editDescription": "Update profile details. After verification it will be visible at /company/profile-slug.",
+    "loadFailed": "Failed to load profile",
+    "saveChanges": "Save changes"
   },
   "jobs": {
     "jobs": "Jobs",

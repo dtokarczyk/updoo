@@ -23,6 +23,8 @@ import {
   StepCompany,
   StepSkills,
   StepDefaultMessage,
+  StepProfileQuestion,
+  StepProfileForm,
 } from './steps';
 import {
   useOnboarding,
@@ -32,6 +34,8 @@ import {
   STEP_COMPANY,
   STEP_SKILLS,
   STEP_DEFAULT_MESSAGE,
+  STEP_PROFILE_QUESTION,
+  STEP_PROFILE_FORM,
 } from './useOnboarding';
 
 export default function OnboardingPage() {
@@ -92,6 +96,13 @@ export default function OnboardingPage() {
         ? stored.skills.map((s) => s.id)
         : [],
       defaultMessage: stored.defaultMessage ?? '',
+      wantsProfile: null,
+      profileName: '',
+      profileEmail: '',
+      profileWebsite: '',
+      profilePhone: '',
+      profileLocationId: '',
+      profileAboutUs: '',
     });
     const hasName =
       (stored.name ?? '').trim() !== '' && (stored.surname ?? '').trim() !== '';
@@ -115,7 +126,9 @@ export default function OnboardingPage() {
       step = STEP_DEFAULT_MESSAGE;
     else step = STEP_COMPANY;
     actions.init(stored, step);
-  }, [router, form, actions, actions.init, checkNeedsOnboarding]);
+    // Omit actions/actions.init from deps to avoid infinite loop: actions is recreated every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: run only on mount/router/checkNeedsOnboarding
+  }, [router, checkNeedsOnboarding]);
 
   if (state.user === null) return null;
 
@@ -128,7 +141,7 @@ export default function OnboardingPage() {
           {state.step === STEP_NAME && (
             <StepName
               onSubmit={actions.handleNameSubmit}
-              onBack={() => {}}
+              onBack={() => { }}
               loading={state.loading}
               error={rootError}
               t={t}
@@ -192,6 +205,25 @@ export default function OnboardingPage() {
                 t={t}
               />
             )}
+          {state.step === STEP_PROFILE_QUESTION && (
+            <StepProfileQuestion
+              onYes={actions.handleProfileQuestionYes}
+              onNo={actions.handleProfileQuestionNo}
+              loading={state.loading}
+              error={rootError}
+              t={t}
+            />
+          )}
+          {state.step === STEP_PROFILE_FORM && (
+            <StepProfileForm
+              locations={state.availableLocations}
+              onSubmit={actions.handleProfileFormSubmit}
+              onBack={() => actions.goToStep(STEP_PROFILE_QUESTION)}
+              loading={state.loading}
+              error={rootError}
+              t={t}
+            />
+          )}
         </Card>
       </FormProvider>
 

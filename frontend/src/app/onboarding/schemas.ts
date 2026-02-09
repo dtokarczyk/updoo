@@ -12,6 +12,14 @@ export interface OnboardingFormValues {
   nipCompany: string;
   selectedSkillIds: string[];
   defaultMessage: string;
+  /** Optional: whether user wants to create a contractor profile */
+  wantsProfile: boolean | null;
+  profileName: string;
+  profileEmail: string;
+  profileWebsite: string;
+  profilePhone: string;
+  profileLocationId: string;
+  profileAboutUs: string;
 }
 
 export const defaultOnboardingValues: OnboardingFormValues = {
@@ -23,6 +31,13 @@ export const defaultOnboardingValues: OnboardingFormValues = {
   nipCompany: '',
   selectedSkillIds: [],
   defaultMessage: '',
+  wantsProfile: null,
+  profileName: '',
+  profileEmail: '',
+  profileWebsite: '',
+  profilePhone: '',
+  profileLocationId: '',
+  profileAboutUs: '',
 };
 
 /** Step 0: phone (optional) */
@@ -79,6 +94,16 @@ export const stepDefaultMessageSchema = z.object({
   defaultMessage: z.string().optional(),
 });
 
+/** Step 7: profile form (name required) */
+export const stepProfileFormSchema = z.object({
+  profileName: z.string().min(2, 'Nazwa profilu musi mieć co najmniej 2 znaki').max(200),
+  profileEmail: z.string().email('Nieprawidłowy adres e-mail').optional().or(z.literal('')),
+  profileWebsite: z.string().url('Nieprawidłowy adres URL').optional().or(z.literal('')),
+  profilePhone: z.string().max(30).optional(),
+  profileLocationId: z.string().optional(),
+  profileAboutUs: z.string().max(2000).optional(),
+});
+
 export type StepPhoneInput = z.infer<typeof stepPhoneSchema>;
 export type StepNameInput = z.infer<ReturnType<typeof stepNameSchema>>;
 export type StepAccountTypeInput = z.infer<
@@ -87,3 +112,4 @@ export type StepAccountTypeInput = z.infer<
 export type StepCompanyInput = z.infer<ReturnType<typeof stepCompanySchema>>;
 export type StepSkillsInput = z.infer<typeof stepSkillsSchema>;
 export type StepDefaultMessageInput = z.infer<typeof stepDefaultMessageSchema>;
+export type StepProfileFormInput = z.infer<typeof stepProfileFormSchema>;

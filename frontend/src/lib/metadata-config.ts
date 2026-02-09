@@ -29,6 +29,7 @@ const metadataByLocale: Record<
     favorites: PageMeta;
     onboarding: PageMeta;
     profileEdit: PageMeta;
+    profileCreate: PageMeta;
     jobNew: PageMeta;
     jobEdit: PageMeta;
     offers: PageMeta;
@@ -87,6 +88,11 @@ const metadataByLocale: Record<
       title: 'Edycja profilu',
       description:
         `Zmień dane profilu w ${PROJECT_NAME}: imię, nazwisko, e-mail, hasło lub domyślną wiadomość powitalną.`,
+    },
+    profileCreate: {
+      title: 'Załóż profil wykonawcy',
+      description:
+        `Utwórz profil firmy lub osoby prywatnej w ${PROJECT_NAME}. Po weryfikacji profil będzie widoczny publicznie.`,
     },
     jobNew: {
       title: 'Nowe ogłoszenie',
@@ -165,6 +171,11 @@ const metadataByLocale: Record<
       title: 'Edit profile',
       description:
         `Update your ${PROJECT_NAME} profile: name, email, password, or default welcome message.`,
+    },
+    profileCreate: {
+      title: 'Create contractor profile',
+      description:
+        `Create a company or individual profile on ${PROJECT_NAME}. After verification the profile will be publicly visible.`,
     },
     jobNew: {
       title: 'New job listing',

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,7 +24,9 @@ import {
   getToken,
   clearAuth,
   getSkills,
+  getMyProfiles,
   type Skill,
+  type Profile,
 } from '@/lib/api';
 import { useTranslations } from '@/hooks/useTranslations';
 
@@ -53,6 +56,9 @@ export default function ProfileEditPage() {
   >(null);
 
   const [hasPassword, setHasPassword] = useState(true);
+  const [contractorProfiles, setContractorProfiles] = useState<Profile[] | null>(
+    null,
+  );
 
   useEffect(() => {
     setMounted(true);
@@ -111,6 +117,21 @@ export default function ProfileEditPage() {
     };
   }, [mounted]);
 
+  useEffect(() => {
+    if (!mounted || !getToken()) return;
+    let cancelled = false;
+    getMyProfiles()
+      .then((list) => {
+        if (!cancelled) setContractorProfiles(list);
+      })
+      .catch(() => {
+        if (!cancelled) setContractorProfiles([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [mounted]);
+
   function toggleSkill(id: string) {
     setSelectedSkillIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
@@ -121,8 +142,8 @@ export default function ProfileEditPage() {
     skillsSearch.trim().length === 0
       ? skills
       : skills.filter((skill) =>
-          skill.name.toLowerCase().includes(skillsSearch.trim().toLowerCase()),
-        );
+        skill.name.toLowerCase().includes(skillsSearch.trim().toLowerCase()),
+      );
 
   async function handleBasicSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -225,9 +246,12 @@ export default function ProfileEditPage() {
         </CardHeader>
         <Tabs defaultValue="basic">
           <CardContent className="space-y-4">
-            <TabsList className="w-full justify-start">
+            <TabsList className="w-full justify-start flex-wrap">
               <TabsTrigger value="basic">{t('profile.tabBasic')}</TabsTrigger>
               <TabsTrigger value="skills">{t('profile.tabSkills')}</TabsTrigger>
+              <TabsTrigger value="contractor">
+                {t('profile.tabContractor')}
+              </TabsTrigger>
               <TabsTrigger value="password">
                 {t('profile.tabPassword')}
               </TabsTrigger>
@@ -391,6 +415,53 @@ export default function ProfileEditPage() {
                   </Button>
                 </CardFooter>
               </form>
+            </TabsContent>
+
+            <TabsContent value="contractor" className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                {t('profile.contractorProfileDesc')}
+              </p>
+              {contractorProfiles === null && (
+                <p className="text-sm text-muted-foreground">
+                  {t('common.loading')}
+                </p>
+              )}
+              {contractorProfiles?.length === 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    {t('profile.contractorProfileNone')}
+                  </p>
+                  <Button asChild variant="default">
+                    <Link href="/profile/create">
+                      {t('profile.contractorProfileCreate')}
+                    </Link>
+                  </Button>
+                </div>
+              )}
+              {contractorProfiles && contractorProfiles.length > 0 && (
+                <div className="flex items-center justify-between rounded-md border p-3">
+                  <div>
+                    <span className="font-medium">{contractorProfiles[0].name}</span>
+                    {contractorProfiles[0].slug && (
+                      <span className="ml-2 text-sm text-muted-foreground">
+                        /company/{contractorProfiles[0].slug}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button asChild variant="outline" size="sm">
+                      <Link href={`/company/${contractorProfiles[0].slug}`} target="_blank" rel="noopener noreferrer">
+                        {t('common.view')}
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" size="sm">
+                      <Link href={`/profile/company/${contractorProfiles[0].id}/edit`}>
+                        {t('common.edit')}
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="password" className="space-y-4">

@@ -396,6 +396,38 @@ export interface Skill {
   name: string;
 }
 
+export interface ContractorProfileOwner {
+  id: string;
+  name: string | null;
+  surname: string | null;
+}
+
+export interface Profile {
+  id: string;
+  name: string;
+  slug: string;
+  website: string | null;
+  email: string | null;
+  phone: string | null;
+  isVerified: boolean;
+  aboutUs: string | null;
+  locationId: string | null;
+  location?: Location | null;
+  ownerId: string;
+  owner?: ContractorProfileOwner;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateProfilePayload {
+  name: string;
+  website?: string;
+  email?: string;
+  phone?: string;
+  locationId?: string;
+  aboutUs?: string;
+}
+
 export interface PopularSkill extends Skill {
   /** How many jobs in given category use this skill. */
   count: number;
@@ -546,6 +578,126 @@ export async function getLocations(): Promise<Location[]> {
   const res = await fetch(`${API_URL}/jobs/locations`);
   if (!res.ok) throw new Error('Failed to fetch locations');
   return res.json();
+}
+
+export async function createContractorProfile(
+  data: CreateProfilePayload,
+): Promise<Profile> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  };
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
+    const locale = getUserLocale();
+    headers['Accept-Language'] = locale;
+  }
+  const res = await fetch(`${API_URL}/profiles`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to create profile');
+  }
+  return res.json();
+}
+
+export async function getMyProfiles(): Promise<Profile[]> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const headers: HeadersInit = { Authorization: `Bearer ${token}` };
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
+    const locale = getUserLocale();
+    headers['Accept-Language'] = locale;
+  }
+  const res = await fetch(`${API_URL}/profiles/my`, { headers });
+  if (!res.ok) throw new Error('Failed to fetch profiles');
+  return res.json();
+}
+
+export async function getContractorProfile(id: string): Promise<Profile> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const headers: HeadersInit = { Authorization: `Bearer ${token}` };
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
+    const locale = getUserLocale();
+    headers['Accept-Language'] = locale;
+  }
+  const res = await fetch(`${API_URL}/profiles/${id}`, { headers });
+  if (!res.ok) {
+    if (res.status === 404) throw new Error('Profile not found');
+    throw new Error('Failed to fetch profile');
+  }
+  return res.json();
+}
+
+export async function getProfileBySlug(slug: string): Promise<Profile> {
+  const headers: HeadersInit = {};
+  const token = getToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
+    const locale = getUserLocale();
+    headers['Accept-Language'] = locale;
+  }
+  const res = await fetch(`${API_URL}/profiles/slug/${encodeURIComponent(slug)}`, {
+    headers,
+  });
+  if (!res.ok) {
+    if (res.status === 404) throw new Error('Profile not found');
+    throw new Error('Failed to fetch profile');
+  }
+  return res.json();
+}
+
+export async function updateContractorProfile(
+  id: string,
+  data: Partial<CreateProfilePayload>,
+): Promise<Profile> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  };
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
+    const locale = getUserLocale();
+    headers['Accept-Language'] = locale;
+  }
+  const res = await fetch(`${API_URL}/profiles/${id}`, {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to update profile');
+  }
+  return res.json();
+}
+
+export async function deleteContractorProfile(id: string): Promise<void> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const headers: HeadersInit = { Authorization: `Bearer ${token}` };
+  const res = await fetch(`${API_URL}/profiles/${id}`, {
+    method: 'DELETE',
+    headers,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to delete profile');
+  }
 }
 
 export async function getSkills(): Promise<Skill[]> {

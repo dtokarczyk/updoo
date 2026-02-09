@@ -7,6 +7,7 @@
     "cancel": "Anuluj",
     "delete": "Usuń",
     "edit": "Edytuj",
+    "view": "Zobacz",
     "back": "Powrót",
     "continue": "Kontynuuj",
     "submit": "Wyślij",
@@ -86,7 +87,12 @@
     "languageDesc": "Wybierz język interfejsu",
     "tabBasic": "Podstawowe dane",
     "tabSkills": "Umiejętności",
+    "tabContractor": "Profil wykonawcy",
     "tabPassword": "Hasło",
+    "contractorProfileDesc": "Profil wykonawcy to Twoja publiczna wizytówka (firma lub osoba). Możesz założyć profil lub edytować istniejący.",
+    "contractorProfileNone": "Nie masz jeszcze profilu wykonawcy.",
+    "contractorProfileCreate": "Załóż profil wykonawcy",
+    "contractorProfileCreateAnother": "Załóż kolejny profil",
     "phone": "Numer telefonu",
     "phoneDesc": "Używamy go tylko do ważnych informacji o statusie zgłoszeń.",
     "nipCompany": "NIP firmy",
@@ -134,7 +140,13 @@
     "freelancerDefaultMessageTitle": "Dodaj domyślną wiadomość powitalną",
     "freelancerDefaultMessageDesc": "Utwórz wiadomość powitalną z linkami do portfolio. Będziesz mógł ją personalizować podczas każdej wysyłki.",
     "freelancerDefaultMessagePlaceholder": "Cześć! Jestem zainteresowany/a tą ofertą. Oto linki do mojego portfolio:\n\n- Portfolio: https://example.com\n- GitHub: https://github.com/username\n\nChętnie odpowiem na pytania!",
-    "freelancerDefaultMessageHint": "Możesz zmienić tę wiadomość później w ustawieniach profilu."
+    "freelancerDefaultMessageHint": "Możesz zmienić tę wiadomość później w ustawieniach profilu.",
+    "profileQuestionTitle": "Czy chcesz założyć profil wykonawcy?",
+    "profileQuestionDescription": "Profil firmy lub osoby prywatnej pozwala zaprezentować się publicznie. Możesz go utworzyć teraz lub pominąć i wrócić do tego później.",
+    "profileQuestionYes": "Tak, chcę założyć profil",
+    "profileQuestionNo": "Nie, pomiń",
+    "profileQuestionSkip": "Pomiń",
+    "profileQuestionCreate": "Utwórz profil"
   },
   "agreements": {
     "title": "Akceptacja regulaminu i polityki prywatności",
@@ -148,6 +160,21 @@
     "accepting": "Zapisywanie…",
     "acceptFailed": "Nie udało się zapisać akceptacji. Odśwież stronę i spróbuj ponownie.",
     "mustAcceptBoth": "Zaznacz oba pola, aby kontynuować."
+  },
+  "company": {
+    "loadingProfile": "Ładowanie profilu…",
+    "profileNotFound": "Profil nie został znaleziony",
+    "profileNotFoundDesc": "Ten profil nie istnieje lub nie jest jeszcze zweryfikowany.",
+    "backToHome": "Wróć na stronę główną",
+    "missingProfileId": "Brak identyfikatora profilu",
+    "pendingVerification": "Profil oczekuje na weryfikację. Po weryfikacji będzie widoczny publicznie.",
+    "verified": "Zweryfikowany",
+    "owner": "Właściciel:",
+    "aboutUs": "O nas",
+    "editTitle": "Edytuj profil wykonawcy",
+    "editDescription": "Zmień dane profilu. Po weryfikacji będzie widoczny pod adresem /company/nazwa-profilu.",
+    "loadFailed": "Nie udało się załadować profilu",
+    "saveChanges": "Zapisz zmiany"
   },
   "jobs": {
     "jobs": "Ogłoszenia",

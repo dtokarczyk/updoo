@@ -15,15 +15,15 @@ import { cn } from '@/lib/utils';
 
 const PROFILE_NAV: {
   href: string;
-  key: 'tabBasic' | 'tabSkills' | 'menuVisitingCard' | 'tabCompany' | 'tabPassword';
+  key: 'tabBasic' | 'tabSkills' | 'menuBusinessProfile' | 'tabCompany' | 'tabPassword';
   icon: LucideIcon;
 }[] = [
-  { href: '/profile/basic', key: 'tabBasic', icon: User },
-  { href: '/profile/skills', key: 'tabSkills', icon: Award },
-  { href: '/profile/visiting-card', key: 'menuVisitingCard', icon: CreditCard },
-  { href: '/profile/company', key: 'tabCompany', icon: Building2 },
-  { href: '/profile/password', key: 'tabPassword', icon: Key },
-];
+    { href: '/profile/basic', key: 'tabBasic', icon: User },
+    { href: '/profile/skills', key: 'tabSkills', icon: Award },
+    { href: '/profile/business-profile', key: 'menuBusinessProfile', icon: CreditCard },
+    { href: '/profile/company', key: 'tabCompany', icon: Building2 },
+    { href: '/profile/password', key: 'tabPassword', icon: Key },
+  ];
 
 export function ProfileSidebar() {
   const pathname = usePathname();

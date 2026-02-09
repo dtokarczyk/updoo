@@ -89,11 +89,14 @@
     "tabSkills": "Umiejętności",
     "tabContractor": "Profil wykonawcy",
     "menuVisitingCard": "Wizytówka",
+    "menuBusinessProfile": "Profil firmowy",
+    "businessProfileDesc": "Profil wykonawcy to Twoja publiczna wizytówka (firma lub osoba). Możesz założyć profil lub edytować istniejący.",
     "tabPassword": "Hasło",
     "contractorProfileDesc": "Profil wykonawcy to Twoja publiczna wizytówka (firma lub osoba). Możesz założyć profil lub edytować istniejący.",
     "contractorProfileNone": "Nie masz jeszcze profilu wykonawcy.",
     "contractorProfileCreate": "Załóż profil wykonawcy",
     "contractorProfileCreateAnother": "Załóż kolejny profil",
+    "viewMyProfile": "Zobacz mój profil",
     "phone": "Numer telefonu",
     "phoneDesc": "Używamy go tylko do ważnych informacji o statusie zgłoszeń.",
     "nipCompany": "NIP firmy",
@@ -159,7 +162,11 @@
       "emailRequired": "Adres e-mail jest wymagany",
       "emailInvalid": "Wpisz poprawny adres e-mail",
       "phoneMax": "Numer telefonu może mieć co najwyżej 30 znaków",
-      "messageMax": "Wiadomość może mieć co najwyżej 2000 znaków"
+      "messageMax": "Wiadomość może mieć co najwyżej 2000 znaków",
+      "profileNameMin": "Nazwa profilu musi mieć co najmniej 2 znaki",
+      "profileNameMax": "Nazwa profilu może mieć co najwyżej 200 znaków",
+      "websiteInvalid": "Wpisz poprawny adres URL",
+      "aboutUsMax": "Opis może mieć co najwyżej 2000 znaków"
     }
   },
   "onboarding": {

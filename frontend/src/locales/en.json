@@ -89,11 +89,14 @@
     "tabSkills": "Skills",
     "tabContractor": "Contractor profile",
     "menuVisitingCard": "Visiting card",
+    "menuBusinessProfile": "Business profile",
+    "businessProfileDesc": "A contractor profile is your public profile (company or individual). You can create a profile or edit an existing one.",
     "tabPassword": "Password",
     "contractorProfileDesc": "A contractor profile is your public profile (company or individual). You can create a profile or edit an existing one.",
     "contractorProfileNone": "You don't have a contractor profile yet.",
     "contractorProfileCreate": "Create contractor profile",
     "contractorProfileCreateAnother": "Create another profile",
+    "viewMyProfile": "View my profile",
     "phone": "Phone number",
     "phoneDesc": "We use it only for important information about application status.",
     "nipCompany": "Company NIP",
@@ -159,7 +162,11 @@
       "emailRequired": "Email is required",
       "emailInvalid": "Enter a valid email address",
       "phoneMax": "Phone must be at most 30 characters",
-      "messageMax": "Message must be at most 2000 characters"
+      "messageMax": "Message must be at most 2000 characters",
+      "profileNameMin": "Profile name must be at least 2 characters",
+      "profileNameMax": "Profile name must be at most 200 characters",
+      "websiteInvalid": "Enter a valid URL",
+      "aboutUsMax": "About us must be at most 2000 characters"
     }
   },
   "onboarding": {

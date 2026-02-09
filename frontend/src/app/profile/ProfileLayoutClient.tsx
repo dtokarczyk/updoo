@@ -6,7 +6,7 @@ import { ProfileSidebar } from './ProfileSidebar';
 const PROFILE_EDIT_SEGMENTS = [
   '/profile/basic',
   '/profile/skills',
-  '/profile/visiting-card',
+  '/profile/business-profile',
   '/profile/company',
   '/profile/password',
 ];

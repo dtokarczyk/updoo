@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 const PROFILE_NAV = [
   { href: '/profile/basic', key: 'tabBasic' as const },
   { href: '/profile/skills', key: 'tabSkills' as const },
-  { href: '/profile/visiting-card', key: 'menuVisitingCard' as const },
+  { href: '/profile/business-profile', key: 'menuBusinessProfile' as const },
   { href: '/profile/password', key: 'tabPassword' as const },
 ] as const;
 

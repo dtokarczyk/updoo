@@ -1,12 +1,23 @@
-import { Controller, Get, Query, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  BadRequestException,
+  ForbiddenException,
+  UseGuards,
+} from '@nestjs/common';
 import { RegonService } from './regon.service';
 import { GetCompanyDataQueryDto } from './dto/get-company-data.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { GetUser } from '../auth/get-user.decorator';
+import type { JwtUser } from '../auth/get-user.decorator';
 
 /**
  * REST API for REGON (GUS BIR 1.2) – Polish business registry.
  * Production BIR 1.2: https://wyszukiwarkaregon.stat.gov.pl/wsBIR/UslugaBIRzewnPubl.svc
  *
  * Requires REGON_API_KEY in environment (API key from GUS).
+ * Only users with accountType ADMIN can call these endpoints.
  */
 @Controller('regon')
 export class RegonController {
@@ -21,10 +32,17 @@ export class RegonController {
    * - regon: 9 or 14 digits
    * - krs: 10 digits
    *
-   * Returns: searchResult (basic info from registry) + reports (raw XML per BIR12 report name).
+   * Returns: searchResult (basic info from registry) + reports (parsed JSON).
    */
   @Get('company')
-  async getCompanyData(@Query() query: GetCompanyDataQueryDto) {
+  @UseGuards(JwtAuthGuard)
+  async getCompanyData(
+    @Query() query: GetCompanyDataQueryDto,
+    @GetUser() user: JwtUser,
+  ) {
+    if (user.accountType !== 'ADMIN') {
+      throw new ForbiddenException('Only admin users can query REGON');
+    }
     const { nip, regon, krs } = query;
     const count = [nip, regon, krs].filter((v) => v != null && v !== '').length;
     if (count === 0) {

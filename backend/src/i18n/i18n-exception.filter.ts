@@ -222,8 +222,8 @@ export class I18nExceptionFilter implements ExceptionFilter {
    * Otherwise maps hardcoded English messages to translation keys (legacy).
    */
   private translateErrorMessage(message: string, lang: 'en' | 'pl'): string {
-    // If message looks like a translation key (e.g. errors.profileNotFound), translate it
-    if (message && (message.startsWith('errors.') || message.startsWith('messages.'))) {
+    // If message looks like a translation key (e.g. errors.profileNotFound, validation.nipInvalid), translate it
+    if (message && (message.startsWith('errors.') || message.startsWith('messages.') || message.startsWith('validation.'))) {
       const translated = this.i18nService.translate(message, lang);
       if (translated !== message) return translated;
     }

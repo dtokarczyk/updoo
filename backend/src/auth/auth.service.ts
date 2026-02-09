@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -10,6 +11,8 @@ import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
 import { AgreementsService } from '../agreements/agreements.service';
+import { RegonService } from '../regon/regon.service';
+import type { SearchResultRow } from '../regon/regon-contact.util';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -68,7 +71,151 @@ export class AuthService {
     private readonly emailService: EmailService,
     private readonly agreementsService: AgreementsService,
     private readonly i18nService: I18nService,
+    private readonly regonService: RegonService,
   ) { }
+
+  /** Company payload returned by GET /auth/company and after link/refresh. */
+  getCompanyPayload(company: {
+    id: string;
+    regon: string;
+    nip: string;
+    name: string;
+    voivodeship: string | null;
+    county: string | null;
+    commune: string | null;
+    locality: string | null;
+    postalCode: string | null;
+    street: string | null;
+    propertyNumber: string | null;
+    apartmentNumber: string | null;
+    type: string | null;
+    isActive: boolean;
+    updatedAt: Date;
+  }) {
+    return {
+      id: company.id,
+      regon: company.regon,
+      nip: company.nip,
+      name: company.name,
+      voivodeship: company.voivodeship,
+      county: company.county,
+      commune: company.commune,
+      locality: company.locality,
+      postalCode: company.postalCode,
+      street: company.street,
+      propertyNumber: company.propertyNumber,
+      apartmentNumber: company.apartmentNumber,
+      type: company.type,
+      isActive: company.isActive,
+      updatedAt: company.updatedAt,
+    };
+  }
+
+  /** Map GUS search row to Company create/update payload. */
+  private mapGusRowToCompany(row: SearchResultRow) {
+    const nip = String(row.Nip ?? '').replace(/\s/g, '');
+    const regon = String(row.Regon ?? '').replace(/\s/g, '');
+    if (!nip || !regon) {
+      throw new BadRequestException('GUS data missing NIP or REGON');
+    }
+    return {
+      regon,
+      nip,
+      name: String(row.Nazwa ?? '').trim() || '—',
+      voivodeship: row.Wojewodztwo?.trim() || null,
+      county: row.Powiat?.trim() || null,
+      commune: row.Gmina?.trim() || null,
+      locality: row.Miejscowosc?.trim() || null,
+      postalCode: row.KodPocztowy?.trim() || null,
+      street: row.Ulica?.trim() || null,
+      propertyNumber: row.NrNieruchomosci?.trim() || null,
+      apartmentNumber: row.NrLokalu?.trim() || null,
+      type: row.Typ?.trim() || null,
+    };
+  }
+
+  /** Get current user's linked company. Returns null if none. */
+  async getMyCompany(userId: string): Promise<ReturnType<AuthService['getCompanyPayload']> | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { company: true },
+    });
+    if (!user?.companyId || !user.company) return null;
+    return this.getCompanyPayload(user.company);
+  }
+
+  /** Link company to user by NIP: find in DB or fetch from GUS, create, then assign. */
+  async linkCompanyByNip(
+    userId: string,
+    nipRaw: string,
+  ): Promise<{ user: AuthResponseUser; company: ReturnType<AuthService['getCompanyPayload']> }> {
+    const nip = String(nipRaw).replace(/\s/g, '').replace(/-/g, '');
+    if (!/^\d{10}$/.test(nip)) {
+      throw new BadRequestException('validation.nipInvalid');
+    }
+
+    let company = await this.prisma.company.findUnique({ where: { nip } });
+    if (!company) {
+      const gus = await this.regonService.getCompanyDataByNipRegonOrKrs(nip);
+      if (!gus.searchResult.length) {
+        throw new BadRequestException('messages.companyNotFoundInGus');
+      }
+      const data = this.mapGusRowToCompany(gus.searchResult[0]);
+      company = await this.prisma.company.create({ data });
+    }
+
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: { companyId: company.id },
+      include: {
+        company: true,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ...({ skills: { include: { skill: true } } } as any),
+      },
+    });
+    const skillsFromUser = (user as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
+    const userCompany = user as { company?: { nip: string } | null };
+    const authUser: AuthResponseUser = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      surname: user.surname,
+      phone: user.phone,
+      nipCompany: userCompany.company?.nip ?? null,
+      companyId: user.companyId ?? null,
+      accountType: user.accountType,
+      language: user.language,
+      defaultMessage: user.defaultMessage,
+      skills: skillsFromUser.map((r) => ({ id: r.skill.id, name: r.skill.name })),
+      hasPassword: !!user.password,
+      acceptedTermsVersion: user.acceptedTermsVersion,
+      acceptedPrivacyPolicyVersion: user.acceptedPrivacyPolicyVersion,
+    };
+    return { user: authUser, company: this.getCompanyPayload(company) };
+  }
+
+  /** Refresh current user's company data from GUS. */
+  async refreshCompany(
+    userId: string,
+  ): Promise<{ company: ReturnType<AuthService['getCompanyPayload']> }> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { company: true },
+    });
+    if (!user?.companyId || !user.company) {
+      throw new NotFoundException('messages.noCompanyLinked');
+    }
+    const gus = await this.regonService.getCompanyDataByNipRegonOrKrs(user.company.nip);
+    if (!gus.searchResult.length) {
+      throw new BadRequestException('messages.companyNotFoundInGus');
+    }
+    const data = this.mapGusRowToCompany(gus.searchResult[0]);
+    const company = await this.prisma.company.update({
+      where: { id: user.company.id },
+      data,
+    });
+    return { company: this.getCompanyPayload(company) };
+  }
 
   /**
    * Request password reset: find user by email (must have password), generate token,

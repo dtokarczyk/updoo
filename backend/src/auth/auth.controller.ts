@@ -12,6 +12,7 @@ import { RegisterDto } from './dto/register.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { LinkCompanyDto } from './dto/link-company.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { I18nService, SupportedLanguage } from '../i18n/i18n.service';
 
@@ -112,5 +113,27 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async acceptAgreements(@GetUser() user: JwtUser): Promise<{ user: AuthResponse['user'] }> {
     return this.authService.acceptAgreements(user.id);
+  }
+
+  @Get('company')
+  @UseGuards(JwtAuthGuard)
+  async getMyCompany(@GetUser() user: JwtUser) {
+    const company = await this.authService.getMyCompany(user.id);
+    return { company };
+  }
+
+  @Post('company/link')
+  @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
+  async linkCompany(
+    @GetUser() user: JwtUser,
+    @Body() dto: LinkCompanyDto,
+  ) {
+    return this.authService.linkCompanyByNip(user.id, dto.nip);
+  }
+
+  @Post('company/refresh')
+  @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
+  async refreshCompany(@GetUser() user: JwtUser) {
+    return this.authService.refreshCompany(user.id);
   }
 }

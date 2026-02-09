@@ -7,6 +7,7 @@ const PROFILE_EDIT_SEGMENTS = [
   '/profile/basic',
   '/profile/skills',
   '/profile/visiting-card',
+  '/profile/company',
   '/profile/password',
 ];
 

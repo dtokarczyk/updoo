@@ -22,7 +22,8 @@
     "offerDaysInvalid": "Offer days must be 7, 14, 21 or 30",
     "skillsMaxCount": "You can add at most 5 skills to an offer",
     "accountTypeInvalid": "accountType must be CLIENT or FREELANCER",
-    "languageInvalid": "language must be POLISH or ENGLISH"
+    "languageInvalid": "language must be POLISH or ENGLISH",
+    "nipInvalid": "NIP must be 10 digits"
   },
   "errors": {
     "passwordsDoNotMatch": "Passwords do not match",
@@ -46,6 +47,8 @@
     "forgotPasswordEmailSubject": "Hoplo – password reset",
     "forgotPasswordEmailIntro": "We received a request to reset the password for the account associated with {email}.",
     "forgotPasswordEmailCta": "Set new password",
-    "forgotPasswordEmailExpiry": "This link is valid for {hours} hour(s). If you did not request a reset, please ignore this message."
+    "forgotPasswordEmailExpiry": "This link is valid for {hours} hour(s). If you did not request a reset, please ignore this message.",
+    "companyNotFoundInGus": "Company with this NIP was not found in GUS registry.",
+    "noCompanyLinked": "You have no company linked."
   }
 }

@@ -9,6 +9,7 @@ const PROFILE_NAV = [
   { href: '/profile/basic', key: 'tabBasic' as const },
   { href: '/profile/skills', key: 'tabSkills' as const },
   { href: '/profile/visiting-card', key: 'menuVisitingCard' as const },
+  { href: '/profile/company', key: 'tabCompany' as const },
   { href: '/profile/password', key: 'tabPassword' as const },
 ] as const;
 

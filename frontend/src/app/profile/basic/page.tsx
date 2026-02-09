@@ -29,8 +29,6 @@ export default function ProfileBasicPage() {
   const [surname, setSurname] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [companyId, setCompanyId] = useState('');
-  const [nipFromCompany, setNipFromCompany] = useState<string | null>(null);
   const [defaultMessage, setDefaultMessage] = useState('');
   const [accountType, setAccountType] = useState<
     'CLIENT' | 'FREELANCER' | 'ADMIN' | null
@@ -48,8 +46,6 @@ export default function ProfileBasicPage() {
       setSurname(user.surname ?? '');
       setEmail(user.email ?? '');
       setPhone(user.phone ?? '');
-      setCompanyId(user.companyId ?? '');
-      setNipFromCompany((user as { nipCompany?: string | null }).nipCompany ?? null);
       setAccountType(user.accountType);
       if (user.defaultMessage != null) {
         setDefaultMessage(user.defaultMessage);
@@ -76,14 +72,12 @@ export default function ProfileBasicPage() {
         surname: surname.trim() || undefined,
         email: email.trim() || undefined,
         phone: phone.trim() || undefined,
-        companyId: companyId.trim() || null,
         ...(accountType === 'FREELANCER' && {
           defaultMessage: defaultMessage.trim() || undefined,
         }),
       };
       const { user: updated } = await updateProfile(payload);
       updateStoredUser(updated);
-      setNipFromCompany((updated as { nipCompany?: string | null }).nipCompany ?? null);
       setSuccess(true);
       router.refresh();
     } catch (err) {
@@ -163,22 +157,6 @@ export default function ProfileBasicPage() {
             <p className="text-xs text-muted-foreground">
               {t('profile.phoneDesc')}
             </p>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="companyId">{t('profile.companyId')}</Label>
-            <Input
-              id="companyId"
-              type="text"
-              placeholder={t('profile.companyIdPlaceholder')}
-              value={companyId}
-              onChange={(e) => setCompanyId(e.target.value)}
-              disabled={loading}
-            />
-            {nipFromCompany && (
-              <p className="text-xs text-muted-foreground">
-                {t('profile.nipFromCompany')}: {nipFromCompany}
-              </p>
-            )}
           </div>
           {accountType === 'FREELANCER' && (
             <div className="space-y-2">

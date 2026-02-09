@@ -22,7 +22,8 @@
     "offerDaysInvalid": "Ilość dni na zebranie ofert musi być 7, 14, 21 lub 30",
     "skillsMaxCount": "Można dodać maksymalnie 5 skilli do oferty",
     "accountTypeInvalid": "accountType musi być CLIENT lub FREELANCER",
-    "languageInvalid": "language musi być POLISH lub ENGLISH"
+    "languageInvalid": "language musi być POLISH lub ENGLISH",
+    "nipInvalid": "NIP musi składać się z 10 cyfr"
   },
   "errors": {
     "passwordsDoNotMatch": "Hasła nie są takie same",
@@ -46,6 +47,8 @@
     "forgotPasswordEmailSubject": "Hoplo – reset hasła",
     "forgotPasswordEmailIntro": "Otrzymaliśmy prośbę o zresetowanie hasła do konta powiązanego z adresem {email}.",
     "forgotPasswordEmailCta": "Ustaw nowe hasło",
-    "forgotPasswordEmailExpiry": "Link jest ważny przez {hours} godz. Jeśli to nie Ty prosiłeś o reset, zignoruj tę wiadomość."
+    "forgotPasswordEmailExpiry": "Link jest ważny przez {hours} godz. Jeśli to nie Ty prosiłeś o reset, zignoruj tę wiadomość.",
+    "companyNotFoundInGus": "Nie znaleziono firmy o podanym NIP w bazie GUS.",
+    "noCompanyLinked": "Nie masz przypisanej firmy."
   }
 }

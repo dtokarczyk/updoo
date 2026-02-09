@@ -13,6 +13,8 @@ export interface AuthUser {
   phone?: string | null;
   /** Linked company id. */
   companyId?: string | null;
+  /** NIP of linked company (from Company.nip). */
+  nipCompany?: string | null;
   accountType: AccountType | null;
   language: UserLanguage;
   /** Default message for freelancer applications (with portfolio links). */
@@ -239,6 +241,91 @@ export async function getProfile(): Promise<ProfileResponse | null> {
   const token = getToken();
   if (!token) return null;
   return getProfileWithToken(token);
+}
+
+/** Company data from profile (GUS-linked). */
+export interface Company {
+  id: string;
+  regon: string;
+  nip: string;
+  name: string;
+  voivodeship: string | null;
+  county: string | null;
+  commune: string | null;
+  locality: string | null;
+  postalCode: string | null;
+  street: string | null;
+  propertyNumber: string | null;
+  apartmentNumber: string | null;
+  type: string | null;
+  isActive: boolean;
+  updatedAt: string;
+}
+
+/** Get current user's linked company. Returns { company: null } if none. */
+export async function getMyCompany(): Promise<{ company: Company | null }> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const headers: HeadersInit = { Authorization: `Bearer ${token}` };
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
+    headers['Accept-Language'] = getUserLocale();
+  }
+  const res = await fetch(`${API_URL}/auth/company`, { headers });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to load company');
+  }
+  return res.json();
+}
+
+/** Link company to user by NIP (find in DB or fetch from GUS, then assign). */
+export async function linkCompanyByNip(
+  nip: string,
+): Promise<{ user: AuthUser; company: Company }> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  };
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
+    headers['Accept-Language'] = getUserLocale();
+  }
+  const res = await fetch(`${API_URL}/auth/company/link`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ nip: nip.trim().replace(/\s/g, '').replace(/-/g, '') }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to link company');
+  }
+  return res.json();
+}
+
+/** Refresh current user's company data from GUS. */
+export async function refreshCompany(): Promise<{ company: Company }> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const headers: HeadersInit = { Authorization: `Bearer ${token}` };
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
+    headers['Accept-Language'] = getUserLocale();
+  }
+  const res = await fetch(`${API_URL}/auth/company/refresh`, {
+    method: 'POST',
+    headers,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to refresh company');
+  }
+  return res.json();
 }
 
 export const AUTH_TOKEN_KEY = 'auth_token';

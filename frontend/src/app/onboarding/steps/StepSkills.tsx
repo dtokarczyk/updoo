@@ -1,8 +1,7 @@
 'use client';
 
+import { useFormContext } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   CardContent,
   CardDescription,
@@ -10,17 +9,16 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { SkillsFormFields } from '@/components/skills-form-fields';
 import type { Skill } from '@/lib/api';
+import type { OnboardingFormValues } from '../schemas';
+
+const formId = 'onboarding-skills-form';
 
 interface StepSkillsProps {
-  skillsSearch: string;
-  setSkillsSearch: (v: string) => void;
   availableSkills: Skill[];
   skillsLoading: boolean;
   skillsError: string;
-  selectedSkillIds: string[];
-  toggleSkill: (id: string) => void;
-  filteredSkills: Skill[];
   onSubmit: () => void;
   onBack: () => void;
   loading: boolean;
@@ -29,19 +27,17 @@ interface StepSkillsProps {
 }
 
 export function StepSkills({
-  skillsSearch,
-  setSkillsSearch,
+  availableSkills,
   skillsLoading,
   skillsError,
-  selectedSkillIds,
-  toggleSkill,
-  filteredSkills,
   onSubmit,
   onBack,
   loading,
   error,
   t,
 }: StepSkillsProps) {
+  const { control } = useFormContext<OnboardingFormValues>();
+
   return (
     <>
       <CardHeader>
@@ -64,50 +60,17 @@ export function StepSkills({
               {error ?? skillsError}
             </p>
           )}
-          <div className="space-y-3">
-            <Input
-              id="skills-search"
-              type="text"
-              placeholder={t('onboarding.freelancerSkillsSearchPlaceholder')}
-              value={skillsSearch}
-              onChange={(e) => setSkillsSearch(e.target.value)}
-              disabled={skillsLoading || loading}
-              className="h-12 text-base px-4"
-            />
-            <div className="max-h-72 space-y-2 overflow-y-auto rounded-md border p-3">
-              {skillsLoading && (
-                <p className="text-sm text-muted-foreground">
-                  {t('common.loading')}
-                </p>
-              )}
-              {!skillsLoading && filteredSkills.length === 0 && (
-                <p className="text-sm text-muted-foreground">
-                  {skillsSearch.trim().length > 0
-                    ? t('onboarding.freelancerSkillsNoResults')
-                    : t('onboarding.freelancerSkillsEmpty')}
-                </p>
-              )}
-              {!skillsLoading &&
-                filteredSkills.map((skill) => {
-                  const checked = selectedSkillIds.includes(skill.id);
-                  return (
-                    <label
-                      key={skill.id}
-                      className="flex w-full items-center gap-3 rounded-md px-2 py-2.5 text-base hover:bg-accent/60 cursor-pointer"
-                    >
-                      <Checkbox
-                        checked={checked}
-                        onCheckedChange={() => toggleSkill(skill.id)}
-                        className="shrink-0"
-                        disabled={loading}
-                        aria-label={skill.name}
-                      />
-                      <span>{skill.name}</span>
-                    </label>
-                  );
-                })}
-            </div>
-          </div>
+          <SkillsFormFields<OnboardingFormValues>
+            control={control}
+            name="selectedSkillIds"
+            availableSkills={availableSkills}
+            skillsLoading={skillsLoading}
+            disabled={loading}
+            formId={formId}
+            searchPlaceholder={t('onboarding.freelancerSkillsSearchPlaceholder')}
+            emptyLabel={t('onboarding.freelancerSkillsEmpty')}
+            noResultsLabel={t('onboarding.freelancerSkillsNoResults')}
+          />
         </CardContent>
         <CardFooter className="mt-4 flex gap-2">
           <Button

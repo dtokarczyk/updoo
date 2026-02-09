@@ -49,7 +49,6 @@ export default function OnboardingPage() {
   const {
     state,
     accountType,
-    filteredSkills,
     actions,
     needsOnboarding: checkNeedsOnboarding,
   } = useOnboarding(form, { t });
@@ -177,17 +176,9 @@ export default function OnboardingPage() {
           )}
           {state.step === STEP_SKILLS && accountType === 'FREELANCER' && (
             <StepSkills
-              skillsSearch={state.skillsSearch}
-              setSkillsSearch={actions.setSkillsSearch}
               availableSkills={state.availableSkills}
               skillsLoading={state.skillsLoading}
               skillsError={state.skillsError}
-              selectedSkillIds={
-                /* eslint-disable-next-line react-hooks/incompatible-library -- form.watch() is not memoizable by design */
-                form.watch('selectedSkillIds')
-              }
-              toggleSkill={actions.toggleSkill}
-              filteredSkills={filteredSkills}
               onSubmit={actions.handleSkillsSubmit}
               onBack={() => actions.goToStep(STEP_COMPANY)}
               loading={state.loading}

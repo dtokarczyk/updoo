@@ -142,7 +142,25 @@
     "newPasswordConfirm": "Repeat new password",
     "defaultMessage": "Default welcome message",
     "defaultMessageDesc": "Welcome message with portfolio links. You can personalize it during each submission.",
-    "defaultMessagePlaceholder": "Hello! I'm interested in this offer. Here are links to my portfolio:\n\n- Portfolio: https://example.com\n- GitHub: https://github.com/username\n\nI'm happy to answer any questions!"
+    "defaultMessagePlaceholder": "Hello! I'm interested in this offer. Here are links to my portfolio:\n\n- Portfolio: https://example.com\n- GitHub: https://github.com/username\n\nI'm happy to answer any questions!",
+    "create": {
+      "nameLabel": "Profile name *",
+      "emailLabel": "Contact e-mail",
+      "phoneLabel": "Phone number",
+      "websiteLabel": "Website",
+      "locationLabel": "City",
+      "aboutLabel": "About us"
+    },
+    "validation": {
+      "nameRequired": "Name is required",
+      "nameMax": "Name must be at most 200 characters",
+      "surnameRequired": "Surname is required",
+      "surnameMax": "Surname must be at most 200 characters",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Enter a valid email address",
+      "phoneMax": "Phone must be at most 30 characters",
+      "messageMax": "Message must be at most 2000 characters"
+    }
   },
   "onboarding": {
     "phoneTitle": "Enter your phone number",
@@ -206,6 +224,7 @@
     "backToHome": "Back to home",
     "missingProfileId": "Missing profile identifier",
     "pendingVerification": "Profile is pending verification. After verification it will be visible publicly.",
+    "statusPending": "Pending verification",
     "verified": "Verified",
     "owner": "Owner:",
     "aboutUs": "About us",

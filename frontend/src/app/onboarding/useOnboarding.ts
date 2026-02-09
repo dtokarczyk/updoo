@@ -44,7 +44,6 @@ export interface OnboardingState {
   skillsLoading: boolean;
   skillsError: string;
   availableSkills: Skill[];
-  skillsSearch: string;
   showDraftModal: boolean;
   availableLocations: { id: string; name: string; slug: string }[];
 }
@@ -56,7 +55,6 @@ type OnboardingAction =
   | { type: 'SET_SKILLS_LOADING'; payload: boolean }
   | { type: 'SET_SKILLS_ERROR'; payload: string }
   | { type: 'SET_AVAILABLE_SKILLS'; payload: Skill[] }
-  | { type: 'SET_SKILLS_SEARCH'; payload: string }
   | { type: 'SET_SHOW_DRAFT_MODAL'; payload: boolean }
   | { type: 'SET_USER'; payload: AuthUser }
   | { type: 'SET_AVAILABLE_LOCATIONS'; payload: { id: string; name: string; slug: string }[] };
@@ -82,8 +80,6 @@ function onboardingReducer(
       return { ...state, skillsError: action.payload };
     case 'SET_AVAILABLE_SKILLS':
       return { ...state, availableSkills: action.payload };
-    case 'SET_SKILLS_SEARCH':
-      return { ...state, skillsSearch: action.payload };
     case 'SET_SHOW_DRAFT_MODAL':
       return { ...state, showDraftModal: action.payload };
     case 'SET_USER':
@@ -102,7 +98,6 @@ const initialState: OnboardingState = {
   skillsLoading: false,
   skillsError: '',
   availableSkills: [],
-  skillsSearch: '',
   showDraftModal: false,
   availableLocations: [],
 };
@@ -120,7 +115,7 @@ export function useOnboarding(
   const { refreshAuth } = useAuth();
   const [state, dispatch] = useReducer(onboardingReducer, initialState);
 
-  const { watch, setValue, getValues, setError, clearErrors } = form;
+  const { watch, getValues, setError, clearErrors } = form;
   const accountType = watch('accountType');
 
   useEffect(() => {
@@ -175,28 +170,12 @@ export function useOnboarding(
     };
   }, [state.step, state.availableLocations.length]);
 
-  const filteredSkills = useMemo(
-    () =>
-      state.skillsSearch.trim().length === 0
-        ? state.availableSkills
-        : state.availableSkills.filter((skill) =>
-          skill.name
-            .toLowerCase()
-            .includes(state.skillsSearch.trim().toLowerCase()),
-        ),
-    [state.availableSkills, state.skillsSearch],
-  );
-
   const init = useCallback((user: AuthUser, step: number) => {
     dispatch({ type: 'INIT', payload: { user, step } });
   }, []);
 
   const goToStep = useCallback((step: number) => {
     dispatch({ type: 'SET_STEP', payload: step });
-  }, []);
-
-  const setSkillsSearch = useCallback((value: string) => {
-    dispatch({ type: 'SET_SKILLS_SEARCH', payload: value });
   }, []);
 
   const setValidationErrors = useCallback(
@@ -492,27 +471,12 @@ export function useOnboarding(
     finishOnboarding,
   ]);
 
-  const toggleSkill = useCallback(
-    (id: string) => {
-      const current = getValues('selectedSkillIds');
-      setValue(
-        'selectedSkillIds',
-        current.includes(id)
-          ? current.filter((x) => x !== id)
-          : [...current, id],
-      );
-    },
-    [getValues, setValue],
-  );
-
   return {
     state,
     accountType,
-    filteredSkills,
     actions: {
       init,
       goToStep,
-      setSkillsSearch,
       setValidationErrors,
       handleNameSubmit,
       handlePhoneSubmit,
@@ -523,7 +487,6 @@ export function useOnboarding(
       handleProfileQuestionNo,
       handleProfileQuestionYes,
       handleProfileFormSubmit,
-      toggleSkill,
       openDraftModal,
       closeDraftModal,
       finishOnboarding,

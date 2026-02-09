@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Controller, useForm, FormProvider } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CheckCircle2, CircleAlert } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -13,6 +16,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from '@/components/ui/field';
 import { Textarea } from '@/components/ui/textarea';
 import {
   getStoredUser,
@@ -21,37 +31,46 @@ import {
   getToken,
 } from '@/lib/api';
 import { useTranslations } from '@/hooks/useTranslations';
+import {
+  getBasicProfileFormSchema,
+  defaultBasicProfileFormValues,
+  type BasicProfileFormValues,
+} from './schema';
+
+const formId = 'profile-basic-form';
 
 export default function ProfileBasicPage() {
   const router = useRouter();
   const { t } = useTranslations();
-  const [name, setName] = useState('');
-  const [surname, setSurname] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [defaultMessage, setDefaultMessage] = useState('');
   const [accountType, setAccountType] = useState<
     'CLIENT' | 'FREELANCER' | 'ADMIN' | null
   >(null);
-  const [error, setError] = useState('');
+  const [submitError, setSubmitError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
+
+  const form = useForm<BasicProfileFormValues>({
+    resolver: zodResolver(getBasicProfileFormSchema(t)),
+    defaultValues: defaultBasicProfileFormValues,
+    mode: 'onSubmit',
+  });
+
+  const { handleSubmit, reset, control, formState: { isSubmitting } } = form;
 
   useEffect(() => {
     setMounted(true);
     const user = getStoredUser();
     if (user) {
-      setName(user.name ?? '');
-      setSurname(user.surname ?? '');
-      setEmail(user.email ?? '');
-      setPhone(user.phone ?? '');
       setAccountType(user.accountType);
-      if (user.defaultMessage != null) {
-        setDefaultMessage(user.defaultMessage);
-      }
+      reset({
+        name: user.name ?? '',
+        surname: user.surname ?? '',
+        email: user.email ?? '',
+        phone: user.phone ?? '',
+        defaultMessage: user.defaultMessage ?? '',
+      });
     }
-  }, []);
+  }, [reset]);
 
   useEffect(() => {
     if (!mounted) return;
@@ -61,19 +80,17 @@ export default function ProfileBasicPage() {
     }
   }, [mounted, router]);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError('');
+  async function onSubmit(data: BasicProfileFormValues) {
+    setSubmitError('');
     setSuccess(false);
-    setLoading(true);
     try {
       const payload: Parameters<typeof updateProfile>[0] = {
-        name: name.trim() || undefined,
-        surname: surname.trim() || undefined,
-        email: email.trim() || undefined,
-        phone: phone.trim() || undefined,
+        name: data.name.trim() || undefined,
+        surname: data.surname.trim() || undefined,
+        email: data.email.trim() || undefined,
+        phone: data.phone?.trim() || undefined,
         ...(accountType === 'FREELANCER' && {
-          defaultMessage: defaultMessage.trim() || undefined,
+          defaultMessage: data.defaultMessage?.trim() || undefined,
         }),
       };
       const { user: updated } = await updateProfile(payload);
@@ -81,9 +98,9 @@ export default function ProfileBasicPage() {
       setSuccess(true);
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('profile.saveFailed'));
-    } finally {
-      setLoading(false);
+      setSubmitError(
+        err instanceof Error ? err.message : t('profile.saveFailed'),
+      );
     }
   }
 
@@ -95,94 +112,165 @@ export default function ProfileBasicPage() {
         <CardTitle>{t('profile.tabBasic')}</CardTitle>
         <CardDescription>{t('profile.editProfileDesc')}</CardDescription>
       </CardHeader>
+
       <CardContent className="space-y-4">
-        {error && (
-          <p className="text-sm text-destructive rounded-md bg-destructive/10 px-3 py-2">
-            {error}
-          </p>
+        {submitError && (
+          <Alert variant="destructive">
+            <CircleAlert />
+            <AlertDescription>{submitError}</AlertDescription>
+          </Alert>
         )}
         {success && (
-          <p className="text-sm text-green-600 dark:text-green-400 rounded-md bg-green-500/10 px-3 py-2">
-            {t('profile.profileSaved')}
-          </p>
+          <Alert variant="success">
+            <CheckCircle2 />
+            <AlertDescription>{t('profile.profileSaved')}</AlertDescription>
+          </Alert>
         )}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">{t('auth.name')}</Label>
-            <Input
-              id="name"
-              type="text"
-              placeholder={t('auth.name')}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              autoComplete="given-name"
-              disabled={loading}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="surname">{t('auth.surname')}</Label>
-            <Input
-              id="surname"
-              type="text"
-              placeholder={t('auth.surname')}
-              value={surname}
-              onChange={(e) => setSurname(e.target.value)}
-              autoComplete="family-name"
-              disabled={loading}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">{t('auth.email')}</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder={t('auth.email')}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-              disabled={loading}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="phone">{t('profile.phone')}</Label>
-            <Input
-              id="phone"
-              type="tel"
-              placeholder={t('onboarding.phonePlaceholder')}
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              autoComplete="tel"
-              disabled={loading}
-            />
-            <p className="text-xs text-muted-foreground">
-              {t('profile.phoneDesc')}
-            </p>
-          </div>
-          {accountType === 'FREELANCER' && (
-            <div className="space-y-2">
-              <Label htmlFor="defaultMessage">
-                {t('profile.defaultMessage')}
-              </Label>
-              <Textarea
-                id="defaultMessage"
-                placeholder={t('profile.defaultMessagePlaceholder')}
-                value={defaultMessage}
-                onChange={(e) => setDefaultMessage(e.target.value)}
-                rows={8}
-                disabled={loading}
-                className="resize-none"
+        <FormProvider {...form}>
+          <form
+            id={formId}
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-4"
+          >
+            <FieldGroup>
+              <Controller
+                name="name"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={`${formId}-name`}>
+                      {t('auth.name')}
+                    </FieldLabel>
+                    <Input
+                      {...field}
+                      id={`${formId}-name`}
+                      type="text"
+                      placeholder={t('auth.name')}
+                      autoComplete="given-name"
+                      disabled={isSubmitting}
+                      aria-invalid={fieldState.invalid}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
               />
-              <p className="text-xs text-muted-foreground">
-                {t('profile.defaultMessageDesc')}
-              </p>
-            </div>
-          )}
-          <CardFooter className="px-0">
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? t('common.saving') : t('common.save')}
-            </Button>
-          </CardFooter>
-        </form>
+
+              <Controller
+                name="surname"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={`${formId}-surname`}>
+                      {t('auth.surname')}
+                    </FieldLabel>
+                    <Input
+                      {...field}
+                      id={`${formId}-surname`}
+                      type="text"
+                      placeholder={t('auth.surname')}
+                      autoComplete="family-name"
+                      disabled={isSubmitting}
+                      aria-invalid={fieldState.invalid}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="email"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={`${formId}-email`}>
+                      {t('auth.email')}
+                    </FieldLabel>
+                    <Input
+                      {...field}
+                      id={`${formId}-email`}
+                      type="email"
+                      placeholder={t('auth.email')}
+                      autoComplete="email"
+                      disabled={isSubmitting}
+                      aria-invalid={fieldState.invalid}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="phone"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={`${formId}-phone`}>
+                      {t('profile.phone')}
+                    </FieldLabel>
+                    <Input
+                      {...field}
+                      id={`${formId}-phone`}
+                      type="tel"
+                      placeholder={t('onboarding.phonePlaceholder')}
+                      autoComplete="tel"
+                      disabled={isSubmitting}
+                      aria-invalid={fieldState.invalid}
+                    />
+                    <FieldDescription>{t('profile.phoneDesc')}</FieldDescription>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              {accountType === 'FREELANCER' && (
+                <Controller
+                  name="defaultMessage"
+                  control={control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor={`${formId}-defaultMessage`}>
+                        {t('profile.defaultMessage')}
+                      </FieldLabel>
+                      <Textarea
+                        {...field}
+                        id={`${formId}-defaultMessage`}
+                        placeholder={t('profile.defaultMessagePlaceholder')}
+                        rows={8}
+                        disabled={isSubmitting}
+                        className="resize-none"
+                        aria-invalid={fieldState.invalid}
+                      />
+                      <FieldDescription>
+                        {t('profile.defaultMessageDesc')}
+                      </FieldDescription>
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
+              )}
+            </FieldGroup>
+
+            <CardFooter className="px-0">
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? t('common.saving') : t('common.save')}
+              </Button>
+            </CardFooter>
+          </form>
+        </FormProvider>
       </CardContent>
     </Card>
   );

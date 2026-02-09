@@ -142,7 +142,25 @@
     "newPasswordConfirm": "Powtórz nowe hasło",
     "defaultMessage": "Domyślna wiadomość powitalna",
     "defaultMessageDesc": "Wiadomość powitalna z linkami do portfolio. Możesz ją personalizować podczas każdej wysyłki.",
-    "defaultMessagePlaceholder": "Cześć! Jestem zainteresowany/a tą ofertą. Oto linki do mojego portfolio:\n\n- Portfolio: https://example.com\n- GitHub: https://github.com/username\n\nChętnie odpowiem na pytania!"
+    "defaultMessagePlaceholder": "Cześć! Jestem zainteresowany/a tą ofertą. Oto linki do mojego portfolio:\n\n- Portfolio: https://example.com\n- GitHub: https://github.com/username\n\nChętnie odpowiem na pytania!",
+    "create": {
+      "nameLabel": "Nazwa profilu *",
+      "emailLabel": "E-mail kontaktowy",
+      "phoneLabel": "Numer telefonu",
+      "websiteLabel": "Strona www",
+      "locationLabel": "Miasto",
+      "aboutLabel": "O nas"
+    },
+    "validation": {
+      "nameRequired": "Imię jest wymagane",
+      "nameMax": "Imię może mieć co najwyżej 200 znaków",
+      "surnameRequired": "Nazwisko jest wymagane",
+      "surnameMax": "Nazwisko może mieć co najwyżej 200 znaków",
+      "emailRequired": "Adres e-mail jest wymagany",
+      "emailInvalid": "Wpisz poprawny adres e-mail",
+      "phoneMax": "Numer telefonu może mieć co najwyżej 30 znaków",
+      "messageMax": "Wiadomość może mieć co najwyżej 2000 znaków"
+    }
   },
   "onboarding": {
     "phoneTitle": "Podaj numer telefonu",
@@ -206,6 +224,7 @@
     "backToHome": "Wróć na stronę główną",
     "missingProfileId": "Brak identyfikatora profilu",
     "pendingVerification": "Profil oczekuje na weryfikację. Po weryfikacji będzie widoczny publicznie.",
+    "statusPending": "Oczekuje na weryfikację",
     "verified": "Zweryfikowany",
     "owner": "Właściciel:",
     "aboutUs": "O nas",

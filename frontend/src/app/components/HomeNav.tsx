@@ -113,7 +113,7 @@ export function UserDropdown(props: {
           role="menu"
         >
           <Link
-            href="/profile/edit"
+            href="/profile"
             role="menuitem"
             className="block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted"
             onClick={() => setDropdownOpen(false)}

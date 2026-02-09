@@ -87,7 +87,7 @@ export default function EditContractorProfilePage() {
         aboutUs: data.aboutUs?.trim() || undefined,
       };
       await updateContractorProfile(id, payload);
-      router.push('/profile/edit');
+      router.push('/profile');
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : t('profile.saveFailed'));
@@ -135,7 +135,7 @@ export default function EditContractorProfilePage() {
                     {submitting ? t('common.saving') : t('company.saveChanges')}
                   </Button>
                   <Button type="button" variant="outline" asChild disabled={submitting}>
-                    <Link href="/profile/edit">{t('common.cancel')}</Link>
+                    <Link href="/profile">{t('common.cancel')}</Link>
                   </Button>
                 </div>
               </form>

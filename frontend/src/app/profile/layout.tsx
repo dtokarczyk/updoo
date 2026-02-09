@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getLocaleFromRequest } from '@/lib/i18n';
 import { getMetadataConfig } from '@/lib/metadata-config';
+import { ProfileLayoutClient } from './ProfileLayoutClient';
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocaleFromRequest();
@@ -16,10 +17,16 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function ProfileEditLayout({
+export default function ProfileLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <div className="flex min-h-full w-full justify-center p-4 md:p-6">
+      <div className="w-full max-w-3xl">
+        <ProfileLayoutClient>{children}</ProfileLayoutClient>
+      </div>
+    </div>
+  );
 }

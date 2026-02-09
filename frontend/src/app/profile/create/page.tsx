@@ -50,7 +50,7 @@ export default function CreateProfilePage() {
       .catch(() => setLocations([]));
     getMyProfiles()
       .then((profiles) => {
-        if (profiles.length > 0) router.replace('/profile/edit');
+        if (profiles.length > 0) router.replace('/profile');
       })
       .catch(() => { });
   }, [router]);

@@ -169,7 +169,7 @@ export default function ProfileCompanyPage() {
   if (!mounted) return null;
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>{t('profile.tabCompany')}</CardTitle>
         <CardDescription>{t('profile.tabCompanyDesc')}</CardDescription>

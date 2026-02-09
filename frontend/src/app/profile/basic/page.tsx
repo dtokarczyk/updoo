@@ -106,7 +106,7 @@ export default function ProfileBasicPage() {
   if (!mounted) return null;
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>{t('profile.tabBasic')}</CardTitle>
         <CardDescription>{t('profile.editProfileDesc')}</CardDescription>

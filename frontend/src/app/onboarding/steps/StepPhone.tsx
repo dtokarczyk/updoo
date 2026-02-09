@@ -34,7 +34,7 @@ export function StepPhone({
   return (
     <>
       <CardHeader>
-        <CardTitle className="text-3xl">{t('onboarding.phoneTitle')}</CardTitle>
+        <CardTitle>{t('onboarding.phoneTitle')}</CardTitle>
         <CardDescription>{t('onboarding.phoneDesc')}</CardDescription>
       </CardHeader>
       <form

@@ -3,7 +3,6 @@
 import { useState, useMemo } from 'react';
 import { Controller, Control, FieldPath, FieldValues } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   Field,
   FieldError,
@@ -72,6 +71,7 @@ export function SkillsFormFields<T extends FieldValues>({
         name={name}
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
+
             <div className="max-h-72 space-y-2 overflow-y-auto rounded-md border p-3">
               {skillsLoading && (
                 <div className="flex items-center justify-center py-8">
@@ -83,6 +83,8 @@ export function SkillsFormFields<T extends FieldValues>({
                   {skillsSearch.trim().length > 0 ? noResultsLabel : emptyLabel}
                 </p>
               )}
+
+
               {!skillsLoading &&
                 filteredSkills.map((skill) => {
                   const selectedIds = (field.value ?? []) as string[];
@@ -92,17 +94,18 @@ export function SkillsFormFields<T extends FieldValues>({
                       key={skill.id}
                       className="flex w-full cursor-pointer items-center gap-2 rounded-md px-1.5 py-1 text-sm hover:bg-accent/60"
                     >
-                      <Checkbox
+                      <input
+                        type="checkbox"
                         checked={checked}
-                        onCheckedChange={() => {
+                        onChange={() => {
                           const next = checked
                             ? selectedIds.filter((x) => x !== skill.id)
                             : [...selectedIds, skill.id];
                           field.onChange(next);
                         }}
-                        className="shrink-0"
                         disabled={disabled}
                         aria-label={skill.name}
+                        className="size-4 shrink-0 rounded border border-input bg-background accent-primary"
                       />
                       <span>{skill.name}</span>
                     </label>

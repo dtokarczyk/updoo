@@ -29,7 +29,7 @@ export function StepProfileForm({
   return (
     <>
       <CardHeader>
-        <CardTitle className="text-3xl">
+        <CardTitle>
           {t('onboarding.profileQuestionCreate')}
         </CardTitle>
       </CardHeader>

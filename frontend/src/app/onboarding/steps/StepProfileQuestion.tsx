@@ -27,7 +27,7 @@ export function StepProfileQuestion({
   return (
     <>
       <CardHeader>
-        <CardTitle className="text-3xl">
+        <CardTitle>
           {t('onboarding.profileQuestionTitle')}
         </CardTitle>
       </CardHeader>

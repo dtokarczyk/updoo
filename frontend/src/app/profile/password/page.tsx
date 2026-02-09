@@ -100,7 +100,7 @@ export default function ProfilePasswordPage() {
   if (!mounted) return null;
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>{t('profile.tabPassword')}</CardTitle>
         <CardDescription>{t('profile.editProfileDesc')}</CardDescription>

@@ -92,7 +92,7 @@ export default function ProfileSkillsPage() {
   }
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>{t('profile.tabSkills')}</CardTitle>
         <CardDescription>{t('onboarding.freelancerSkillsDesc')}</CardDescription>

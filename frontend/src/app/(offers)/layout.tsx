@@ -16,7 +16,7 @@ export default async function OffersLayout({
   const locale = await getLocaleFromRequest();
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6">
+    <div className="max-w-7xl mx-auto px-4">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-8">
         <OffersLeftSidebar categories={categories} initialLocale={locale} />
         {children}

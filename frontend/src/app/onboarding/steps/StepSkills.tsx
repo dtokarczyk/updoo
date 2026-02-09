@@ -41,7 +41,7 @@ export function StepSkills({
   return (
     <>
       <CardHeader>
-        <CardTitle className="text-3xl">
+        <CardTitle>
           {t('onboarding.freelancerSkillsTitle')}
         </CardTitle>
         <CardDescription>

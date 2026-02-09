@@ -55,19 +55,18 @@ export default async function RootLayout({
     <html
       lang={locale}
       suppressHydrationWarning
-      className="w-full overflow-x-hidden lg:overflow-x-visible"
     >
       <body
-        className={`${geistMono.variable} antialiased w-full overflow-x-hidden lg:overflow-x-visible`}
+        className={`${geistMono.variable} antialiased`}
       >
         <ThemeScript />
         <ThemeProvider>
           <TooltipProvider delayDuration={200}>
             <AuthProvider>
-              <div className="flex min-h-screen flex-col font-sans w-full lg:overflow-x-visible">
+              <div className="flex min-h-screen flex-col font-sans w-full">
                 <BetaBar initialLocale={locale} />
                 <AppHeader initialLocale={locale} />
-                <main className="flex-1 w-full overflow-x-hidden lg:overflow-x-visible">
+                <main className="flex-1 w-full">
                   <OnboardingRedirect>{children}</OnboardingRedirect>
                 </main>
                 <AppFooter initialLocale={locale} />

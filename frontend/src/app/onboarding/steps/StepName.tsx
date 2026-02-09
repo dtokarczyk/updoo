@@ -39,7 +39,7 @@ export function StepName({
   return (
     <>
       <CardHeader>
-        <CardTitle className="text-3xl">
+        <CardTitle>
           {t('onboarding.whatShouldWeCallYou')}
         </CardTitle>
         <CardDescription>{t('onboarding.enterNameSurname')}</CardDescription>

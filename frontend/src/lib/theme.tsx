@@ -10,7 +10,7 @@ import {
 
 export type Theme = 'light' | 'dark';
 
-const STORAGE_KEY = 'oferto-theme';
+const STORAGE_KEY = 'hoplo-theme';
 
 type ThemeContextValue = {
   theme: Theme;

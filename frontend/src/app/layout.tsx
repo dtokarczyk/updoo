@@ -28,7 +28,7 @@ export const viewport: Viewport = {
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocaleFromRequest();
   const meta = getMetadataConfig(locale).default;
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://oferto.pl';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://hoplo.pl';
   return {
     metadataBase: new URL(baseUrl),
     title: {

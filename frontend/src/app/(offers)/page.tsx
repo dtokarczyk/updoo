@@ -10,7 +10,7 @@ export const revalidate = 300;
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocaleFromRequest();
   const meta = getMetadataConfig(locale).home;
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://oferto.pl';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://hoplo.pl';
   return {
     metadataBase: new URL(baseUrl),
     title: meta.title,

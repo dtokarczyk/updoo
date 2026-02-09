@@ -111,7 +111,7 @@ export class AuthService {
       <p>${intro}</p>
       <p><a href="${resetUrl}" style="display:inline-block;padding:10px 20px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px;">${cta}</a></p>
       <p>${expiry}</p>
-      <p>Oferto</p>
+      <p>Hoplo</p>
     `;
     const text = `${subject}: ${resetUrl}\n\n${expiry}`;
 

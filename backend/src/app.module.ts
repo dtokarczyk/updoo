@@ -11,6 +11,7 @@ import { AiModule } from './ai/ai.module';
 import { ContentGeneratorModule } from './content-generator/content-generator.module';
 import { EmailModule } from './email/email.module';
 import { MailerModule } from './mailer/mailer.module';
+import { RegonModule } from './regon/regon.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { MailerModule } from './mailer/mailer.module';
     ContentGeneratorModule,
     MailerModule,
     EmailModule,
+    RegonModule,
   ],
   controllers: [AppController],
   providers: [AppService],

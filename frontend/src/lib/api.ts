@@ -11,8 +11,8 @@ export interface AuthUser {
   surname: string | null;
   /** Phone number – used only for important notifications about application status. */
   phone?: string | null;
-  /** NIP (company tax ID) when user has a company. */
-  nipCompany?: string | null;
+  /** Linked company id. */
+  companyId?: string | null;
   accountType: AccountType | null;
   language: UserLanguage;
   /** Default message for freelancer applications (with portfolio links). */
@@ -65,7 +65,7 @@ export interface UpdateProfilePayload {
   surname?: string;
   email?: string;
   phone?: string;
-  nipCompany?: string;
+  companyId?: string | null;
   accountType?: AccountType;
   password?: string;
   /** Current password, required when changing password. */
@@ -87,7 +87,7 @@ export async function updateProfile(
   if (payload.surname !== undefined) body.surname = payload.surname;
   if (payload.email !== undefined) body.email = payload.email;
   if (payload.phone !== undefined) body.phone = payload.phone;
-  if (payload.nipCompany !== undefined) body.nipCompany = payload.nipCompany;
+  if (payload.companyId !== undefined) body.companyId = payload.companyId;
   if (payload.accountType !== undefined) body.accountType = payload.accountType;
   if (payload.password !== undefined && payload.password.trim())
     body.password = payload.password;

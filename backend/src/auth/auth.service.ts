@@ -28,7 +28,9 @@ export interface AuthResponseUser {
   name: string | null;
   surname: string | null;
   phone: string | null;
+  /** NIP from linked company (company.nip). */
   nipCompany: string | null;
+  companyId: string | null;
   accountType: string | null;
   language: string;
   defaultMessage: string | null;
@@ -182,9 +184,8 @@ export class AuthService {
     });
     const withRelations = await this.prisma.user.findUnique({
       where: { id: user.id },
-      // Skills relation is defined in Prisma schema; cast to any to avoid
-      // type mismatch before regenerating Prisma client.
       include: {
+        company: true,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...({ skills: { include: { skill: true } } } as any),
       },
@@ -196,7 +197,8 @@ export class AuthService {
         name: user.name,
         surname: user.surname,
         phone: user.phone,
-        nipCompany: user.nipCompany,
+        nipCompany: null,
+        companyId: user.companyId ?? null,
         accountType: user.accountType,
         language: user.language,
         defaultMessage: user.defaultMessage,
@@ -207,13 +209,15 @@ export class AuthService {
       });
     }
     const skillsFromUser = (withRelations as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
+    const withRelationsCompany = withRelations as { company?: { nip: string } | null };
     return this.buildAuthResponse({
       id: withRelations.id,
       email: withRelations.email,
       name: withRelations.name,
       surname: withRelations.surname,
       phone: withRelations.phone,
-      nipCompany: withRelations.nipCompany,
+      nipCompany: withRelationsCompany.company?.nip ?? null,
+      companyId: withRelations.companyId ?? null,
       accountType: withRelations.accountType,
       language: withRelations.language,
       defaultMessage: withRelations.defaultMessage,
@@ -230,8 +234,8 @@ export class AuthService {
   async login(dto: LoginDto): Promise<AuthResponse> {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email.toLowerCase() },
-      // See comment in register(): we cast include to any until Prisma client is regenerated.
       include: {
+        company: true,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...({ skills: { include: { skill: true } } } as any),
       },
@@ -244,13 +248,15 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
     const skillsFromUser = (user as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
+    const userCompany = user as { company?: { nip: string } | null };
     return this.buildAuthResponse({
       id: user.id,
       email: user.email,
       name: user.name,
       surname: user.surname,
       phone: user.phone,
-      nipCompany: user.nipCompany,
+      nipCompany: userCompany.company?.nip ?? null,
+      companyId: user.companyId ?? null,
       accountType: user.accountType,
       language: user.language,
       defaultMessage: user.defaultMessage,
@@ -282,19 +288,22 @@ export class AuthService {
     let user = await this.prisma.user.findUnique({
       where: { googleId },
       include: {
+        company: true,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...({ skills: { include: { skill: true } } } as any),
       },
     });
     if (user) {
       const skillsFromUser = (user as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
+      const userCompany = user as { company?: { nip: string } | null };
       return this.buildAuthResponse({
         id: user.id,
         email: user.email,
         name: user.name,
         surname: user.surname,
         phone: user.phone,
-        nipCompany: user.nipCompany,
+        nipCompany: userCompany.company?.nip ?? null,
+        companyId: user.companyId ?? null,
         accountType: user.accountType,
         language: user.language,
         defaultMessage: user.defaultMessage,
@@ -308,6 +317,7 @@ export class AuthService {
     user = await this.prisma.user.findUnique({
       where: { email },
       include: {
+        company: true,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...({ skills: { include: { skill: true } } } as any),
       },
@@ -318,13 +328,15 @@ export class AuthService {
         data: { googleId },
       });
       const skillsFromUser = (user as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
+      const userCompany = user as { company?: { nip: string } | null };
       return this.buildAuthResponse({
         id: user.id,
         email: user.email,
         name: user.name,
         surname: user.surname,
         phone: user.phone,
-        nipCompany: user.nipCompany,
+        nipCompany: userCompany.company?.nip ?? null,
+        companyId: user.companyId ?? null,
         accountType: user.accountType,
         language: user.language,
         defaultMessage: user.defaultMessage,
@@ -346,6 +358,7 @@ export class AuthService {
     const withRelations = await this.prisma.user.findUnique({
       where: { id: newUser.id },
       include: {
+        company: true,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...({ skills: { include: { skill: true } } } as any),
       },
@@ -357,7 +370,8 @@ export class AuthService {
         name: newUser.name,
         surname: newUser.surname,
         phone: newUser.phone,
-        nipCompany: newUser.nipCompany,
+        nipCompany: null,
+        companyId: newUser.companyId ?? null,
         accountType: newUser.accountType,
         language: newUser.language,
         defaultMessage: newUser.defaultMessage,
@@ -368,13 +382,15 @@ export class AuthService {
       });
     }
     const skillsFromUser = (withRelations as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
+    const newUserCompany = withRelations as { company?: { nip: string } | null };
     return this.buildAuthResponse({
       id: withRelations.id,
       email: withRelations.email,
       name: withRelations.name,
       surname: withRelations.surname,
       phone: withRelations.phone,
-      nipCompany: withRelations.nipCompany,
+      nipCompany: newUserCompany.company?.nip ?? null,
+      companyId: withRelations.companyId ?? null,
       accountType: withRelations.accountType,
       language: withRelations.language,
       defaultMessage: withRelations.defaultMessage,
@@ -405,7 +421,7 @@ export class AuthService {
       ...(dto.name !== undefined && { name: dto.name || null }),
       ...(dto.surname !== undefined && { surname: dto.surname || null }),
       ...(dto.phone !== undefined && { phone: dto.phone?.trim() || null }),
-      ...(dto.nipCompany !== undefined && { nipCompany: dto.nipCompany?.trim() || null }),
+      ...(dto.companyId !== undefined && { companyId: dto.companyId?.trim() || null }),
       ...(dto.accountType !== undefined && { accountType: dto.accountType || null }),
       ...(dto.email !== undefined && dto.email.trim() && { email: dto.email.trim().toLowerCase() }),
       ...(dto.language !== undefined && { language: dto.language }),
@@ -442,13 +458,14 @@ export class AuthService {
     const user = await this.prisma.user.update({
       where: { id: userId },
       data: updateData,
-      // See comment in register(): cast include to any until Prisma client is regenerated.
       include: {
+        company: true,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...({ skills: { include: { skill: true } } } as any),
       },
     });
     const skillsFromUser = (user as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
+    const userCompany = user as { company?: { nip: string } | null };
     return {
       user: {
         id: user.id,
@@ -456,7 +473,8 @@ export class AuthService {
         name: user.name,
         surname: user.surname,
         phone: user.phone,
-        nipCompany: user.nipCompany,
+        nipCompany: userCompany.company?.nip ?? null,
+        companyId: user.companyId ?? null,
         accountType: user.accountType,
         language: user.language,
         defaultMessage: user.defaultMessage,
@@ -474,21 +492,23 @@ export class AuthService {
   async validateUser(payload: JwtPayload) {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
-      // See comment in register(): cast include to any until Prisma client is regenerated.
       include: {
+        company: true,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...({ skills: { include: { skill: true } } } as any),
       },
     });
     if (!user) return null;
     const skillsFromUser = (user as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
+    const userCompany = user as { company?: { nip: string } | null };
     return {
       id: user.id,
       email: user.email,
       name: user.name,
       surname: user.surname,
       phone: user.phone,
-      nipCompany: user.nipCompany,
+      nipCompany: userCompany.company?.nip ?? null,
+      companyId: user.companyId ?? null,
       accountType: user.accountType,
       language: user.language,
       defaultMessage: user.defaultMessage,
@@ -515,11 +535,13 @@ export class AuthService {
         acceptedPrivacyPolicyAt: acceptedAt,
       },
       include: {
+        company: true,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...({ skills: { include: { skill: true } } } as any),
       },
     });
     const skillsFromUser = (user as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
+    const userCompany = user as { company?: { nip: string } | null };
     return {
       user: {
         id: user.id,
@@ -527,7 +549,8 @@ export class AuthService {
         name: user.name,
         surname: user.surname,
         phone: user.phone,
-        nipCompany: user.nipCompany,
+        nipCompany: userCompany.company?.nip ?? null,
+        companyId: user.companyId ?? null,
         accountType: user.accountType,
         language: user.language,
         defaultMessage: user.defaultMessage,
@@ -551,6 +574,7 @@ export class AuthService {
         surname: user.surname,
         phone: user.phone,
         nipCompany: user.nipCompany,
+        companyId: user.companyId,
         accountType: user.accountType,
         language: user.language,
         defaultMessage: user.defaultMessage,

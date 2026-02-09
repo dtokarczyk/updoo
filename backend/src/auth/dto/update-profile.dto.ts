@@ -50,5 +50,5 @@ export class UpdateProfileDto {
 
   @IsOptional()
   @IsString()
-  nipCompany?: string;
+  companyId?: string;
 }

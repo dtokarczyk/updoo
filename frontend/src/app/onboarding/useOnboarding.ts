@@ -336,11 +336,8 @@ export function useOnboarding(
       return;
     }
     try {
-      const { user: updated } = await updateProfile({
-        nipCompany: result.data.hasCompany
-          ? result.data.nipCompany?.trim() || undefined
-          : '',
-      });
+      // Company is linked via companyId in profile edit; NIP is stored in Company table.
+      const { user: updated } = await updateProfile({});
       updateStoredUser(updated);
       dispatch({ type: 'SET_USER', payload: updated });
       if (accountType === 'FREELANCER') {

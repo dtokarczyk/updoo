@@ -49,6 +49,30 @@ enum JobLanguage {
   POLISH
 }
 
+model Company {
+  id               String    @id @default(cuid())
+  regon            String    @unique
+  nip              String    @unique
+  name             String
+  voivodeship      String?
+  county           String?
+  commune          String?
+  locality         String?
+  postalCode       String?
+  street           String?
+  propertyNumber   String?
+  apartmentNumber  String?
+  type             String?
+  isActive         Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  users            User[]
+
+  @@index([nip])
+  @@index([regon])
+}
+
 model User {
   id            String          @id @default(cuid())
   email         String          @unique
@@ -60,8 +84,8 @@ model User {
   surname       String?
   /** Phone number – used only for important notifications about application status. */
   phone         String?
-  /** NIP (company tax ID) when user has a company. */
-  nipCompany    String?
+  /** Linked company (NIP from Company.nip). */
+  companyId     String?
   accountType   AccountType?
   language      JobLanguage @default(POLISH)
   defaultMessage String?        @db.Text
@@ -75,12 +99,15 @@ model User {
   acceptedPrivacyPolicyAt    DateTime?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
+  company       Company?        @relation(fields: [companyId], references: [id], onDelete: SetNull)
   jobs          Job[]
   applications  JobApplication[]
   favorites     Favorite[]
   skills        UserSkill[]
   passwordResetTokens PasswordResetToken[]
   profiles      Profile[]
+
+  @@index([companyId])
 }
 
 model PasswordResetToken {

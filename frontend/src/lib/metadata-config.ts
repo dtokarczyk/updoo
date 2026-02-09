@@ -1,3 +1,4 @@
+import { PROJECT_NAME } from '@/constants';
 import type { Locale } from '@/lib/i18n';
 
 export interface PageMeta {
@@ -37,21 +38,21 @@ const metadataByLocale: Record<
 > = {
   pl: {
     default: {
-      title: 'Oferto',
-      template: '%s | Oferto',
+      title: PROJECT_NAME,
+      template: `%s | ${PROJECT_NAME}`,
       description:
         'Publikuj i szukaj ofert dla freelancerów. Połącz firmy z najlepszymi wykonawcami.',
     },
     home: {
       title:
-        'Oferto - Oferty dla freelancerów | Znajdź zlecenia lub zatrudnij najlepszych',
+        `${PROJECT_NAME} - Oferty dla freelancerów | Znajdź zlecenia lub zatrudnij najlepszych`,
       description:
         'Platforma łącząca firmy z freelancerami. Przeglądaj ogłoszenia, publikuj oferty i znajdź idealne zlecenie lub wykonawcę. Szybko, prosto, bez pośredników.',
     },
     login: {
       title: 'Logowanie',
       description:
-        'Zaloguj się do Oferto. Wprowadź adres e-mail i hasło, aby uzyskać dostęp do ofert i swojego konta.',
+        `Zaloguj się do ${PROJECT_NAME}. Wprowadź adres e-mail i hasło, aby uzyskać dostęp do ofert i swojego konta.`,
     },
     forgotPassword: {
       title: 'Odzyskiwanie hasła',
@@ -60,76 +61,76 @@ const metadataByLocale: Record<
     },
     resetPassword: {
       title: 'Ustaw nowe hasło',
-      description: 'Wprowadź nowe hasło do konta w Oferto.',
+      description: `Wprowadź nowe hasło do konta w ${PROJECT_NAME}.`,
     },
     register: {
       title: 'Rejestracja',
       description:
-        'Zarejestruj się w Oferto. Załóż konto w 30 sekund i zacznij przeglądać oferty lub publikować zlecenia.',
+        `Zarejestruj się w ${PROJECT_NAME}. Załóż konto w 30 sekund i zacznij przeglądać oferty lub publikować zlecenia.`,
     },
     admin: {
       title: 'Panel administracyjny',
       description:
-        'Panel administracyjny Oferto. Zarządzaj ofertami i generuj oferty z wykorzystaniem AI.',
+        `Panel administracyjny ${PROJECT_NAME}. Zarządzaj ofertami i generuj oferty z wykorzystaniem AI.`,
     },
     favorites: {
       title: 'Ulubione ogłoszenia',
       description:
-        'Twoja lista ulubionych ofert w Oferto. Szybki dostęp do zapisanych ogłoszeń.',
+        `Twoja lista ulubionych ofert w ${PROJECT_NAME}. Szybki dostęp do zapisanych ogłoszeń.`,
     },
     onboarding: {
       title: 'Konfiguracja konta',
       description:
-        'Dokończ konfigurację konta w Oferto. Wybierz typ konta (klient lub freelancer) i uzupełnij profil.',
+        `Dokończ konfigurację konta w ${PROJECT_NAME}. Wybierz typ konta (klient lub freelancer) i uzupełnij profil.`,
     },
     profileEdit: {
       title: 'Edycja profilu',
       description:
-        'Zmień dane profilu w Oferto: imię, nazwisko, e-mail, hasło lub domyślną wiadomość powitalną.',
+        `Zmień dane profilu w ${PROJECT_NAME}: imię, nazwisko, e-mail, hasło lub domyślną wiadomość powitalną.`,
     },
     jobNew: {
       title: 'Nowe ogłoszenie',
       description:
-        'Dodaj nowe ogłoszenie w Oferto. Wypełnij szczegóły oferty, kategorię i warunki współpracy.',
+        `Dodaj nowe ogłoszenie w ${PROJECT_NAME}. Wypełnij szczegóły oferty, kategorię i warunki współpracy.`,
     },
     jobEdit: {
       title: 'Edycja ogłoszenia',
       description:
-        'Edytuj ogłoszenie w Oferto. Po zapisie oferta wróci do statusu szkicu i będzie wymagała ponownej akceptacji.',
+        `Edytuj ogłoszenie w ${PROJECT_NAME}. Po zapisie oferta wróci do statusu szkicu i będzie wymagała ponownej akceptacji.`,
     },
     offers: {
       title: 'Ogłoszenia',
       description:
-        'Przeglądaj oferty pracy dla freelancerów w Oferto. Filtruj po kategorii i języku ogłoszenia.',
+        `Przeglądaj oferty pracy dla freelancerów w ${PROJECT_NAME}. Filtruj po kategorii i języku ogłoszenia.`,
     },
     jobDetail: (title: string) => ({
       title,
-      description: `Szczegóły oferty: ${title}. Zobacz opis, stawkę, wymagania i zgłoś się do oferty w Oferto.`,
+      description: `Szczegóły oferty: ${title}. Zobacz opis, stawkę, wymagania i zgłoś się do oferty w ${PROJECT_NAME}.`,
     }),
     offersCategory: (categoryName: string, page: number) => ({
       title:
         page > 1
           ? `Ogłoszenia: ${categoryName} (strona ${page})`
           : `Ogłoszenia: ${categoryName}`,
-      description: `Przeglądaj oferty w kategorii ${categoryName} w Oferto. Strona ${page}.`,
+      description: `Przeglądaj oferty w kategorii ${categoryName} w ${PROJECT_NAME}. Strona ${page}.`,
     }),
   },
   en: {
     default: {
-      title: 'Oferto',
-      template: '%s | Oferto',
+      title: PROJECT_NAME,
+      template: `%s | ${PROJECT_NAME}`,
       description:
         'Publish and find freelancer job offers. Connect companies with the best contractors.',
     },
     home: {
-      title: 'Oferto - Freelancer Job Board | Find Gigs or Hire Top Talent',
+      title: `${PROJECT_NAME} - Freelancer Job Board | Find Gigs or Hire Top Talent`,
       description:
         'The platform connecting companies with freelancers. Browse job listings, post offers, and find the perfect gig or contractor. Fast, simple, no middlemen.',
     },
     login: {
       title: 'Login',
       description:
-        'Log in to Oferto. Enter your email and password to access job offers and your account.',
+        `Log in to ${PROJECT_NAME}. Enter your email and password to access job offers and your account.`,
     },
     forgotPassword: {
       title: 'Forgot password',
@@ -138,58 +139,58 @@ const metadataByLocale: Record<
     },
     resetPassword: {
       title: 'Set new password',
-      description: 'Enter your new password for your Oferto account.',
+      description: `Enter your new password for your ${PROJECT_NAME} account.`,
     },
     register: {
       title: 'Register',
       description:
-        'Sign up for Oferto. Create an account in 30 seconds and start browsing jobs or publishing listings.',
+        `Sign up for ${PROJECT_NAME}. Create an account in 30 seconds and start browsing jobs or publishing listings.`,
     },
     admin: {
       title: 'Admin panel',
       description:
-        'Oferto admin panel. Manage job offers and generate listings with AI.',
+        `${PROJECT_NAME} admin panel. Manage job offers and generate listings with AI.`,
     },
     favorites: {
       title: 'Favorite jobs',
       description:
-        'Your list of favorite job offers in Oferto. Quick access to saved listings.',
+        `Your list of favorite job offers in ${PROJECT_NAME}. Quick access to saved listings.`,
     },
     onboarding: {
       title: 'Account setup',
       description:
-        'Complete your Oferto account setup. Choose account type (client or freelancer) and fill in your profile.',
+        `Complete your ${PROJECT_NAME} account setup. Choose account type (client or freelancer) and fill in your profile.`,
     },
     profileEdit: {
       title: 'Edit profile',
       description:
-        'Update your Oferto profile: name, email, password, or default welcome message.',
+        `Update your ${PROJECT_NAME} profile: name, email, password, or default welcome message.`,
     },
     jobNew: {
       title: 'New job listing',
       description:
-        'Add a new job listing on Oferto. Fill in offer details, category, and terms.',
+        `Add a new job listing on ${PROJECT_NAME}. Fill in offer details, category, and terms.`,
     },
     jobEdit: {
       title: 'Edit job listing',
       description:
-        'Edit your job listing on Oferto. After saving, the offer will return to draft status and require re-approval.',
+        `Edit your job listing on ${PROJECT_NAME}. After saving, the offer will return to draft status and require re-approval.`,
     },
     offers: {
       title: 'Job listings',
       description:
-        'Browse freelancer job offers on Oferto. Filter by category and listing language.',
+        `Browse freelancer job offers on ${PROJECT_NAME}. Filter by category and listing language.`,
     },
     jobDetail: (title: string) => ({
       title,
-      description: `Job details: ${title}. View description, rate, requirements and apply on Oferto.`,
+      description: `Job details: ${title}. View description, rate, requirements and apply on ${PROJECT_NAME}.`,
     }),
     offersCategory: (categoryName: string, page: number) => ({
       title:
         page > 1
           ? `Jobs: ${categoryName} (page ${page})`
           : `Jobs: ${categoryName}`,
-      description: `Browse job offers in ${categoryName} on Oferto. Page ${page}.`,
+      description: `Browse job offers in ${categoryName} on ${PROJECT_NAME}. Page ${page}.`,
     }),
   },
 };

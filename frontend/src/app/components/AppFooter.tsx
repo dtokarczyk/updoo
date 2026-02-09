@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import type { Locale } from '@/lib/i18n';
 import { t } from '@/lib/translations';
+import { PROJECT_NAME } from '@/constants';
 
 export function AppFooter({ initialLocale }: { initialLocale: Locale }) {
   const year = new Date().getFullYear();
@@ -18,7 +19,7 @@ export function AppFooter({ initialLocale }: { initialLocale: Locale }) {
               href="/"
               className="text-sm font-medium text-foreground hover:underline focus:outline-none focus:underline"
             >
-              Oferto
+              {PROJECT_NAME}
             </Link>
             <Link
               href="/agreements/terms"

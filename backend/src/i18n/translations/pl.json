@@ -32,7 +32,13 @@
     "currentPasswordRequired": "Aktualne hasło jest wymagane",
     "currentPasswordIncorrect": "Aktualne hasło jest nieprawidłowe",
     "invalidUser": "Nieprawidłowy użytkownik",
-    "invalidResetToken": "Nieprawidłowy lub wygasły link do resetu hasła. Poproś o nowy link."
+    "invalidResetToken": "Nieprawidłowy lub wygasły link do resetu hasła. Poproś o nowy link.",
+    "profileOnlyOne": "Użytkownik może mieć tylko jeden profil wykonawcy",
+    "locationNotFound": "Lokalizacja nie została znaleziona",
+    "profileNotFound": "Profil nie został znaleziony",
+    "profileUpdateForbidden": "Brak uprawnień do edycji tego profilu",
+    "profileDeleteForbidden": "Brak uprawnień do usunięcia tego profilu",
+    "profileVerifyAdminOnly": "Tylko administrator może weryfikować profile"
   },
   "messages": {
     "forgotPasswordSuccess": "Jeśli konto z tym adresem e-mail istnieje, otrzymasz link do ustawienia nowego hasła.",

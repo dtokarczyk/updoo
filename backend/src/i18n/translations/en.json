@@ -32,7 +32,13 @@
     "currentPasswordRequired": "Current password is required",
     "currentPasswordIncorrect": "Current password is incorrect",
     "invalidUser": "Invalid user",
-    "invalidResetToken": "Invalid or expired reset link. Please request a new one."
+    "invalidResetToken": "Invalid or expired reset link. Please request a new one.",
+    "profileOnlyOne": "User can have only one contractor profile",
+    "locationNotFound": "Location not found",
+    "profileNotFound": "Profile not found",
+    "profileUpdateForbidden": "Not allowed to update this profile",
+    "profileDeleteForbidden": "Not allowed to delete this profile",
+    "profileVerifyAdminOnly": "Only admin can verify profiles"
   },
   "messages": {
     "forgotPasswordSuccess": "If an account exists with this email, you will receive a link to set a new password.",

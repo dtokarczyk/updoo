@@ -80,6 +80,7 @@ model User {
   favorites     Favorite[]
   skills        UserSkill[]
   passwordResetTokens PasswordResetToken[]
+  profiles      Profile[]
 }
 
 model PasswordResetToken {
@@ -123,7 +124,8 @@ model Location {
   slug      String    @unique
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  jobs      Job[] // reverse relation from Job.locationId
+  jobs      Job[]
+  profiles  Profile[]
 }
 
 model Skill {
@@ -220,6 +222,28 @@ model UserSkill {
   @@unique([userId, skillId])
   @@index([userId])
   @@index([skillId])
+}
+
+model Profile {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String      @unique
+  website     String?
+  email       String?
+  phone       String?
+  isVerified  Boolean     @default(false)
+  aboutUs     String?     @db.Text
+  locationId  String?
+  ownerId     String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  owner       User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  location    Location?   @relation(fields: [locationId], references: [id], onDelete: SetNull)
+
+  @@index([ownerId])
+  @@index([slug])
+  @@index([locationId])
 }
 
 model BenchmarkContent {

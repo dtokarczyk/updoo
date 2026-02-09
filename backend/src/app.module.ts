@@ -12,6 +12,7 @@ import { ContentGeneratorModule } from './content-generator/content-generator.mo
 import { EmailModule } from './email/email.module';
 import { MailerModule } from './mailer/mailer.module';
 import { RegonModule } from './regon/regon.module';
+import { ProfilesModule } from './profiles/profiles.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { RegonModule } from './regon/regon.module';
     AgreementsModule,
     AuthModule,
     JobsModule,
+    ProfilesModule,
     I18nModule,
     AiModule,
     ContentGeneratorModule,

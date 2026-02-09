@@ -4,6 +4,8 @@ import {
   ArgumentsHost,
   BadRequestException,
   ConflictException,
+  ForbiddenException,
+  NotFoundException,
   UnauthorizedException,
   HttpException,
 } from '@nestjs/common';
@@ -25,13 +27,16 @@ export class I18nExceptionFilter implements ExceptionFilter {
 
     const exceptionResponse = exception.getResponse() as any;
 
-    // Handle ConflictException, UnauthorizedException, etc. with string messages
+    // Handle exceptions with string message (Conflict, Forbidden, NotFound, Unauthorized, BadRequest)
     if (
-      exception instanceof ConflictException ||
-      exception instanceof UnauthorizedException ||
-      (exception instanceof BadRequestException && typeof exceptionResponse.message === 'string')
+      typeof exceptionResponse.message === 'string' &&
+      (exception instanceof ConflictException ||
+        exception instanceof ForbiddenException ||
+        exception instanceof NotFoundException ||
+        exception instanceof UnauthorizedException ||
+        exception instanceof BadRequestException)
     ) {
-      const message = exceptionResponse.message || exception.message;
+      const message = exceptionResponse.message;
       const translatedMessage = this.translateErrorMessage(message, lang);
 
       // Debug logging (remove in production if needed)
@@ -212,11 +217,18 @@ export class I18nExceptionFilter implements ExceptionFilter {
   }
 
   /**
-   * Translates error messages from AuthService and other services.
-   * Maps hardcoded English messages to translation keys.
+   * Translates error messages from services.
+   * If message is a translation key (errors.xxx, messages.xxx), translates by key.
+   * Otherwise maps hardcoded English messages to translation keys (legacy).
    */
   private translateErrorMessage(message: string, lang: 'en' | 'pl'): string {
-    // Map of English error messages to translation keys
+    // If message looks like a translation key (e.g. errors.profileNotFound), translate it
+    if (message && (message.startsWith('errors.') || message.startsWith('messages.'))) {
+      const translated = this.i18nService.translate(message, lang);
+      if (translated !== message) return translated;
+    }
+
+    // Map of English error messages to translation keys (legacy)
     const errorMap: Record<string, string> = {
       'Passwords do not match': 'errors.passwordsDoNotMatch',
       'Terms and privacy policy must be accepted': 'errors.termsMustBeAccepted',
@@ -231,20 +243,12 @@ export class I18nExceptionFilter implements ExceptionFilter {
     const translationKey = errorMap[message];
     if (translationKey) {
       const translated = this.i18nService.translate(translationKey, lang);
-      // If translation returns the same as key, it means translation was not found
-      if (translated !== translationKey) {
-        return translated;
-      }
-      // Log warning if translation not found
+      if (translated !== translationKey) return translated;
       console.warn(`Translation not found for key: ${translationKey}, language: ${lang}, message: ${message}`);
-    } else {
-      // Log if message is not in errorMap
-      if (process.env.NODE_ENV === 'development') {
-        console.warn(`No translation key found for message: "${message}"`);
-      }
+    } else if (process.env.NODE_ENV === 'development') {
+      console.warn(`No translation key found for message: "${message}"`);
     }
 
-    // If no translation found, return original message
     return message;
   }
 }

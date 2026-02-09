@@ -14,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Spinner } from '@/components/ui/spinner';
 import {
   getToken,
   getMyCompany,
@@ -189,9 +190,9 @@ export default function ProfileCompanyPage() {
 
         {company === undefined && (
           <Card className="py-4 rounded-lg">
-            <CardHeader className="px-4">
-              <CardTitle>{t('common.loading')}</CardTitle>
-            </CardHeader>
+            <CardContent className="flex justify-center py-8">
+              <Spinner className="size-8 text-muted-foreground" />
+            </CardContent>
           </Card>
         )}
 

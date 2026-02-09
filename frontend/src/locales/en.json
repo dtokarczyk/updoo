@@ -167,7 +167,9 @@
       "profileNameMin": "Profile name must be at least 2 characters",
       "profileNameMax": "Profile name must be at most 200 characters",
       "websiteInvalid": "Enter a valid URL",
-      "aboutUsMax": "About us must be at most 2000 characters"
+      "aboutUsMax": "About us must be at most 2000 characters",
+      "oldPasswordRequired": "Current password is required",
+      "passwordMin": "Password must be at least 6 characters"
     }
   },
   "onboarding": {

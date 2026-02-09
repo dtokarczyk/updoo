@@ -61,7 +61,7 @@ export function ContractorProfileFormFields({
   const inputClass = size === 'lg' ? 'h-12 text-base px-4' : '';
 
   return (
-    <>
+    <div className="flex flex-col gap-4">
       <div className="space-y-2">
         <Label htmlFor={nameKey}>
           {t('profile.create.nameLabel') || 'Nazwa profilu *'}
@@ -144,7 +144,7 @@ export function ContractorProfileFormFields({
           render={({ field }) => (
             <LocationSearchSelect
               id={locationKey}
-              value={field.value ?? ''}
+              value={typeof field.value === 'string' ? field.value : ''}
               onChange={field.onChange}
               locations={locations}
               disabled={disabled || locations.length === 0}
@@ -175,6 +175,6 @@ export function ContractorProfileFormFields({
           </p>
         )}
       </div>
-    </>
+    </div>
   );
 }

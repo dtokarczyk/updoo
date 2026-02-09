@@ -167,7 +167,9 @@
       "profileNameMin": "Nazwa profilu musi mieć co najmniej 2 znaki",
       "profileNameMax": "Nazwa profilu może mieć co najwyżej 200 znaków",
       "websiteInvalid": "Wpisz poprawny adres URL",
-      "aboutUsMax": "Opis może mieć co najwyżej 2000 znaków"
+      "aboutUsMax": "Opis może mieć co najwyżej 2000 znaków",
+      "oldPasswordRequired": "Obecne hasło jest wymagane",
+      "passwordMin": "Hasło musi mieć co najmniej 6 znaków"
     }
   },
   "onboarding": {

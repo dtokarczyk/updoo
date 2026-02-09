@@ -20,7 +20,6 @@ import {
   Field,
   FieldDescription,
   FieldError,
-  FieldGroup,
   FieldLabel,
 } from '@/components/ui/field';
 import { Textarea } from '@/components/ui/textarea';
@@ -132,133 +131,131 @@ export default function ProfileBasicPage() {
             onSubmit={handleSubmit(onSubmit)}
             className="space-y-4"
           >
-            <FieldGroup>
-              <Controller
-                name="name"
-                control={control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={`${formId}-name`}>
-                      {t('auth.name')}
-                    </FieldLabel>
-                    <Input
-                      {...field}
-                      id={`${formId}-name`}
-                      type="text"
-                      placeholder={t('auth.name')}
-                      autoComplete="given-name"
-                      disabled={isSubmitting}
-                      aria-invalid={fieldState.invalid}
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-
-              <Controller
-                name="surname"
-                control={control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={`${formId}-surname`}>
-                      {t('auth.surname')}
-                    </FieldLabel>
-                    <Input
-                      {...field}
-                      id={`${formId}-surname`}
-                      type="text"
-                      placeholder={t('auth.surname')}
-                      autoComplete="family-name"
-                      disabled={isSubmitting}
-                      aria-invalid={fieldState.invalid}
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-
-              <Controller
-                name="email"
-                control={control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={`${formId}-email`}>
-                      {t('auth.email')}
-                    </FieldLabel>
-                    <Input
-                      {...field}
-                      id={`${formId}-email`}
-                      type="email"
-                      placeholder={t('auth.email')}
-                      autoComplete="email"
-                      disabled={isSubmitting}
-                      aria-invalid={fieldState.invalid}
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-
-              <Controller
-                name="phone"
-                control={control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={`${formId}-phone`}>
-                      {t('profile.phone')}
-                    </FieldLabel>
-                    <Input
-                      {...field}
-                      id={`${formId}-phone`}
-                      type="tel"
-                      placeholder={t('onboarding.phonePlaceholder')}
-                      autoComplete="tel"
-                      disabled={isSubmitting}
-                      aria-invalid={fieldState.invalid}
-                    />
-                    <FieldDescription>{t('profile.phoneDesc')}</FieldDescription>
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-
-              {accountType === 'FREELANCER' && (
-                <Controller
-                  name="defaultMessage"
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor={`${formId}-defaultMessage`}>
-                        {t('profile.defaultMessage')}
-                      </FieldLabel>
-                      <Textarea
-                        {...field}
-                        id={`${formId}-defaultMessage`}
-                        placeholder={t('profile.defaultMessagePlaceholder')}
-                        rows={8}
-                        disabled={isSubmitting}
-                        className="resize-none"
-                        aria-invalid={fieldState.invalid}
-                      />
-                      <FieldDescription>
-                        {t('profile.defaultMessageDesc')}
-                      </FieldDescription>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
+            <Controller
+              name="name"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={`${formId}-name`}>
+                    {t('auth.name')}
+                  </FieldLabel>
+                  <Input
+                    {...field}
+                    id={`${formId}-name`}
+                    type="text"
+                    placeholder={t('auth.name')}
+                    autoComplete="given-name"
+                    disabled={isSubmitting}
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
                   )}
-                />
+                </Field>
               )}
-            </FieldGroup>
+            />
+
+            <Controller
+              name="surname"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={`${formId}-surname`}>
+                    {t('auth.surname')}
+                  </FieldLabel>
+                  <Input
+                    {...field}
+                    id={`${formId}-surname`}
+                    type="text"
+                    placeholder={t('auth.surname')}
+                    autoComplete="family-name"
+                    disabled={isSubmitting}
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="email"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={`${formId}-email`}>
+                    {t('auth.email')}
+                  </FieldLabel>
+                  <Input
+                    {...field}
+                    id={`${formId}-email`}
+                    type="email"
+                    placeholder={t('auth.email')}
+                    autoComplete="email"
+                    disabled={isSubmitting}
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="phone"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={`${formId}-phone`}>
+                    {t('profile.phone')}
+                  </FieldLabel>
+                  <Input
+                    {...field}
+                    id={`${formId}-phone`}
+                    type="tel"
+                    placeholder={t('onboarding.phonePlaceholder')}
+                    autoComplete="tel"
+                    disabled={isSubmitting}
+                    aria-invalid={fieldState.invalid}
+                  />
+                  <FieldDescription>{t('profile.phoneDesc')}</FieldDescription>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+
+            {accountType === 'FREELANCER' && (
+              <Controller
+                name="defaultMessage"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={`${formId}-defaultMessage`}>
+                      {t('profile.defaultMessage')}
+                    </FieldLabel>
+                    <Textarea
+                      {...field}
+                      id={`${formId}-defaultMessage`}
+                      placeholder={t('profile.defaultMessagePlaceholder')}
+                      rows={8}
+                      disabled={isSubmitting}
+                      className="resize-none"
+                      aria-invalid={fieldState.invalid}
+                    />
+                    <FieldDescription>
+                      {t('profile.defaultMessageDesc')}
+                    </FieldDescription>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+            )}
 
             <CardFooter className="px-0">
               <Button

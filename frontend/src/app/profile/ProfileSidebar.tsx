@@ -32,7 +32,7 @@ export function ProfileSidebar() {
   return (
     <nav
       className={cn(
-        'flex w-56 shrink-0 flex-col gap-1 border-r border-border pr-4',
+        'flex w-56 shrink-0 flex-col gap-1',
       )}
       aria-label={t('profile.editProfile')}
     >

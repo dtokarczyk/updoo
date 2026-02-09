@@ -115,6 +115,7 @@
     "companyRefreshFromGus": "Refresh data from GUS registry",
     "companyRefreshCardTitle": "Update from GUS",
     "companyRefreshCardDesc": "Fetch current company data from GUS registry.",
+    "companyRefreshHint": "Changed data? Fetch it again from the registry",
     "companyRefreshed": "Company data has been updated from GUS registry.",
     "companyName": "Name",
     "companyRegon": "REGON",

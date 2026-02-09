@@ -115,6 +115,7 @@
     "companyRefreshFromGus": "Aktualizuj dane z bazy GUS",
     "companyRefreshCardTitle": "Aktualizacja z GUS",
     "companyRefreshCardDesc": "Pobierz aktualne dane firmy z rejestru GUS.",
+    "companyRefreshHint": "Zmieniłeś dane? Pobierz je jeszcze raz z bazy",
     "companyRefreshed": "Dane firmy zostały zaktualizowane z rejestru GUS.",
     "companyName": "Nazwa",
     "companyRegon": "REGON",

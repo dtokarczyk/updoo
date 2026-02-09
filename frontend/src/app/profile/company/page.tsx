@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { CheckCircle2, CircleAlert } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -21,6 +23,7 @@ import {
   type Company,
 } from '@/lib/api';
 import { useTranslations } from '@/hooks/useTranslations';
+import { ChangeCompanyForm } from './ChangeCompanyForm';
 
 function CompanyDetails({ company }: { company: Company }) {
   const { t } = useTranslations();
@@ -62,36 +65,26 @@ function CompanyDetails({ company }: { company: Company }) {
     </>
   );
 
-  const sectionCardClass = 'py-4 gap-3 rounded-lg';
   const sectionPaddingClass = 'px-4';
+  const sectionSpacing = 'space-y-4';
 
   return (
-    <div className="space-y-6">
-      <Card className={sectionCardClass}>
-        <CardHeader className={sectionPaddingClass}>
-          <CardTitle>{t('profile.companyBasicSection')}</CardTitle>
-        </CardHeader>
-        <CardContent className={sectionPaddingClass}>
+    <Card className="py-4 gap-3 rounded-lg">
+      <CardContent className={`${sectionPaddingClass} ${sectionSpacing}`}>
+        <section>
+          <h3 className="text-sm font-semibold mb-2">{t('profile.companyBasicSection')}</h3>
           <dl className="space-y-2 text-sm">{renderRows(basicRows)}</dl>
-        </CardContent>
-      </Card>
-      <Card className={sectionCardClass}>
-        <CardHeader className={sectionPaddingClass}>
-          <CardTitle>{t('profile.companyAddressSection')}</CardTitle>
-        </CardHeader>
-        <CardContent className={sectionPaddingClass}>
+        </section>
+        <section>
+          <h3 className="text-sm font-semibold mb-2">{t('profile.companyAddressSection')}</h3>
           <dl className="space-y-2 text-sm">{renderRows(addressRows)}</dl>
-        </CardContent>
-      </Card>
-      <Card className={sectionCardClass}>
-        <CardHeader className={sectionPaddingClass}>
-          <CardTitle>{t('profile.companyOtherSection')}</CardTitle>
-        </CardHeader>
-        <CardContent className={sectionPaddingClass}>
+        </section>
+        <section>
+          <h3 className="text-sm font-semibold mb-2">{t('profile.companyOtherSection')}</h3>
           <dl className="space-y-2 text-sm">{renderRows(otherRows)}</dl>
-        </CardContent>
-      </Card>
-    </div>
+        </section>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -100,11 +93,9 @@ export default function ProfileCompanyPage() {
   const { t } = useTranslations();
   const [company, setCompany] = useState<Company | null | undefined>(undefined);
   const [nip, setNip] = useState('');
-  const [changeNip, setChangeNip] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-  const [changeLoading, setChangeLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -174,29 +165,6 @@ export default function ProfileCompanyPage() {
     }
   }
 
-  async function handleChangeCompany(e: React.FormEvent) {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-    const normalized = changeNip.trim().replace(/\s/g, '').replace(/-/g, '');
-    if (!/^\d{10}$/.test(normalized)) {
-      setError(t('profile.companyNipInvalid'));
-      return;
-    }
-    setChangeLoading(true);
-    try {
-      const { user, company: c } = await linkCompanyByNip(normalized);
-      updateStoredUser(user);
-      setCompany(c);
-      setChangeNip('');
-      setSuccess(t('profile.companyLinked'));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t('common.error'));
-    } finally {
-      setChangeLoading(false);
-    }
-  }
-
   if (!mounted) return null;
 
   return (
@@ -207,14 +175,16 @@ export default function ProfileCompanyPage() {
       </CardHeader>
       <CardContent className="space-y-4">
         {error && (
-          <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            {error}
-          </p>
+          <Alert variant="destructive">
+            <CircleAlert />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
         {success && (
-          <p className="rounded-md bg-green-500/10 px-3 py-2 text-sm text-green-600 dark:text-green-400">
-            {success}
-          </p>
+          <Alert variant="success">
+            <CheckCircle2 />
+            <AlertDescription>{success}</AlertDescription>
+          </Alert>
         )}
 
         {company === undefined && (
@@ -256,55 +226,24 @@ export default function ProfileCompanyPage() {
 
         {company != null && (
           <div className="space-y-6">
+            <ChangeCompanyForm
+              onSuccess={(c) => setCompany(c)}
+              onError={setError}
+              onSuccessMessage={setSuccess}
+            />
             <CompanyDetails company={company} />
-            <Card className="py-4 gap-3 rounded-lg">
-              <CardHeader className="px-4">
-                <CardTitle>{t('profile.companyRefreshCardTitle')}</CardTitle>
-                <CardDescription>{t('profile.companyRefreshCardDesc')}</CardDescription>
-              </CardHeader>
-              <CardContent className="px-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  disabled={refreshing}
-                  onClick={handleRefresh}
-                >
-                  {refreshing ? t('common.loading') : t('profile.companyRefreshFromGus')}
-                </Button>
-              </CardContent>
-            </Card>
-            <Card className="py-4 gap-3 rounded-lg">
-              <CardHeader className="px-4">
-                <CardTitle>{t('profile.companyChangeTitle')}</CardTitle>
-                <CardDescription>{t('profile.companyChangeHint')}</CardDescription>
-              </CardHeader>
-              <CardContent className="px-4">
-                <form onSubmit={handleChangeCompany} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="changeNip">{t('profile.companyNip')}</Label>
-                    <Input
-                      id="changeNip"
-                      type="text"
-                      inputMode="numeric"
-                      placeholder={t('profile.companyNipPlaceholder')}
-                      value={changeNip}
-                      onChange={(e) => setChangeNip(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                      disabled={changeLoading}
-                      maxLength={10}
-                    />
-                  </div>
-                  <Button
-                    type="submit"
-                    variant="secondary"
-                    className="w-full"
-                    disabled={changeLoading}
-                  >
-                    {changeLoading ? t('common.submitting') : t('profile.companyLinkOther')}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">{t('profile.companyRefreshHint')}</p>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                disabled={refreshing}
+                onClick={handleRefresh}
+              >
+                {refreshing ? t('common.loading') : t('profile.companyRefreshFromGus')}
+              </Button>
+            </div>
           </div>
         )}
       </CardContent>

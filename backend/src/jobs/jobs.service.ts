@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, OnModuleInit, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Inject, Injectable, OnModuleInit, NotFoundException, forwardRef } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { FavoritesService } from './favorites.service';
@@ -6,6 +6,7 @@ import { CreateJobDto } from './dto/create-job.dto';
 import { maskAuthorSurname } from './author-helpers';
 import { BillingType, HoursPerWeek, ExperienceLevel, ProjectType, JobStatus, JobLanguage, AccountType } from '@prisma/client';
 import { ContentGeneratorService } from '../content-generator/content-generator.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 const DEFAULT_CATEGORIES = [
   {
@@ -61,6 +62,8 @@ export class JobsService implements OnModuleInit {
     private readonly prisma: PrismaService,
     private readonly favoritesService: FavoritesService,
     private readonly contentGenerator: ContentGeneratorService,
+    @Inject(forwardRef(() => NotificationsService))
+    private readonly notificationsService: NotificationsService,
   ) { }
 
   async onModuleInit() {
@@ -1030,6 +1033,12 @@ export class JobsService implements OnModuleInit {
         skills: { include: { skill: true } },
       },
     });
+
+    // Trigger notifications for matching freelancers (fire-and-forget)
+    this.notificationsService.onJobPublished(jobId).catch((err) => {
+      console.error('Failed to process notifications for job', jobId, err);
+    });
+
     return {
       ...result,
       author: maskAuthorSurname(result.author),

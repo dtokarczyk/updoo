@@ -520,7 +520,7 @@ export interface PopularSkill extends Skill {
   count: number;
 }
 
-export type JobStatus = 'DRAFT' | 'PUBLISHED' | 'CLOSED';
+export type JobStatus = 'DRAFT' | 'PUBLISHED' | 'CLOSED' | 'REJECTED';
 export type JobLanguage = 'ENGLISH' | 'POLISH';
 export type BillingType = 'FIXED' | 'HOURLY';
 export type HoursPerWeek =
@@ -604,6 +604,8 @@ export interface Job {
   projectType: ProjectType;
   deadline: string | null;
   closedAt: string | null;
+  rejectedAt?: string | null;
+  rejectedReason?: string | null;
   createdAt: string;
   category: Category;
   author: JobAuthor;
@@ -935,6 +937,34 @@ export async function publishJob(jobId: string): Promise<Job> {
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
     throw new Error(msg ?? 'Failed to publish job');
+  }
+  return res.json();
+}
+
+export async function rejectJob(
+  jobId: string,
+  reason: string,
+): Promise<Job> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  };
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
+    const locale = getUserLocale();
+    headers['Accept-Language'] = locale === 'en' ? 'en' : 'pl';
+  }
+  const res = await fetch(`${API_URL}/jobs/${jobId}/reject`, {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify({ reason: reason.trim() }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to reject job');
   }
   return res.json();
 }

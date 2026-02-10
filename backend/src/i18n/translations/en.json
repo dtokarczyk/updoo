@@ -23,7 +23,9 @@
     "skillsMaxCount": "You can add at most 5 skills to an offer",
     "accountTypeInvalid": "accountType must be CLIENT or FREELANCER",
     "languageInvalid": "language must be POLISH or ENGLISH",
-    "nipInvalid": "NIP must be 10 digits"
+    "nipInvalid": "NIP must be 10 digits",
+    "rejectReasonMinLength": "Rejection reason must be at least 10 characters",
+    "rejectReasonMaxLength": "Rejection reason can be at most 2000 characters"
   },
   "errors": {
     "passwordsDoNotMatch": "Passwords do not match",
@@ -49,6 +51,11 @@
     "forgotPasswordEmailCta": "Set new password",
     "forgotPasswordEmailExpiry": "This link is valid for {hours} hour(s). If you did not request a reset, please ignore this message.",
     "companyNotFoundInGus": "Company with this NIP was not found in GUS registry.",
-    "noCompanyLinked": "You have no company linked."
+    "noCompanyLinked": "You have no company linked.",
+    "jobRejectedEmailSubject": "Hoplo – Your job has been rejected",
+    "jobRejectedEmailIntro": "Your job \"{title}\" has been rejected by an administrator.",
+    "jobRejectedEmailReason": "Rejection reason",
+    "jobRejectedEmailCta": "Fix the job and submit again",
+    "jobRejectedEmailOutro": "After making corrections, your job will be reviewed again by an administrator."
   }
 }

@@ -56,6 +56,7 @@ export function JobPost({
   headerAction,
   headerRightAction,
   isDraft,
+  isRejected = false,
   isClosed,
   isApplied,
   isVisited = true,
@@ -71,6 +72,7 @@ export function JobPost({
   headerAction?: React.ReactNode;
   headerRightAction?: React.ReactNode;
   isDraft?: boolean;
+  isRejected?: boolean;
   isClosed?: boolean;
   /** User has applied to this job (feed border state). */
   isApplied?: boolean;
@@ -93,8 +95,9 @@ export function JobPost({
 
   const borderStateClass = [
     isDraft ? 'border-alert' : '',
-    isApplied && !isDraft ? 'border-success' : '',
-    !isVisited && !isDraft && !isApplied && !isClosed ? 'border-primary' : '',
+    isRejected ? 'border-red-500/50' : '',
+    isApplied && !isDraft && !isRejected ? 'border-success' : '',
+    !isVisited && !isDraft && !isRejected && !isApplied && !isClosed ? 'border-primary' : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -212,6 +215,11 @@ export function JobPost({
                 <Calendar className="h-4 w-4" aria-hidden />
                 {t('jobs.published')} {metaPosted}
               </span>
+              {isRejected && (
+                <span className="inline-flex items-center gap-1.5 font-medium text-red-600 dark:text-red-400">
+                  {t('jobs.rejected')}
+                </span>
+              )}
               {isClosed && (
                 <span className="inline-flex items-center gap-1.5 font-medium text-muted-foreground">
                   {t('jobs.closed')}

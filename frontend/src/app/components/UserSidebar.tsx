@@ -206,17 +206,21 @@ export function UserSidebar(_props: UserSidebarProps) {
               <div className="space-y-2">
                 {jobs.map((job) => {
                   const isClosed = job.status === 'CLOSED';
+                  const isRejected = job.status === 'REJECTED';
                   return (
                     <Link
                       key={job.id}
                       href={jobPath(job)}
-                      className="block p-3 rounded-lg border border-border bg-card hover:bg-muted transition-colors"
+                      className={`block p-3 rounded-lg border border-border bg-card hover:bg-muted transition-colors ${isRejected ? 'border-red-500/40' : ''}`}
                     >
                       <h4
-                        className={`text-sm font-medium line-clamp-2 mb-1 ${isClosed
+                        className={`text-sm font-medium line-clamp-2 mb-1 ${
+                          isClosed
                             ? 'text-muted-foreground line-through'
-                            : 'text-foreground'
-                          }`}
+                            : isRejected
+                              ? 'text-red-700 dark:text-red-400'
+                              : 'text-foreground'
+                        }`}
                       >
                         {job.title}
                       </h4>

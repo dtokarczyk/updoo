@@ -42,6 +42,7 @@ enum JobStatus {
   DRAFT
   PUBLISHED
   CLOSED
+  REJECTED
 }
 
 enum JobLanguage {
@@ -185,6 +186,8 @@ model Job {
   projectType     ProjectType
   deadline        DateTime?      // last day to submit offers (createdAt + offerDays)
   closedAt        DateTime?      // when job was closed (manually or automatically)
+  rejectedAt      DateTime?     // when admin rejected the job
+  rejectedReason  String?       @db.Text  // admin's reason for rejection (for author to fix)
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   category        Category       @relation(fields: [categoryId], references: [id], onDelete: Restrict)

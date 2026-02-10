@@ -7,6 +7,8 @@ import { FavoritesService } from './favorites.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { ContentGeneratorModule } from '../content-generator/content-generator.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { EmailModule } from '../email/email.module';
+import { I18nModule } from '../i18n/i18n.module';
 
 @Module({
   imports: [
@@ -14,6 +16,8 @@ import { NotificationsModule } from '../notifications/notifications.module';
     AuthModule,
     PrismaModule,
     ContentGeneratorModule,
+    EmailModule,
+    I18nModule,
     forwardRef(() => NotificationsModule),
   ],
   controllers: [JobsController],

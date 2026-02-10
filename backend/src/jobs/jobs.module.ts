@@ -20,4 +20,4 @@ import { NotificationsModule } from '../notifications/notifications.module';
   providers: [JobsService, FavoritesService],
   exports: [JobsService, FavoritesService],
 })
-export class JobsModule { }
+export class JobsModule {}

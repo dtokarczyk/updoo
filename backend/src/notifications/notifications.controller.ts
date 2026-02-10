@@ -9,9 +9,7 @@ import { NotificationType, NotificationFrequency } from '@prisma/client';
 
 @Controller('notifications')
 export class NotificationsController {
-  constructor(
-    private readonly notificationsService: NotificationsService,
-  ) {}
+  constructor(private readonly notificationsService: NotificationsService) {}
 
   /** Get all notification preferences for the authenticated user. */
   @Get('preferences')

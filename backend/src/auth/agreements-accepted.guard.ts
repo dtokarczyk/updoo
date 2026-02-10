@@ -18,7 +18,9 @@ export class AgreementsAcceptedGuard implements CanActivate {
   constructor(private readonly agreementsService: AgreementsService) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const request = context.switchToHttp().getRequest<Request & { user?: UserWithAgreements }>();
+    const request = context
+      .switchToHttp()
+      .getRequest<Request & { user?: UserWithAgreements }>();
     const user = request.user;
     if (!user) {
       return true;
@@ -32,7 +34,10 @@ export class AgreementsAcceptedGuard implements CanActivate {
       return true;
     }
     // User must have explicitly accepted terms and privacy policy (no null)
-    if (user.acceptedTermsVersion == null || user.acceptedPrivacyPolicyVersion == null) {
+    if (
+      user.acceptedTermsVersion == null ||
+      user.acceptedPrivacyPolicyVersion == null
+    ) {
       throw new ForbiddenException(
         'You must accept the terms of service and privacy policy to use this service.',
       );

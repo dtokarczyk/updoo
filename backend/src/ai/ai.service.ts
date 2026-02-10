@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { GoogleGenAI } from '@google/genai';
 
 @Injectable()
@@ -11,7 +15,9 @@ export class AiService {
   constructor() {
     this.apiKey = process.env.GOOGLE_API_KEY ?? '';
     if (!this.apiKey) {
-      this.logger.warn('GOOGLE_API_KEY is not set. AI features will be disabled.');
+      this.logger.warn(
+        'GOOGLE_API_KEY is not set. AI features will be disabled.',
+      );
     } else {
       this.client = new GoogleGenAI({ apiKey: this.apiKey });
     }
@@ -29,7 +35,9 @@ export class AiService {
     args: Parameters<GoogleGenAI['models']['generateContent']>[0],
   ): Promise<string> {
     if (!this.client) {
-      throw new InternalServerErrorException('AI client is not configured. Missing GOOGLE_API_KEY.');
+      throw new InternalServerErrorException(
+        'AI client is not configured. Missing GOOGLE_API_KEY.',
+      );
     }
 
     const model = this.getModelName(args.model);
@@ -46,9 +54,9 @@ export class AiService {
       return text;
     } catch (error) {
       this.logger.error('Failed to generate text with Gemini', error as Error);
-      throw new InternalServerErrorException('Failed to generate text with Gemini.');
+      throw new InternalServerErrorException(
+        'Failed to generate text with Gemini.',
+      );
     }
   }
-
 }
-

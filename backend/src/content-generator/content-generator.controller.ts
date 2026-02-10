@@ -1,4 +1,9 @@
-import { Controller, Post, UseGuards, ForbiddenException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  UseGuards,
+  ForbiddenException,
+} from '@nestjs/common';
 import { AgreementsAcceptedGuard } from '../auth/agreements-accepted.guard';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { GetUser } from '../auth/get-user.decorator';
@@ -9,7 +14,7 @@ import { ContentGeneratorService } from './content-generator.service';
 export class ContentGeneratorController {
   constructor(
     private readonly contentGeneratorService: ContentGeneratorService,
-  ) { }
+  ) {}
 
   @Post('generate-job')
   @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)

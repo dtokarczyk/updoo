@@ -220,17 +220,15 @@ export class NotificationsService {
       category: { translations: { language: string; name: string }[] } | null;
     },
   ): Promise<void> {
-    const frontendUrl =
-      process.env.FRONTEND_URL ?? 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
     const jobUrl = `${frontendUrl}/job/${job.id}`;
     const userName = user.name ?? '';
     const skillNames = job.skills.map((s) => s.skill.name).join(', ');
     const isPolish = user.language === 'POLISH';
 
     const categoryName =
-      job.category?.translations.find(
-        (t) => t.language === user.language,
-      )?.name ??
+      job.category?.translations.find((t) => t.language === user.language)
+        ?.name ??
       job.category?.translations[0]?.name ??
       '';
 
@@ -286,8 +284,7 @@ export class NotificationsService {
       category: { translations: { language: string; name: string }[] } | null;
     }[],
   ): Promise<void> {
-    const frontendUrl =
-      process.env.FRONTEND_URL ?? 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
     const userName = user.name ?? '';
     const isPolish = user.language === 'POLISH';
 
@@ -318,7 +315,7 @@ export class NotificationsService {
 
     const html = `
       <p>${greeting}</p>
-      <p>${isPolish ? 'Oto nowe oferty pasujące do Twoich umiejętności z ostatnich 24 godzin:' : "Here are new jobs matching your skills from the last 24 hours:"}</p>
+      <p>${isPolish ? 'Oto nowe oferty pasujące do Twoich umiejętności z ostatnich 24 godzin:' : 'Here are new jobs matching your skills from the last 24 hours:'}</p>
       <ul style="padding-left:20px;">${jobsList}</ul>
       <p style="color:#888;font-size:12px;">${isPolish ? 'Możesz zmienić ustawienia powiadomień w swoim profilu.' : 'You can change notification settings in your profile.'}</p>
       <p>Hoplo</p>

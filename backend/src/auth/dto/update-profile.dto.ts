@@ -1,4 +1,10 @@
-import { IsEmail, IsIn, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsIn,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export const ACCOUNT_TYPES = ['CLIENT', 'FREELANCER'] as const;
 export type UpdateProfileAccountType = (typeof ACCOUNT_TYPES)[number];

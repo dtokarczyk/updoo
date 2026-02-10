@@ -72,7 +72,9 @@ export class CreateJobDto {
 
   @IsOptional()
   @Transform(({ value }) =>
-    value === '' || value === undefined || value === null ? null : Number(value),
+    value === '' || value === undefined || value === null
+      ? null
+      : Number(value),
   )
   @ValidateIf((_o, v) => v != null && v !== '')
   @IsNumber({ allowNaN: false }, { message: 'validation.rateNonNegative' })

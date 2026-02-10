@@ -14,7 +14,10 @@ export class ProfilesService {
   constructor(private readonly prisma: PrismaService) {}
 
   /** Ensure unique slug: if slug exists, append -2, -3, etc. */
-  private async ensureUniqueSlug(baseSlug: string, excludeProfileId?: string): Promise<string> {
+  private async ensureUniqueSlug(
+    baseSlug: string,
+    excludeProfileId?: string,
+  ): Promise<string> {
     let slug = baseSlug;
     let counter = 1;
     while (true) {
@@ -89,11 +92,7 @@ export class ProfilesService {
   }
 
   /** Get profile by slug. Public: only if isVerified. Owner or admin can see unverified. */
-  async findBySlug(
-    slug: string,
-    requestUserId?: string,
-    isAdmin?: boolean,
-  ) {
+  async findBySlug(slug: string, requestUserId?: string, isAdmin?: boolean) {
     const profile = await this.prisma.profile.findUnique({
       where: { slug },
       include: {
@@ -164,11 +163,17 @@ export class ProfilesService {
       data: {
         ...(dto.name !== undefined && { name }),
         slug,
-        ...(dto.website !== undefined && { website: dto.website?.trim() || null }),
+        ...(dto.website !== undefined && {
+          website: dto.website?.trim() || null,
+        }),
         ...(dto.email !== undefined && { email: dto.email?.trim() || null }),
         ...(dto.phone !== undefined && { phone: dto.phone?.trim() || null }),
-        ...(dto.aboutUs !== undefined && { aboutUs: dto.aboutUs?.trim() || null }),
-        ...(dto.locationId !== undefined && { locationId: dto.locationId || null }),
+        ...(dto.aboutUs !== undefined && {
+          aboutUs: dto.aboutUs?.trim() || null,
+        }),
+        ...(dto.locationId !== undefined && {
+          locationId: dto.locationId || null,
+        }),
       },
       include: {
         location: true,

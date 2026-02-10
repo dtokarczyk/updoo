@@ -447,6 +447,22 @@
     "failedToLoadPending": "Failed to load pending jobs",
     "approve": "Approve"
   },
+  "notifications": {
+    "tabNotifications": "Notifications",
+    "title": "Email notifications",
+    "description": "Manage your email notifications. Choose which notifications you want to receive and how often.",
+    "newJobMatchingSkills": "New jobs matching your skills",
+    "newJobMatchingSkillsDesc": "Get notified when a new job matching your skills is posted.",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "frequency": "Frequency",
+    "instant": "Instant",
+    "instantDesc": "Get notified every time a new matching job is posted.",
+    "dailyDigest": "Daily digest",
+    "dailyDigestDesc": "A daily summary email at 6:00 AM with jobs from the previous day.",
+    "saveFailed": "Failed to save notification settings",
+    "saved": "Notification settings saved."
+  },
   "footer": {
     "copyright": "© {year} Hoplo. All rights reserved.",
     "terms": "Terms of service",

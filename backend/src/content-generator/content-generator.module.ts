@@ -14,4 +14,3 @@ import { ContentGeneratorSchedulerService } from './content-generator-scheduler.
   exports: [ContentGeneratorService],
 })
 export class ContentGeneratorModule {}
-

@@ -3,7 +3,8 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { ContentGeneratorService } from './content-generator.service';
 
 /** Max number of AI-generated job posts to add per day. */
-const MAX_POSTS_PER_DAY = parseInt(process.env.CONTENT_GENERATOR_MAX_POSTS_PER_DAY ?? '5', 10) || 5;
+const MAX_POSTS_PER_DAY =
+  parseInt(process.env.CONTENT_GENERATOR_MAX_POSTS_PER_DAY ?? '5', 10) || 5;
 
 /** Hour range for posting (inclusive). Posts only between 6:00 and 23:59. */
 const HOUR_START = 6;
@@ -70,7 +71,9 @@ export class ContentGeneratorSchedulerService implements OnModuleDestroy {
       seen.add(key);
       slots.push({ hour, minute });
     }
-    slots.sort((a, b) => a.hour !== b.hour ? a.hour - b.hour : a.minute - b.minute);
+    slots.sort((a, b) =>
+      a.hour !== b.hour ? a.hour - b.hour : a.minute - b.minute,
+    );
     return slots;
   }
 
@@ -98,12 +101,20 @@ export class ContentGeneratorSchedulerService implements OnModuleDestroy {
       return;
     }
 
-    const delayMs = slot.minute * 60 * 1000 - currentMinute * 60 * 1000 - now.getSeconds() * 1000 - now.getMilliseconds();
+    const delayMs =
+      slot.minute * 60 * 1000 -
+      currentMinute * 60 * 1000 -
+      now.getSeconds() * 1000 -
+      now.getMilliseconds();
     if (delayMs <= 0) return;
-    this.logger.log(`Scheduling post in ${Math.round(delayMs / 1000)}s (at ${currentHour}:${String(slot.minute).padStart(2, '0')}).`);
+    this.logger.log(
+      `Scheduling post in ${Math.round(delayMs / 1000)}s (at ${currentHour}:${String(slot.minute).padStart(2, '0')}).`,
+    );
     this.pendingTimeout = setTimeout(() => {
       this.pendingTimeout = null;
-      this.runGenerateAndCreateJob().catch((err) => this.logger.error('Scheduled job creation failed', err));
+      this.runGenerateAndCreateJob().catch((err) =>
+        this.logger.error('Scheduled job creation failed', err),
+      );
     }, delayMs);
   }
 

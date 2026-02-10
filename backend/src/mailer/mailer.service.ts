@@ -1,4 +1,8 @@
-import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { MailerSend, Recipient, EmailParams, Sender } from 'mailersend';
 import { MailerLogService } from '../mailer-log/mailer-log.service';
 import { MailerLogStatus } from '@prisma/client';
@@ -34,11 +38,12 @@ export class MailerService {
   async send(dto: SendEmailInput): Promise<{ id: string; threadId?: string }> {
     const toList = Array.isArray(dto.to) ? dto.to : [dto.to];
     if (toList.length === 0) {
-      throw new InternalServerErrorException('At least one recipient required.');
+      throw new InternalServerErrorException(
+        'At least one recipient required.',
+      );
     }
 
-    const content =
-      dto.html ?? dto.text ?? '';
+    const content = dto.html ?? dto.text ?? '';
     const subject = dto.subject;
     const firstTo = toList[0];
 
@@ -182,7 +187,9 @@ function escapeHtml(s: string): string {
 function buildErrorMessage(error: unknown): string {
   const base = error instanceof Error ? error.message : String(error);
   const stack = error instanceof Error && error.stack ? `\n${error.stack}` : '';
-  const errAny = error as { response?: { status?: number; body?: unknown; text?: string } };
+  const errAny = error as {
+    response?: { status?: number; body?: unknown; text?: string };
+  };
   const status = errAny?.response?.status;
   const body = errAny?.response?.body ?? errAny?.response?.text;
   const extra =

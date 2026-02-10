@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Headers, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Headers,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { GetUser } from '../auth/get-user.decorator';
 import type { JwtUser } from '../auth/get-user.decorator';
 import { AgreementsAcceptedGuard } from '../auth/agreements-accepted.guard';
@@ -32,7 +43,7 @@ export class JobsController {
   constructor(
     private readonly jobsService: JobsService,
     private readonly favoritesService: FavoritesService,
-  ) { }
+  ) {}
 
   @Get('categories')
   @UseGuards(OptionalJwtAuthGuard, AgreementsAcceptedGuard)
@@ -41,7 +52,9 @@ export class JobsController {
     @GetUser() user?: JwtUser,
   ) {
     // Priority: Accept-Language header > user language > default POLISH
-    const headerLanguage = acceptLanguage ? parseLanguageFromHeader(acceptLanguage) : null;
+    const headerLanguage = acceptLanguage
+      ? parseLanguageFromHeader(acceptLanguage)
+      : null;
     const userLanguage = (user?.language || 'POLISH') as JobLanguage;
     const finalLanguage = headerLanguage || userLanguage;
     return this.jobsService.getCategories(finalLanguage);
@@ -69,26 +82,43 @@ export class JobsController {
     @GetUser() user?: JwtUser,
   ) {
     const pageNum = page ? Math.max(1, parseInt(page, 10) || 1) : 1;
-    const pageSizeNum = pageSize ? Math.min(Math.max(1, parseInt(pageSize, 10) || 15), 100) : 15;
+    const pageSizeNum = pageSize
+      ? Math.min(Math.max(1, parseInt(pageSize, 10) || 15), 100)
+      : 15;
     // Priority: Accept-Language header > user language > default POLISH
-    const headerLanguage = acceptLanguage ? parseLanguageFromHeader(acceptLanguage) : null;
+    const headerLanguage = acceptLanguage
+      ? parseLanguageFromHeader(acceptLanguage)
+      : null;
     const userLanguage = (user?.language || 'POLISH') as JobLanguage;
     const finalLanguage = headerLanguage || userLanguage;
     const parsedSkillIds = skillIds
-      ? skillIds.split(',').map((id) => id.trim()).filter(Boolean)
+      ? skillIds
+          .split(',')
+          .map((id) => id.trim())
+          .filter(Boolean)
       : undefined;
-    const result = await this.jobsService.getFeed(pageNum, pageSizeNum, user?.id, user?.accountType === 'ADMIN', categoryId, language, parsedSkillIds, finalLanguage);
+    const result = await this.jobsService.getFeed(
+      pageNum,
+      pageSizeNum,
+      user?.id,
+      user?.accountType === 'ADMIN',
+      categoryId,
+      language,
+      parsedSkillIds,
+      finalLanguage,
+    );
     // Ensure rate is never sent to unauthenticated clients (controller-level guard)
     if (!user) {
-      result.items = result.items.map(({ rate: _r, ...item }) => ({ ...item, rate: null }));
+      result.items = result.items.map(({ rate: _r, ...item }) => ({
+        ...item,
+        rate: null,
+      }));
     }
     return result;
   }
 
   @Get('popular-skills')
-  getPopularSkills(
-    @Query('categoryId') categoryId?: string,
-  ) {
+  getPopularSkills(@Query('categoryId') categoryId?: string) {
     if (!categoryId) {
       // Without category context "popular skills" would not be meaningful, return empty list.
       return [];
@@ -103,7 +133,9 @@ export class JobsController {
     @Headers('accept-language') acceptLanguage: string | undefined,
   ) {
     // Priority: Accept-Language header > user language > default POLISH
-    const headerLanguage = acceptLanguage ? parseLanguageFromHeader(acceptLanguage) : null;
+    const headerLanguage = acceptLanguage
+      ? parseLanguageFromHeader(acceptLanguage)
+      : null;
     const userLanguage = (user.language || 'POLISH') as JobLanguage;
     const finalLanguage = headerLanguage || userLanguage;
     return this.favoritesService.getFavoriteJobs(user.id, finalLanguage);
@@ -116,7 +148,9 @@ export class JobsController {
     @Headers('accept-language') acceptLanguage?: string,
   ) {
     // Priority: Accept-Language header > user language > default POLISH
-    const headerLanguage = acceptLanguage ? parseLanguageFromHeader(acceptLanguage) : null;
+    const headerLanguage = acceptLanguage
+      ? parseLanguageFromHeader(acceptLanguage)
+      : null;
     const userLanguage = (user.language || 'POLISH') as JobLanguage;
     const finalLanguage = headerLanguage || userLanguage;
     return this.jobsService.getUserApplications(user.id, finalLanguage, 5);
@@ -129,7 +163,9 @@ export class JobsController {
     @Headers('accept-language') acceptLanguage?: string,
   ) {
     // Priority: Accept-Language header > user language > default POLISH
-    const headerLanguage = acceptLanguage ? parseLanguageFromHeader(acceptLanguage) : null;
+    const headerLanguage = acceptLanguage
+      ? parseLanguageFromHeader(acceptLanguage)
+      : null;
     const userLanguage = (user.language || 'POLISH') as JobLanguage;
     const finalLanguage = headerLanguage || userLanguage;
     return this.jobsService.getUserJobs(user.id, finalLanguage, 5);
@@ -144,12 +180,22 @@ export class JobsController {
     @GetUser() user?: JwtUser,
   ) {
     const pageNum = page ? Math.max(1, parseInt(page, 10) || 1) : 1;
-    const pageSizeNum = pageSize ? Math.min(Math.max(1, parseInt(pageSize, 10) || 15), 100) : 15;
+    const pageSizeNum = pageSize
+      ? Math.min(Math.max(1, parseInt(pageSize, 10) || 15), 100)
+      : 15;
     // Priority: Accept-Language header > user language > default POLISH
-    const headerLanguage = acceptLanguage ? parseLanguageFromHeader(acceptLanguage) : null;
+    const headerLanguage = acceptLanguage
+      ? parseLanguageFromHeader(acceptLanguage)
+      : null;
     const userLanguage = (user?.language || 'POLISH') as JobLanguage;
     const finalLanguage = headerLanguage || userLanguage;
-    return this.jobsService.getPendingJobs(pageNum, pageSizeNum, user!.id, user!.accountType === 'ADMIN', finalLanguage);
+    return this.jobsService.getPendingJobs(
+      pageNum,
+      pageSizeNum,
+      user!.id,
+      user!.accountType === 'ADMIN',
+      finalLanguage,
+    );
   }
 
   @Get(':id')
@@ -160,10 +206,17 @@ export class JobsController {
     @GetUser() user?: JwtUser,
   ) {
     // Priority: Accept-Language header > user language > default POLISH
-    const headerLanguage = acceptLanguage ? parseLanguageFromHeader(acceptLanguage) : null;
+    const headerLanguage = acceptLanguage
+      ? parseLanguageFromHeader(acceptLanguage)
+      : null;
     const userLanguage = (user?.language || 'POLISH') as JobLanguage;
     const finalLanguage = headerLanguage || userLanguage;
-    const result = await this.jobsService.getJob(id, user?.id, user?.accountType === 'ADMIN', finalLanguage);
+    const result = await this.jobsService.getJob(
+      id,
+      user?.id,
+      user?.accountType === 'ADMIN',
+      finalLanguage,
+    );
     // Ensure rate is never sent to unauthenticated clients (controller-level guard)
     if (!user) {
       const { rate: _r, ...rest } = result;
@@ -180,10 +233,17 @@ export class JobsController {
     @GetUser() user?: JwtUser,
   ) {
     // Priority: Accept-Language header > user language > default POLISH
-    const headerLanguage = acceptLanguage ? parseLanguageFromHeader(acceptLanguage) : null;
+    const headerLanguage = acceptLanguage
+      ? parseLanguageFromHeader(acceptLanguage)
+      : null;
     const userLanguage = (user?.language || 'POLISH') as JobLanguage;
     const finalLanguage = headerLanguage || userLanguage;
-    return this.jobsService.getPrevNextJob(id, user?.id, user?.accountType === 'ADMIN', finalLanguage);
+    return this.jobsService.getPrevNextJob(
+      id,
+      user?.id,
+      user?.accountType === 'ADMIN',
+      finalLanguage,
+    );
   }
 
   @Post(':id/apply')
@@ -193,7 +253,12 @@ export class JobsController {
     @GetUser() user: JwtUser,
     @Body() dto: ApplyToJobDto,
   ) {
-    return this.jobsService.applyToJob(id, user.id, user.accountType, dto.message);
+    return this.jobsService.applyToJob(
+      id,
+      user.id,
+      user.accountType,
+      dto.message,
+    );
   }
 
   @Post(':id/favorite')
@@ -212,7 +277,12 @@ export class JobsController {
   @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
   createJob(@GetUser() user: JwtUser, @Body() dto: CreateJobDto) {
     const userLanguage = (user.language || 'POLISH') as JobLanguage;
-    return this.jobsService.createJob(user.id, user.accountType, dto, userLanguage);
+    return this.jobsService.createJob(
+      user.id,
+      user.accountType,
+      dto,
+      userLanguage,
+    );
   }
 
   @Patch(':id')
@@ -223,21 +293,36 @@ export class JobsController {
     @Body() dto: CreateJobDto,
   ) {
     const userLanguage = (user.language || 'POLISH') as JobLanguage;
-    return this.jobsService.updateJob(id, user.id, user.accountType, dto, userLanguage);
+    return this.jobsService.updateJob(
+      id,
+      user.id,
+      user.accountType,
+      dto,
+      userLanguage,
+    );
   }
 
   @Patch(':id/publish')
   @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
   publishJob(@Param('id') id: string, @GetUser() user: JwtUser) {
     const userLanguage = (user.language || 'POLISH') as JobLanguage;
-    return this.jobsService.publishJob(id, user.id, user.accountType === 'ADMIN', userLanguage);
+    return this.jobsService.publishJob(
+      id,
+      user.id,
+      user.accountType === 'ADMIN',
+      userLanguage,
+    );
   }
 
   @Patch(':id/close')
   @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
   closeJob(@Param('id') id: string, @GetUser() user: JwtUser) {
     const userLanguage = (user.language || 'POLISH') as JobLanguage;
-    return this.jobsService.closeJob(id, user.id, user.accountType, userLanguage);
+    return this.jobsService.closeJob(
+      id,
+      user.id,
+      user.accountType,
+      userLanguage,
+    );
   }
-
 }

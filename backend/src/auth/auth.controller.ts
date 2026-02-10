@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Headers, Patch, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  Patch,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import type { Response } from 'express';
 import { Request } from 'express';
 import { AuthService, AuthResponse } from './auth.service';
@@ -22,7 +33,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly agreementsService: AgreementsService,
     private readonly i18nService: I18nService,
-  ) { }
+  ) {}
 
   private getLanguage(acceptLanguage?: string): SupportedLanguage {
     return this.i18nService.parseLanguageFromHeader(acceptLanguage);
@@ -75,7 +86,9 @@ export class AuthController {
       return;
     }
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
-    res.redirect(`${frontendUrl}/login/callback?token=${encodeURIComponent(auth.access_token)}`);
+    res.redirect(
+      `${frontendUrl}/login/callback?token=${encodeURIComponent(auth.access_token)}`,
+    );
   }
 
   @Get('profile')
@@ -84,7 +97,10 @@ export class AuthController {
     user: AuthResponse['user'];
     needsAgreementsAcceptance: boolean;
   }> {
-    const full = await this.authService.validateUser({ sub: user.id, email: user.email });
+    const full = await this.authService.validateUser({
+      sub: user.id,
+      email: user.email,
+    });
     if (!full) {
       throw new UnauthorizedException();
     }
@@ -92,8 +108,10 @@ export class AuthController {
     const needsAgreementsAcceptance =
       full.acceptedTermsVersion == null ||
       full.acceptedPrivacyPolicyVersion == null ||
-      (current.termsVersion != null && full.acceptedTermsVersion !== current.termsVersion) ||
-      (current.privacyPolicyVersion != null && full.acceptedPrivacyPolicyVersion !== current.privacyPolicyVersion);
+      (current.termsVersion != null &&
+        full.acceptedTermsVersion !== current.termsVersion) ||
+      (current.privacyPolicyVersion != null &&
+        full.acceptedPrivacyPolicyVersion !== current.privacyPolicyVersion);
     return {
       user: full,
       needsAgreementsAcceptance,
@@ -111,7 +129,9 @@ export class AuthController {
 
   @Post('accept-agreements')
   @UseGuards(JwtAuthGuard)
-  async acceptAgreements(@GetUser() user: JwtUser): Promise<{ user: AuthResponse['user'] }> {
+  async acceptAgreements(
+    @GetUser() user: JwtUser,
+  ): Promise<{ user: AuthResponse['user'] }> {
     return this.authService.acceptAgreements(user.id);
   }
 
@@ -124,10 +144,7 @@ export class AuthController {
 
   @Post('company/link')
   @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
-  async linkCompany(
-    @GetUser() user: JwtUser,
-    @Body() dto: LinkCompanyDto,
-  ) {
+  async linkCompany(@GetUser() user: JwtUser, @Body() dto: LinkCompanyDto) {
     return this.authService.linkCompanyByNip(user.id, dto.nip);
   }
 

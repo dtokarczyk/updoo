@@ -11,7 +11,6 @@ import {
 } from '@prisma/client';
 import { BENCHMARK_EXAMPLES } from './examples';
 import { fakerPL as faker } from '@faker-js/faker';
-import * as bcrypt from 'bcrypt';
 
 export type SupportedLanguage = 'POLISH' | 'ENGLISH';
 
@@ -389,13 +388,12 @@ export class ContentGeneratorService {
     const generated = await this.generateJobPost({ language: 'POLISH' });
     const { user: safeUser, job } = generated;
 
-    // Mark generated users with password "FAKE" so they can be excluded from
-    // e-mail notifications and other real-user flows.
-    const hashedPassword = await bcrypt.hash('FAKE', 10);
+    // Mark generated users with plain-text password "FAKE" so they can be
+    // easily identified and excluded from e-mail sending.
     const newUser = await this.prisma.user.create({
       data: {
         email: safeUser.email.toLowerCase(),
-        password: hashedPassword,
+        password: 'FAKE',
         name: safeUser.name,
         surname: safeUser.surname,
         accountType: AccountType.CLIENT,

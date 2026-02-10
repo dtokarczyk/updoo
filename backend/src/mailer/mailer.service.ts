@@ -3,17 +3,15 @@ import {
   Logger,
   InternalServerErrorException,
 } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
 import { MailerSend, Recipient, EmailParams, Sender } from 'mailersend';
 import { MailerLogService } from '../mailer-log/mailer-log.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailerLogStatus } from '@prisma/client';
 import { MailerSendStatus, SendEmailInput } from './mailer.types';
 
-/** Sentinel password value used for auto-generated (fake) users created by
- *  content-generator / seed scripts.  Any user whose hashed password matches
- *  this plain text will be silently skipped when sending emails. */
-const FAKE_PASSWORD_PLAIN = 'FAKE';
+/** Plain-text sentinel stored as password for auto-generated (fake) users.
+ *  Any user whose password column equals this value is silently skipped. */
+const FAKE_PASSWORD = 'FAKE';
 
 @Injectable()
 export class MailerService {
@@ -194,38 +192,26 @@ export class MailerService {
 
   /**
    * Filters out email addresses that belong to auto-generated (fake) users.
-   * A user is considered fake when their hashed password matches FAKE_PASSWORD_PLAIN.
+   * A user is considered fake when their password column is exactly "FAKE".
    */
   private async filterOutFakeUsers(emails: string[]): Promise<string[]> {
     if (emails.length === 0) return emails;
 
-    const users = await this.prisma.user.findMany({
-      where: { email: { in: emails.map((e) => e.toLowerCase()) } },
-      select: { email: true, password: true },
+    // Single query: find users whose email matches AND password is "FAKE".
+    const fakeUsers = await this.prisma.user.findMany({
+      where: {
+        email: { in: emails.map((e) => e.toLowerCase()) },
+        password: FAKE_PASSWORD,
+      },
+      select: { email: true },
     });
 
-    const fakeEmails = new Set<string>();
-    for (const user of users) {
-      if (user.password) {
-        try {
-          const isFake = await bcrypt.compare(
-            FAKE_PASSWORD_PLAIN,
-            user.password,
-          );
-          if (isFake) {
-            fakeEmails.add(user.email.toLowerCase());
-          }
-        } catch {
-          // bcrypt.compare can throw on malformed hashes – treat as real user
-        }
-      }
-    }
+    if (fakeUsers.length === 0) return emails;
 
-    if (fakeEmails.size > 0) {
-      this.logger.log(
-        `Filtered out ${fakeEmails.size} fake user(s): ${[...fakeEmails].join(', ')}`,
-      );
-    }
+    const fakeEmails = new Set(fakeUsers.map((u) => u.email.toLowerCase()));
+    this.logger.log(
+      `Filtered out ${fakeEmails.size} fake user(s): ${[...fakeEmails].join(', ')}`,
+    );
 
     return emails.filter((e) => !fakeEmails.has(e.toLowerCase()));
   }

@@ -389,10 +389,9 @@ export class ContentGeneratorService {
     const generated = await this.generateJobPost({ language: 'POLISH' });
     const { user: safeUser, job } = generated;
 
-    const hashedPassword = await bcrypt.hash(
-      faker.internet.password({ length: 12 }),
-      10,
-    );
+    // Mark generated users with password "FAKE" so they can be excluded from
+    // e-mail notifications and other real-user flows.
+    const hashedPassword = await bcrypt.hash('FAKE', 10);
     const newUser = await this.prisma.user.create({
       data: {
         email: safeUser.email.toLowerCase(),

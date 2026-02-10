@@ -29,10 +29,7 @@ export function OffersLeftSidebar({
   })();
 
   return (
-    <aside className="z-10 shrink-0 lg:sticky lg:top-14 lg:self-start lg:w-1/5 hidden lg:block">
-      <div className="lg:pb-4">
-        <Logotype initialLocale={initialLocale} />
-      </div>
+    <aside className="z-10 shrink-0 lg:sticky lg:top-20 lg:self-start lg:w-1/5 hidden lg:block pt-6">
       <CategoriesSidebar
         categories={categories}
         currentCategorySlug={currentCategorySlug}

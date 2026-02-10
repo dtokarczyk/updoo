@@ -1,4 +1,12 @@
 {
+  "nav": {
+    "home": "Home",
+    "inquiries": "Inquiries",
+    "contacts": "Contacts",
+    "profile": "Profile",
+    "settings": "Settings",
+    "account": "Account"
+  },
   "common": {
     "loading": "Loading…",
     "error": "Error",

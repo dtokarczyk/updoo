@@ -18,12 +18,12 @@ export function AuthAwareSidebar({ initialLocale }: { initialLocale: Locale }) {
   return (
     <>
       {!isLoggedIn && (
-        <aside className="sticky top-0 z-10 hidden shrink-0 lg:top-14 lg:block lg:self-start lg:w-1/5">
+        <aside className="z-10 shrink-0 lg:sticky lg:top-20 lg:self-start lg:w-1/5 hidden lg:block pt-6">
           <AuthPromoSidebar initialLocale={initialLocale} />
         </aside>
       )}
       {isLoggedIn && (
-        <aside className="sticky top-0 z-10 hidden shrink-0 lg:top-14 lg:block lg:self-start lg:w-1/5">
+        <aside className="z-10 shrink-0 lg:sticky lg:top-20 lg:self-start lg:w-1/5 hidden lg:block pt-6">
           <UserSidebar initialLocale={initialLocale} />
         </aside>
       )}

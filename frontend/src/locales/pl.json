@@ -1,4 +1,12 @@
 {
+  "nav": {
+    "home": "Start",
+    "inquiries": "Zapytania",
+    "contacts": "Kontakty",
+    "profile": "Profil",
+    "settings": "Ustawienia",
+    "account": "Konto"
+  },
   "common": {
     "loading": "Ładowanie…",
     "error": "Błąd",

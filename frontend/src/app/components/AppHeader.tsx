@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
-import { ArrowLeft, User } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { ArrowLeft, MessageCircle, Users, UserCircle, Settings, PanelRightOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logotype } from '@/app/components/Logotype';
 import { HomeNav } from '@/app/components/HomeNav';
@@ -12,96 +12,104 @@ import type { Locale } from '@/lib/i18n';
 import { UserDrawerContent } from '@/app/components/UserDrawer';
 import { AuthDrawerContent } from '@/app/components/AuthDrawer';
 import { Drawer, DrawerTrigger } from '@/components/ui/drawer';
-import { initials } from '@/app/components/HomeNav';
+import { NavIconItem } from '@/app/components/NavIconItem';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
   const pathname = usePathname();
-  const router = useRouter();
-  const isHome = pathname === '/';
-  const isListings = pathname.startsWith('/jobs/');
-  const showBack = !isListings && !isHome;
-  const topBarVisible = !isListings && !isHome;
 
   const { t } = useTranslations();
   const { isLoggedIn, user } = useAuth();
   const [authDrawerOpen, setAuthDrawerOpen] = useState(false);
 
+  const navItems = [
+    { href: '/', icon: MessageCircle, labelKey: 'nav.inquiries' },
+    { href: '/company/moja-nazwa-profilu', icon: UserCircle, labelKey: 'nav.profile' },
+    { href: '/profile/basic', icon: Settings, labelKey: 'nav.settings' },
+  ] as const;
+
   return (
-    <header
-      className={`border-b border-border ${!topBarVisible ? 'lg:hidden' : ''} overflow-x-hidden w-full`}
-    >
-      <div
-        className={`relative mx-auto flex flex-row items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-4 w-full max-w-6xl overflow-x-hidden`}
+    <>
+      <header
+        className={`border-b border-border w-full sticky top-0 z-10 bg-background/950 backdrop-blur`}
       >
-        <div className="flex items-center gap-2">
-          {showBack && (
-            <Button
-              variant="outline"
-              size="icon-lg"
-              aria-label={t('backToList')}
-              onClick={() => {
-                // Try to go back in history to preserve scroll position.
-                if (
-                  typeof window !== 'undefined' &&
-                  window.history.length > 1
-                ) {
-                  router.back();
-                } else {
-                  // Fallback to default offers list when history is not available.
-                  router.push('/');
-                }
-              }}
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          )}
-        </div>
+        <div
+          className={` mx-auto flex flex-row items-center justify-between gap-3 sm:gap-4 px-4 py-2 w-full max-w-7xl`}
+        >
+          <div className="flex items-center gap-2 lg:w-1/5">
+            <Logotype
+              className="shrink-0"
+              initialLocale={initialLocale}
+            />
+          </div>
 
-        <Logotype
-          className="absolute left-1/2 -translate-x-1/2 shrink-0 items-center"
-          initialLocale={initialLocale}
-        />
+          <div className="flex items-center gap-2 lg:w-3/5 justify-center">
 
-        <div className="flex items-center gap-2">
-          <HomeNav />
-          <Drawer
-            open={authDrawerOpen}
-            onOpenChange={setAuthDrawerOpen}
-            direction="right"
-          >
-            <DrawerTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon-lg"
-                aria-label={isLoggedIn && user ? t('profile.editProfile') : 'Open login menu'}
+            <span className="hidden items-center gap-1 lg:flex sm:gap-2">
+              {navItems.map(({ href, icon, labelKey }) => (
+                <NavIconItem
+                  key={href}
+                  href={href}
+                  icon={icon}
+                  label={t(labelKey)}
+                />
+              ))}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 lg:w-1/5 justify-end">
+            <div className="hidden lg:block">
+              <ThemeToggle size="icon-lg" />
+            </div>
+
+            <div className="lg:hidden">
+              <Drawer
+                open={authDrawerOpen}
+                onOpenChange={setAuthDrawerOpen}
+                direction="right"
               >
-                {isLoggedIn && user ? (
-                  <span
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground"
-                    aria-hidden
+                <DrawerTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon-lg"
+                    className="aspect-square size-10 shrink-0 p-0"
+                    aria-label={isLoggedIn && user ? t('profile.editProfile') : 'Open login menu'}
                   >
-                    {initials(user)}
-                  </span>
-                ) : (
-                  <User className="h-5 w-5" />
-                )}
-              </Button>
-            </DrawerTrigger>
+                    <PanelRightOpen className="h-5 w-5" />
+                  </Button>
+                </DrawerTrigger>
 
-            {isLoggedIn ? (
-              <UserDrawerContent
-                initialLocale={initialLocale}
-                onClose={() => setAuthDrawerOpen(false)}
-              />
-            ) : (
-              <AuthDrawerContent
-                initialLocale={initialLocale}
-                onClose={() => setAuthDrawerOpen(false)}
-              />
-            )}
-          </Drawer>
+                {isLoggedIn ? (
+                  <UserDrawerContent
+                    initialLocale={initialLocale}
+                    onClose={() => setAuthDrawerOpen(false)}
+                  />
+                ) : (
+                  <AuthDrawerContent
+                    initialLocale={initialLocale}
+                    onClose={() => setAuthDrawerOpen(false)}
+                  />
+                )}
+              </Drawer>
+            </div>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* Mobile bottom navigation bar */}
+      <nav
+        className="fixed inset-x-0 bottom-0 z-90 flex items-center justify-around border-t border-border bg-background/95 px-2 py-2 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] backdrop-blur safe-area-pb lg:hidden"
+        aria-label="Main navigation"
+      >
+        {navItems.map(({ href, icon, labelKey }) => (
+          <NavIconItem
+            key={href}
+            href={href}
+            icon={icon}
+            label={t(labelKey)}
+          />
+        ))}
+      </nav>
+    </>
   );
 }

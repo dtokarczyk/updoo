@@ -66,7 +66,7 @@ export default async function RootLayout({
               <div className="flex min-h-screen flex-col font-sans w-full">
                 <BetaBar initialLocale={locale} />
                 <AppHeader initialLocale={locale} />
-                <main className="flex-1 w-full">
+                <main className="flex-1 w-full pb-20 lg:pb-0">
                   <OnboardingRedirect>{children}</OnboardingRedirect>
                 </main>
                 <AppFooter initialLocale={locale} />

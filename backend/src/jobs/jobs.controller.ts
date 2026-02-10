@@ -17,6 +17,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
 import { ApplyToJobDto } from './dto/apply-to-job.dto';
 import { CreateJobDto } from './dto/create-job.dto';
+import { RejectJobDto } from './dto/reject-job.dto';
 import { FavoritesService } from './favorites.service';
 import { JobsService } from './jobs.service';
 import { JobLanguage } from '@prisma/client';
@@ -310,6 +311,23 @@ export class JobsController {
       id,
       user.id,
       user.accountType === 'ADMIN',
+      userLanguage,
+    );
+  }
+
+  @Patch(':id/reject')
+  @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
+  rejectJob(
+    @Param('id') id: string,
+    @GetUser() user: JwtUser,
+    @Body() dto: RejectJobDto,
+  ) {
+    const userLanguage = (user.language || 'POLISH') as JobLanguage;
+    return this.jobsService.rejectJob(
+      id,
+      user.id,
+      user.accountType === 'ADMIN',
+      dto.reason,
       userLanguage,
     );
   }

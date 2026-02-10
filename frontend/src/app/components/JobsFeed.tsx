@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Pencil, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Pencil, ChevronLeft, ChevronRight, XCircle } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
 import ReactCountryFlag from 'react-country-flag';
 import {
   getJobsFeed,
   publishJob,
+  rejectJob,
   getStoredUser,
   type Job,
   type JobLanguage,
@@ -16,6 +17,15 @@ import {
 import { jobPathEdit } from '@/lib/job-url';
 import { JobPost } from '@/app/components/JobPost';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useTranslations } from '@/hooks/useTranslations';
 
 const VISITED_JOBS_KEY = 'visitedJobs';
@@ -114,6 +124,9 @@ export function JobsFeed({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [publishingId, setPublishingId] = useState<string | null>(null);
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [rejectDialogJob, setRejectDialogJob] = useState<Job | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
   const [visitedIds, setVisitedIds] = useState<Set<string>>(new Set());
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const user = getStoredUser();
@@ -200,6 +213,28 @@ export function JobsFeed({
       .finally(() => setPublishingId(null));
   };
 
+  const openRejectDialog = (job: Job) => {
+    setRejectDialogJob(job);
+    setRejectReason('');
+  };
+
+  const closeRejectDialog = () => {
+    setRejectDialogJob(null);
+    setRejectReason('');
+  };
+
+  const handleReject = () => {
+    if (!rejectDialogJob || rejectReason.trim().length < 10) return;
+    setRejectingId(rejectDialogJob.id);
+    rejectJob(rejectDialogJob.id, rejectReason.trim())
+      .then(() => {
+        closeRejectDialog();
+        loadFeed(page);
+      })
+      .catch(() => setError(t('jobs.failedToReject')))
+      .finally(() => setRejectingId(null));
+  };
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -251,8 +286,10 @@ export function JobsFeed({
     <div className="space-y-4">
       {jobs.map((job) => {
         const isDraft = job.status === 'DRAFT';
+        const isRejected = job.status === 'REJECTED';
         const isClosed = job.status === 'CLOSED';
         const canPublish = user?.accountType === 'ADMIN' && isDraft;
+        const canReject = user?.accountType === 'ADMIN' && isDraft;
         const isAdmin = user?.accountType === 'ADMIN';
         const isOwnJob = isAdmin || user?.id === job.authorId;
         const isVisited = visitedIds.has(job.id);
@@ -264,6 +301,7 @@ export function JobsFeed({
             job={job}
             isLoggedIn={!!user}
             isDraft={isDraft}
+            isRejected={isRejected}
             isClosed={isClosed}
             isVisited={isVisited}
             isApplied={isApplied}
@@ -313,19 +351,53 @@ export function JobsFeed({
                   <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
                     {t('jobs.waitingForAdmin')}
                   </p>
-                  {canPublish && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="shrink-0 border-amber-600 bg-amber-50 text-amber-800 hover:bg-amber-100 hover:text-amber-900 dark:border-amber-500 dark:bg-amber-950/50 dark:text-amber-200 dark:hover:bg-amber-900/40 dark:hover:text-amber-100"
-                      onClick={() => handlePublish(job.id)}
-                      disabled={publishingId === job.id}
-                    >
-                      {publishingId === job.id
-                        ? t('jobs.publishing')
-                        : t('jobs.publish')}
-                    </Button>
+                  {(canPublish || canReject) && (
+                    <div className="flex gap-2 shrink-0">
+                      {canPublish && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-amber-600 bg-amber-50 text-amber-800 hover:bg-amber-100 hover:text-amber-900 dark:border-amber-500 dark:bg-amber-950/50 dark:text-amber-200 dark:hover:bg-amber-900/40 dark:hover:text-amber-100"
+                          onClick={() => handlePublish(job.id)}
+                          disabled={publishingId === job.id}
+                        >
+                          {publishingId === job.id
+                            ? t('jobs.publishing')
+                            : t('jobs.publish')}
+                        </Button>
+                      )}
+                      {canReject && (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => openRejectDialog(job)}
+                          disabled={rejectingId === job.id}
+                        >
+                          <XCircle className="h-3.5 w-3.5 mr-1" />
+                          {t('jobs.reject')}
+                        </Button>
+                      )}
+                    </div>
                   )}
+                </div>
+              ) : isRejected && isOwnJob ? (
+                <div className="flex w-full flex-wrap items-center justify-between gap-3 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 dark:border-red-400/30 dark:bg-red-500/15">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-red-800 dark:text-red-200">
+                      {t('jobs.rejected')}
+                    </p>
+                    {job.rejectedReason && (
+                      <p className="mt-1 text-xs text-red-700 dark:text-red-300 line-clamp-2">
+                        {job.rejectedReason}
+                      </p>
+                    )}
+                  </div>
+                  <Button size="sm" variant="outline" asChild className="shrink-0">
+                    <Link href={jobPathEdit(job)}>
+                      <Pencil className="h-3.5 w-3.5 mr-1" />
+                      {t('jobs.editAndResubmit')}
+                    </Link>
+                  </Button>
                 </div>
               ) : undefined
             }
@@ -395,6 +467,47 @@ export function JobsFeed({
           {pagination.totalPages} ({pagination.total} {t('jobs.jobsCount')})
         </div>
       )}
+
+      <Dialog open={!!rejectDialogJob} onOpenChange={(open) => !open && closeRejectDialog()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('jobs.rejectJobTitle')}</DialogTitle>
+            <DialogDescription>
+              {t('jobs.rejectJobDescription')}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <label className="text-sm font-medium" htmlFor="reject-reason">
+              {t('jobs.rejectReasonLabel')}
+            </label>
+            <Textarea
+              id="reject-reason"
+              placeholder={t('jobs.rejectReasonPlaceholder')}
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              minLength={10}
+              maxLength={2000}
+              rows={4}
+              className="resize-none"
+            />
+            <p className="text-xs text-muted-foreground">
+              {t('jobs.rejectReasonHint')}
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={closeRejectDialog}>
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleReject}
+              disabled={rejectReason.trim().length < 10 || !!rejectingId}
+            >
+              {rejectingId ? t('jobs.rejecting') : t('jobs.reject')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

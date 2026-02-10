@@ -23,6 +23,10 @@ import {
 } from '@prisma/client';
 import { ContentGeneratorService } from '../content-generator/content-generator.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { EmailService } from '../email/email.service';
+import { I18nService } from '../i18n/i18n.service';
+import type { SupportedLanguage } from '../i18n/i18n.service';
+import { slugFromName } from '../common/slug.helper';
 
 const DEFAULT_CATEGORIES = [
   {
@@ -77,6 +81,8 @@ export class JobsService implements OnModuleInit {
     private readonly prisma: PrismaService,
     private readonly favoritesService: FavoritesService,
     private readonly contentGenerator: ContentGeneratorService,
+    private readonly emailService: EmailService,
+    private readonly i18nService: I18nService,
     @Inject(forwardRef(() => NotificationsService))
     private readonly notificationsService: NotificationsService,
   ) {}
@@ -399,21 +405,23 @@ export class JobsService implements OnModuleInit {
   ) {
     let statusWhere: Record<string, unknown>;
     if (isAdmin) {
-      // Admin sees all jobs (published + closed + all drafts)
+      // Admin sees all jobs (published + closed + drafts + rejected)
       statusWhere = {
         OR: [
           { status: JobStatus.PUBLISHED },
           { status: JobStatus.CLOSED },
           { status: JobStatus.DRAFT },
+          { status: JobStatus.REJECTED },
         ],
       };
     } else if (userId) {
-      // Regular user sees published + closed + own drafts
+      // Regular user sees published + closed + own drafts + own rejected
       statusWhere = {
         OR: [
           { status: JobStatus.PUBLISHED },
           { status: JobStatus.CLOSED },
           { status: JobStatus.DRAFT, authorId: userId },
+          { status: JobStatus.REJECTED, authorId: userId },
         ],
       };
     } else {
@@ -566,7 +574,9 @@ export class JobsService implements OnModuleInit {
       throw new NotFoundException('Job not found');
     }
     const isAuthor = userId && job.authorId === userId;
-    if (job.status === JobStatus.DRAFT && !isAuthor && !isAdmin) {
+    const isDraftOrRejected =
+      job.status === JobStatus.DRAFT || job.status === JobStatus.REJECTED;
+    if (isDraftOrRejected && !isAuthor && !isAdmin) {
       throw new NotFoundException('Job not found');
     }
     // CLOSED jobs are visible to everyone (like PUBLISHED)
@@ -673,7 +683,10 @@ export class JobsService implements OnModuleInit {
     }
 
     const isAuthor = userId && currentJob.authorId === userId;
-    if (currentJob.status === JobStatus.DRAFT && !isAuthor && !isAdmin) {
+    const isDraftOrRejected =
+      currentJob.status === JobStatus.DRAFT ||
+      currentJob.status === JobStatus.REJECTED;
+    if (isDraftOrRejected && !isAuthor && !isAdmin) {
       throw new NotFoundException('Job not found');
     }
 
@@ -685,6 +698,7 @@ export class JobsService implements OnModuleInit {
           { status: JobStatus.PUBLISHED },
           { status: JobStatus.CLOSED },
           { status: JobStatus.DRAFT },
+          { status: JobStatus.REJECTED },
         ],
       };
     } else if (userId) {
@@ -693,6 +707,7 @@ export class JobsService implements OnModuleInit {
           { status: JobStatus.PUBLISHED },
           { status: JobStatus.CLOSED },
           { status: JobStatus.DRAFT, authorId: userId },
+          { status: JobStatus.REJECTED, authorId: userId },
         ],
       };
     } else {
@@ -714,24 +729,29 @@ export class JobsService implements OnModuleInit {
     let prevJob = null;
     let nextJob = null;
 
-    if (currentJob.status === JobStatus.DRAFT) {
-      // For DRAFT: prev is newer DRAFT, next is older DRAFT or newest PUBLISHED
+    const draftOrRejectedStatus = {
+      in: [JobStatus.DRAFT, JobStatus.REJECTED],
+    };
+    if (
+      currentJob.status === JobStatus.DRAFT ||
+      currentJob.status === JobStatus.REJECTED
+    ) {
+      // For DRAFT/REJECTED: prev is newer DRAFT/REJECTED, next is older or newest PUBLISHED
       prevJob = await this.prisma.job.findFirst({
         where: {
           ...baseWhere,
-          status: JobStatus.DRAFT,
+          status: draftOrRejectedStatus,
           createdAt: { gt: currentJob.createdAt },
         },
         orderBy: { createdAt: 'desc' },
         select: { id: true, title: true },
       });
 
-      // If no newer DRAFT, try older DRAFT
       if (!prevJob) {
         prevJob = await this.prisma.job.findFirst({
           where: {
             ...baseWhere,
-            status: JobStatus.DRAFT,
+            status: draftOrRejectedStatus,
             createdAt: { lt: currentJob.createdAt },
           },
           orderBy: { createdAt: 'desc' },
@@ -739,11 +759,10 @@ export class JobsService implements OnModuleInit {
         });
       }
 
-      // Next: older DRAFT or newest PUBLISHED
       nextJob = await this.prisma.job.findFirst({
         where: {
           ...baseWhere,
-          status: JobStatus.DRAFT,
+          status: draftOrRejectedStatus,
           createdAt: { lt: currentJob.createdAt },
         },
         orderBy: { createdAt: 'desc' },
@@ -772,12 +791,12 @@ export class JobsService implements OnModuleInit {
         select: { id: true, title: true },
       });
 
-      // If no newer PUBLISHED, try newest DRAFT
+      // If no newer PUBLISHED, try newest DRAFT or REJECTED
       if (!prevJob) {
         prevJob = await this.prisma.job.findFirst({
           where: {
             ...baseWhere,
-            status: JobStatus.DRAFT,
+            status: draftOrRejectedStatus,
           },
           orderBy: { createdAt: 'desc' },
           select: { id: true, title: true },
@@ -820,7 +839,7 @@ export class JobsService implements OnModuleInit {
     if (!job) {
       throw new NotFoundException('Job not found');
     }
-    if (job.status === JobStatus.DRAFT) {
+    if (job.status === JobStatus.DRAFT || job.status === JobStatus.REJECTED) {
       throw new NotFoundException('Job not found');
     }
     if (job.status === JobStatus.CLOSED) {
@@ -1021,6 +1040,7 @@ export class JobsService implements OnModuleInit {
     const language = dto.language
       ? (dto.language as JobLanguage)
       : job.language;
+    // When editing REJECTED job, clear rejection data and set to DRAFT for re-approval
     const updated = await this.prisma.job.update({
       where: { id: jobId },
       data: {
@@ -1028,6 +1048,8 @@ export class JobsService implements OnModuleInit {
         description: dto.description.trim(),
         categoryId: dto.categoryId,
         status: JobStatus.DRAFT,
+        rejectedAt: null,
+        rejectedReason: null,
         language,
         billingType: dto.billingType as BillingType,
         hoursPerWeek:
@@ -1131,6 +1153,123 @@ export class JobsService implements OnModuleInit {
     this.notificationsService.onJobPublished(jobId).catch((err) => {
       console.error('Failed to process notifications for job', jobId, err);
     });
+
+    return {
+      ...result,
+      author: maskAuthorSurname(result.author),
+      category: this.getCategoryWithTranslation(result.category, userLanguage),
+    };
+  }
+
+  /** Reject a job (admin only). Sends email to author with reason. */
+  async rejectJob(
+    jobId: string,
+    adminUserId: string,
+    isAdmin: boolean,
+    reason: string,
+    userLanguage: JobLanguage = JobLanguage.POLISH,
+  ) {
+    if (!isAdmin) {
+      throw new ForbiddenException(
+        'Tylko użytkownik z typem konta ADMIN może odrzucać oferty',
+      );
+    }
+    const job = await this.prisma.job.findUnique({
+      where: { id: jobId },
+      include: {
+        author: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            surname: true,
+            language: true,
+          },
+        },
+      },
+    });
+    if (!job) {
+      throw new NotFoundException('Job not found');
+    }
+    if (job.status !== JobStatus.DRAFT) {
+      throw new BadRequestException(
+        'Można odrzucić tylko oferty oczekujące na zatwierdzenie',
+      );
+    }
+    const now = new Date();
+    const result = await this.prisma.job.update({
+      where: { id: jobId },
+      data: {
+        status: JobStatus.REJECTED,
+        rejectedAt: now,
+        rejectedReason: reason.trim(),
+      },
+      include: {
+        category: {
+          include: {
+            translations: {
+              where: { language: userLanguage },
+            },
+          },
+        },
+        author: {
+          select: { id: true, email: true, name: true, surname: true },
+        },
+        location: true,
+        skills: { include: { skill: true } },
+      },
+    });
+
+    // Send email to author
+    const authorLang: SupportedLanguage =
+      job.author?.language === JobLanguage.ENGLISH ? 'en' : 'pl';
+    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
+    const slug = slugFromName(job.title, 'oferta');
+    const editUrl = `${frontendUrl}/job/${slug}-${job.id}/edit`;
+    const subject = this.i18nService.translate(
+      'messages.jobRejectedEmailSubject',
+      authorLang,
+    );
+    const intro = this.i18nService.translate(
+      'messages.jobRejectedEmailIntro',
+      authorLang,
+      { title: job.title },
+    );
+    const reasonLabel = this.i18nService.translate(
+      'messages.jobRejectedEmailReason',
+      authorLang,
+    );
+    const cta = this.i18nService.translate(
+      'messages.jobRejectedEmailCta',
+      authorLang,
+    );
+    const outro = this.i18nService.translate(
+      'messages.jobRejectedEmailOutro',
+      authorLang,
+    );
+    const escapedReason = reason
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+    const html = `
+      <p>${intro}</p>
+      <p><strong>${reasonLabel}:</strong></p>
+      <p>${escapedReason}</p>
+      <p><a href="${editUrl}" style="display:inline-block;padding:10px 20px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px;">${cta}</a></p>
+      <p>${outro}</p>
+      <p>Hoplo</p>
+    `;
+    const text = `${subject}\n\n${intro}\n\n${reasonLabel}: ${reason}\n\n${cta}: ${editUrl}\n\n${outro}`;
+
+    if (this.emailService.isConfigured()) {
+      await this.emailService.sendHtml(
+        job.author.email,
+        subject,
+        html,
+        { text },
+      );
+    }
 
     return {
       ...result,

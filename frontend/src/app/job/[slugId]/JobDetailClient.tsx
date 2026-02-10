@@ -357,6 +357,7 @@ export function JobDetailClient({
   const isOwnJob = user?.id === job.authorId;
   const isAdmin = user?.accountType === 'ADMIN';
   const isDraft = job.status === 'DRAFT';
+  const isRejected = job.status === 'REJECTED';
   const isClosed = job.status === 'CLOSED';
   const deadlineMsLeft = getDeadlineMsLeft(job.deadline);
   const deadlinePassed = deadlineMsLeft !== null && deadlineMsLeft <= 0;
@@ -476,6 +477,15 @@ export function JobDetailClient({
             {isDraft && (
               <div className="rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 px-3 py-2 text-sm">
                 {t('jobs.draftVisibleOnlyToYou')}
+              </div>
+            )}
+            {isRejected && isOwnJob && (
+              <div className="rounded-lg bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200 px-3 py-2 text-sm space-y-2">
+                <p className="font-medium">{t('jobs.rejected')}</p>
+                {job.rejectedReason && (
+                  <p className="text-sm whitespace-pre-wrap">{job.rejectedReason}</p>
+                )}
+                <p className="text-sm">{t('jobs.rejectedEditHint')}</p>
               </div>
             )}
             {isClosed && (

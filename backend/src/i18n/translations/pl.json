@@ -23,7 +23,9 @@
     "skillsMaxCount": "Można dodać maksymalnie 5 skilli do oferty",
     "accountTypeInvalid": "accountType musi być CLIENT lub FREELANCER",
     "languageInvalid": "language musi być POLISH lub ENGLISH",
-    "nipInvalid": "NIP musi składać się z 10 cyfr"
+    "nipInvalid": "NIP musi składać się z 10 cyfr",
+    "rejectReasonMinLength": "Powód odrzucenia musi mieć co najmniej 10 znaków",
+    "rejectReasonMaxLength": "Powód odrzucenia może mieć maksymalnie 2000 znaków"
   },
   "errors": {
     "passwordsDoNotMatch": "Hasła nie są takie same",
@@ -49,6 +51,11 @@
     "forgotPasswordEmailCta": "Ustaw nowe hasło",
     "forgotPasswordEmailExpiry": "Link jest ważny przez {hours} godz. Jeśli to nie Ty prosiłeś o reset, zignoruj tę wiadomość.",
     "companyNotFoundInGus": "Nie znaleziono firmy o podanym NIP w bazie GUS.",
-    "noCompanyLinked": "Nie masz przypisanej firmy."
+    "noCompanyLinked": "Nie masz przypisanej firmy.",
+    "jobRejectedEmailSubject": "Hoplo – Twoja oferta została odrzucona",
+    "jobRejectedEmailIntro": "Twoja oferta „{title}” została odrzucona przez administratora.",
+    "jobRejectedEmailReason": "Powód odrzucenia",
+    "jobRejectedEmailCta": "Popraw ofertę i wyślij ponownie",
+    "jobRejectedEmailOutro": "Po wprowadzeniu poprawek Twoja oferta zostanie ponownie sprawdzona przez administratora."
   }
 }

@@ -52,6 +52,7 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
                   href={href}
                   icon={icon}
                   label={t(labelKey)}
+                  isActive={pathname === href}
                 />
               ))}
             </span>
@@ -73,7 +74,7 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
                     variant="outline"
                     size="icon-lg"
                     className="aspect-square size-10 shrink-0 p-0"
-                    aria-label={isLoggedIn && user ? t('profile.editProfile') : 'Open login menu'}
+                    aria-label={t('nav.openAccountMenu')}
                   >
                     <PanelRightOpen className="h-5 w-5" />
                   </Button>
@@ -98,7 +99,7 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
 
       {/* Mobile bottom navigation bar */}
       <nav
-        className="fixed inset-x-0 bottom-0 z-90 flex items-center justify-around border-t border-border bg-background/95 px-2 py-2 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] backdrop-blur safe-area-pb lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-90 flex items-center justify-around border-t border-border bg-background/950 backdrop-blur px-2 py-2 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] safe-area-pb lg:hidden"
         aria-label="Main navigation"
       >
         {navItems.map(({ href, icon, labelKey }) => (
@@ -107,6 +108,7 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
             href={href}
             icon={icon}
             label={t(labelKey)}
+            isActive={pathname === href}
           />
         ))}
       </nav>

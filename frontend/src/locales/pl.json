@@ -5,7 +5,8 @@
     "contacts": "Kontakty",
     "profile": "Profil",
     "settings": "Ustawienia",
-    "account": "Konto"
+    "account": "Konto",
+    "openAccountMenu": "Otwórz menu konta"
   },
   "common": {
     "loading": "Ładowanie…",

@@ -1214,3 +1214,54 @@ export async function generateAiJob(): Promise<{
   }
   return res.json();
 }
+
+// ─── Notification preferences ────────────────────────────────────────
+
+export type NotificationType = 'NEW_JOB_MATCHING_SKILLS';
+export type NotificationFrequency = 'INSTANT' | 'DAILY_DIGEST';
+
+export interface NotificationPreference {
+  type: NotificationType;
+  enabled: boolean;
+  frequency: NotificationFrequency;
+}
+
+/** Get all notification preferences for the current user. */
+export async function getNotificationPreferences(): Promise<
+  NotificationPreference[]
+> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const headers: HeadersInit = { Authorization: `Bearer ${token}` };
+  const res = await fetch(`${API_URL}/notifications/preferences`, { headers });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to fetch notification preferences');
+  }
+  return res.json();
+}
+
+/** Update a single notification preference. */
+export async function updateNotificationPreference(
+  type: NotificationType,
+  data: { enabled?: boolean; frequency?: NotificationFrequency },
+): Promise<NotificationPreference> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  };
+  const res = await fetch(`${API_URL}/notifications/preferences`, {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify({ type, ...data }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to update notification preference');
+  }
+  return res.json();
+}

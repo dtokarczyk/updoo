@@ -72,7 +72,7 @@ export class AuthService {
     private readonly agreementsService: AgreementsService,
     private readonly i18nService: I18nService,
     private readonly regonService: RegonService,
-  ) { }
+  ) {}
 
   /** Company payload returned by GET /auth/company and after link/refresh. */
   getCompanyPayload(company: {
@@ -135,7 +135,9 @@ export class AuthService {
   }
 
   /** Get current user's linked company. Returns null if none. */
-  async getMyCompany(userId: string): Promise<ReturnType<AuthService['getCompanyPayload']> | null> {
+  async getMyCompany(
+    userId: string,
+  ): Promise<ReturnType<AuthService['getCompanyPayload']> | null> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: { company: true },
@@ -148,7 +150,10 @@ export class AuthService {
   async linkCompanyByNip(
     userId: string,
     nipRaw: string,
-  ): Promise<{ user: AuthResponseUser; company: ReturnType<AuthService['getCompanyPayload']> }> {
+  ): Promise<{
+    user: AuthResponseUser;
+    company: ReturnType<AuthService['getCompanyPayload']>;
+  }> {
     const nip = String(nipRaw).replace(/\s/g, '').replace(/-/g, '');
     if (!/^\d{10}$/.test(nip)) {
       throw new BadRequestException('validation.nipInvalid');
@@ -169,11 +174,16 @@ export class AuthService {
       data: { companyId: company.id },
       include: {
         company: true,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         ...({ skills: { include: { skill: true } } } as any),
       },
     });
-    const skillsFromUser = (user as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
+    const skillsFromUser =
+      (
+        user as unknown as {
+          skills?: { skill: { id: string; name: string } }[];
+        }
+      ).skills ?? [];
     const userCompany = user as { company?: { nip: string } | null };
     const authUser: AuthResponseUser = {
       id: user.id,
@@ -186,7 +196,10 @@ export class AuthService {
       accountType: user.accountType,
       language: user.language,
       defaultMessage: user.defaultMessage,
-      skills: skillsFromUser.map((r) => ({ id: r.skill.id, name: r.skill.name })),
+      skills: skillsFromUser.map((r) => ({
+        id: r.skill.id,
+        name: r.skill.name,
+      })),
       hasPassword: !!user.password,
       acceptedTermsVersion: user.acceptedTermsVersion,
       acceptedPrivacyPolicyVersion: user.acceptedPrivacyPolicyVersion,
@@ -205,7 +218,9 @@ export class AuthService {
     if (!user?.companyId || !user.company) {
       throw new NotFoundException('messages.noCompanyLinked');
     }
-    const gus = await this.regonService.getCompanyDataByNipRegonOrKrs(user.company.nip);
+    const gus = await this.regonService.getCompanyDataByNipRegonOrKrs(
+      user.company.nip,
+    );
     if (!gus.searchResult.length) {
       throw new BadRequestException('messages.companyNotFoundInGus');
     }
@@ -238,9 +253,13 @@ export class AuthService {
     }
 
     const token = randomBytes(32).toString('hex');
-    const expiresAt = new Date(Date.now() + PASSWORD_RESET_EXPIRY_HOURS * 60 * 60 * 1000);
+    const expiresAt = new Date(
+      Date.now() + PASSWORD_RESET_EXPIRY_HOURS * 60 * 60 * 1000,
+    );
 
-    await this.prisma.passwordResetToken.deleteMany({ where: { userId: user.id } });
+    await this.prisma.passwordResetToken.deleteMany({
+      where: { userId: user.id },
+    });
     await this.prisma.passwordResetToken.create({
       data: { userId: user.id, token, expiresAt },
     });
@@ -248,14 +267,28 @@ export class AuthService {
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
     const resetUrl = `${frontendUrl}/login/reset-password?token=${encodeURIComponent(token)}`;
 
-    const subject = this.i18nService.translate('messages.forgotPasswordEmailSubject', lang);
-    const intro = this.i18nService.translate('messages.forgotPasswordEmailIntro', lang, {
-      email: escapeHtml(email),
-    });
-    const cta = this.i18nService.translate('messages.forgotPasswordEmailCta', lang);
-    const expiry = this.i18nService.translate('messages.forgotPasswordEmailExpiry', lang, {
-      hours: String(PASSWORD_RESET_EXPIRY_HOURS),
-    });
+    const subject = this.i18nService.translate(
+      'messages.forgotPasswordEmailSubject',
+      lang,
+    );
+    const intro = this.i18nService.translate(
+      'messages.forgotPasswordEmailIntro',
+      lang,
+      {
+        email: escapeHtml(email),
+      },
+    );
+    const cta = this.i18nService.translate(
+      'messages.forgotPasswordEmailCta',
+      lang,
+    );
+    const expiry = this.i18nService.translate(
+      'messages.forgotPasswordEmailExpiry',
+      lang,
+      {
+        hours: String(PASSWORD_RESET_EXPIRY_HOURS),
+      },
+    );
     const html = `
       <p>${intro}</p>
       <p><a href="${resetUrl}" style="display:inline-block;padding:10px 20px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px;">${cta}</a></p>
@@ -302,7 +335,10 @@ export class AuthService {
       this.prisma.passwordResetToken.delete({ where: { id: resetRecord.id } }),
     ]);
 
-    const message = this.i18nService.translate('messages.resetPasswordSuccess', lang);
+    const message = this.i18nService.translate(
+      'messages.resetPasswordSuccess',
+      lang,
+    );
     return { message };
   }
 
@@ -311,7 +347,9 @@ export class AuthService {
       throw new BadRequestException('Passwords do not match');
     }
     if (!dto.termsAccepted) {
-      throw new BadRequestException('Terms and privacy policy must be accepted');
+      throw new BadRequestException(
+        'Terms and privacy policy must be accepted',
+      );
     }
     const existing = await this.prisma.user.findUnique({
       where: { email: dto.email.toLowerCase() },
@@ -319,7 +357,8 @@ export class AuthService {
     if (existing) {
       throw new ConflictException('User with this email already exists');
     }
-    const { termsVersion, privacyPolicyVersion } = this.agreementsService.getCurrentVersions();
+    const { termsVersion, privacyPolicyVersion } =
+      this.agreementsService.getCurrentVersions();
     const hashedPassword = await bcrypt.hash(dto.password, this.saltRounds);
     const user = await this.prisma.user.create({
       data: {
@@ -333,7 +372,7 @@ export class AuthService {
       where: { id: user.id },
       include: {
         company: true,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         ...({ skills: { include: { skill: true } } } as any),
       },
     });
@@ -355,8 +394,15 @@ export class AuthService {
         acceptedPrivacyPolicyVersion: user.acceptedPrivacyPolicyVersion,
       });
     }
-    const skillsFromUser = (withRelations as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
-    const withRelationsCompany = withRelations as { company?: { nip: string } | null };
+    const skillsFromUser =
+      (
+        withRelations as unknown as {
+          skills?: { skill: { id: string; name: string } }[];
+        }
+      ).skills ?? [];
+    const withRelationsCompany = withRelations as {
+      company?: { nip: string } | null;
+    };
     return this.buildAuthResponse({
       id: withRelations.id,
       email: withRelations.email,
@@ -383,7 +429,7 @@ export class AuthService {
       where: { email: dto.email.toLowerCase() },
       include: {
         company: true,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         ...({ skills: { include: { skill: true } } } as any),
       },
     });
@@ -394,7 +440,12 @@ export class AuthService {
     if (!isMatch) {
       throw new UnauthorizedException('Invalid email or password');
     }
-    const skillsFromUser = (user as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
+    const skillsFromUser =
+      (
+        user as unknown as {
+          skills?: { skill: { id: string; name: string } }[];
+        }
+      ).skills ?? [];
     const userCompany = user as { company?: { nip: string } | null };
     return this.buildAuthResponse({
       id: user.id,
@@ -429,19 +480,27 @@ export class AuthService {
       throw new BadRequestException('Google profile has no email');
     }
     const googleId = profile.id;
-    const name = profile.name?.givenName ?? profile.displayName?.split(' ')[0] ?? null;
-    const surname = profile.name?.familyName ?? (profile.displayName?.split(' ').slice(1).join(' ') || null);
+    const name =
+      profile.name?.givenName ?? profile.displayName?.split(' ')[0] ?? null;
+    const surname =
+      profile.name?.familyName ??
+      (profile.displayName?.split(' ').slice(1).join(' ') || null);
 
     let user = await this.prisma.user.findUnique({
       where: { googleId },
       include: {
         company: true,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         ...({ skills: { include: { skill: true } } } as any),
       },
     });
     if (user) {
-      const skillsFromUser = (user as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
+      const skillsFromUser =
+        (
+          user as unknown as {
+            skills?: { skill: { id: string; name: string } }[];
+          }
+        ).skills ?? [];
       const userCompany = user as { company?: { nip: string } | null };
       return this.buildAuthResponse({
         id: user.id,
@@ -454,7 +513,10 @@ export class AuthService {
         accountType: user.accountType,
         language: user.language,
         defaultMessage: user.defaultMessage,
-        skills: skillsFromUser.map((r) => ({ id: r.skill.id, name: r.skill.name })),
+        skills: skillsFromUser.map((r) => ({
+          id: r.skill.id,
+          name: r.skill.name,
+        })),
         hasPassword: !!user.password,
         acceptedTermsVersion: user.acceptedTermsVersion,
         acceptedPrivacyPolicyVersion: user.acceptedPrivacyPolicyVersion,
@@ -465,7 +527,7 @@ export class AuthService {
       where: { email },
       include: {
         company: true,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         ...({ skills: { include: { skill: true } } } as any),
       },
     });
@@ -474,7 +536,12 @@ export class AuthService {
         where: { id: user.id },
         data: { googleId },
       });
-      const skillsFromUser = (user as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
+      const skillsFromUser =
+        (
+          user as unknown as {
+            skills?: { skill: { id: string; name: string } }[];
+          }
+        ).skills ?? [];
       const userCompany = user as { company?: { nip: string } | null };
       return this.buildAuthResponse({
         id: user.id,
@@ -487,7 +554,10 @@ export class AuthService {
         accountType: user.accountType,
         language: user.language,
         defaultMessage: user.defaultMessage,
-        skills: skillsFromUser.map((r) => ({ id: r.skill.id, name: r.skill.name })),
+        skills: skillsFromUser.map((r) => ({
+          id: r.skill.id,
+          name: r.skill.name,
+        })),
         hasPassword: !!user.password,
         acceptedTermsVersion: user.acceptedTermsVersion,
         acceptedPrivacyPolicyVersion: user.acceptedPrivacyPolicyVersion,
@@ -506,7 +576,7 @@ export class AuthService {
       where: { id: newUser.id },
       include: {
         company: true,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         ...({ skills: { include: { skill: true } } } as any),
       },
     });
@@ -528,8 +598,15 @@ export class AuthService {
         acceptedPrivacyPolicyVersion: newUser.acceptedPrivacyPolicyVersion,
       });
     }
-    const skillsFromUser = (withRelations as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
-    const newUserCompany = withRelations as { company?: { nip: string } | null };
+    const skillsFromUser =
+      (
+        withRelations as unknown as {
+          skills?: { skill: { id: string; name: string } }[];
+        }
+      ).skills ?? [];
+    const newUserCompany = withRelations as {
+      company?: { nip: string } | null;
+    };
     return this.buildAuthResponse({
       id: withRelations.id,
       email: withRelations.email,
@@ -541,7 +618,10 @@ export class AuthService {
       accountType: withRelations.accountType,
       language: withRelations.language,
       defaultMessage: withRelations.defaultMessage,
-      skills: skillsFromUser.map((r) => ({ id: r.skill.id, name: r.skill.name })),
+      skills: skillsFromUser.map((r) => ({
+        id: r.skill.id,
+        name: r.skill.name,
+      })),
       hasPassword: !!withRelations.password,
       acceptedTermsVersion: withRelations.acceptedTermsVersion,
       acceptedPrivacyPolicyVersion: withRelations.acceptedPrivacyPolicyVersion,
@@ -568,11 +648,18 @@ export class AuthService {
       ...(dto.name !== undefined && { name: dto.name || null }),
       ...(dto.surname !== undefined && { surname: dto.surname || null }),
       ...(dto.phone !== undefined && { phone: dto.phone?.trim() || null }),
-      ...(dto.companyId !== undefined && { companyId: dto.companyId?.trim() || null }),
-      ...(dto.accountType !== undefined && { accountType: dto.accountType || null }),
-      ...(dto.email !== undefined && dto.email.trim() && { email: dto.email.trim().toLowerCase() }),
+      ...(dto.companyId !== undefined && {
+        companyId: dto.companyId?.trim() || null,
+      }),
+      ...(dto.accountType !== undefined && {
+        accountType: dto.accountType || null,
+      }),
+      ...(dto.email !== undefined &&
+        dto.email.trim() && { email: dto.email.trim().toLowerCase() }),
       ...(dto.language !== undefined && { language: dto.language }),
-      ...(dto.defaultMessage !== undefined && { defaultMessage: dto.defaultMessage || null }),
+      ...(dto.defaultMessage !== undefined && {
+        defaultMessage: dto.defaultMessage || null,
+      }),
     };
     if (dto.password !== undefined && dto.password.trim()) {
       const existingUser = await this.prisma.user.findUnique({
@@ -593,10 +680,12 @@ export class AuthService {
           throw new UnauthorizedException('Current password is incorrect');
         }
       }
-      updateData.password = await bcrypt.hash(dto.password.trim(), this.saltRounds);
+      updateData.password = await bcrypt.hash(
+        dto.password.trim(),
+        this.saltRounds,
+      );
     }
     if (Array.isArray(dto.skillIds)) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (updateData as any).skills = {
         deleteMany: {},
         create: dto.skillIds.map((skillId) => ({ skillId })),
@@ -607,11 +696,16 @@ export class AuthService {
       data: updateData,
       include: {
         company: true,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         ...({ skills: { include: { skill: true } } } as any),
       },
     });
-    const skillsFromUser = (user as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
+    const skillsFromUser =
+      (
+        user as unknown as {
+          skills?: { skill: { id: string; name: string } }[];
+        }
+      ).skills ?? [];
     const userCompany = user as { company?: { nip: string } | null };
     return {
       user: {
@@ -641,12 +735,17 @@ export class AuthService {
       where: { id: payload.sub },
       include: {
         company: true,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         ...({ skills: { include: { skill: true } } } as any),
       },
     });
     if (!user) return null;
-    const skillsFromUser = (user as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
+    const skillsFromUser =
+      (
+        user as unknown as {
+          skills?: { skill: { id: string; name: string } }[];
+        }
+      ).skills ?? [];
     const userCompany = user as { company?: { nip: string } | null };
     return {
       id: user.id,
@@ -670,7 +769,9 @@ export class AuthService {
   }
 
   /** Accept current terms and privacy policy. Backend records current versions and acceptance timestamps. Uses 'none' when no document is configured. */
-  async acceptAgreements(userId: string): Promise<{ user: AuthResponse['user'] }> {
+  async acceptAgreements(
+    userId: string,
+  ): Promise<{ user: AuthResponse['user'] }> {
     const current = this.agreementsService.getCurrentVersions();
     const acceptedAt = new Date();
     const user = await this.prisma.user.update({
@@ -683,11 +784,16 @@ export class AuthService {
       },
       include: {
         company: true,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         ...({ skills: { include: { skill: true } } } as any),
       },
     });
-    const skillsFromUser = (user as unknown as { skills?: { skill: { id: string; name: string } }[] }).skills ?? [];
+    const skillsFromUser =
+      (
+        user as unknown as {
+          skills?: { skill: { id: string; name: string } }[];
+        }
+      ).skills ?? [];
     const userCompany = user as { company?: { nip: string } | null };
     return {
       user: {
@@ -701,7 +807,10 @@ export class AuthService {
         accountType: user.accountType,
         language: user.language,
         defaultMessage: user.defaultMessage,
-        skills: skillsFromUser.map((r) => ({ id: r.skill.id, name: r.skill.name })),
+        skills: skillsFromUser.map((r) => ({
+          id: r.skill.id,
+          name: r.skill.name,
+        })),
         hasPassword: !!user.password,
         acceptedTermsVersion: user.acceptedTermsVersion,
         acceptedPrivacyPolicyVersion: user.acceptedPrivacyPolicyVersion,

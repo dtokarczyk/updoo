@@ -446,6 +446,22 @@
     "failedToLoadPending": "Nie udało się załadować ofert do zatwierdzenia",
     "approve": "Zatwierdź"
   },
+  "notifications": {
+    "tabNotifications": "Powiadomienia",
+    "title": "Powiadomienia e-mail",
+    "description": "Zarządzaj powiadomieniami e-mail. Wybierz, które powiadomienia chcesz otrzymywać i jak często.",
+    "newJobMatchingSkills": "Nowe oferty pasujące do umiejętności",
+    "newJobMatchingSkillsDesc": "Otrzymuj powiadomienia, gdy pojawi się nowa oferta pasująca do Twoich umiejętności.",
+    "enabled": "Włączone",
+    "disabled": "Wyłączone",
+    "frequency": "Częstotliwość",
+    "instant": "Natychmiast",
+    "instantDesc": "Powiadomienie za każdym razem, gdy pojawi się nowa oferta.",
+    "dailyDigest": "Podsumowanie dzienne",
+    "dailyDigestDesc": "Zbiorcze powiadomienie raz dziennie o 6:00 z ofertami z poprzedniego dnia.",
+    "saveFailed": "Nie udało się zapisać ustawień powiadomień",
+    "saved": "Ustawienia powiadomień zapisane."
+  },
   "footer": {
     "copyright": "© {year} Hoplo. Wszelkie prawa zastrzeżone.",
     "terms": "Regulamin",

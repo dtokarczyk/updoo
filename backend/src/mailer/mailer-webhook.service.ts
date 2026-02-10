@@ -49,9 +49,7 @@ export class MailerWebhookService {
       typeof signature === 'string' ? signature : signature[0];
 
     // MailerSend: HMAC-SHA256 of raw body, signature sent as hex
-    const computed = createHmac('sha256', secret)
-      .update(rawBody)
-      .digest('hex');
+    const computed = createHmac('sha256', secret).update(rawBody).digest('hex');
 
     let signatureBuffer: Buffer;
     try {
@@ -83,7 +81,8 @@ export class MailerWebhookService {
   ): Promise<void> {
     // Prefer data.type (e.g. "sent"); fallback to stripping "activity." from body.type (e.g. "activity.sent" -> "sent")
     const rawType =
-      body.data?.type ?? (body.type?.startsWith('activity.')
+      body.data?.type ??
+      (body.type?.startsWith('activity.')
         ? body.type.replace(/^activity\./, '')
         : body.type);
     const status = this.mailerService.mapMailerSendStatusToMailerLogStatus(

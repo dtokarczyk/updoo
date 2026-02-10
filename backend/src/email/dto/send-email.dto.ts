@@ -1,4 +1,10 @@
-import { IsEmail, IsOptional, IsString, IsArray, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsOptional,
+  IsString,
+  IsArray,
+  MinLength,
+} from 'class-validator';
 
 /**
  * DTO for sending an email via Gmail API.

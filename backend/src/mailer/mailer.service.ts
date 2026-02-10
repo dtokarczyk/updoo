@@ -1,8 +1,17 @@
-import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { MailerSend, Recipient, EmailParams, Sender } from 'mailersend';
 import { MailerLogService } from '../mailer-log/mailer-log.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { MailerLogStatus } from '@prisma/client';
 import { MailerSendStatus, SendEmailInput } from './mailer.types';
+
+/** Plain-text sentinel stored as password for auto-generated (fake) users.
+ *  Any user whose password column equals this value is silently skipped. */
+const FAKE_PASSWORD = 'FAKE';
 
 @Injectable()
 export class MailerService {
@@ -11,7 +20,10 @@ export class MailerService {
   private readonly fromEmail: string;
   private readonly fromName: string;
 
-  constructor(private readonly mailerLogService: MailerLogService) {
+  constructor(
+    private readonly mailerLogService: MailerLogService,
+    private readonly prisma: PrismaService,
+  ) {
     this.apiKey = process.env.MAILERSEND_API_KEY?.trim() ?? '';
     this.fromEmail = process.env.MAILERSEND_FROM_EMAIL?.trim() ?? '';
     this.fromName = process.env.MAILERSEND_FROM_NAME?.trim() ?? 'Hoplo';
@@ -30,17 +42,29 @@ export class MailerService {
 
   /**
    * Sends an email via MailerSend and logs it (one log per first recipient for simplicity).
+   * Auto-generated (fake) users whose password is "FAKE" are silently skipped.
    */
   async send(dto: SendEmailInput): Promise<{ id: string; threadId?: string }> {
     const toList = Array.isArray(dto.to) ? dto.to : [dto.to];
     if (toList.length === 0) {
-      throw new InternalServerErrorException('At least one recipient required.');
+      throw new InternalServerErrorException(
+        'At least one recipient required.',
+      );
     }
 
-    const content =
-      dto.html ?? dto.text ?? '';
+    // Filter out auto-generated (fake) users – never send them real emails.
+    const realRecipients = await this.filterOutFakeUsers(toList);
+    if (realRecipients.length === 0) {
+      const skippedId = `skipped-fake-${Date.now()}`;
+      this.logger.log(
+        `All recipients are fake users – skipping email "${dto.subject}"`,
+      );
+      return { id: skippedId };
+    }
+
+    const content = dto.html ?? dto.text ?? '';
     const subject = dto.subject;
-    const firstTo = toList[0];
+    const firstTo = realRecipients[0];
 
     const mailerLog = await this.mailerLogService.create({
       recipientEmail: firstTo,
@@ -66,7 +90,7 @@ export class MailerService {
       const mailerSend = new MailerSend({ apiKey: this.apiKey });
       const from = this.parseFrom(dto.from);
       const sender = new Sender(from.email, from.name);
-      const recipients = toList.map((email) => new Recipient(email));
+      const recipients = realRecipients.map((email) => new Recipient(email));
       const emailParams = new EmailParams()
         .setFrom(sender)
         .setTo(recipients)
@@ -165,6 +189,32 @@ export class MailerService {
   isConfigured(): boolean {
     return !!(this.apiKey && this.fromEmail);
   }
+
+  /**
+   * Filters out email addresses that belong to auto-generated (fake) users.
+   * A user is considered fake when their password column is exactly "FAKE".
+   */
+  private async filterOutFakeUsers(emails: string[]): Promise<string[]> {
+    if (emails.length === 0) return emails;
+
+    // Single query: find users whose email matches AND password is "FAKE".
+    const fakeUsers = await this.prisma.user.findMany({
+      where: {
+        email: { in: emails.map((e) => e.toLowerCase()) },
+        password: FAKE_PASSWORD,
+      },
+      select: { email: true },
+    });
+
+    if (fakeUsers.length === 0) return emails;
+
+    const fakeEmails = new Set(fakeUsers.map((u) => u.email.toLowerCase()));
+    this.logger.log(
+      `Filtered out ${fakeEmails.size} fake user(s): ${[...fakeEmails].join(', ')}`,
+    );
+
+    return emails.filter((e) => !fakeEmails.has(e.toLowerCase()));
+  }
 }
 
 function stripHtml(html: string): string {
@@ -182,7 +232,9 @@ function escapeHtml(s: string): string {
 function buildErrorMessage(error: unknown): string {
   const base = error instanceof Error ? error.message : String(error);
   const stack = error instanceof Error && error.stack ? `\n${error.stack}` : '';
-  const errAny = error as { response?: { status?: number; body?: unknown; text?: string } };
+  const errAny = error as {
+    response?: { status?: number; body?: unknown; text?: string };
+  };
   const status = errAny?.response?.status;
   const body = errAny?.response?.body ?? errAny?.response?.text;
   const extra =

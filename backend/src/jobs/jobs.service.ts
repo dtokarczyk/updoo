@@ -1,11 +1,28 @@
-import { BadRequestException, ForbiddenException, Injectable, OnModuleInit, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  OnModuleInit,
+  NotFoundException,
+  forwardRef,
+} from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { FavoritesService } from './favorites.service';
 import { CreateJobDto } from './dto/create-job.dto';
 import { maskAuthorSurname } from './author-helpers';
-import { BillingType, HoursPerWeek, ExperienceLevel, ProjectType, JobStatus, JobLanguage, AccountType } from '@prisma/client';
+import {
+  BillingType,
+  HoursPerWeek,
+  ExperienceLevel,
+  ProjectType,
+  JobStatus,
+  JobLanguage,
+  AccountType,
+} from '@prisma/client';
 import { ContentGeneratorService } from '../content-generator/content-generator.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 const DEFAULT_CATEGORIES = [
   {
@@ -54,14 +71,15 @@ const DEFAULT_CATEGORIES = [
 
 const ALLOWED_CATEGORY_SLUGS = DEFAULT_CATEGORIES.map((c) => c.slug);
 
-
 @Injectable()
 export class JobsService implements OnModuleInit {
   constructor(
     private readonly prisma: PrismaService,
     private readonly favoritesService: FavoritesService,
     private readonly contentGenerator: ContentGeneratorService,
-  ) { }
+    @Inject(forwardRef(() => NotificationsService))
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   async onModuleInit() {
     await this.ensureCategories();
@@ -103,7 +121,7 @@ export class JobsService implements OnModuleInit {
           // Ensure all translations exist for existing categories
           for (const trans of cat.translations) {
             const existingTrans = existing.translations.find(
-              (t) => t.language === trans.language
+              (t) => t.language === trans.language,
             );
             if (!existingTrans) {
               await this.prisma.categoryTranslation.create({
@@ -149,9 +167,14 @@ export class JobsService implements OnModuleInit {
       .sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  private getCategoryWithTranslation(category: any, userLanguage: JobLanguage = JobLanguage.POLISH) {
+  private getCategoryWithTranslation(
+    category: any,
+    userLanguage: JobLanguage = JobLanguage.POLISH,
+  ) {
     if (!category) return null;
-    const translation = category.translations?.find((t: any) => t.language === userLanguage);
+    const translation = category.translations?.find(
+      (t: any) => t.language === userLanguage,
+    );
     return {
       id: category.id,
       slug: category.slug,
@@ -204,20 +227,28 @@ export class JobsService implements OnModuleInit {
       where: { id: { in: skillIds } },
     });
 
-    return grouped.map((g) => {
-      const skill = skills.find((s) => s.id === g.skillId);
-      const count = typeof g._count === 'object' && g._count && 'skillId' in g._count
-        ? (g._count as { skillId?: number }).skillId ?? 0
-        : 0;
-      return {
-        id: g.skillId,
-        name: skill?.name ?? '',
-        count,
-      };
-    }).filter((s) => s.name);
+    return grouped
+      .map((g) => {
+        const skill = skills.find((s) => s.id === g.skillId);
+        const count =
+          typeof g._count === 'object' && g._count && 'skillId' in g._count
+            ? ((g._count as { skillId?: number }).skillId ?? 0)
+            : 0;
+        return {
+          id: g.skillId,
+          name: skill?.name ?? '',
+          count,
+        };
+      })
+      .filter((s) => s.name);
   }
 
-  async createJob(authorId: string, accountType: string | null, dto: CreateJobDto, userLanguage: JobLanguage = JobLanguage.POLISH) {
+  async createJob(
+    authorId: string,
+    accountType: string | null,
+    dto: CreateJobDto,
+    userLanguage: JobLanguage = JobLanguage.POLISH,
+  ) {
     if (accountType !== 'CLIENT') {
       throw new ForbiddenException('Tylko klienci mogą tworzyć ogłoszenia');
     }
@@ -279,7 +310,9 @@ export class JobsService implements OnModuleInit {
       dto.offerDays != null && allowedDays.includes(dto.offerDays)
         ? new Date(now.getTime() + dto.offerDays * 24 * 60 * 60 * 1000)
         : null;
-    const language = dto.language ? (dto.language as JobLanguage) : JobLanguage.POLISH;
+    const language = dto.language
+      ? (dto.language as JobLanguage)
+      : JobLanguage.POLISH;
     const job = await this.prisma.job.create({
       data: {
         title: dto.title.trim(),
@@ -289,9 +322,10 @@ export class JobsService implements OnModuleInit {
         status: JobStatus.DRAFT,
         language,
         billingType: dto.billingType as BillingType,
-        hoursPerWeek: dto.billingType === 'HOURLY' && dto.hoursPerWeek
-          ? (dto.hoursPerWeek as HoursPerWeek)
-          : null,
+        hoursPerWeek:
+          dto.billingType === 'HOURLY' && dto.hoursPerWeek
+            ? (dto.hoursPerWeek as HoursPerWeek)
+            : null,
         rate: dto.rate ?? null,
         rateNegotiable: dto.rateNegotiable ?? false,
         currency: dto.currency.toUpperCase().slice(0, 3),
@@ -309,7 +343,9 @@ export class JobsService implements OnModuleInit {
             },
           },
         },
-        author: { select: { id: true, email: true, name: true, surname: true } },
+        author: {
+          select: { id: true, email: true, name: true, surname: true },
+        },
         location: true,
         skills: { include: { skill: true } },
       },
@@ -332,7 +368,9 @@ export class JobsService implements OnModuleInit {
             },
           },
         },
-        author: { select: { id: true, email: true, name: true, surname: true } },
+        author: {
+          select: { id: true, email: true, name: true, surname: true },
+        },
         location: true,
         skills: { include: { skill: true } },
       },
@@ -366,8 +404,8 @@ export class JobsService implements OnModuleInit {
         OR: [
           { status: JobStatus.PUBLISHED },
           { status: JobStatus.CLOSED },
-          { status: JobStatus.DRAFT }
-        ]
+          { status: JobStatus.DRAFT },
+        ],
       };
     } else if (userId) {
       // Regular user sees published + closed + own drafts
@@ -375,16 +413,13 @@ export class JobsService implements OnModuleInit {
         OR: [
           { status: JobStatus.PUBLISHED },
           { status: JobStatus.CLOSED },
-          { status: JobStatus.DRAFT, authorId: userId }
-        ]
+          { status: JobStatus.DRAFT, authorId: userId },
+        ],
       };
     } else {
       // Not logged in: only published and closed
       statusWhere = {
-        OR: [
-          { status: JobStatus.PUBLISHED },
-          { status: JobStatus.CLOSED }
-        ]
+        OR: [{ status: JobStatus.PUBLISHED }, { status: JobStatus.CLOSED }],
       };
     }
     let where: Record<string, unknown> = categoryId
@@ -429,7 +464,9 @@ export class JobsService implements OnModuleInit {
             },
           },
         },
-        author: { select: { id: true, email: true, name: true, surname: true } },
+        author: {
+          select: { id: true, email: true, name: true, surname: true },
+        },
         location: true,
         skills: { include: { skill: true } },
         _count: {
@@ -440,23 +477,26 @@ export class JobsService implements OnModuleInit {
       },
     });
 
-    const favoriteIds = userId ? await this.favoritesService.getFavoriteJobIds(userId) : new Set<string>();
-
-    const appliedIds = userId && jobs.length
-      ? new Set(
-        (
-          await this.prisma.jobApplication.findMany({
-            where: {
-              freelancerId: userId,
-              jobId: {
-                in: jobs.map((j) => j.id),
-              },
-            },
-            select: { jobId: true },
-          })
-        ).map((a) => a.jobId),
-      )
+    const favoriteIds = userId
+      ? await this.favoritesService.getFavoriteJobIds(userId)
       : new Set<string>();
+
+    const appliedIds =
+      userId && jobs.length
+        ? new Set(
+            (
+              await this.prisma.jobApplication.findMany({
+                where: {
+                  freelancerId: userId,
+                  jobId: {
+                    in: jobs.map((j) => j.id),
+                  },
+                },
+                select: { jobId: true },
+              })
+            ).map((a) => a.jobId),
+          )
+        : new Set<string>();
 
     const items = jobs.map((item) => {
       const { _count, ...rest } = item;
@@ -487,12 +527,17 @@ export class JobsService implements OnModuleInit {
         totalPages,
         hasNextPage: page < totalPages,
         hasPreviousPage: page > 1,
-      }
+      },
     };
   }
 
   /** Get single job by id. Author or ADMIN can read own/draft; others only published. */
-  async getJob(jobId: string, userId?: string, isAdmin?: boolean, userLanguage: JobLanguage = JobLanguage.POLISH) {
+  async getJob(
+    jobId: string,
+    userId?: string,
+    isAdmin?: boolean,
+    userLanguage: JobLanguage = JobLanguage.POLISH,
+  ) {
     const job = await this.prisma.job.findUnique({
       where: { id: jobId },
       include: {
@@ -503,12 +548,16 @@ export class JobsService implements OnModuleInit {
             },
           },
         },
-        author: { select: { id: true, email: true, name: true, surname: true } },
+        author: {
+          select: { id: true, email: true, name: true, surname: true },
+        },
         location: true,
         skills: { include: { skill: true } },
         applications: {
           include: {
-            freelancer: { select: { id: true, email: true, name: true, surname: true } },
+            freelancer: {
+              select: { id: true, email: true, name: true, surname: true },
+            },
           },
         },
       },
@@ -543,7 +592,10 @@ export class JobsService implements OnModuleInit {
           app.freelancer.name,
           app.freelancer.surname,
         ),
-        freelancerInitials: this.getInitials(app.freelancer.name, app.freelancer.surname),
+        freelancerInitials: this.getInitials(
+          app.freelancer.name,
+          app.freelancer.surname,
+        ),
         createdAt: app.createdAt,
       };
     });
@@ -553,7 +605,8 @@ export class JobsService implements OnModuleInit {
     const currentUserApplication = userId
       ? job.applications.find((a) => a.freelancerId === userId)
       : undefined;
-    const currentUserApplicationMessage = currentUserApplication?.message ?? undefined;
+    const currentUserApplicationMessage =
+      currentUserApplication?.message ?? undefined;
     const isFavorite = userId
       ? (await this.favoritesService.getFavoriteJobIds(userId)).has(job.id)
       : false;
@@ -598,7 +651,12 @@ export class JobsService implements OnModuleInit {
   }
 
   /** Get previous and next job in the same category. Uses same sorting as feed: status asc, createdAt desc. */
-  async getPrevNextJob(jobId: string, userId?: string, isAdmin?: boolean, userLanguage: JobLanguage = JobLanguage.POLISH) {
+  async getPrevNextJob(
+    jobId: string,
+    userId?: string,
+    isAdmin?: boolean,
+    userLanguage: JobLanguage = JobLanguage.POLISH,
+  ) {
     const currentJob = await this.prisma.job.findUnique({
       where: { id: jobId },
       select: {
@@ -626,23 +684,20 @@ export class JobsService implements OnModuleInit {
         OR: [
           { status: JobStatus.PUBLISHED },
           { status: JobStatus.CLOSED },
-          { status: JobStatus.DRAFT }
-        ]
+          { status: JobStatus.DRAFT },
+        ],
       };
     } else if (userId) {
       statusWhere = {
         OR: [
           { status: JobStatus.PUBLISHED },
           { status: JobStatus.CLOSED },
-          { status: JobStatus.DRAFT, authorId: userId }
-        ]
+          { status: JobStatus.DRAFT, authorId: userId },
+        ],
       };
     } else {
       statusWhere = {
-        OR: [
-          { status: JobStatus.PUBLISHED },
-          { status: JobStatus.CLOSED }
-        ]
+        OR: [{ status: JobStatus.PUBLISHED }, { status: JobStatus.CLOSED }],
       };
     }
 
@@ -755,7 +810,9 @@ export class JobsService implements OnModuleInit {
     message?: string,
   ) {
     if (accountType !== 'FREELANCER') {
-      throw new ForbiddenException('Tylko freelancerzy mogą zgłaszać się do ofert');
+      throw new ForbiddenException(
+        'Tylko freelancerzy mogą zgłaszać się do ofert',
+      );
     }
     const job = await this.prisma.job.findUnique({
       where: { id: jobId },
@@ -792,7 +849,11 @@ export class JobsService implements OnModuleInit {
   }
 
   /** Get user's recent job applications (last 5). */
-  async getUserApplications(freelancerId: string, userLanguage: JobLanguage = JobLanguage.POLISH, limit = 5) {
+  async getUserApplications(
+    freelancerId: string,
+    userLanguage: JobLanguage = JobLanguage.POLISH,
+    limit = 5,
+  ) {
     const applications = await this.prisma.jobApplication.findMany({
       where: { freelancerId },
       orderBy: { createdAt: 'desc' },
@@ -807,7 +868,9 @@ export class JobsService implements OnModuleInit {
                 },
               },
             },
-            author: { select: { id: true, email: true, name: true, surname: true } },
+            author: {
+              select: { id: true, email: true, name: true, surname: true },
+            },
             location: true,
             skills: { include: { skill: true } },
           },
@@ -822,13 +885,20 @@ export class JobsService implements OnModuleInit {
       job: {
         ...app.job,
         author: maskAuthorSurname(app.job.author),
-        category: this.getCategoryWithTranslation(app.job.category, userLanguage),
+        category: this.getCategoryWithTranslation(
+          app.job.category,
+          userLanguage,
+        ),
       },
     }));
   }
 
   /** Get user's recent jobs (last 5) created by client. */
-  async getUserJobs(clientId: string, userLanguage: JobLanguage = JobLanguage.POLISH, limit = 5) {
+  async getUserJobs(
+    clientId: string,
+    userLanguage: JobLanguage = JobLanguage.POLISH,
+    limit = 5,
+  ) {
     const jobs = await this.prisma.job.findMany({
       where: { authorId: clientId },
       orderBy: { createdAt: 'desc' },
@@ -841,7 +911,9 @@ export class JobsService implements OnModuleInit {
             },
           },
         },
-        author: { select: { id: true, email: true, name: true, surname: true } },
+        author: {
+          select: { id: true, email: true, name: true, surname: true },
+        },
         location: true,
         skills: { include: { skill: true } },
         _count: {
@@ -864,7 +936,13 @@ export class JobsService implements OnModuleInit {
   }
 
   /** Update job. Only author can update (or admin can update any); status is always set to DRAFT so admin can re-approve. */
-  async updateJob(jobId: string, userId: string, accountType: string | null, dto: CreateJobDto, userLanguage: JobLanguage = JobLanguage.POLISH) {
+  async updateJob(
+    jobId: string,
+    userId: string,
+    accountType: string | null,
+    dto: CreateJobDto,
+    userLanguage: JobLanguage = JobLanguage.POLISH,
+  ) {
     const job = await this.prisma.job.findUnique({
       where: { id: jobId },
     });
@@ -936,9 +1014,13 @@ export class JobsService implements OnModuleInit {
     const allowedDays = [7, 14, 21, 30];
     const newDeadline =
       dto.offerDays != null && allowedDays.includes(dto.offerDays)
-        ? new Date(job.createdAt.getTime() + dto.offerDays * 24 * 60 * 60 * 1000)
+        ? new Date(
+            job.createdAt.getTime() + dto.offerDays * 24 * 60 * 60 * 1000,
+          )
         : undefined;
-    const language = dto.language ? (dto.language as JobLanguage) : job.language;
+    const language = dto.language
+      ? (dto.language as JobLanguage)
+      : job.language;
     const updated = await this.prisma.job.update({
       where: { id: jobId },
       data: {
@@ -948,9 +1030,10 @@ export class JobsService implements OnModuleInit {
         status: JobStatus.DRAFT,
         language,
         billingType: dto.billingType as BillingType,
-        hoursPerWeek: dto.billingType === 'HOURLY' && dto.hoursPerWeek
-          ? (dto.hoursPerWeek as HoursPerWeek)
-          : null,
+        hoursPerWeek:
+          dto.billingType === 'HOURLY' && dto.hoursPerWeek
+            ? (dto.hoursPerWeek as HoursPerWeek)
+            : null,
         rate: dto.rate ?? null,
         rateNegotiable: dto.rateNegotiable ?? false,
         currency: dto.currency.toUpperCase().slice(0, 3),
@@ -968,7 +1051,9 @@ export class JobsService implements OnModuleInit {
             },
           },
         },
-        author: { select: { id: true, email: true, name: true, surname: true } },
+        author: {
+          select: { id: true, email: true, name: true, surname: true },
+        },
         location: true,
         skills: { include: { skill: true } },
       },
@@ -991,7 +1076,9 @@ export class JobsService implements OnModuleInit {
             },
           },
         },
-        author: { select: { id: true, email: true, name: true, surname: true } },
+        author: {
+          select: { id: true, email: true, name: true, surname: true },
+        },
         location: true,
         skills: { include: { skill: true } },
       },
@@ -1004,9 +1091,16 @@ export class JobsService implements OnModuleInit {
     };
   }
 
-  async publishJob(jobId: string, adminUserId: string, isAdmin: boolean, userLanguage: JobLanguage = JobLanguage.POLISH) {
+  async publishJob(
+    jobId: string,
+    adminUserId: string,
+    isAdmin: boolean,
+    userLanguage: JobLanguage = JobLanguage.POLISH,
+  ) {
     if (!isAdmin) {
-      throw new ForbiddenException('Tylko użytkownik z typem konta ADMIN może publikować oferty');
+      throw new ForbiddenException(
+        'Tylko użytkownik z typem konta ADMIN może publikować oferty',
+      );
     }
     const job = await this.prisma.job.findUnique({
       where: { id: jobId },
@@ -1025,11 +1119,19 @@ export class JobsService implements OnModuleInit {
             },
           },
         },
-        author: { select: { id: true, email: true, name: true, surname: true } },
+        author: {
+          select: { id: true, email: true, name: true, surname: true },
+        },
         location: true,
         skills: { include: { skill: true } },
       },
     });
+
+    // Trigger notifications for matching freelancers (fire-and-forget)
+    this.notificationsService.onJobPublished(jobId).catch((err) => {
+      console.error('Failed to process notifications for job', jobId, err);
+    });
+
     return {
       ...result,
       author: maskAuthorSurname(result.author),
@@ -1038,7 +1140,12 @@ export class JobsService implements OnModuleInit {
   }
 
   /** Close a job. Only author or admin can close. */
-  async closeJob(jobId: string, userId: string, accountType: string | null, userLanguage: JobLanguage = JobLanguage.POLISH) {
+  async closeJob(
+    jobId: string,
+    userId: string,
+    accountType: string | null,
+    userLanguage: JobLanguage = JobLanguage.POLISH,
+  ) {
     const job = await this.prisma.job.findUnique({
       where: { id: jobId },
     });
@@ -1067,7 +1174,9 @@ export class JobsService implements OnModuleInit {
             },
           },
         },
-        author: { select: { id: true, email: true, name: true, surname: true } },
+        author: {
+          select: { id: true, email: true, name: true, surname: true },
+        },
         location: true,
         skills: { include: { skill: true } },
       },
@@ -1100,7 +1209,6 @@ export class JobsService implements OnModuleInit {
     }
   }
 
-
   /** Get all DRAFT jobs for admin approval. Only accessible by ADMIN users. */
   async getPendingJobs(
     page = 1,
@@ -1110,7 +1218,9 @@ export class JobsService implements OnModuleInit {
     userLanguage: JobLanguage = JobLanguage.POLISH,
   ) {
     if (!isAdmin) {
-      throw new ForbiddenException('Tylko użytkownik z typem konta ADMIN może przeglądać oferty oczekujące na zatwierdzenie');
+      throw new ForbiddenException(
+        'Tylko użytkownik z typem konta ADMIN może przeglądać oferty oczekujące na zatwierdzenie',
+      );
     }
 
     const where = { status: JobStatus.DRAFT };
@@ -1133,7 +1243,9 @@ export class JobsService implements OnModuleInit {
             },
           },
         },
-        author: { select: { id: true, email: true, name: true, surname: true } },
+        author: {
+          select: { id: true, email: true, name: true, surname: true },
+        },
         location: true,
         skills: { include: { skill: true } },
       },
@@ -1160,7 +1272,7 @@ export class JobsService implements OnModuleInit {
         totalPages,
         hasNextPage: page < totalPages,
         hasPreviousPage: page > 1,
-      }
+      },
     };
   }
 }

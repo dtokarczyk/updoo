@@ -10,4 +10,4 @@ import { ProfilesService } from './profiles.service';
   providers: [ProfilesService],
   exports: [ProfilesService],
 })
-export class ProfilesModule { }
+export class ProfilesModule {}

@@ -14,7 +14,7 @@ import { I18nService } from './i18n.service';
 
 @Catch(HttpException)
 export class I18nExceptionFilter implements ExceptionFilter {
-  constructor(private readonly i18nService: I18nService) { }
+  constructor(private readonly i18nService: I18nService) {}
 
   catch(exception: HttpException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
@@ -41,7 +41,9 @@ export class I18nExceptionFilter implements ExceptionFilter {
 
       // Debug logging (remove in production if needed)
       if (process.env.NODE_ENV === 'development') {
-        console.log(`Translating error: "${message}" -> "${translatedMessage}" (lang: ${lang})`);
+        console.log(
+          `Translating error: "${message}" -> "${translatedMessage}" (lang: ${lang})`,
+        );
       }
 
       response.status(status).json({
@@ -68,21 +70,37 @@ export class I18nExceptionFilter implements ExceptionFilter {
           const constraintValue = constraints[constraintKey];
 
           // Extract constraint value from error context (for MinLength, MaxLength, Min, Max, etc.)
-          const constraintNum = this.extractConstraintValueFromError(error, constraintKey);
+          const constraintNum = this.extractConstraintValueFromError(
+            error,
+            constraintKey,
+          );
 
           // Check if it's a custom validation message starting with validation.
           if (constraintValue && constraintValue.startsWith('validation.')) {
             const translationKey = constraintValue.replace('validation.', '');
-            return this.i18nService.getValidationMessage(translationKey, property, lang, {
-              constraint: constraintNum,
-            });
+            return this.i18nService.getValidationMessage(
+              translationKey,
+              property,
+              lang,
+              {
+                constraint: constraintNum,
+              },
+            );
           }
 
           // Map class-validator constraint to our translation key
-          const translationKey = this.mapConstraintToKey(constraintKey, constraintValue);
-          return this.i18nService.getValidationMessage(translationKey, property, lang, {
-            constraint: constraintNum,
-          });
+          const translationKey = this.mapConstraintToKey(
+            constraintKey,
+            constraintValue,
+          );
+          return this.i18nService.getValidationMessage(
+            translationKey,
+            property,
+            lang,
+            {
+              constraint: constraintNum,
+            },
+          );
         }
 
         // Handle string messages (fallback)
@@ -90,7 +108,11 @@ export class I18nExceptionFilter implements ExceptionFilter {
           // If it's already a custom validation message starting with validation., translate it
           if (error.startsWith('validation.')) {
             const translationKey = error.replace('validation.', '');
-            return this.i18nService.getValidationMessage(translationKey, 'field', lang);
+            return this.i18nService.getValidationMessage(
+              translationKey,
+              'field',
+              lang,
+            );
           }
 
           // Try to parse standard class-validator messages
@@ -100,46 +122,89 @@ export class I18nExceptionFilter implements ExceptionFilter {
 
             // Map common validation messages
             if (error.includes('must be a string')) {
-              return this.i18nService.getValidationMessage('isString', property, lang);
+              return this.i18nService.getValidationMessage(
+                'isString',
+                property,
+                lang,
+              );
             }
             if (error.includes('must be an email')) {
-              return this.i18nService.getValidationMessage('isEmail', property, lang);
+              return this.i18nService.getValidationMessage(
+                'isEmail',
+                property,
+                lang,
+              );
             }
             if (error.includes('must be a boolean')) {
-              return this.i18nService.getValidationMessage('isBoolean', property, lang);
+              return this.i18nService.getValidationMessage(
+                'isBoolean',
+                property,
+                lang,
+              );
             }
             if (error.includes('must be a number')) {
-              return this.i18nService.getValidationMessage('isNumber', property, lang);
+              return this.i18nService.getValidationMessage(
+                'isNumber',
+                property,
+                lang,
+              );
             }
             if (error.includes('must be an array')) {
-              return this.i18nService.getValidationMessage('isArray', property, lang);
+              return this.i18nService.getValidationMessage(
+                'isArray',
+                property,
+                lang,
+              );
             }
             if (error.includes('should not be empty')) {
-              return this.i18nService.getValidationMessage('isNotEmpty', property, lang);
+              return this.i18nService.getValidationMessage(
+                'isNotEmpty',
+                property,
+                lang,
+              );
             }
 
             // Check for minLength
-            const minLengthMatch = error.match(/must be longer than or equal to (\d+)/);
+            const minLengthMatch = error.match(
+              /must be longer than or equal to (\d+)/,
+            );
             if (minLengthMatch) {
-              return this.i18nService.getValidationMessage('minLength', property, lang, {
-                constraint: minLengthMatch[1],
-              });
+              return this.i18nService.getValidationMessage(
+                'minLength',
+                property,
+                lang,
+                {
+                  constraint: minLengthMatch[1],
+                },
+              );
             }
 
             // Check for maxLength
-            const maxLengthMatch = error.match(/must be shorter than or equal to (\d+)/);
+            const maxLengthMatch = error.match(
+              /must be shorter than or equal to (\d+)/,
+            );
             if (maxLengthMatch) {
-              return this.i18nService.getValidationMessage('maxLength', property, lang, {
-                constraint: maxLengthMatch[1],
-              });
+              return this.i18nService.getValidationMessage(
+                'maxLength',
+                property,
+                lang,
+                {
+                  constraint: maxLengthMatch[1],
+                },
+              );
             }
 
             // Check for min
             const minMatch = error.match(/must not be less than (\d+)/);
             if (minMatch) {
-              return this.i18nService.getValidationMessage('min', property, lang, {
-                constraint: minMatch[1],
-              });
+              return this.i18nService.getValidationMessage(
+                'min',
+                property,
+                lang,
+                {
+                  constraint: minMatch[1],
+                },
+              );
             }
           }
         }
@@ -158,7 +223,10 @@ export class I18nExceptionFilter implements ExceptionFilter {
     }
   }
 
-  private mapConstraintToKey(constraintKey: string, constraintValue: string): string {
+  private mapConstraintToKey(
+    constraintKey: string,
+    constraintValue: string,
+  ): string {
     const mapping: Record<string, string> = {
       isNotEmpty: 'isNotEmpty',
       isString: 'isString',
@@ -177,7 +245,10 @@ export class I18nExceptionFilter implements ExceptionFilter {
     return mapping[constraintKey] || constraintKey;
   }
 
-  private extractConstraintValue(constraintKey: string, constraintValue: string): string {
+  private extractConstraintValue(
+    constraintKey: string,
+    constraintValue: string,
+  ): string {
     const match = constraintValue.match(/\d+/);
     return match ? match[0] : '';
   }
@@ -186,7 +257,10 @@ export class I18nExceptionFilter implements ExceptionFilter {
    * Extracts constraint value from class-validator error object.
    * For MinLength, MaxLength, Min, Max, etc., extracts the numeric value.
    */
-  private extractConstraintValueFromError(error: any, constraintKey: string): string {
+  private extractConstraintValueFromError(
+    error: any,
+    constraintKey: string,
+  ): string {
     // Try to get constraint value from error.contexts (class-validator stores constraints here)
     if (error.contexts && error.contexts[constraintKey]) {
       const context = error.contexts[constraintKey];
@@ -223,7 +297,12 @@ export class I18nExceptionFilter implements ExceptionFilter {
    */
   private translateErrorMessage(message: string, lang: 'en' | 'pl'): string {
     // If message looks like a translation key (e.g. errors.profileNotFound, validation.nipInvalid), translate it
-    if (message && (message.startsWith('errors.') || message.startsWith('messages.') || message.startsWith('validation.'))) {
+    if (
+      message &&
+      (message.startsWith('errors.') ||
+        message.startsWith('messages.') ||
+        message.startsWith('validation.'))
+    ) {
       const translated = this.i18nService.translate(message, lang);
       if (translated !== message) return translated;
     }
@@ -244,7 +323,9 @@ export class I18nExceptionFilter implements ExceptionFilter {
     if (translationKey) {
       const translated = this.i18nService.translate(translationKey, lang);
       if (translated !== translationKey) return translated;
-      console.warn(`Translation not found for key: ${translationKey}, language: ${lang}, message: ${message}`);
+      console.warn(
+        `Translation not found for key: ${translationKey}, language: ${lang}, message: ${message}`,
+      );
     } else if (process.env.NODE_ENV === 'development') {
       console.warn(`No translation key found for message: "${message}"`);
     }

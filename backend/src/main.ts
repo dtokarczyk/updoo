@@ -34,7 +34,12 @@ async function bootstrap() {
     // Allow requests from any origin. Use with caution in production.
     origin: true,
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Accept-Language'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Accept',
+      'Accept-Language',
+    ],
     credentials: true,
   });
   const port = process.env.PORT ?? 3001;

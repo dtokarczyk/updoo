@@ -8,7 +8,7 @@ import type { SendEmailDto } from './dto/send-email.dto';
  */
 @Injectable()
 export class EmailService {
-  constructor(private readonly mailerService: MailerService) { }
+  constructor(private readonly mailerService: MailerService) {}
 
   /**
    * Sends an email via MailerSend (logged in mailer_log).
@@ -33,7 +33,12 @@ export class EmailService {
     to: string | string[],
     subject: string,
     text: string,
-    options?: { from?: string; replyTo?: string; cc?: string[]; bcc?: string[] },
+    options?: {
+      from?: string;
+      replyTo?: string;
+      cc?: string[];
+      bcc?: string[];
+    },
   ): Promise<{ id: string; threadId?: string }> {
     return this.send({
       to: Array.isArray(to) ? to : [to],

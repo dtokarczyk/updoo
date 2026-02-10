@@ -18,7 +18,7 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Controller('profiles')
 export class ProfilesController {
-  constructor(private readonly profilesService: ProfilesService) { }
+  constructor(private readonly profilesService: ProfilesService) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -34,10 +34,7 @@ export class ProfilesController {
 
   @Get('slug/:slug')
   @UseGuards(OptionalJwtAuthGuard)
-  getBySlug(
-    @Param('slug') slug: string,
-    @GetUser() user?: JwtUser,
-  ) {
+  getBySlug(@Param('slug') slug: string, @GetUser() user?: JwtUser) {
     return this.profilesService.findBySlug(
       slug,
       user?.id,
@@ -69,7 +66,11 @@ export class ProfilesController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   remove(@Param('id') id: string, @GetUser() user: JwtUser) {
-    return this.profilesService.remove(id, user.id, user.accountType === 'ADMIN');
+    return this.profilesService.remove(
+      id,
+      user.id,
+      user.accountType === 'ADMIN',
+    );
   }
 
   @Patch(':id/verify')

@@ -13,6 +13,7 @@ import { EmailModule } from './email/email.module';
 import { MailerModule } from './mailer/mailer.module';
 import { RegonModule } from './regon/regon.module';
 import { ProfilesModule } from './profiles/profiles.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -28,8 +29,9 @@ import { ProfilesModule } from './profiles/profiles.module';
     MailerModule,
     EmailModule,
     RegonModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

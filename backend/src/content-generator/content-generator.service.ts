@@ -1,10 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AiService } from '../ai/ai.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { AccountType, BillingType, ExperienceLevel, JobLanguage, JobStatus, ProjectType } from '@prisma/client';
+import {
+  AccountType,
+  BillingType,
+  ExperienceLevel,
+  JobLanguage,
+  JobStatus,
+  ProjectType,
+} from '@prisma/client';
 import { BENCHMARK_EXAMPLES } from './examples';
 import { fakerPL as faker } from '@faker-js/faker';
-import * as bcrypt from 'bcrypt';
 
 export type SupportedLanguage = 'POLISH' | 'ENGLISH';
 
@@ -45,7 +51,7 @@ export class ContentGeneratorService {
   constructor(
     private readonly aiService: AiService,
     private readonly prisma: PrismaService,
-  ) { }
+  ) {}
 
   /**
    * Call AI to generate job metadata (billing, rate, experience, category, skills, etc.) from title + description.
@@ -67,7 +73,10 @@ export class ContentGeneratorService {
     categorySlug: string;
     skillNames: string[];
   }> {
-    const allowedCategorySlugs = params.categorySlugs.split(', ').map((s) => s.trim()).filter(Boolean);
+    const allowedCategorySlugs = params.categorySlugs
+      .split(', ')
+      .map((s) => s.trim())
+      .filter(Boolean);
     const allowedSkillNames = params.skillNames.slice(0, 500);
 
     const prompt = [
@@ -102,14 +111,16 @@ export class ContentGeneratorService {
       categorySlug: {
         type: 'string',
         enum: allowedCategorySlugs,
-        description: 'Slug kategorii najlepiej pasującej do opisu oferty (jedna z podanej listy)',
+        description:
+          'Slug kategorii najlepiej pasującej do opisu oferty (jedna z podanej listy)',
       },
       skillNames: {
         type: 'array',
         items: { type: 'string' },
         minItems: 1,
         maxItems: 4,
-        description: 'Od 1 do 4 nazw umiejętności z listy podanej w promptcie, potrzebne do realizacji oferty',
+        description:
+          'Od 1 do 4 nazw umiejętności z listy podanej w promptcie, potrzebne do realizacji oferty',
       },
     };
 
@@ -121,39 +132,64 @@ export class ContentGeneratorService {
         responseJsonSchema: {
           type: 'object',
           additionalProperties: false,
-          required: ['billingType', 'rate', 'experienceLevel', 'projectType', 'categorySlug', 'skillNames'],
+          required: [
+            'billingType',
+            'rate',
+            'experienceLevel',
+            'projectType',
+            'categorySlug',
+            'skillNames',
+          ],
           properties,
         },
       },
     });
 
     const parsed = JSON.parse(raw) as Record<string, unknown>;
-    const billingType = ALLOWED.billingType.includes(parsed.billingType as BillingType)
+    const billingType = ALLOWED.billingType.includes(
+      parsed.billingType as BillingType,
+    )
       ? (parsed.billingType as BillingType)
       : BillingType.FIXED;
-    const rate = typeof parsed.rate === 'number' && parsed.rate > 0 ? Math.round(parsed.rate) : 1000;
-    const experienceLevel = ALLOWED.experienceLevel.includes(parsed.experienceLevel as ExperienceLevel)
+    const rate =
+      typeof parsed.rate === 'number' && parsed.rate > 0
+        ? Math.round(parsed.rate)
+        : 1000;
+    const experienceLevel = ALLOWED.experienceLevel.includes(
+      parsed.experienceLevel as ExperienceLevel,
+    )
       ? (parsed.experienceLevel as ExperienceLevel)
       : ExperienceLevel.MID;
-    const projectType = ALLOWED.projectType.includes(parsed.projectType as ProjectType)
+    const projectType = ALLOWED.projectType.includes(
+      parsed.projectType as ProjectType,
+    )
       ? (parsed.projectType as ProjectType)
       : ProjectType.ONE_TIME;
 
-    const offerDays = ALLOWED.offerDays[Math.floor(Math.random() * ALLOWED.offerDays.length)];
+    const offerDays =
+      ALLOWED.offerDays[Math.floor(Math.random() * ALLOWED.offerDays.length)];
 
     const categorySlug =
-      typeof parsed.categorySlug === 'string' && allowedCategorySlugs.includes(parsed.categorySlug.trim())
+      typeof parsed.categorySlug === 'string' &&
+      allowedCategorySlugs.includes(parsed.categorySlug.trim())
         ? parsed.categorySlug.trim()
         : allowedCategorySlugs[0];
 
-    const skillNamesRaw = Array.isArray(parsed.skillNames) ? parsed.skillNames : [];
+    const skillNamesRaw = Array.isArray(parsed.skillNames)
+      ? parsed.skillNames
+      : [];
     const skillNamesSet = new Set(allowedSkillNames);
     let skillNames = skillNamesRaw
-      .filter((n): n is string => typeof n === 'string' && skillNamesSet.has(n.trim()))
+      .filter(
+        (n): n is string =>
+          typeof n === 'string' && skillNamesSet.has(n.trim()),
+      )
       .map((n) => n.trim())
       .slice(0, 4);
     if (skillNames.length === 0 && allowedSkillNames.length > 0) {
-      skillNames = [allowedSkillNames[Math.floor(Math.random() * allowedSkillNames.length)]];
+      skillNames = [
+        allowedSkillNames[Math.floor(Math.random() * allowedSkillNames.length)],
+      ];
     }
 
     return {
@@ -188,9 +224,15 @@ export class ContentGeneratorService {
         select: { content: true },
       });
 
-      return random?.content?.trim() ?? BENCHMARK_EXAMPLES[0] ?? 'No benchmark available';
+      return (
+        random?.content?.trim() ??
+        BENCHMARK_EXAMPLES[0] ??
+        'No benchmark available'
+      );
     } catch (error) {
-      this.logger.error(`Error fetching random benchmark from DB: ${(error as Error).message}`);
+      this.logger.error(
+        `Error fetching random benchmark from DB: ${(error as Error).message}`,
+      );
       return BENCHMARK_EXAMPLES[0] || 'No benchmark available';
     }
   }
@@ -251,12 +293,16 @@ export class ContentGeneratorService {
     });
 
     try {
-      const parsed = JSON.parse(raw) as { job?: { title?: string; description?: string } } | null;
+      const parsed = JSON.parse(raw) as {
+        job?: { title?: string; description?: string };
+      } | null;
       const job = parsed?.job ?? {};
       // Normalize all Unicode dash/hyphen variants to ASCII hyphen
       const normalizeDashes = (s: string) => s.replace(/\p{Pd}/gu, '-');
       const title = job.title ? normalizeDashes(job.title) : undefined;
-      const description = job.description ? normalizeDashes(job.description) : undefined;
+      const description = job.description
+        ? normalizeDashes(job.description)
+        : undefined;
 
       if (!title || !description) {
         throw new Error('Missing title or description in AI response JSON.');
@@ -267,7 +313,9 @@ export class ContentGeneratorService {
       }
 
       // Load all skills from DB – names go into AI enum
-      const skills = await this.prisma.skill.findMany({ select: { id: true, name: true } });
+      const skills = await this.prisma.skill.findMany({
+        select: { id: true, name: true },
+      });
       const skillNames = skills.map((s) => s.name);
       const categorySlugs = categories.map((c) => c.slug).join(', ');
       const metadata = await this.generateJobMetadata({
@@ -278,17 +326,18 @@ export class ContentGeneratorService {
       });
 
       const category =
-        categories.find((c) => c.slug === metadata.categorySlug) ?? categories[0];
+        categories.find((c) => c.slug === metadata.categorySlug) ??
+        categories[0];
 
       // Find selected skill names in DB and get their IDs for JobSkill references
       const skillIds =
         metadata.skillNames.length > 0
           ? (
-            await this.prisma.skill.findMany({
-              where: { name: { in: metadata.skillNames } },
-              select: { id: true },
-            })
-          ).map((s) => s.id)
+              await this.prisma.skill.findMany({
+                where: { name: { in: metadata.skillNames } },
+                select: { id: true },
+              })
+            ).map((s) => s.id)
           : [];
 
       const safeUser: GeneratedJobFormData['user'] = {
@@ -317,7 +366,10 @@ export class ContentGeneratorService {
         job: safeJob,
       };
     } catch (error) {
-      this.logger.error('Failed to parse structured job post JSON', error as Error);
+      this.logger.error(
+        'Failed to parse structured job post JSON',
+        error as Error,
+      );
       throw new Error('Failed to parse structured job post JSON.');
     }
   }
@@ -326,15 +378,22 @@ export class ContentGeneratorService {
    * Generate job data, create a new user from generated safeUser, and persist the job (author = new user).
    * Returns the created job with category and author.
    */
-  async generateAndCreateJob(): Promise<{ id: string; title: string; description: string; categoryId: string; status: JobStatus }> {
+  async generateAndCreateJob(): Promise<{
+    id: string;
+    title: string;
+    description: string;
+    categoryId: string;
+    status: JobStatus;
+  }> {
     const generated = await this.generateJobPost({ language: 'POLISH' });
     const { user: safeUser, job } = generated;
 
-    const hashedPassword = await bcrypt.hash(faker.internet.password({ length: 12 }), 10);
+    // Mark generated users with plain-text password "FAKE" so they can be
+    // easily identified and excluded from e-mail sending.
     const newUser = await this.prisma.user.create({
       data: {
         email: safeUser.email.toLowerCase(),
-        password: hashedPassword,
+        password: 'FAKE',
         name: safeUser.name,
         surname: safeUser.surname,
         accountType: AccountType.CLIENT,
@@ -373,7 +432,9 @@ export class ContentGeneratorService {
       },
     });
 
-    this.logger.log(`Created job ${created.id} (${created.title}) for new user ${newUser.id} (${newUser.email})`);
+    this.logger.log(
+      `Created job ${created.id} (${created.title}) for new user ${newUser.id} (${newUser.email})`,
+    );
     return {
       id: created.id,
       title: created.title,
@@ -383,4 +444,3 @@ export class ContentGeneratorService {
     };
   }
 }
-

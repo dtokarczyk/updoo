@@ -61,9 +61,14 @@ export class I18nService {
         const parsed = JSON.parse(content);
         this.translations.set(lang, parsed);
         console.log(`✓ Loaded translations for ${lang} from ${filePath}`);
-        console.log(`  Available keys: validation (${Object.keys(parsed.validation || {}).length}), errors (${Object.keys(parsed.errors || {}).length})`);
+        console.log(
+          `  Available keys: validation (${Object.keys(parsed.validation || {}).length}), errors (${Object.keys(parsed.errors || {}).length})`,
+        );
       } catch (error) {
-        console.error(`Failed to load translations for ${lang} from ${filePath}:`, error);
+        console.error(
+          `Failed to load translations for ${lang} from ${filePath}:`,
+          error,
+        );
       }
     }
 
@@ -72,7 +77,9 @@ export class I18nService {
     if (loadedLangs.length === 0) {
       console.error('⚠️  WARNING: No translations loaded!');
     } else {
-      console.log(`✓ Successfully loaded translations for: ${loadedLangs.join(', ')}`);
+      console.log(
+        `✓ Successfully loaded translations for: ${loadedLangs.join(', ')}`,
+      );
     }
   }
 
@@ -97,7 +104,11 @@ export class I18nService {
    * Gets translation for a key in the specified language.
    * Falls back to English if translation not found.
    */
-  translate(key: string, lang: SupportedLanguage, params?: Record<string, string | number>): string {
+  translate(
+    key: string,
+    lang: SupportedLanguage,
+    params?: Record<string, string | number>,
+  ): string {
     const keys = key.split('.');
 
     // Try requested language first

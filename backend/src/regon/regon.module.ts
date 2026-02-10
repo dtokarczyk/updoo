@@ -9,4 +9,4 @@ import { RegonService } from './regon.service';
   providers: [RegonService],
   exports: [RegonService],
 })
-export class RegonModule { }
+export class RegonModule {}

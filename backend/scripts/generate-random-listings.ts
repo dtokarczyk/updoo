@@ -2,7 +2,6 @@ import 'dotenv/config';
 import { PrismaClient, BillingType, HoursPerWeek, ExperienceLevel, ProjectType, JobStatus, JobLanguage, AccountType } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
-import bcrypt from 'bcrypt';
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -121,13 +120,14 @@ async function main() {
 
   if (users.length === 0) {
     console.log('No CLIENT users found, creating default CLIENT users...');
-    const defaultPassword = await bcrypt.hash('Password123!', 10);
+    // Mark generated users with plain-text password "FAKE" so they can be
+    // easily identified and excluded from e-mail sending.
     users = await Promise.all(
       DEFAULT_CLIENT_USERS.map((u) =>
         prisma.user.create({
           data: {
             email: u.email,
-            password: defaultPassword,
+            password: 'FAKE',
             name: u.name,
             surname: u.surname,
             accountType: AccountType.CLIENT,

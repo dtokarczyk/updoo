@@ -375,5 +375,5 @@ W odpowiedzi proszę podać:
 
 4. Warunki wsparcia po wdrożeniu: np. 30 dni poprawek i stabilizacji
 
-Dziękuję.`
+Dziękuję.`,
 ];

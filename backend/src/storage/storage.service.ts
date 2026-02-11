@@ -11,8 +11,13 @@ function buildVirtualHostedBaseUrl(endpoint: string, bucket: string): string {
 
 const AVATAR_SIZE = 500;
 const AVATAR_QUALITY = 85;
+/** Cover photo: 16:9, max width 1920. */
+const COVER_WIDTH = 1920;
+const COVER_HEIGHT = 1080;
+const COVER_QUALITY = 85;
 /** Presigned URL expiry for private buckets (e.g. Railway). */
 const PRESIGNED_AVATAR_EXPIRY_SECONDS = 3600; // 1 hour
+const PRESIGNED_COVER_EXPIRY_SECONDS = 3600;
 
 @Injectable()
 export class StorageService {
@@ -113,6 +118,66 @@ export class StorageService {
       return; // external URL, do not delete
     }
     const key = avatarUrl.slice(prefix.length);
+    await this.s3.send(
+      new DeleteObjectCommand({ Bucket: this.bucket, Key: key }),
+    );
+  }
+
+  /**
+   * Presigned GET URL for profile cover photo (private buckets).
+   */
+  async getPresignedCoverUrl(coverPhotoUrl: string | null): Promise<string | null> {
+    if (!coverPhotoUrl || !this.s3 || !this.bucket || !this.publicBaseUrl) {
+      return coverPhotoUrl;
+    }
+    const prefix = `${this.publicBaseUrl}/`;
+    if (!coverPhotoUrl.startsWith(prefix)) {
+      return coverPhotoUrl;
+    }
+    const key = coverPhotoUrl.slice(prefix.length);
+    const url = await getSignedUrl(
+      this.s3,
+      new GetObjectCommand({ Bucket: this.bucket, Key: key }),
+      { expiresIn: PRESIGNED_COVER_EXPIRY_SECONDS },
+    );
+    return url;
+  }
+
+  /**
+   * Resize image to 1920x1080 (16:9), convert to WebP, upload. Returns public URL or null.
+   */
+  async uploadCoverPhoto(buffer: Buffer, profileId: string): Promise<string | null> {
+    if (!this.s3 || !this.bucket) {
+      return null;
+    }
+    const resized = await sharp(buffer)
+      .resize(COVER_WIDTH, COVER_HEIGHT, { fit: 'cover' })
+      .webp({ quality: COVER_QUALITY })
+      .toBuffer();
+    const key = `covers/${profileId}.webp`;
+    await this.s3.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        Body: resized,
+        ContentType: 'image/webp',
+      }),
+    );
+    return `${this.publicBaseUrl}/${key}`;
+  }
+
+  /**
+   * Delete cover photo from S3 if URL points to our bucket.
+   */
+  async deleteCoverPhoto(coverPhotoUrl: string | null): Promise<void> {
+    if (!coverPhotoUrl || !this.s3 || !this.bucket || !this.publicBaseUrl) {
+      return;
+    }
+    const prefix = `${this.publicBaseUrl}/`;
+    if (!coverPhotoUrl.startsWith(prefix)) {
+      return;
+    }
+    const key = coverPhotoUrl.slice(prefix.length);
     await this.s3.send(
       new DeleteObjectCommand({ Bucket: this.bucket, Key: key }),
     );

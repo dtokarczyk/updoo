@@ -37,4 +37,9 @@ export class UpdateProfileDto {
   @IsString()
   @MaxLength(2000)
   aboutUs?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  coverPhotoUrl?: string;
 }

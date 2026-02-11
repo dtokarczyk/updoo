@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -6,12 +7,16 @@ import {
 } from '@nestjs/common';
 import { slugFromName } from '../common/slug.helper';
 import { PrismaService } from '../prisma/prisma.service';
+import { StorageService } from '../storage/storage.service';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class ProfilesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storageService: StorageService,
+  ) { }
 
   /** Ensure unique slug: if slug exists, append -2, -3, etc. */
   private async ensureUniqueSlug(
@@ -50,7 +55,7 @@ export class ProfilesService {
       }
     }
 
-    return this.prisma.profile.create({
+    const profile = await this.prisma.profile.create({
       data: {
         name: dto.name.trim(),
         slug,
@@ -72,10 +77,18 @@ export class ProfilesService {
         },
       },
     });
+    return this.withResolvedCoverUrl(profile);
+  }
+
+  private async withResolvedCoverUrl<T extends { coverPhotoUrl: string | null }>(
+    profile: T,
+  ): Promise<T> {
+    const resolved = await this.resolveCoverUrl(profile.coverPhotoUrl);
+    return { ...profile, coverPhotoUrl: resolved };
   }
 
   async findMyProfiles(ownerId: string) {
-    return this.prisma.profile.findMany({
+    const list = await this.prisma.profile.findMany({
       where: { ownerId },
       include: {
         location: true,
@@ -89,6 +102,7 @@ export class ProfilesService {
       },
       orderBy: { createdAt: 'desc' },
     });
+    return Promise.all(list.map((p) => this.withResolvedCoverUrl(p)));
   }
 
   /** Get profile by slug. Public: only if isVerified. Owner or admin can see unverified. */
@@ -111,7 +125,7 @@ export class ProfilesService {
     if (!profile.isVerified && !isOwner && !isAdmin) {
       throw new NotFoundException('errors.profileNotFound');
     }
-    return profile;
+    return this.withResolvedCoverUrl(profile);
   }
 
   async findById(id: string) {
@@ -129,7 +143,7 @@ export class ProfilesService {
       },
     });
     if (!profile) throw new NotFoundException('errors.profileNotFound');
-    return profile;
+    return this.withResolvedCoverUrl(profile);
   }
 
   async update(
@@ -158,7 +172,7 @@ export class ProfilesService {
       slug = await this.ensureUniqueSlug(baseSlug, id);
     }
 
-    return this.prisma.profile.update({
+    const updated = await this.prisma.profile.update({
       where: { id },
       data: {
         ...(dto.name !== undefined && { name }),
@@ -174,6 +188,9 @@ export class ProfilesService {
         ...(dto.locationId !== undefined && {
           locationId: dto.locationId || null,
         }),
+        ...(dto.coverPhotoUrl !== undefined && {
+          coverPhotoUrl: dto.coverPhotoUrl?.trim() || null,
+        }),
       },
       include: {
         location: true,
@@ -186,6 +203,65 @@ export class ProfilesService {
         },
       },
     });
+    return this.withResolvedCoverUrl(updated);
+  }
+
+  /** Resolve cover photo URL to presigned when using private bucket. */
+  private async resolveCoverUrl(coverPhotoUrl: string | null): Promise<string | null> {
+    if (!coverPhotoUrl) return null;
+    const resolved = await this.storageService.getPresignedCoverUrl(coverPhotoUrl);
+    return resolved ?? coverPhotoUrl;
+  }
+
+  async uploadCover(
+    id: string,
+    userId: string,
+    isAdmin: boolean,
+    buffer: Buffer,
+  ) {
+    const profile = await this.prisma.profile.findUnique({ where: { id } });
+    if (!profile) throw new NotFoundException('errors.profileNotFound');
+    if (profile.ownerId !== userId && !isAdmin) {
+      throw new ForbiddenException('errors.profileUpdateForbidden');
+    }
+    if (!this.storageService.isConfigured()) {
+      throw new BadRequestException('Cover upload is not configured');
+    }
+    if (profile.coverPhotoUrl) {
+      await this.storageService.deleteCoverPhoto(profile.coverPhotoUrl);
+    }
+    const coverPhotoUrl = await this.storageService.uploadCoverPhoto(buffer, id);
+    if (!coverPhotoUrl) {
+      throw new BadRequestException('Failed to upload cover');
+    }
+    const updated = await this.prisma.profile.update({
+      where: { id },
+      data: { coverPhotoUrl },
+      include: {
+        location: true,
+        owner: { select: { id: true, name: true, surname: true } },
+      },
+    });
+    return this.withResolvedCoverUrl(updated);
+  }
+
+  async removeCover(id: string, userId: string, isAdmin: boolean) {
+    const profile = await this.prisma.profile.findUnique({ where: { id } });
+    if (!profile) throw new NotFoundException('errors.profileNotFound');
+    if (profile.ownerId !== userId && !isAdmin) {
+      throw new ForbiddenException('errors.profileUpdateForbidden');
+    }
+    if (profile.coverPhotoUrl) {
+      await this.storageService.deleteCoverPhoto(profile.coverPhotoUrl);
+    }
+    return this.prisma.profile.update({
+      where: { id },
+      data: { coverPhotoUrl: null },
+      include: {
+        location: true,
+        owner: { select: { id: true, name: true, surname: true } },
+      },
+    }).then((p) => this.withResolvedCoverUrl(p));
   }
 
   async remove(id: string, userId: string, isAdmin: boolean) {
@@ -201,7 +277,7 @@ export class ProfilesService {
     if (!isAdmin) throw new ForbiddenException('errors.profileVerifyAdminOnly');
     const profile = await this.prisma.profile.findUnique({ where: { id } });
     if (!profile) throw new NotFoundException('errors.profileNotFound');
-    return this.prisma.profile.update({
+    const updated = await this.prisma.profile.update({
       where: { id },
       data: { isVerified: true },
       include: {
@@ -215,5 +291,6 @@ export class ProfilesService {
         },
       },
     });
+    return this.withResolvedCoverUrl(updated);
   }
 }

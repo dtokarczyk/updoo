@@ -12,6 +12,7 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { ContractorProfileFormFields } from '@/components/contractor-profile-form-fields';
+import { CoverPhotoUpload } from '@/components/CoverPhotoUpload';
 import {
   getContractorProfile,
   updateContractorProfile,
@@ -41,6 +42,7 @@ export function BusinessProfileCompanyForm({
   const [loadError, setLoadError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [coverCacheBuster, setCoverCacheBuster] = useState<number | null>(null);
 
   const form = useForm<BusinessProfileFormValues>({
     resolver: zodResolver(
@@ -130,6 +132,18 @@ export function BusinessProfileCompanyForm({
       )}
       <FormProvider {...form}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <CoverPhotoUpload
+            profileId={profile.id}
+            coverPhotoUrl={profile.coverPhotoUrl ?? null}
+            onCoverUpdated={(updated) => {
+              onProfileUpdated(updated);
+              setCoverCacheBuster(Date.now());
+              router.refresh();
+            }}
+            disabled={isSubmitting}
+            t={t}
+            coverCacheBuster={coverCacheBuster}
+          />
           <ContractorProfileFormFields
             variant="standalone"
             locations={locations}

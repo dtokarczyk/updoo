@@ -123,6 +123,17 @@ export default function CompanyProfilePage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+      {/* Cover photo – 16:9 above content */}
+      {profile.coverPhotoUrl ? (
+        <div className="-mx-4 mb-8 sm:-mx-6 sm:rounded-lg overflow-hidden aspect-video bg-muted">
+          <img
+            src={profile.coverPhotoUrl}
+            alt=""
+            className="w-full h-full object-cover"
+          />
+        </div>
+      ) : null}
+
       <div className="grid gap-8 lg:grid-cols-6">
         {/* Lewa kolumna – tytuł + opis */}
         <div className="lg:col-span-4 order-2 lg:order-1 space-y-6">

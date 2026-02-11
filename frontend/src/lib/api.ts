@@ -558,6 +558,8 @@ export interface Profile {
   phone: string | null;
   isVerified: boolean;
   aboutUs: string | null;
+  /** Cover photo URL (16:9). */
+  coverPhotoUrl?: string | null;
   locationId: string | null;
   location?: Location | null;
   ownerId: string;
@@ -847,6 +849,54 @@ export async function deleteContractorProfile(id: string): Promise<void> {
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
     throw new Error(msg ?? 'Failed to delete profile');
   }
+}
+
+/** Upload cover photo for profile (16:9 crop applied on client). Returns updated profile. */
+export async function uploadProfileCover(
+  profileId: string,
+  file: Blob,
+): Promise<Profile> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const formData = new FormData();
+  formData.append('file', file, 'cover.jpg');
+  const headers: HeadersInit = { Authorization: `Bearer ${token}` };
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
+    headers['Accept-Language'] = getUserLocale();
+  }
+  const res = await fetch(`${API_URL}/profiles/${profileId}/cover`, {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to upload cover');
+  }
+  return res.json();
+}
+
+/** Remove cover photo from profile. Returns updated profile. */
+export async function removeProfileCover(profileId: string): Promise<Profile> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const headers: HeadersInit = { Authorization: `Bearer ${token}` };
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
+    headers['Accept-Language'] = getUserLocale();
+  }
+  const res = await fetch(`${API_URL}/profiles/${profileId}/cover`, {
+    method: 'DELETE',
+    headers,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to remove cover');
+  }
+  return res.json();
 }
 
 export async function getSkills(): Promise<Skill[]> {

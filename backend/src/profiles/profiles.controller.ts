@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -7,7 +8,11 @@ import {
   Patch,
   Post,
   UseGuards,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
 import { GetUser } from '../auth/get-user.decorator';
@@ -60,6 +65,46 @@ export class ProfilesController {
       user.id,
       user.accountType === 'ADMIN',
       dto,
+    );
+  }
+
+  @Post(':id/cover')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+    }),
+  )
+  async uploadCover(
+    @Param('id') id: string,
+    @GetUser() user: JwtUser,
+    @UploadedFile() file: Express.Multer.File | undefined,
+  ) {
+    if (!file?.buffer) {
+      throw new BadRequestException('File is required');
+    }
+    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowed.includes(file.mimetype)) {
+      throw new BadRequestException(
+        'Invalid file type. Use JPEG, PNG, WebP or GIF.',
+      );
+    }
+    return this.profilesService.uploadCover(
+      id,
+      user.id,
+      user.accountType === 'ADMIN',
+      file.buffer,
+    );
+  }
+
+  @Delete(':id/cover')
+  @UseGuards(JwtAuthGuard)
+  removeCover(@Param('id') id: string, @GetUser() user: JwtUser) {
+    return this.profilesService.removeCover(
+      id,
+      user.id,
+      user.accountType === 'ADMIN',
     );
   }
 

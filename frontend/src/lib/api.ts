@@ -130,6 +130,31 @@ export async function updateProfile(
   return res.json();
 }
 
+/** Remove avatar. Returns updated user. */
+export async function removeAvatar(): Promise<{ user: AuthUser }> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+
+  const headers: HeadersInit = {
+    Authorization: `Bearer ${token}`,
+  };
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
+    headers['Accept-Language'] = getUserLocale();
+  }
+
+  const res = await fetch(`${API_URL}/auth/avatar`, {
+    method: 'DELETE',
+    headers,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Remove failed');
+  }
+  return res.json();
+}
+
 /** Upload avatar image (compressed to 500x500 on server). Returns updated user and avatarUrl. */
 export async function uploadAvatar(
   file: File,

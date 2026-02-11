@@ -16,7 +16,7 @@ export function ContentLayout({
   children,
 }: ContentLayoutProps) {
   return (
-    <div className="flex min-h-full w-full flex-col md:flex-row md:gap-6 max-w-4xl mx-auto pt-4">
+    <div className="flex min-h-full w-full flex-col md:flex-row md:gap-6 max-w-4xl mx-auto pt-4 px-4">
       <main className="min-w-0 flex-1 flex flex-col justify-center order-2 md:order-1">
         {children}
       </main>

@@ -3,6 +3,7 @@ import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type NavIconItemProps = {
+  className?: string;
   href: string;
   icon: LucideIcon;
   label: string;
@@ -16,6 +17,7 @@ type NavIconItemProps = {
  * Nav item: Link + square icon box + label.
  */
 export function NavIconItem({
+  className,
   href,
   icon: Icon,
   label,
@@ -28,8 +30,9 @@ export function NavIconItem({
     <Link
       href={href}
       className={cn(
-        'flex flex-col items-center justify-center gap-0.5 rounded-lg px-2 py-1 transition-colors',
+        'flex flex-col items-center justify-center gap-0.5 rounded-lg px-1 pr-4 py-1 transition-colors',
         orientation === 'vertical' ? 'flex-col' : 'flex-row',
+        className,
         isActive
           ? 'bg-accent text-accent-foreground'
           : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
@@ -45,7 +48,7 @@ export function NavIconItem({
           orientation === 'vertical' ? `h-${iconSize} w-${iconSize}` : ``,
         )} aria-hidden />
       </div>
-      <span className="min-w-0 max-w-full shrink text-xs font-medium truncate w-full text-center">
+      <span className="shrink text-xs font-medium truncate">
         {label}
       </span>
     </Link>

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CheckCircle2, CircleAlert, Camera } from 'lucide-react';
+import { CheckCircle2, CircleAlert, Camera, Trash2 } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -27,9 +27,11 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   getStoredUser,
   updateProfile,
+  removeAvatar,
   updateStoredUser,
   uploadAvatar,
 } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from '@/hooks/useTranslations';
 import {
   getBasicProfileFormSchema,
@@ -57,8 +59,11 @@ export default function ProfileBasicPage() {
   const [submitError, setSubmitError] = useState('');
   const [success, setSuccess] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const { refreshAuth } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarCacheBuster, setAvatarCacheBuster] = useState<number | null>(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarRemoving, setAvatarRemoving] = useState(false);
   const [avatarError, setAvatarError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -100,6 +105,8 @@ export default function ProfileBasicPage() {
       const { user: updated } = await uploadAvatar(file);
       updateStoredUser(updated);
       setAvatarUrl(updated.avatarUrl ?? null);
+      setAvatarCacheBuster(Date.now());
+      await refreshAuth();
       setSuccess(true);
       router.refresh();
     } catch {
@@ -107,6 +114,25 @@ export default function ProfileBasicPage() {
     } finally {
       setAvatarUploading(false);
       e.target.value = '';
+    }
+  }
+
+  async function onRemoveAvatar() {
+    if (!avatarUrl) return;
+    setAvatarError('');
+    setAvatarRemoving(true);
+    try {
+      const { user: updated } = await removeAvatar();
+      updateStoredUser(updated);
+      setAvatarUrl(null);
+      setAvatarCacheBuster(Date.now());
+      await refreshAuth();
+      setSuccess(true);
+      router.refresh();
+    } catch {
+      setAvatarError(t('profile.avatarUploadFailed'));
+    } finally {
+      setAvatarRemoving(false);
     }
   }
 
@@ -172,7 +198,14 @@ export default function ProfileBasicPage() {
               <div className="flex items-center gap-4">
                 <label htmlFor={`${formId}-avatar`} className="cursor-pointer">
                   <Avatar className="h-20 w-20 ring-2 ring-muted">
-                    <AvatarImage src={avatarUrl ?? undefined} alt="" />
+                    <AvatarImage
+                      src={
+                        avatarUrl
+                          ? `${avatarUrl}${avatarCacheBuster ? `?v=${avatarCacheBuster}` : ''}`
+                          : undefined
+                      }
+                      alt=""
+                    />
                     <AvatarFallback className="text-lg">
                       {initials}
                     </AvatarFallback>
@@ -188,20 +221,35 @@ export default function ProfileBasicPage() {
                     aria-label={t('profile.changeAvatar')}
                   />
                 </label>
-                <div className="flex flex-col gap-1">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={avatarUploading}
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-fit"
-                  >
-                    <Camera className="size-4" />
-                    {avatarUploading
-                      ? t('profile.avatarUploading')
-                      : t('profile.changeAvatar')}
-                  </Button>
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={avatarUploading || avatarRemoving}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-fit"
+                    >
+                      <Camera className="size-4" />
+                      {avatarUploading
+                        ? t('profile.avatarUploading')
+                        : t('profile.changeAvatar')}
+                    </Button>
+                    {avatarUrl && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={avatarUploading || avatarRemoving}
+                        onClick={onRemoveAvatar}
+                        className="w-fit text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="size-4" />
+                        {avatarRemoving ? t('common.saving') : t('profile.removeAvatar')}
+                      </Button>
+                    )}
+                  </div>
                   {avatarError && (
                     <span className="text-sm text-destructive">
                       {avatarError}

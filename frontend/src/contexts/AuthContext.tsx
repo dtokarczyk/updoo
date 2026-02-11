@@ -8,13 +8,22 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { getToken, getStoredUser, clearAuth, type AuthUser } from '@/lib/api';
+import {
+  getToken,
+  getStoredUser,
+  clearAuth,
+  getProfile,
+  updateStoredUser,
+  type AuthUser,
+} from '@/lib/api';
 
 interface AuthContextValue {
   user: AuthUser | null;
   isLoggedIn: boolean;
-  /** Re-read token and user from storage (e.g. after login/register). */
-  refreshAuth: () => void;
+  /** Key that changes on each refetch – use as cache buster for avatar URL. */
+  userKey: number;
+  /** Refetch user from API and update state (e.g. after login/register/avatar change). */
+  refreshAuth: () => Promise<void>;
   /** Clear storage and set user to null. */
   logout: () => void;
 }
@@ -35,12 +44,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(
     () => getInitialAuth().isLoggedIn,
   );
+  const [userKey, setUserKey] = useState(0);
 
-  const refreshAuth = useCallback(() => {
+  const refreshAuth = useCallback((): Promise<void> => {
     const token = getToken();
-    const u = getStoredUser();
-    setUser(u);
-    setIsLoggedIn(!!token);
+    if (!token) {
+      setUser(null);
+      setIsLoggedIn(false);
+      return Promise.resolve();
+    }
+    return getProfile()
+      .then((res) => {
+        if (res?.user) {
+          updateStoredUser(res.user);
+          setUser(res.user);
+          setUserKey((k) => k + 1);
+          setIsLoggedIn(true);
+        } else {
+          setUser(null);
+          setIsLoggedIn(false);
+        }
+      })
+      .catch(() => {
+        setUser(null);
+        setIsLoggedIn(false);
+      });
   }, []);
 
   const logout = useCallback(() => {
@@ -56,6 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value: AuthContextValue = {
     user,
     isLoggedIn,
+    userKey,
     refreshAuth,
     logout,
   };

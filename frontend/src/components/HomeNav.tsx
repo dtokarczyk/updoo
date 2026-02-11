@@ -3,11 +3,12 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { type AuthUser, type AccountType } from '@/lib/api';
+import { type AccountType, type AuthUser } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from '@/hooks/useTranslations';
+import { ProfileAvatar } from '@/components/ProfileAvatar';
 
 function accountTypeLabel(
   type: AccountType | null,
@@ -20,15 +21,6 @@ function accountTypeLabel(
     ADMIN: t('accountTypes.admin'),
   };
   return labels[type];
-}
-
-export function initials(user: AuthUser): string {
-  const n = user.name?.trim();
-  const s = user.surname?.trim();
-  if (n && s) return (n[0] + s[0]).toUpperCase();
-  if (n) return n.slice(0, 2).toUpperCase();
-  if (user.email) return user.email.slice(0, 2).toUpperCase();
-  return '?';
 }
 
 /** Full display name: "Name Surname" or fallback to email / "Profil". */
@@ -84,15 +76,9 @@ export function UserDropdown(props: {
         aria-expanded={dropdownOpen}
         aria-haspopup="true"
       >
-        <span
-          className={cn(
-            'flex shrink-0 items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground',
-            iconOnly ? 'h-8 w-8' : 'h-8 w-8',
-          )}
-          aria-hidden
-        >
-          {user ? initials(user) : '?'}
-        </span>
+        <ProfileAvatar
+          className={cn(iconOnly ? 'h-8 w-8' : 'h-8 w-8')}
+        />
         {!iconOnly && (
           <span className="hidden min-w-0 flex-col items-start text-left sm:flex">
             <span className="truncate text-sm font-medium text-foreground leading-tight">

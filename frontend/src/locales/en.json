@@ -111,6 +111,7 @@
     "tabBasic": "Basic data",
     "avatar": "Profile photo",
     "changeAvatar": "Change photo",
+    "removeAvatar": "Remove photo",
     "avatarUploading": "Uploading…",
     "avatarUploadFailed": "Failed to upload photo.",
     "avatarUploadSuccess": "Photo updated.",

@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Headers,
   Patch,
@@ -164,6 +165,14 @@ export class AuthController {
       avatarUrl,
     });
     return { user: updatedUser, avatarUrl };
+  }
+
+  @Delete('avatar')
+  @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
+  async removeAvatar(
+    @GetUser() user: JwtUser,
+  ): Promise<{ user: AuthResponse['user'] }> {
+    return this.authService.removeAvatar(user.id);
   }
 
   @Post('accept-agreements')

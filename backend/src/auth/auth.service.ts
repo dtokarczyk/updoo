@@ -13,6 +13,7 @@ import { EmailService } from '../email/email.service';
 import { AgreementsService } from '../agreements/agreements.service';
 import { RegonService } from '../regon/regon.service';
 import type { SearchResultRow } from '../regon/regon-contact.util';
+import { StorageService } from '../storage/storage.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -74,7 +75,17 @@ export class AuthService {
     private readonly agreementsService: AgreementsService,
     private readonly i18nService: I18nService,
     private readonly regonService: RegonService,
+    private readonly storageService: StorageService,
   ) { }
+
+  /** Resolve avatar URL to presigned URL for private buckets (e.g. Railway). */
+  private async resolveAvatarUrlForResponse(
+    avatarUrl: string | null,
+  ): Promise<string | null> {
+    const presigned =
+      await this.storageService.getPresignedAvatarUrl(avatarUrl);
+    return presigned ?? avatarUrl;
+  }
 
   /** Company payload returned by GET /auth/company and after link/refresh. */
   getCompanyPayload(company: {
@@ -187,12 +198,14 @@ export class AuthService {
         }
       ).skills ?? [];
     const userCompany = user as { company?: { nip: string } | null };
+    const resolvedAvatarUrl =
+      await this.resolveAvatarUrlForResponse(user.avatarUrl ?? null);
     const authUser: AuthResponseUser = {
       id: user.id,
       email: user.email,
       name: user.name,
       surname: user.surname,
-      avatarUrl: user.avatarUrl ?? null,
+      avatarUrl: resolvedAvatarUrl ?? user.avatarUrl ?? null,
       phone: user.phone,
       nipCompany: userCompany.company?.nip ?? null,
       companyId: user.companyId ?? null,
@@ -380,7 +393,7 @@ export class AuthService {
       },
     });
     if (!withRelations) {
-      return this.buildAuthResponse({
+      return this.buildAuthResponseAsync({
         id: user.id,
         email: user.email,
         name: user.name,
@@ -407,7 +420,7 @@ export class AuthService {
     const withRelationsCompany = withRelations as {
       company?: { nip: string } | null;
     };
-    return this.buildAuthResponse({
+    return this.buildAuthResponseAsync({
       id: withRelations.id,
       email: withRelations.email,
       name: withRelations.name,
@@ -452,7 +465,7 @@ export class AuthService {
         }
       ).skills ?? [];
     const userCompany = user as { company?: { nip: string } | null };
-    return this.buildAuthResponse({
+    return this.buildAuthResponseAsync({
       id: user.id,
       email: user.email,
       name: user.name,
@@ -508,7 +521,7 @@ export class AuthService {
           }
         ).skills ?? [];
       const userCompany = user as { company?: { nip: string } | null };
-      return this.buildAuthResponse({
+      return this.buildAuthResponseAsync({
         id: user.id,
         email: user.email,
         name: user.name,
@@ -550,7 +563,7 @@ export class AuthService {
           }
         ).skills ?? [];
       const userCompany = user as { company?: { nip: string } | null };
-      return this.buildAuthResponse({
+      return this.buildAuthResponseAsync({
         id: user.id,
         email: user.email,
         name: user.name,
@@ -589,7 +602,7 @@ export class AuthService {
       },
     });
     if (!withRelations) {
-      return this.buildAuthResponse({
+      return this.buildAuthResponseAsync({
         id: newUser.id,
         email: newUser.email,
         name: newUser.name,
@@ -616,7 +629,7 @@ export class AuthService {
     const newUserCompany = withRelations as {
       company?: { nip: string } | null;
     };
-    return this.buildAuthResponse({
+    return this.buildAuthResponseAsync({
       id: withRelations.id,
       email: withRelations.email,
       name: withRelations.name,
@@ -718,13 +731,15 @@ export class AuthService {
         }
       ).skills ?? [];
     const userCompany = user as { company?: { nip: string } | null };
+    const resolvedAvatarUrl =
+      await this.resolveAvatarUrlForResponse(user.avatarUrl ?? null);
     return {
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
         surname: user.surname,
-        avatarUrl: user.avatarUrl ?? null,
+        avatarUrl: resolvedAvatarUrl ?? user.avatarUrl ?? null,
         phone: user.phone,
         nipCompany: userCompany.company?.nip ?? null,
         companyId: user.companyId ?? null,
@@ -740,6 +755,19 @@ export class AuthService {
         acceptedPrivacyPolicyVersion: user.acceptedPrivacyPolicyVersion,
       },
     };
+  }
+
+  /** Remove user avatar from storage and set avatarUrl to null. */
+  async removeAvatar(userId: string): Promise<{ user: AuthResponse['user'] }> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { avatarUrl: true },
+    });
+    const avatarUrl = user?.avatarUrl ?? null;
+    if (avatarUrl) {
+      await this.storageService.deleteAvatar(avatarUrl);
+    }
+    return this.updateProfile(userId, { avatarUrl: '' });
   }
 
   async validateUser(payload: JwtPayload) {
@@ -759,12 +787,14 @@ export class AuthService {
         }
       ).skills ?? [];
     const userCompany = user as { company?: { nip: string } | null };
+    const resolvedAvatarUrl =
+      await this.resolveAvatarUrlForResponse(user.avatarUrl ?? null);
     return {
       id: user.id,
       email: user.email,
       name: user.name,
       surname: user.surname,
-      avatarUrl: user.avatarUrl ?? null,
+      avatarUrl: resolvedAvatarUrl ?? user.avatarUrl ?? null,
       phone: user.phone,
       nipCompany: userCompany.company?.nip ?? null,
       companyId: user.companyId ?? null,
@@ -808,13 +838,15 @@ export class AuthService {
         }
       ).skills ?? [];
     const userCompany = user as { company?: { nip: string } | null };
+    const resolvedAvatarUrl =
+      await this.resolveAvatarUrlForResponse(user.avatarUrl ?? null);
     return {
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
         surname: user.surname,
-        avatarUrl: user.avatarUrl ?? null,
+        avatarUrl: resolvedAvatarUrl ?? user.avatarUrl ?? null,
         phone: user.phone,
         nipCompany: userCompany.company?.nip ?? null,
         companyId: user.companyId ?? null,
@@ -855,5 +887,16 @@ export class AuthService {
         acceptedPrivacyPolicyVersion: user.acceptedPrivacyPolicyVersion,
       },
     };
+  }
+
+  private async buildAuthResponseAsync(
+    user: AuthResponseUser,
+  ): Promise<AuthResponse> {
+    const resolvedAvatarUrl =
+      await this.resolveAvatarUrlForResponse(user.avatarUrl);
+    return this.buildAuthResponseAsync({
+      ...user,
+      avatarUrl: resolvedAvatarUrl,
+    });
   }
 }

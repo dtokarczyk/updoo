@@ -31,7 +31,7 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
   return (
     <>
       <header
-        className={`border-b border-border w-full sticky top-0 z-10 bg-background/950 backdrop-blur`}
+        className={`border-b border-border w-full sticky top-0 z-10 bg-background/70 backdrop-blur`}
       >
         <div
           className={` mx-auto flex flex-row items-center justify-between gap-3 sm:gap-4 px-4 py-2 w-full max-w-7xl`}
@@ -99,11 +99,12 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
 
       {/* Mobile bottom navigation bar */}
       <nav
-        className="fixed inset-x-0 bottom-0 z-90 flex items-center justify-around border-t border-border bg-background/950 backdrop-blur px-2 py-2 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] safe-area-pb lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-90 flex items-center justify-around border-t border-border bg-background/80 backdrop-blur px-2 py-2 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] safe-area-pb lg:hidden"
         aria-label="Main navigation"
       >
         {navItems.map(({ href, icon, labelKey }) => (
           <NavIconItem
+            className="w-full"
             key={href}
             href={href}
             icon={icon}

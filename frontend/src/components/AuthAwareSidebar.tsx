@@ -1,8 +1,8 @@
 'use client';
 
-import { AuthPromoSidebar } from '@/app/components/AuthPromoSidebar';
-import { AuthBottomBar } from '@/app/components/AuthBottomBar';
-import { UserSidebar } from '@/app/components/UserSidebar';
+import { AuthPromoSidebar } from '@/components/AuthPromoSidebar';
+import { AuthBottomBar } from '@/components/AuthBottomBar';
+import { UserSidebar } from '@/components/UserSidebar';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Locale } from '@/lib/i18n';
 

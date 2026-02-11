@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { JobsFeed } from '@/app/components/JobsFeed';
+import { JobsFeed } from '@/components/JobsFeed';
 import type { JobLanguage, PopularSkill } from '@/lib/api';
 import { getPopularSkillsForCategory } from '@/lib/api';
 import { useTranslations } from '@/hooks/useTranslations';

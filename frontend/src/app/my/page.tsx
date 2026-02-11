@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from '@/hooks/useTranslations';
-import { MySidebar } from './MySidebar';
+import { Sidebar } from './sidebar';
 
 const DESKTOP_BREAKPOINT = 768;
 
@@ -44,7 +44,7 @@ export default function MyPage() {
       <p className="text-sm text-muted-foreground mb-2">
         {t('my.desc')}
       </p>
-      <MySidebar variant="list" />
+      <Sidebar variant="list" />
     </div>
   );
 }

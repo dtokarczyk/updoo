@@ -5,7 +5,7 @@ import {
   allCategoriesLabelByLocale,
 } from '@/lib/metadata-config';
 import { getCategoriesServer } from '@/lib/categories-server';
-import { OffersPageLayout } from '@/app/components/OffersPageLayout';
+import { OffersPageLayout } from '@/components/OffersPageLayout';
 import type { JobLanguage } from '@/lib/api';
 
 export const revalidate = 300;

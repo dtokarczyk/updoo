@@ -10,7 +10,6 @@ import {
 } from '@/lib/api';
 
 const SKIP_AGREEMENTS_PATHS = [
-  '/accept-agreements',
   '/agreements',
   '/login',
   '/register',
@@ -25,7 +24,7 @@ function shouldSkipAgreementsCheck(pathname: string): boolean {
 
 /**
  * Redirects when user is logged in but has not accepted current agreements
- * (→ /accept-agreements) or, only on "/", has not completed onboarding (→ /onboarding).
+ * (→ /agreements/accept) or, only on "/", has not completed onboarding (→ /onboarding).
  */
 export function OnboardingRedirect({
   children,
@@ -46,7 +45,7 @@ export function OnboardingRedirect({
       .then((profile) => {
         if (cancelled || !profile) return;
         if (profile.needsAgreementsAcceptance) {
-          router.replace('/accept-agreements');
+          router.replace('/agreements/accept');
           return;
         }
         if (pathname === '/' && needsOnboarding(profile.user)) {
@@ -54,7 +53,7 @@ export function OnboardingRedirect({
         }
       })
       .catch(() => {
-        if (!cancelled) router.replace('/accept-agreements');
+        if (!cancelled) router.replace('/agreements/accept');
       });
     return () => {
       cancelled = true;

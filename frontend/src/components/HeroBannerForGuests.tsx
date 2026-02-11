@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getToken } from '@/lib/api';
-import { HeroBanner } from '@/app/components/HeroBanner';
+import { HeroBanner } from '@/components/HeroBanner';
 import { t as translate } from '@/lib/translations';
 import type { Locale } from '@/lib/i18n';
 

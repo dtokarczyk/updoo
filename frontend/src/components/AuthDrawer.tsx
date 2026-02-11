@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageToggle } from '@/components/LanguageToggle';
-import { AuthButtons } from '@/app/components/AuthButtons';
+import { AuthButtons } from '@/components/AuthButtons';
 import { useTranslations } from '@/hooks/useTranslations';
 import { getUserLocale, type Locale } from '@/lib/i18n';
 import { t as translate } from '@/lib/translations';

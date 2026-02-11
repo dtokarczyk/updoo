@@ -8,7 +8,7 @@ import {
   Key,
   Bell,
 } from 'lucide-react';
-import { SidebarNavList, type SidebarNavItem } from '@/app/components/SidebarNavList';
+import { SidebarNavList, type SidebarNavItem } from '@/components/SidebarNavList';
 
 const PROFILE_NAV: SidebarNavItem[] = [
   { href: '/profile/basic', labelKey: 'profile.tabBasic', icon: User },

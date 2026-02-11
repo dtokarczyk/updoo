@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Plus } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageToggle } from '@/components/LanguageToggle';
-import { AuthButtons } from '@/app/components/AuthButtons';
+import { AuthButtons } from '@/components/AuthButtons';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/hooks/useTranslations';
 import { getUserLocale, type Locale } from '@/lib/i18n';

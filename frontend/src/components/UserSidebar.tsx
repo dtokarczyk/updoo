@@ -16,7 +16,7 @@ import { jobPath } from '@/lib/job-url';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/hooks/useTranslations';
-import { UserDropdown } from '@/app/components/HomeNav';
+import { UserDropdown } from '@/components/HomeNav';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Locale } from '@/lib/i18n';
 

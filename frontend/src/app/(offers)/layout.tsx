@@ -1,5 +1,6 @@
-import { OffersLeftSidebar } from '@/app/components/OffersLeftSidebar';
-import { AuthAwareSidebar } from '@/app/components/AuthAwareSidebar';
+import { OffersLeftSidebar } from '@/components/OffersLeftSidebar';
+import { AuthAwareSidebar } from '@/components/AuthAwareSidebar';
+import { HomeLayout } from '@/layouts/HomeLayout';
 import { getCategoriesServer } from '@/lib/categories-server';
 import { getLocaleFromRequest } from '@/lib/i18n';
 
@@ -16,12 +17,11 @@ export default async function OffersLayout({
   const locale = await getLocaleFromRequest();
 
   return (
-    <div className="max-w-7xl mx-auto px-4">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-8">
-        <OffersLeftSidebar categories={categories} initialLocale={locale} />
-        {children}
-        <AuthAwareSidebar initialLocale={locale} />
-      </div>
-    </div>
+    <HomeLayout
+      left={<OffersLeftSidebar categories={categories} initialLocale={locale} />}
+      right={<AuthAwareSidebar initialLocale={locale} />}
+    >
+      {children}
+    </HomeLayout>
   );
 }

@@ -1,6 +1,6 @@
-import { CategoriesSidebarMobile } from '@/app/components/CategoriesSidebarMobile';
-import { JobsSectionHeader } from '@/app/components/JobsSectionHeader';
-import { HeroBannerForGuests } from '@/app/components/HeroBannerForGuests';
+import { CategoriesSidebarMobile } from '@/components/CategoriesSidebarMobile';
+import { JobsSectionHeader } from '@/components/JobsSectionHeader';
+import { HeroBannerForGuests } from '@/components/HeroBannerForGuests';
 import { t } from '@/lib/translations';
 import type { Category, JobLanguage } from '@/lib/api';
 import type { Locale } from '@/lib/i18n';

@@ -1,8 +1,12 @@
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import { getLocaleFromRequest } from '@/lib/i18n';
 import { getMetadataConfig } from '@/lib/metadata-config';
 import { requireAuth } from '@/lib/auth-server';
-import { ProfileLayoutServer } from './ProfileLayout';
+import { X_PATHNAME_HEADER } from '@/middleware';
+import { ProfileSidebar } from './ProfileSidebar';
+import { SettingsLayout } from '@/layouts/SettingsLayout';
+
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocaleFromRequest();
@@ -25,11 +29,16 @@ export default async function ProfileLayout({
 }) {
   await requireAuth();
 
+  const headersList = await headers();
+  const pathname = headersList.get(X_PATHNAME_HEADER) ?? '';
+  const isMenuPage = pathname === '/profile' || pathname === '/profile/';
+
   return (
-    <div className="flex min-h-full w-full justify-center p-4 md:p-6">
-      <div className="w-full max-w-3xl">
-        <ProfileLayoutServer>{children}</ProfileLayoutServer>
-      </div>
-    </div>
+    <SettingsLayout
+      sidebar={<ProfileSidebar variant="sidebar" />}
+      mobileList={<ProfileSidebar variant="list" />}
+    >
+      {children}
+    </SettingsLayout>
   );
 }

@@ -15,7 +15,7 @@ import {
   type PaginationInfo,
 } from '@/lib/api';
 import { jobPathEdit } from '@/lib/job-url';
-import { JobPost } from '@/app/components/JobPost';
+import { JobPost } from '@/components/JobPost';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import {

@@ -4,14 +4,14 @@ import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, FolderOpen, UserCircle, Settings, PanelRightOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Logotype } from '@/app/components/Logotype';
+import { Logotype } from '@/components/Logotype';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from '@/hooks/useTranslations';
 import type { Locale } from '@/lib/i18n';
-import { UserDrawerContent } from '@/app/components/UserDrawer';
-import { AuthDrawerContent } from '@/app/components/AuthDrawer';
+import { UserDrawerContent } from '@/components/UserDrawer';
+import { AuthDrawerContent } from '@/components/AuthDrawer';
 import { Drawer, DrawerTrigger } from '@/components/ui/drawer';
-import { NavIconItem } from '@/app/components/NavIconItem';
+import { NavIconItem } from '@/components/NavIconItem';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
@@ -24,8 +24,8 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
   const navItems = [
     { href: '/', icon: LayoutDashboard, labelKey: 'nav.board' },
     { href: '/my', icon: FolderOpen, labelKey: 'nav.myThings' },
-    { href: '/company/moja-nazwa-profilu', icon: UserCircle, labelKey: 'nav.profile' },
-    { href: '/profile/basic', icon: Settings, labelKey: 'nav.settings' },
+    { href: '/company/moja-nazwa-profilu', icon: UserCircle, labelKey: 'nav.businessCard' },
+    { href: '/profile/basic', icon: Settings, labelKey: 'nav.profile' },
   ] as const;
 
   return (

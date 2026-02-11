@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { useTranslations } from '@/hooks/useTranslations';
-import { JobForm } from '@/app/components/JobForm';
+import { JobForm } from '@/components/JobForm';
 
 export default function EditListingPage() {
   const router = useRouter();

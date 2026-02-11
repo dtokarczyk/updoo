@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { getLocaleFromRequest } from '@/lib/i18n';
 import { getUserApplicationsServer } from '@/lib/api';
 import { getTokenFromCookies } from '@/lib/auth-server';
-import { JobPost } from '@/app/components/JobPost';
+import { JobPost } from '@/components/JobPost';
 import { t as translateT } from '@/lib/translations';
 
 export default async function MyApplicationsPage() {

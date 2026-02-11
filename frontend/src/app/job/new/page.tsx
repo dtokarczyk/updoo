@@ -16,7 +16,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { useTranslations } from '@/hooks/useTranslations';
-import { JobForm } from '@/app/components/JobForm';
+import { JobForm } from '@/components/JobForm';
 import type { CreateJobPayload } from '@/lib/api';
 
 export default function NewListingPage() {

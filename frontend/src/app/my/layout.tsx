@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
+import { SettingsLayout } from '@/layouts/SettingsLayout';
 import { getLocaleFromRequest } from '@/lib/i18n';
 import { getMetadataConfig } from '@/lib/metadata-config';
 import { requireAuth } from '@/lib/auth-server';
-import { MyLayoutClient } from '@/app/my/MyLayoutClient';
+import { Sidebar } from './sidebar';
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocaleFromRequest();
@@ -26,10 +27,11 @@ export default async function MyLayout({
   await requireAuth();
 
   return (
-    <div className="flex min-h-full w-full justify-center p-4 md:p-6">
-      <div className="w-full max-w-7xl">
-        <MyLayoutClient>{children}</MyLayoutClient>
-      </div>
-    </div>
+    <SettingsLayout
+      sidebar={<Sidebar variant="sidebar" />}
+      mobileList={<Sidebar variant="list" />}
+    >
+      {children}
+    </SettingsLayout>
   );
 }

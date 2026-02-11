@@ -1,8 +1,8 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { Logotype } from '@/app/components/Logotype';
-import { CategoriesSidebar } from '@/app/components/CategoriesSidebar';
+import { Logotype } from '@/components/Logotype';
+import { CategoriesSidebar } from '@/components/CategoriesSidebar';
 import type { Category } from '@/lib/api';
 import type { Locale } from '@/lib/i18n';
 

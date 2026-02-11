@@ -103,7 +103,7 @@ function LoginCallbackContent() {
         const target =
           returnUrl ||
           (needsAgreementsAcceptance
-            ? '/accept-agreements'
+            ? '/agreements/accept'
             : needsOnboarding(user)
               ? '/onboarding'
               : '/');

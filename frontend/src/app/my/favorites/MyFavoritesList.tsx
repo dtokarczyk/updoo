@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { JobPost } from '@/app/components/JobPost';
+import { JobPost } from '@/components/JobPost';
 import type { Job } from '@/lib/api';
 
 export function MyFavoritesList({ initialJobs }: { initialJobs: Job[] }) {

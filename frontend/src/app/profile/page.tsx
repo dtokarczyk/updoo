@@ -8,10 +8,11 @@ import { getToken } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
 const PROFILE_NAV = [
-  { href: '/profile/basic', key: 'tabBasic' as const },
-  { href: '/profile/skills', key: 'tabSkills' as const },
-  { href: '/profile/business-profile', key: 'menuBusinessProfile' as const },
-  { href: '/profile/password', key: 'tabPassword' as const },
+  { href: '/profile/basic', key: 'tabBasic' as const, prefix: 'profile' as const },
+  { href: '/profile/skills', key: 'tabSkills' as const, prefix: 'profile' as const },
+  { href: '/profile/business-profile', key: 'menuBusinessProfile' as const, prefix: 'profile' as const },
+  { href: '/profile/password', key: 'tabPassword' as const, prefix: 'profile' as const },
+  { href: '/profile/notifications', key: 'tabNotifications' as const, prefix: 'notifications' as const },
 ] as const;
 
 const DESKTOP_BREAKPOINT = 768;
@@ -65,7 +66,7 @@ export default function ProfilePage() {
         className="flex flex-col gap-1"
         aria-label={t('profile.editProfile')}
       >
-        {PROFILE_NAV.map(({ href, key }) => (
+        {PROFILE_NAV.map(({ href, key, prefix }) => (
           <Link
             key={href}
             href={href}
@@ -74,7 +75,7 @@ export default function ProfilePage() {
               'bg-muted/50 hover:bg-muted border border-border',
             )}
           >
-            {t(`profile.${key}`)}
+            {t(`${prefix}.${key}`)}
           </Link>
         ))}
       </nav>

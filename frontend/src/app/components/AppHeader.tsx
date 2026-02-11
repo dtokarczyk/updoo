@@ -2,10 +2,9 @@
 
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { ArrowLeft, MessageCircle, Users, UserCircle, Settings, PanelRightOpen } from 'lucide-react';
+import { LayoutDashboard, FolderOpen, UserCircle, Settings, PanelRightOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logotype } from '@/app/components/Logotype';
-import { HomeNav } from '@/app/components/HomeNav';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from '@/hooks/useTranslations';
 import type { Locale } from '@/lib/i18n';
@@ -23,7 +22,8 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
   const [authDrawerOpen, setAuthDrawerOpen] = useState(false);
 
   const navItems = [
-    { href: '/', icon: MessageCircle, labelKey: 'nav.inquiries' },
+    { href: '/', icon: LayoutDashboard, labelKey: 'nav.board' },
+    { href: '/my', icon: FolderOpen, labelKey: 'nav.myThings' },
     { href: '/company/moja-nazwa-profilu', icon: UserCircle, labelKey: 'nav.profile' },
     { href: '/profile/basic', icon: Settings, labelKey: 'nav.settings' },
   ] as const;
@@ -52,7 +52,7 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
                   href={href}
                   icon={icon}
                   label={t(labelKey)}
-                  isActive={pathname === href}
+                  isActive={pathname === href || (href !== '/' && pathname.startsWith(href + '/'))}
                 />
               ))}
             </span>
@@ -108,7 +108,7 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
             href={href}
             icon={icon}
             label={t(labelKey)}
-            isActive={pathname === href}
+            isActive={pathname === href || (href !== '/' && pathname.startsWith(href + '/'))}
           />
         ))}
       </nav>

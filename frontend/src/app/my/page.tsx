@@ -3,11 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from '@/hooks/useTranslations';
-import { ProfileSidebar } from './ProfileSidebar';
+import { MySidebar } from './MySidebar';
 
 const DESKTOP_BREAKPOINT = 768;
 
-export default function ProfilePage() {
+export default function MyPage() {
   const router = useRouter();
   const { t } = useTranslations();
   const [mounted, setMounted] = useState(false);
@@ -27,7 +27,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!mounted || !isDesktop) return;
-    router.replace('/profile/basic');
+    router.replace('/my/applications');
   }, [mounted, isDesktop, router]);
 
   if (!mounted) {
@@ -40,11 +40,11 @@ export default function ProfilePage() {
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-2">
-      <h1 className="text-xl font-semibold">{t('profile.editProfile')}</h1>
+      <h1 className="text-xl font-semibold">{t('my.title')}</h1>
       <p className="text-sm text-muted-foreground mb-2">
-        {t('profile.editProfileDesc')}
+        {t('my.desc')}
       </p>
-      <ProfileSidebar variant="list" />
+      <MySidebar variant="list" />
     </div>
   );
 }

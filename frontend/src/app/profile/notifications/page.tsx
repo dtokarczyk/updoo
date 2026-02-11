@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle2, CircleAlert } from 'lucide-react';
 import {
@@ -14,7 +13,6 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import {
-  getToken,
   getNotificationPreferences,
   updateNotificationPreference,
   type NotificationPreference,
@@ -23,7 +21,6 @@ import {
 import { useTranslations } from '@/hooks/useTranslations';
 
 export default function ProfileNotificationsPage() {
-  const router = useRouter();
   const { t } = useTranslations();
   const [preferences, setPreferences] = useState<NotificationPreference[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,12 +45,8 @@ export default function ProfileNotificationsPage() {
 
   useEffect(() => {
     setMounted(true);
-    if (!getToken()) {
-      router.replace('/login');
-      return;
-    }
     void loadPreferences();
-  }, [router, loadPreferences]);
+  }, [loadPreferences]);
 
   async function handleToggleEnabled(
     pref: NotificationPreference,

@@ -1146,6 +1146,30 @@ export async function getFavoritesJobs(): Promise<Job[]> {
   return res.json();
 }
 
+/**
+ * Server-side fetch – accepts token and locale (no localStorage).
+ * Returns empty array on error.
+ */
+export async function getFavoritesJobsServer(
+  locale: string,
+  token: string,
+): Promise<Job[]> {
+  try {
+    const headers: HeadersInit = {
+      Authorization: `Bearer ${token}`,
+      'Accept-Language': locale === 'en' ? 'en' : 'pl',
+    };
+    const res = await fetch(`${API_URL}/jobs/favorites`, {
+      headers,
+      cache: 'no-store',
+    });
+    if (!res.ok) return [];
+    return (await res.json()) as Job[];
+  } catch {
+    return [];
+  }
+}
+
 export async function getPendingJobs(
   page: number = 1,
   pageSize: number = 15,
@@ -1200,6 +1224,30 @@ export async function getUserApplications(): Promise<UserApplication[]> {
     throw new Error(msg ?? 'Failed to fetch user applications');
   }
   return res.json();
+}
+
+/**
+ * Server-side fetch – accepts token and locale (no localStorage).
+ * Returns empty array on error.
+ */
+export async function getUserApplicationsServer(
+  locale: string,
+  token: string,
+): Promise<UserApplication[]> {
+  try {
+    const headers: HeadersInit = {
+      Authorization: `Bearer ${token}`,
+      'Accept-Language': locale === 'en' ? 'en' : 'pl',
+    };
+    const res = await fetch(`${API_URL}/jobs/my-applications`, {
+      headers,
+      cache: 'no-store',
+    });
+    if (!res.ok) return [];
+    return (await res.json()) as UserApplication[];
+  } catch {
+    return [];
+  }
 }
 
 export async function getUserJobs(): Promise<Job[]> {

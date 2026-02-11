@@ -26,7 +26,6 @@ import {
   getStoredUser,
   updateProfile,
   updateStoredUser,
-  getToken,
   clearAuth,
 } from '@/lib/api';
 import { useTranslations } from '@/hooks/useTranslations';
@@ -61,14 +60,6 @@ export default function ProfilePasswordPage() {
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-    if (!getToken()) {
-      router.replace('/login');
-      return;
-    }
-  }, [mounted, router]);
 
   async function onSubmit(data: PasswordFormValues) {
     setSubmitError('');

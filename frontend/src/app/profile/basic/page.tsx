@@ -27,7 +27,6 @@ import {
   getStoredUser,
   updateProfile,
   updateStoredUser,
-  getToken,
 } from '@/lib/api';
 import { useTranslations } from '@/hooks/useTranslations';
 import {
@@ -70,14 +69,6 @@ export default function ProfileBasicPage() {
       });
     }
   }, [reset]);
-
-  useEffect(() => {
-    if (!mounted) return;
-    if (!getToken()) {
-      router.replace('/login');
-      return;
-    }
-  }, [mounted, router]);
 
   async function onSubmit(data: BasicProfileFormValues) {
     setSubmitError('');

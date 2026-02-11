@@ -2,11 +2,11 @@ import type { Metadata } from 'next';
 import { getLocaleFromRequest } from '@/lib/i18n';
 import { getMetadataConfig } from '@/lib/metadata-config';
 import { requireAuth } from '@/lib/auth-server';
-import { ProfileLayoutServer } from './ProfileLayout';
+import { MyLayoutClient } from '@/app/my/MyLayoutClient';
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocaleFromRequest();
-  const meta = getMetadataConfig(locale).profileEdit;
+  const meta = getMetadataConfig(locale).my;
   return {
     title: meta.title,
     description: meta.description,
@@ -18,7 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function ProfileLayout({
+export default async function MyLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -27,8 +27,8 @@ export default async function ProfileLayout({
 
   return (
     <div className="flex min-h-full w-full justify-center p-4 md:p-6">
-      <div className="w-full max-w-3xl">
-        <ProfileLayoutServer>{children}</ProfileLayoutServer>
+      <div className="w-full max-w-7xl">
+        <MyLayoutClient>{children}</MyLayoutClient>
       </div>
     </div>
   );

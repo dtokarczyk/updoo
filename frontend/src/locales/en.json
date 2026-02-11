@@ -1,12 +1,24 @@
 {
   "nav": {
     "home": "Home",
+    "board": "Board",
     "inquiries": "Inquiries",
+    "myThings": "My",
     "contacts": "Contacts",
     "profile": "Profile",
     "settings": "Settings",
     "account": "Account",
     "openAccountMenu": "Open account menu"
+  },
+  "my": {
+    "title": "My things",
+    "desc": "Your recent applications and favorite offers.",
+    "recentApplications": "Recent applications",
+    "favorites": "Favorites",
+    "noApplications": "No recent applications.",
+    "noFavorites": "You don't have any saved listings yet. Click the star on an offer to add it to favorites.",
+    "loadingApplications": "Loading applications…",
+    "loadingFavorites": "Loading favorites…"
   },
   "common": {
     "loading": "Loading…",

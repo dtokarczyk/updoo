@@ -1,12 +1,24 @@
 {
   "nav": {
     "home": "Start",
+    "board": "Tablica",
     "inquiries": "Zapytania",
+    "myThings": "Moje",
     "contacts": "Kontakty",
     "profile": "Profil",
     "settings": "Ustawienia",
     "account": "Konto",
     "openAccountMenu": "Otwórz menu konta"
+  },
+  "my": {
+    "title": "Moje",
+    "desc": "Twoje ostatnie aplikacje i ulubione oferty.",
+    "recentApplications": "Ostatnie aplikacje",
+    "favorites": "Ulubione",
+    "noApplications": "Brak ostatnich aplikacji.",
+    "noFavorites": "Nie masz jeszcze zapisanych ogłoszeń. Kliknij gwiazdkę przy ofercie, aby dodać ją do ulubionych.",
+    "loadingApplications": "Ładowanie aplikacji…",
+    "loadingFavorites": "Ładowanie ulubionych…"
   },
   "common": {
     "loading": "Ładowanie…",

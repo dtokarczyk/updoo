@@ -27,6 +27,7 @@ const metadataByLocale: Record<
     register: PageMeta;
     admin: PageMeta;
     favorites: PageMeta;
+    my: PageMeta;
     onboarding: PageMeta;
     profileEdit: PageMeta;
     profileCreate: PageMeta;
@@ -78,6 +79,11 @@ const metadataByLocale: Record<
       title: 'Ulubione ogłoszenia',
       description:
         `Twoja lista ulubionych ofert w ${PROJECT_NAME}. Szybki dostęp do zapisanych ogłoszeń.`,
+    },
+    my: {
+      title: 'Moje',
+      description:
+        `Twoje ostatnie aplikacje i ulubione oferty w ${PROJECT_NAME}.`,
     },
     onboarding: {
       title: 'Konfiguracja konta',
@@ -161,6 +167,11 @@ const metadataByLocale: Record<
       title: 'Favorite jobs',
       description:
         `Your list of favorite job offers in ${PROJECT_NAME}. Quick access to saved listings.`,
+    },
+    my: {
+      title: 'My',
+      description:
+        `Your recent applications and favorite offers on ${PROJECT_NAME}.`,
     },
     onboarding: {
       title: 'Account setup',

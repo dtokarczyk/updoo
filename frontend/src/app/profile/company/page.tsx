@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,7 +15,6 @@ import {
 } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
 import {
-  getToken,
   getMyCompany,
   linkCompanyByNip,
   refreshCompany,
@@ -90,7 +88,6 @@ function CompanyDetails({ company }: { company: Company }) {
 }
 
 export default function ProfileCompanyPage() {
-  const router = useRouter();
   const { t } = useTranslations();
   const [company, setCompany] = useState<Company | null | undefined>(undefined);
   const [nip, setNip] = useState('');
@@ -106,14 +103,6 @@ export default function ProfileCompanyPage() {
 
   useEffect(() => {
     if (!mounted) return;
-    if (!getToken()) {
-      router.replace('/login');
-      return;
-    }
-  }, [mounted, router]);
-
-  useEffect(() => {
-    if (!mounted || !getToken()) return;
     let cancelled = false;
     getMyCompany()
       .then(({ company: c }) => {

@@ -70,7 +70,7 @@ export function CoverPhotoUpload({
   // Set initial 16:9 center crop when image loads so Confirm is enabled without user interaction
   useEffect(() => {
     if (!imageSrc) return;
-    const img = new Image();
+    const img = document.createElement('img');
     img.onload = () => {
       const { naturalWidth: w, naturalHeight: h } = img;
       const aspect = 16 / 9;
@@ -107,7 +107,7 @@ export function CoverPhotoUpload({
     if (!allowed.includes(file.type)) {
       setError(
         t('profile.coverUploadFailed') ||
-          'Nieprawidłowy format. Użyj JPEG, PNG, WebP lub GIF.',
+        'Nieprawidłowy format. Użyj JPEG, PNG, WebP lub GIF.',
       );
       e.target.value = '';
       return;

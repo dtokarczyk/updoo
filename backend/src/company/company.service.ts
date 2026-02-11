@@ -78,9 +78,7 @@ export class CompanyService {
   }
 
   /** Get current user's linked company. Returns null if none. */
-  async getMyCompany(
-    userId: string,
-  ): Promise<CompanyPayload | null> {
+  async getMyCompany(userId: string): Promise<CompanyPayload | null> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: { company: true },
@@ -104,8 +102,7 @@ export class CompanyService {
 
     let company = await this.prisma.company.findUnique({ where: { nip } });
     if (!company) {
-      const gus =
-        await this.regonService.getCompanyDataByNipRegonOrKrs(nip);
+      const gus = await this.regonService.getCompanyDataByNipRegonOrKrs(nip);
       if (!gus.searchResult.length) {
         throw new BadRequestException('messages.companyNotFoundInGus');
       }
@@ -126,9 +123,7 @@ export class CompanyService {
   }
 
   /** Refresh current user's company data from GUS. */
-  async refreshCompany(
-    userId: string,
-  ): Promise<{ company: CompanyPayload }> {
+  async refreshCompany(userId: string): Promise<{ company: CompanyPayload }> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: { company: true },

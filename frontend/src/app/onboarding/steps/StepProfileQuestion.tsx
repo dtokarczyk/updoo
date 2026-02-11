@@ -27,9 +27,7 @@ export function StepProfileQuestion({
   return (
     <>
       <CardHeader>
-        <CardTitle>
-          {t('onboarding.profileQuestionTitle')}
-        </CardTitle>
+        <CardTitle>{t('onboarding.profileQuestionTitle')}</CardTitle>
       </CardHeader>
       <form
         onSubmit={(e) => {

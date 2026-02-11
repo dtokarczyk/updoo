@@ -40,21 +40,21 @@ export function LocationSearchSelect({
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   const selectedLocation = locations.find((loc) => loc.id === value);
-  const displayValue = open || !value
-    ? searchQuery
-    : (selectedLocation?.name ?? '');
+  const displayValue =
+    open || !value ? searchQuery : (selectedLocation?.name ?? '');
 
   const filtered = React.useMemo(() => {
     if (!searchQuery.trim()) return locations;
     const q = searchQuery.toLowerCase().trim();
-    return locations.filter((loc) =>
-      loc.name.toLowerCase().includes(q),
-    );
+    return locations.filter((loc) => loc.name.toLowerCase().includes(q));
   }, [locations, searchQuery]);
 
   React.useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     }
@@ -117,7 +117,7 @@ export function LocationSearchSelect({
           role="listbox"
         >
           {!value ? null : (
-            <li role="option">
+            <li role="option" aria-selected={false}>
               <button
                 type="button"
                 className="w-full px-3 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground"

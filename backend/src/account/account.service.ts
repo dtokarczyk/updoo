@@ -161,9 +161,7 @@ export class AccountService {
   }
 
   /** Accept current terms and privacy policy. */
-  async acceptAgreements(
-    userId: string,
-  ): Promise<{ user: AuthResponseUser }> {
+  async acceptAgreements(userId: string): Promise<{ user: AuthResponseUser }> {
     const current = this.agreementsService.getCurrentVersions();
     const acceptedAt = new Date();
     await this.prisma.user.update({

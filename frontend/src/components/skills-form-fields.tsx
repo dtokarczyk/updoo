@@ -42,10 +42,10 @@ export function SkillsFormFields<T extends FieldValues>({
       skillsSearch.trim().length === 0
         ? availableSkills
         : availableSkills.filter((skill) =>
-          skill.name
-            .toLowerCase()
-            .includes(skillsSearch.trim().toLowerCase()),
-        ),
+            skill.name
+              .toLowerCase()
+              .includes(skillsSearch.trim().toLowerCase()),
+          ),
     [availableSkills, skillsSearch],
   );
 
@@ -71,7 +71,6 @@ export function SkillsFormFields<T extends FieldValues>({
         name={name}
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
-
             <div className="max-h-72 space-y-2 overflow-y-auto rounded-md border p-3">
               {skillsLoading && (
                 <div className="flex items-center justify-center py-8">
@@ -83,7 +82,6 @@ export function SkillsFormFields<T extends FieldValues>({
                   {skillsSearch.trim().length > 0 ? noResultsLabel : emptyLabel}
                 </p>
               )}
-
 
               {!skillsLoading &&
                 filteredSkills.map((skill) => {
@@ -112,9 +110,7 @@ export function SkillsFormFields<T extends FieldValues>({
                   );
                 })}
             </div>
-            {fieldState.invalid && (
-              <FieldError errors={[fieldState.error]} />
-            )}
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
           </Field>
         )}
       />

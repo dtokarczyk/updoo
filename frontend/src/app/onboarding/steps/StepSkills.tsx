@@ -41,9 +41,7 @@ export function StepSkills({
   return (
     <>
       <CardHeader>
-        <CardTitle>
-          {t('onboarding.freelancerSkillsTitle')}
-        </CardTitle>
+        <CardTitle>{t('onboarding.freelancerSkillsTitle')}</CardTitle>
         <CardDescription>
           {t('onboarding.freelancerSkillsDesc')}
         </CardDescription>
@@ -67,7 +65,9 @@ export function StepSkills({
             skillsLoading={skillsLoading}
             disabled={loading}
             formId={formId}
-            searchPlaceholder={t('onboarding.freelancerSkillsSearchPlaceholder')}
+            searchPlaceholder={t(
+              'onboarding.freelancerSkillsSearchPlaceholder',
+            )}
             emptyLabel={t('onboarding.freelancerSkillsEmpty')}
             noResultsLabel={t('onboarding.freelancerSkillsNoResults')}
           />

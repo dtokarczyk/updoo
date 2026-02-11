@@ -2,7 +2,13 @@
 
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FolderOpen, UserCircle, Settings, PanelRightOpen } from 'lucide-react';
+import {
+  LayoutDashboard,
+  FolderOpen,
+  UserCircle,
+  Settings,
+  PanelRightOpen,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logotype } from '@/components/Logotype';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,13 +24,17 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
   const pathname = usePathname();
 
   const { t } = useTranslations();
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn } = useAuth();
   const [authDrawerOpen, setAuthDrawerOpen] = useState(false);
 
   const navItems = [
     { href: '/', icon: LayoutDashboard, labelKey: 'nav.board' },
     { href: '/my', icon: FolderOpen, labelKey: 'nav.myThings' },
-    { href: '/company/moja-nazwa-profilu', icon: UserCircle, labelKey: 'nav.businessCard' },
+    {
+      href: '/company/moja-nazwa-profilu',
+      icon: UserCircle,
+      labelKey: 'nav.businessCard',
+    },
     { href: '/profile/basic', icon: Settings, labelKey: 'nav.profile' },
   ] as const;
 
@@ -37,14 +47,10 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
           className={` mx-auto flex flex-row items-center justify-between gap-3 sm:gap-4 px-4 py-2 w-full max-w-7xl`}
         >
           <div className="flex items-center gap-2 lg:w-1/5">
-            <Logotype
-              className="shrink-0"
-              initialLocale={initialLocale}
-            />
+            <Logotype className="shrink-0" initialLocale={initialLocale} />
           </div>
 
           <div className="flex items-center gap-2 lg:w-3/5 justify-center">
-
             <span className="hidden items-center gap-1 lg:flex sm:gap-2">
               {navItems.map(({ href, icon, labelKey }) => (
                 <NavIconItem
@@ -52,7 +58,10 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
                   href={href}
                   icon={icon}
                   label={t(labelKey)}
-                  isActive={pathname === href || (href !== '/' && pathname.startsWith(href + '/'))}
+                  isActive={
+                    pathname === href ||
+                    (href !== '/' && pathname.startsWith(href + '/'))
+                  }
                 />
               ))}
             </span>
@@ -109,7 +118,10 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
             href={href}
             icon={icon}
             label={t(labelKey)}
-            isActive={pathname === href || (href !== '/' && pathname.startsWith(href + '/'))}
+            isActive={
+              pathname === href ||
+              (href !== '/' && pathname.startsWith(href + '/'))
+            }
           />
         ))}
       </nav>

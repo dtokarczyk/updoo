@@ -1,12 +1,9 @@
 import type { Metadata } from 'next';
-import { headers } from 'next/headers';
 import { getLocaleFromRequest } from '@/lib/i18n';
 import { getMetadataConfig } from '@/lib/metadata-config';
 import { requireAuth } from '@/lib/auth-server';
-import { X_PATHNAME_HEADER } from '@/middleware';
 import { ProfileSidebar } from './ProfileSidebar';
 import { SettingsLayout } from '@/layouts/SettingsLayout';
-
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocaleFromRequest();
@@ -28,10 +25,6 @@ export default async function ProfileLayout({
   children: React.ReactNode;
 }) {
   await requireAuth();
-
-  const headersList = await headers();
-  const pathname = headersList.get(X_PATHNAME_HEADER) ?? '';
-  const isMenuPage = pathname === '/profile' || pathname === '/profile/';
 
   return (
     <SettingsLayout

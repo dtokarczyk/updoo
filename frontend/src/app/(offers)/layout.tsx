@@ -18,7 +18,9 @@ export default async function OffersLayout({
 
   return (
     <HomeLayout
-      left={<OffersLeftSidebar categories={categories} initialLocale={locale} />}
+      left={
+        <OffersLeftSidebar categories={categories} initialLocale={locale} />
+      }
       right={<AuthAwareSidebar initialLocale={locale} />}
     >
       {children}

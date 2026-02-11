@@ -76,9 +76,7 @@ export function UserDropdown(props: {
         aria-expanded={dropdownOpen}
         aria-haspopup="true"
       >
-        <ProfileAvatar
-          className={cn(iconOnly ? 'h-8 w-8' : 'h-8 w-8')}
-        />
+        <ProfileAvatar className={cn(iconOnly ? 'h-8 w-8' : 'h-8 w-8')} />
         {!iconOnly && (
           <span className="hidden min-w-0 flex-col items-start text-left sm:flex">
             <span className="truncate text-sm font-medium text-foreground leading-tight">

@@ -14,7 +14,7 @@ export default function MyPage() {
   const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    queueMicrotask(() => setMounted(true));
   }, []);
 
   useEffect(() => {
@@ -41,9 +41,7 @@ export default function MyPage() {
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-2">
       <h1 className="text-xl font-semibold">{t('my.title')}</h1>
-      <p className="text-sm text-muted-foreground mb-2">
-        {t('my.desc')}
-      </p>
+      <p className="text-sm text-muted-foreground mb-2">{t('my.desc')}</p>
       <Sidebar variant="list" />
     </div>
   );

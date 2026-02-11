@@ -8,9 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle2, CircleAlert, Info } from 'lucide-react';
-import {
-  CardFooter,
-} from '@/components/ui/card';
+import { CardFooter } from '@/components/ui/card';
 import { ContractorProfileFormFields } from '@/components/contractor-profile-form-fields';
 import { CoverPhotoUpload } from '@/components/CoverPhotoUpload';
 import {
@@ -52,11 +50,15 @@ export function BusinessProfileCompanyForm({
     mode: 'onSubmit',
   });
 
-  const { handleSubmit, reset, formState: { isSubmitting } } = form;
+  const {
+    handleSubmit,
+    reset,
+    formState: { isSubmitting },
+  } = form;
 
   useEffect(() => {
     let cancelled = false;
-    setLoadError(null);
+    queueMicrotask(() => setLoadError(null));
     getContractorProfile(profile.id)
       .then((data) => {
         if (!cancelled) {

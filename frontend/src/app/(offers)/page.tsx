@@ -37,9 +37,9 @@ function parseSearchParams(searchParams: {
 
   const initialSkillIds = rawSkills
     ? rawSkills
-      .split(',')
-      .map((id) => id.trim())
-      .filter(Boolean)
+        .split(',')
+        .map((id) => id.trim())
+        .filter(Boolean)
     : [];
 
   return { initialLanguage, initialSkillIds };

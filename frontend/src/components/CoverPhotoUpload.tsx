@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Cropper, { type Area } from 'react-easy-crop';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,11 @@ import {
   VisuallyHidden,
 } from '@/components/ui/dialog';
 import { Camera, Trash2 } from 'lucide-react';
-import { uploadProfileCover, removeProfileCover, type Profile } from '@/lib/api';
+import {
+  uploadProfileCover,
+  removeProfileCover,
+  type Profile,
+} from '@/lib/api';
 import { getCroppedImg, type PixelCrop } from '@/lib/crop-image';
 import { cn } from '@/lib/utils';
 
@@ -41,7 +46,9 @@ export function CoverPhotoUpload({
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<PixelCrop | null>(null);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<PixelCrop | null>(
+    null,
+  );
   const [uploading, setUploading] = useState(false);
   const [removing, setRemoving] = useState(false);
   const [error, setError] = useState('');
@@ -98,7 +105,10 @@ export function CoverPhotoUpload({
     if (!file) return;
     const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
     if (!allowed.includes(file.type)) {
-      setError(t('profile.coverUploadFailed') || 'Nieprawidłowy format. Użyj JPEG, PNG, WebP lub GIF.');
+      setError(
+        t('profile.coverUploadFailed') ||
+          'Nieprawidłowy format. Użyj JPEG, PNG, WebP lub GIF.',
+      );
       e.target.value = '';
       return;
     }
@@ -132,7 +142,9 @@ export function CoverPhotoUpload({
       closeCropModal();
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : (t('profile.coverUploadFailed') || 'Nie udało się wgrać zdjęcia'),
+        err instanceof Error
+          ? err.message
+          : t('profile.coverUploadFailed') || 'Nie udało się wgrać zdjęcia',
       );
     } finally {
       setUploading(false);
@@ -147,7 +159,9 @@ export function CoverPhotoUpload({
       onCoverUpdated(updated);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : (t('profile.coverUploadFailed') || 'Nie udało się usunąć zdjęcia'),
+        err instanceof Error
+          ? err.message
+          : t('profile.coverUploadFailed') || 'Nie udało się usunąć zdjęcia',
       );
     } finally {
       setRemoving(false);
@@ -164,10 +178,13 @@ export function CoverPhotoUpload({
         )}
       >
         {coverDisplayUrl ? (
-          <img
+          <Image
             src={coverDisplayUrl}
             alt=""
-            className="h-full w-full object-cover"
+            fill
+            className="object-cover"
+            sizes="(max-width: 1024px) 100vw, 896px"
+            unoptimized
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-muted-foreground">
@@ -198,8 +215,8 @@ export function CoverPhotoUpload({
         >
           <Camera className="size-4" />
           {coverPhotoUrl
-            ? (t('profile.changeCover') || 'Zmień zdjęcie')
-            : (t('profile.addCover') || 'Dodaj zdjęcie w tle')}
+            ? t('profile.changeCover') || 'Zmień zdjęcie'
+            : t('profile.addCover') || 'Dodaj zdjęcie w tle'}
         </Button>
         {coverPhotoUrl && (
           <Button
@@ -211,24 +228,30 @@ export function CoverPhotoUpload({
             className="w-fit text-destructive hover:text-destructive"
           >
             <Trash2 className="size-4" />
-            {removing ? t('common.saving') : (t('profile.removeCover') || 'Usuń zdjęcie')}
+            {removing
+              ? t('common.saving')
+              : t('profile.removeCover') || 'Usuń zdjęcie'}
           </Button>
         )}
       </div>
 
-      {error && (
-        <p className="text-sm text-destructive">{error}</p>
-      )}
+      {error && <p className="text-sm text-destructive">{error}</p>}
 
       {/* Crop modal */}
-      <Dialog open={cropModalOpen} onOpenChange={(open) => !open && closeCropModal()}>
+      <Dialog
+        open={cropModalOpen}
+        onOpenChange={(open) => !open && closeCropModal()}
+      >
         <DialogContent className="max-h-[90vh] max-w-2xl overflow-hidden p-0">
           <DialogHeader className="p-4 pb-0">
             <DialogTitle>
               {t('profile.cropCover') || 'Kadruj zdjęcie (16:9)'}
             </DialogTitle>
             <VisuallyHidden>
-              <p>{t('profile.cropCoverDesc') || 'Przesuń i powiększ, aby wybrać fragment zdjęcia.'}</p>
+              <p>
+                {t('profile.cropCoverDesc') ||
+                  'Przesuń i powiększ, aby wybrać fragment zdjęcia.'}
+              </p>
             </VisuallyHidden>
           </DialogHeader>
           <div className="relative h-[50vh] w-full bg-black">
@@ -246,7 +269,12 @@ export function CoverPhotoUpload({
             )}
           </div>
           <DialogFooter className="p-4">
-            <Button type="button" variant="outline" onClick={closeCropModal} disabled={uploading}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={closeCropModal}
+              disabled={uploading}
+            >
               {t('common.cancel') || 'Anuluj'}
             </Button>
             <Button
@@ -254,7 +282,9 @@ export function CoverPhotoUpload({
               onClick={confirmCrop}
               disabled={uploading || !croppedAreaPixels}
             >
-              {uploading ? t('common.saving') : (t('common.confirm') || 'Zatwierdź')}
+              {uploading
+                ? t('common.saving')
+                : t('common.confirm') || 'Zatwierdź'}
             </Button>
           </DialogFooter>
         </DialogContent>

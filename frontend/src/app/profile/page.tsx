@@ -14,7 +14,7 @@ export default function ProfilePage() {
   const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    queueMicrotask(() => setMounted(true));
   }, []);
 
   useEffect(() => {

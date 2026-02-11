@@ -33,20 +33,14 @@ export function ProfileAvatar({ className }: ProfileAvatarProps) {
   console.log(avatarUrl);
 
   return (
-    <Avatar
-      className={cn('shrink-0', className)}
-      aria-hidden
-    >
+    <Avatar className={cn('shrink-0', className)} aria-hidden>
       {avatarUrl ? (
-        <AvatarImage
-          key={`${avatarUrl}-${userKey}`}
-          src={avatarUrl}
-          alt=""
-        />
-      ) : <AvatarFallback className="text-sm font-medium text-muted-foreground">
-        {initials}
-      </AvatarFallback>}
-
+        <AvatarImage key={`${avatarUrl}-${userKey}`} src={avatarUrl} alt="" />
+      ) : (
+        <AvatarFallback className="text-sm font-medium text-muted-foreground">
+          {initials}
+        </AvatarFallback>
+      )}
     </Avatar>
   );
 }

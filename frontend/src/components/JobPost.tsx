@@ -97,7 +97,9 @@ export function JobPost({
     isDraft ? 'border-alert' : '',
     isRejected ? 'border-red-500/50' : '',
     isApplied && !isDraft && !isRejected ? 'border-success' : '',
-    !isVisited && !isDraft && !isRejected && !isApplied && !isClosed ? 'border-primary' : '',
+    !isVisited && !isDraft && !isRejected && !isApplied && !isClosed
+      ? 'border-primary'
+      : '',
   ]
     .filter(Boolean)
     .join(' ');

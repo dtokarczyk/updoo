@@ -26,7 +26,9 @@ export function SidebarLayout({
           <div className="md:hidden w-full">{mobileList}</div>
         </>
       )}
-      <main className="min-w-0 flex-1 flex flex-col justify-center">{children}</main>
+      <main className="min-w-0 flex-1 flex flex-col justify-center">
+        {children}
+      </main>
     </div>
   );
 }

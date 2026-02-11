@@ -3,11 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import {
-  getProfileBySlug,
-  getStoredUser,
-  type Profile,
-} from '@/lib/api';
+import Image from 'next/image';
+import { getProfileBySlug, getStoredUser, type Profile } from '@/lib/api';
 import { useTranslations } from '@/hooks/useTranslations';
 import { Button } from '@/components/ui/button';
 import {
@@ -69,8 +66,10 @@ export default function CompanyProfilePage() {
 
   useEffect(() => {
     if (!slug) {
-      setLoading(false);
-      setError(t('company.missingProfileId'));
+      queueMicrotask(() => {
+        setLoading(false);
+        setError(t('company.missingProfileId'));
+      });
       return;
     }
     getProfileBySlug(slug)
@@ -125,11 +124,13 @@ export default function CompanyProfilePage() {
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
       {/* Cover photo – 16:9 above content */}
       {profile.coverPhotoUrl ? (
-        <div className="-mx-4 mb-8 sm:-mx-6 sm:rounded-lg overflow-hidden aspect-video bg-muted">
-          <img
+        <div className="-mx-4 mb-8 sm:-mx-6 sm:rounded-lg overflow-hidden aspect-video bg-muted relative">
+          <Image
             src={profile.coverPhotoUrl}
             alt=""
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            sizes="(max-width: 1024px) 100vw, 896px"
           />
         </div>
       ) : null}

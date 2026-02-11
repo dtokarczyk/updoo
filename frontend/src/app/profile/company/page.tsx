@@ -34,8 +34,14 @@ function CompanyDetails({ company }: { company: Company }) {
 
   const addressRows: { label: string; value: string | null }[] = [
     { label: t('profile.companyStreet'), value: company.street },
-    { label: t('profile.companyPropertyNumber'), value: company.propertyNumber },
-    { label: t('profile.companyApartmentNumber'), value: company.apartmentNumber },
+    {
+      label: t('profile.companyPropertyNumber'),
+      value: company.propertyNumber,
+    },
+    {
+      label: t('profile.companyApartmentNumber'),
+      value: company.apartmentNumber,
+    },
     { label: t('profile.companyPostalCode'), value: company.postalCode },
     { label: t('profile.companyLocality'), value: company.locality },
     { label: t('profile.companyCommune'), value: company.commune },
@@ -44,8 +50,16 @@ function CompanyDetails({ company }: { company: Company }) {
   ];
 
   const otherRows: { label: string; value: string | null }[] = [
-    { label: t('profile.companyIsActive'), value: company.isActive ? t('common.yes') : t('common.no') },
-    { label: t('profile.companyUpdatedAt'), value: company.updatedAt ? new Date(company.updatedAt).toLocaleString() : null },
+    {
+      label: t('profile.companyIsActive'),
+      value: company.isActive ? t('common.yes') : t('common.no'),
+    },
+    {
+      label: t('profile.companyUpdatedAt'),
+      value: company.updatedAt
+        ? new Date(company.updatedAt).toLocaleString()
+        : null,
+    },
   ];
 
   const noData = t('profile.companyNoData');
@@ -56,7 +70,9 @@ function CompanyDetails({ company }: { company: Company }) {
     <>
       {rows.map(({ label, value }) => (
         <div key={label} className="flex gap-2">
-          <dt className="font-medium text-muted-foreground shrink-0 w-36">{label}</dt>
+          <dt className="font-medium text-muted-foreground shrink-0 w-36">
+            {label}
+          </dt>
           <dd className="break-words min-w-0">{displayValue(value)}</dd>
         </div>
       ))}
@@ -70,15 +86,21 @@ function CompanyDetails({ company }: { company: Company }) {
     <Card className="py-4 gap-3 rounded-lg">
       <CardContent className={`${sectionPaddingClass} ${sectionSpacing}`}>
         <section>
-          <h3 className="text-sm font-semibold mb-2">{t('profile.companyBasicSection')}</h3>
+          <h3 className="text-sm font-semibold mb-2">
+            {t('profile.companyBasicSection')}
+          </h3>
           <dl className="space-y-2 text-sm">{renderRows(basicRows)}</dl>
         </section>
         <section>
-          <h3 className="text-sm font-semibold mb-2">{t('profile.companyAddressSection')}</h3>
+          <h3 className="text-sm font-semibold mb-2">
+            {t('profile.companyAddressSection')}
+          </h3>
           <dl className="space-y-2 text-sm">{renderRows(addressRows)}</dl>
         </section>
         <section>
-          <h3 className="text-sm font-semibold mb-2">{t('profile.companyOtherSection')}</h3>
+          <h3 className="text-sm font-semibold mb-2">
+            {t('profile.companyOtherSection')}
+          </h3>
           <dl className="space-y-2 text-sm">{renderRows(otherRows)}</dl>
         </section>
       </CardContent>
@@ -168,7 +190,9 @@ export default function ProfileCompanyPage() {
                   inputMode="numeric"
                   placeholder={t('profile.companyNipPlaceholder')}
                   value={nip}
-                  onChange={(e) => setNip(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                  onChange={(e) =>
+                    setNip(e.target.value.replace(/\D/g, '').slice(0, 10))
+                  }
                   disabled={linkMutation.isPending}
                   maxLength={10}
                 />
@@ -176,8 +200,14 @@ export default function ProfileCompanyPage() {
                   {t('profile.companyNipHint')}
                 </p>
               </div>
-              <Button type="submit" className="w-full" disabled={linkMutation.isPending}>
-                {linkMutation.isPending ? t('common.submitting') : t('profile.companyLinkByNip')}
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={linkMutation.isPending}
+              >
+                {linkMutation.isPending
+                  ? t('common.submitting')
+                  : t('profile.companyLinkByNip')}
               </Button>
             </form>
           </>
@@ -191,7 +221,9 @@ export default function ProfileCompanyPage() {
             />
             <CompanyDetails company={company} />
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">{t('profile.companyRefreshHint')}</p>
+              <p className="text-sm text-muted-foreground">
+                {t('profile.companyRefreshHint')}
+              </p>
               <Button
                 type="button"
                 variant="outline"
@@ -199,7 +231,9 @@ export default function ProfileCompanyPage() {
                 disabled={refreshMutation.isPending}
                 onClick={handleRefresh}
               >
-                {refreshMutation.isPending ? t('common.loading') : t('profile.companyRefreshFromGus')}
+                {refreshMutation.isPending
+                  ? t('common.loading')
+                  : t('profile.companyRefreshFromGus')}
               </Button>
             </div>
           </div>

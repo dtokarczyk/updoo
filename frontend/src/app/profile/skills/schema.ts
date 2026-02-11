@@ -9,7 +9,7 @@ export const defaultSkillsFormValues: SkillsFormValues = {
 };
 
 /** Returns Zod schema with translated validation messages. Use with useTranslations: getSkillsFormSchema(t) */
-export function getSkillsFormSchema(t: (key: string) => string) {
+export function getSkillsFormSchema(_t: (key: string) => string) {
   return z.object({
     selectedSkillIds: z.array(z.string()),
   }) satisfies z.ZodType<SkillsFormValues>;

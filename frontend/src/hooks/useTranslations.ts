@@ -8,9 +8,10 @@ export function useTranslations() {
   const locale = getUserLocale();
 
   const t = useMemo(
-    () => (key: string, params?: Record<string, string | number>): string => {
-      return translate(locale, key, params);
-    },
+    () =>
+      (key: string, params?: Record<string, string | number>): string => {
+        return translate(locale, key, params);
+      },
     [locale],
   );
 

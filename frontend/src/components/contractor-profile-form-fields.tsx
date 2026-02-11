@@ -27,7 +27,9 @@ type OnboardingFields = {
   profileAboutUs: string;
 };
 
-type FormValues = StandaloneFields | (Record<string, unknown> & OnboardingFields);
+type FormValues =
+  | StandaloneFields
+  | (Record<string, unknown> & OnboardingFields);
 
 interface ContractorProfileFormFieldsProps {
   variant: 'standalone' | 'onboarding';
@@ -48,7 +50,11 @@ export function ContractorProfileFormFields({
   size = 'default',
   t = defaultT,
 }: ContractorProfileFormFieldsProps) {
-  const { register, control, formState: { errors } } = useFormContext<FormValues>();
+  const {
+    register,
+    control,
+    formState: { errors },
+  } = useFormContext<FormValues>();
 
   const isOnboarding = variant === 'onboarding';
   const nameKey = isOnboarding ? 'profileName' : 'name';

@@ -22,9 +22,9 @@ import { BusinessProfileCompanyForm } from './BusinessProfileCompanyForm';
 
 export default function ProfileBusinessProfilePage() {
   const { t } = useTranslations();
-  const [contractorProfiles, setContractorProfiles] = useState<Profile[] | null>(
-    null,
-  );
+  const [contractorProfiles, setContractorProfiles] = useState<
+    Profile[] | null
+  >(null);
   const [locations, setLocations] = useState<Location[]>([]);
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export default function ProfileBusinessProfilePage() {
     if (!contractorProfiles?.length) return;
     getLocations()
       .then(setLocations)
-      .catch(() => { });
+      .catch(() => {});
   }, [contractorProfiles?.length]);
 
   return (
@@ -62,7 +62,9 @@ export default function ProfileBusinessProfilePage() {
         {contractorProfiles?.length === 0 && (
           <div className="space-y-2">
             <Alert>
-              <AlertDescription>{t('profile.contractorProfileNone')}</AlertDescription>
+              <AlertDescription>
+                {t('profile.contractorProfileNone')}
+              </AlertDescription>
             </Alert>
             <Button asChild variant="default">
               <Link href="/profile/create">
@@ -76,6 +78,7 @@ export default function ProfileBusinessProfilePage() {
           contractorProfiles.length > 0 &&
           contractorProfiles.map((profile) => (
             <BusinessProfileCompanyForm
+              key={profile.id}
               profile={profile}
               locations={locations}
               t={t}
@@ -87,7 +90,6 @@ export default function ProfileBusinessProfilePage() {
                 );
               }}
             />
-
           ))}
       </CardContent>
     </Card>

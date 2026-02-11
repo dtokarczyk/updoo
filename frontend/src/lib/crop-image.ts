@@ -43,9 +43,13 @@ export async function getCroppedImg(
     pixelCrop.height,
   );
   return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (blob) resolve(blob);
-      else reject(new Error('Canvas toBlob failed'));
-    }, 'image/jpeg', 0.9);
+    canvas.toBlob(
+      (blob) => {
+        if (blob) resolve(blob);
+        else reject(new Error('Canvas toBlob failed'));
+      },
+      'image/jpeg',
+      0.9,
+    );
   });
 }

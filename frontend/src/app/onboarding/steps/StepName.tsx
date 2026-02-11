@@ -39,9 +39,7 @@ export function StepName({
   return (
     <>
       <CardHeader>
-        <CardTitle>
-          {t('onboarding.whatShouldWeCallYou')}
-        </CardTitle>
+        <CardTitle>{t('onboarding.whatShouldWeCallYou')}</CardTitle>
         <CardDescription>{t('onboarding.enterNameSurname')}</CardDescription>
       </CardHeader>
       <form

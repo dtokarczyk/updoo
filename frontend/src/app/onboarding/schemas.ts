@@ -96,9 +96,20 @@ export const stepDefaultMessageSchema = z.object({
 
 /** Step 7: profile form (name required) */
 export const stepProfileFormSchema = z.object({
-  profileName: z.string().min(2, 'Nazwa profilu musi mieć co najmniej 2 znaki').max(200),
-  profileEmail: z.string().email('Nieprawidłowy adres e-mail').optional().or(z.literal('')),
-  profileWebsite: z.string().url('Nieprawidłowy adres URL').optional().or(z.literal('')),
+  profileName: z
+    .string()
+    .min(2, 'Nazwa profilu musi mieć co najmniej 2 znaki')
+    .max(200),
+  profileEmail: z
+    .string()
+    .email('Nieprawidłowy adres e-mail')
+    .optional()
+    .or(z.literal('')),
+  profileWebsite: z
+    .string()
+    .url('Nieprawidłowy adres URL')
+    .optional()
+    .or(z.literal('')),
   profilePhone: z.string().max(30).optional(),
   profileLocationId: z.string().optional(),
   profileAboutUs: z.string().max(2000).optional(),

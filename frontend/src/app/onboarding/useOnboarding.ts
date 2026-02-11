@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useReducer } from 'react';
+import { useCallback, useEffect, useReducer } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import {
@@ -57,7 +57,10 @@ type OnboardingAction =
   | { type: 'SET_AVAILABLE_SKILLS'; payload: Skill[] }
   | { type: 'SET_SHOW_DRAFT_MODAL'; payload: boolean }
   | { type: 'SET_USER'; payload: AuthUser }
-  | { type: 'SET_AVAILABLE_LOCATIONS'; payload: { id: string; name: string; slug: string }[] };
+  | {
+      type: 'SET_AVAILABLE_LOCATIONS';
+      payload: { id: string; name: string; slug: string }[];
+    };
 
 function onboardingReducer(
   state: OnboardingState,
@@ -333,16 +336,7 @@ export function useOnboarding(
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
-  }, [
-    t,
-    accountType,
-    clearErrors,
-    getValues,
-    setError,
-    setValidationErrors,
-    openDraftModal,
-    finishOnboarding,
-  ]);
+  }, [t, accountType, clearErrors, getValues, setError, setValidationErrors]);
 
   const handleSkillsSubmit = useCallback(async () => {
     clearErrors();
@@ -401,13 +395,7 @@ export function useOnboarding(
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
-  }, [
-    clearErrors,
-    getValues,
-    setError,
-    setValidationErrors,
-    t,
-  ]);
+  }, [clearErrors, getValues, setError, setValidationErrors, t]);
 
   const handleProfileQuestionNo = useCallback(() => {
     const draft = getDraftJob();
@@ -437,7 +425,9 @@ export function useOnboarding(
       issues.forEach((issue) => {
         const path0 = issue.path[0];
         if (typeof path0 === 'string')
-          setError(path0 as keyof OnboardingFormValues, { message: issue.message });
+          setError(path0 as keyof OnboardingFormValues, {
+            message: issue.message,
+          });
       });
       dispatch({ type: 'SET_LOADING', payload: false });
       return;
@@ -462,14 +452,7 @@ export function useOnboarding(
       });
       dispatch({ type: 'SET_LOADING', payload: false });
     }
-  }, [
-    clearErrors,
-    getValues,
-    setError,
-    t,
-    openDraftModal,
-    finishOnboarding,
-  ]);
+  }, [clearErrors, getValues, setError, t, openDraftModal, finishOnboarding]);
 
   return {
     state,

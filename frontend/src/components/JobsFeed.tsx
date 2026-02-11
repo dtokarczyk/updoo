@@ -392,7 +392,12 @@ export function JobsFeed({
                       </p>
                     )}
                   </div>
-                  <Button size="sm" variant="outline" asChild className="shrink-0">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    asChild
+                    className="shrink-0"
+                  >
                     <Link href={jobPathEdit(job)}>
                       <Pencil className="h-3.5 w-3.5 mr-1" />
                       {t('jobs.editAndResubmit')}
@@ -468,7 +473,10 @@ export function JobsFeed({
         </div>
       )}
 
-      <Dialog open={!!rejectDialogJob} onOpenChange={(open) => !open && closeRejectDialog()}>
+      <Dialog
+        open={!!rejectDialogJob}
+        onOpenChange={(open) => !open && closeRejectDialog()}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('jobs.rejectJobTitle')}</DialogTitle>

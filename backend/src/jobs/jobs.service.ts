@@ -1263,12 +1263,9 @@ export class JobsService implements OnModuleInit {
     const text = `${subject}\n\n${intro}\n\n${reasonLabel}: ${reason}\n\n${cta}: ${editUrl}\n\n${outro}`;
 
     if (this.emailService.isConfigured()) {
-      await this.emailService.sendHtml(
-        job.author.email,
-        subject,
-        html,
-        { text },
-      );
+      await this.emailService.sendHtml(job.author.email, subject, html, {
+        text,
+      });
     }
 
     return {

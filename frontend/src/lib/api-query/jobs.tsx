@@ -43,8 +43,7 @@ export function useJobsFeedQuery(params: JobsFeedParams = {}) {
         language === 'POLISH' || language === 'ENGLISH' ? language : undefined,
       skillIds,
     }),
-    queryFn: () =>
-      getJobsFeed(page, pageSize, categoryId, language, skillIds),
+    queryFn: () => getJobsFeed(page, pageSize, categoryId, language, skillIds),
     staleTime: 60 * 1000,
   });
 }

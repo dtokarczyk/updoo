@@ -122,10 +122,10 @@ export function JobsSectionHeader({
     label: string;
     countryCode?: string;
   }[] = [
-      { value: '', label: t('jobs.allLanguages') },
-      { value: 'ENGLISH', label: t('jobs.english'), countryCode: 'GB' },
-      { value: 'POLISH', label: t('jobs.polish'), countryCode: 'PL' },
-    ];
+    { value: '', label: t('jobs.allLanguages') },
+    { value: 'ENGLISH', label: t('jobs.english'), countryCode: 'GB' },
+    { value: 'POLISH', label: t('jobs.polish'), countryCode: 'PL' },
+  ];
 
   return (
     <section
@@ -137,9 +137,9 @@ export function JobsSectionHeader({
           <h2 className="text-2xl font-semibold tracking-tight text-foreground">
             {categoryName
               ? t('jobs.headerSampleWithCategory', {
-                category: categoryName,
-                count,
-              })
+                  category: categoryName,
+                  count,
+                })
               : t('jobs.headerSampleWithoutCategory', { count })}
           </h2>
         )}

@@ -16,11 +16,7 @@ import { RegisterDto } from './dto/register.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { I18nService, SupportedLanguage } from '../i18n/i18n.service';
-import type {
-  JwtPayload,
-  AuthResponseUser,
-  AuthResponse,
-} from './auth.types';
+import type { JwtPayload, AuthResponseUser, AuthResponse } from './auth.types';
 
 export type { JwtPayload, AuthResponseUser, AuthResponse };
 
@@ -45,7 +41,7 @@ export class AuthService {
     private readonly agreementsService: AgreementsService,
     private readonly i18nService: I18nService,
     private readonly storageService: StorageService,
-  ) { }
+  ) {}
 
   /** Short-lived JWT for avatar proxy URL (GET /auth/avatar?token=...). */
   private signAvatarToken(userId: string): string {
@@ -503,8 +499,10 @@ export class AuthService {
         }
       ).skills ?? [];
     const userCompany = user as { company?: { nip: string } | null };
-    const resolvedAvatarUrl =
-      await this.resolveAvatarUrlForResponse(user.id, user.avatarUrl ?? null);
+    const resolvedAvatarUrl = await this.resolveAvatarUrlForResponse(
+      user.id,
+      user.avatarUrl ?? null,
+    );
     return {
       id: user.id,
       email: user.email,

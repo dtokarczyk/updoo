@@ -50,14 +50,13 @@ export function useUpdateContractorProfileMutation() {
     mutationFn: ({
       id,
       data,
-    }: { id: string; data: Partial<CreateProfilePayload> }) =>
-      updateContractorProfile(id, data),
+    }: {
+      id: string;
+      data: Partial<CreateProfilePayload>;
+    }) => updateContractorProfile(id, data),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.myProfiles() });
-      queryClient.setQueryData(
-        queryKeys.profileBySlug(updated.slug),
-        updated,
-      );
+      queryClient.setQueryData(queryKeys.profileBySlug(updated.slug), updated);
     },
   });
 }
@@ -79,10 +78,7 @@ export function useUploadProfileCoverMutation() {
       uploadProfileCover(profileId, file),
     onSuccess: (updated: Profile) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.myProfiles() });
-      queryClient.setQueryData(
-        queryKeys.profileBySlug(updated.slug),
-        updated,
-      );
+      queryClient.setQueryData(queryKeys.profileBySlug(updated.slug), updated);
     },
   });
 }
@@ -93,10 +89,7 @@ export function useRemoveProfileCoverMutation() {
     mutationFn: (profileId: string) => removeProfileCover(profileId),
     onSuccess: (updated: Profile) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.myProfiles() });
-      queryClient.setQueryData(
-        queryKeys.profileBySlug(updated.slug),
-        updated,
-      );
+      queryClient.setQueryData(queryKeys.profileBySlug(updated.slug), updated);
     },
   });
 }

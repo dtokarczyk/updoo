@@ -321,7 +321,7 @@ export function JobDetailClient({
           }
         }
       })
-      .catch(() => { });
+      .catch(() => {});
   }, [id, user]);
 
   // Fill default message when job loads and user is freelancer
@@ -483,7 +483,9 @@ export function JobDetailClient({
               <div className="rounded-lg bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200 px-3 py-2 text-sm space-y-2">
                 <p className="font-medium">{t('jobs.rejected')}</p>
                 {job.rejectedReason && (
-                  <p className="text-sm whitespace-pre-wrap">{job.rejectedReason}</p>
+                  <p className="text-sm whitespace-pre-wrap">
+                    {job.rejectedReason}
+                  </p>
                 )}
                 <p className="text-sm">{t('jobs.rejectedEditHint')}</p>
               </div>
@@ -811,28 +813,28 @@ export function JobDetailClient({
         isAdmin ||
         canApply ||
         (!user && !isDraft && !isClosed)) && (
-          <div className="fixed inset-x-0 bottom-16 z-50 border-t border-border bg-background/95 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
-            <div className="mx-auto max-w-4xl">
-              <JobActions
-                isOwnJob={isOwnJob}
-                isAdmin={isAdmin}
-                isDraft={isDraft}
-                isClosed={isClosed}
-                user={user}
-                canApply={canApply}
-                currentUserApplied={job.currentUserApplied}
-                deadlinePassed={deadlinePassed}
-                canClose={canClose}
-                closeSubmitting={closeSubmitting}
-                job={job}
-                onApplyClick={handleApplyClick}
-                onClose={handleClose}
-                t={t}
-                layout="row"
-              />
-            </div>
+        <div className="fixed inset-x-0 bottom-16 z-50 border-t border-border bg-background/95 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
+          <div className="mx-auto max-w-4xl">
+            <JobActions
+              isOwnJob={isOwnJob}
+              isAdmin={isAdmin}
+              isDraft={isDraft}
+              isClosed={isClosed}
+              user={user}
+              canApply={canApply}
+              currentUserApplied={job.currentUserApplied}
+              deadlinePassed={deadlinePassed}
+              canClose={canClose}
+              closeSubmitting={closeSubmitting}
+              job={job}
+              onApplyClick={handleApplyClick}
+              onClose={handleClose}
+              t={t}
+              layout="row"
+            />
           </div>
-        )}
+        </div>
+      )}
     </div>
   );
 }

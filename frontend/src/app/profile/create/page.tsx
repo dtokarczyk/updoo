@@ -52,7 +52,7 @@ export default function CreateProfilePage() {
       .then((profiles) => {
         if (profiles.length > 0) router.replace('/profile');
       })
-      .catch(() => { });
+      .catch(() => {});
   }, [router]);
 
   const onSubmit = async (data: ProfileFormValues) => {
@@ -71,7 +71,9 @@ export default function CreateProfilePage() {
       router.push('/');
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Nie udało się utworzyć profilu');
+      setError(
+        err instanceof Error ? err.message : 'Nie udało się utworzyć profilu',
+      );
     } finally {
       setSubmitting(false);
     }
@@ -84,15 +86,20 @@ export default function CreateProfilePage() {
           <CardHeader>
             <CardTitle>Załóż profil wykonawcy</CardTitle>
             <CardDescription>
-              Profil pozwala zaprezentować firmę lub osobę prywatną. Po weryfikacji
-              będzie widoczny pod adresem /company/nazwa-profilu.
+              Profil pozwala zaprezentować firmę lub osobę prywatną. Po
+              weryfikacji będzie widoczny pod adresem /company/nazwa-profilu.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <FormProvider {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6"
+              >
                 {error && (
-                  <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                  <p className="text-sm text-red-600 dark:text-red-400">
+                    {error}
+                  </p>
                 )}
 
                 <ContractorProfileFormFields
@@ -105,7 +112,12 @@ export default function CreateProfilePage() {
                   <Button type="submit" disabled={submitting}>
                     {submitting ? 'Zapisywanie...' : 'Utwórz profil'}
                   </Button>
-                  <Button type="button" variant="outline" asChild disabled={submitting}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    asChild
+                    disabled={submitting}
+                  >
                     <Link href="/">Anuluj</Link>
                   </Button>
                 </div>

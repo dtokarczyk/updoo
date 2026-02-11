@@ -16,7 +16,7 @@ export class ProfilesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storageService: StorageService,
-  ) { }
+  ) {}
 
   /** Ensure unique slug: if slug exists, append -2, -3, etc. */
   private async ensureUniqueSlug(
@@ -80,9 +80,9 @@ export class ProfilesService {
     return this.withResolvedCoverUrl(profile);
   }
 
-  private async withResolvedCoverUrl<T extends { coverPhotoUrl: string | null }>(
-    profile: T,
-  ): Promise<T> {
+  private async withResolvedCoverUrl<
+    T extends { coverPhotoUrl: string | null },
+  >(profile: T): Promise<T> {
     const resolved = await this.resolveCoverUrl(profile.coverPhotoUrl);
     return { ...profile, coverPhotoUrl: resolved };
   }
@@ -207,9 +207,12 @@ export class ProfilesService {
   }
 
   /** Resolve cover photo URL to presigned when using private bucket. */
-  private async resolveCoverUrl(coverPhotoUrl: string | null): Promise<string | null> {
+  private async resolveCoverUrl(
+    coverPhotoUrl: string | null,
+  ): Promise<string | null> {
     if (!coverPhotoUrl) return null;
-    const resolved = await this.storageService.getPresignedCoverUrl(coverPhotoUrl);
+    const resolved =
+      await this.storageService.getPresignedCoverUrl(coverPhotoUrl);
     return resolved ?? coverPhotoUrl;
   }
 
@@ -230,7 +233,10 @@ export class ProfilesService {
     if (profile.coverPhotoUrl) {
       await this.storageService.deleteCoverPhoto(profile.coverPhotoUrl);
     }
-    const coverPhotoUrl = await this.storageService.uploadCoverPhoto(buffer, id);
+    const coverPhotoUrl = await this.storageService.uploadCoverPhoto(
+      buffer,
+      id,
+    );
     if (!coverPhotoUrl) {
       throw new BadRequestException('Failed to upload cover');
     }
@@ -254,14 +260,16 @@ export class ProfilesService {
     if (profile.coverPhotoUrl) {
       await this.storageService.deleteCoverPhoto(profile.coverPhotoUrl);
     }
-    return this.prisma.profile.update({
-      where: { id },
-      data: { coverPhotoUrl: null },
-      include: {
-        location: true,
-        owner: { select: { id: true, name: true, surname: true } },
-      },
-    }).then((p) => this.withResolvedCoverUrl(p));
+    return this.prisma.profile
+      .update({
+        where: { id },
+        data: { coverPhotoUrl: null },
+        include: {
+          location: true,
+          owner: { select: { id: true, name: true, surname: true } },
+        },
+      })
+      .then((p) => this.withResolvedCoverUrl(p));
   }
 
   async remove(id: string, userId: string, isAdmin: boolean) {

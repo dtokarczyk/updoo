@@ -102,8 +102,10 @@ export function useUpdateProfileMutation() {
   return useMutation({
     mutationFn: (payload: UpdateProfilePayload) => updateProfile(payload),
     onSuccess: (data) => {
-      queryClient.setQueryData(queryKeys.authProfile(), (prev: ProfileResponse | null) =>
-        prev ? { ...prev, user: data.user } : null,
+      queryClient.setQueryData(
+        queryKeys.authProfile(),
+        (prev: ProfileResponse | null) =>
+          prev ? { ...prev, user: data.user } : null,
       );
     },
   });
@@ -114,8 +116,10 @@ export function useRemoveAvatarMutation() {
   return useMutation({
     mutationFn: removeAvatar,
     onSuccess: (data) => {
-      queryClient.setQueryData(queryKeys.authProfile(), (prev: ProfileResponse | null) =>
-        prev ? { ...prev, user: data.user } : null,
+      queryClient.setQueryData(
+        queryKeys.authProfile(),
+        (prev: ProfileResponse | null) =>
+          prev ? { ...prev, user: data.user } : null,
       );
     },
   });
@@ -126,8 +130,10 @@ export function useUploadAvatarMutation() {
   return useMutation({
     mutationFn: (file: File) => uploadAvatar(file),
     onSuccess: (data) => {
-      queryClient.setQueryData(queryKeys.authProfile(), (prev: ProfileResponse | null) =>
-        prev ? { ...prev, user: data.user } : null,
+      queryClient.setQueryData(
+        queryKeys.authProfile(),
+        (prev: ProfileResponse | null) =>
+          prev ? { ...prev, user: data.user } : null,
       );
     },
   });
@@ -138,8 +144,10 @@ export function useAcceptAgreementsMutation() {
   return useMutation({
     mutationFn: acceptAgreements,
     onSuccess: (data) => {
-      queryClient.setQueryData(queryKeys.authProfile(), (prev: ProfileResponse | null) =>
-        prev ? { ...prev, user: data.user } : null,
+      queryClient.setQueryData(
+        queryKeys.authProfile(),
+        (prev: ProfileResponse | null) =>
+          prev ? { ...prev, user: data.user } : null,
       );
     },
   });

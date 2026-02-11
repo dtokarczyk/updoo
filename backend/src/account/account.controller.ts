@@ -81,12 +81,7 @@ export class AccountController {
     if (!file?.buffer) {
       throw new BadRequestException('File is required');
     }
-    const allowedTypes = [
-      'image/jpeg',
-      'image/png',
-      'image/webp',
-      'image/gif',
-    ];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
     if (!allowedTypes.includes(file.mimetype)) {
       throw new BadRequestException(
         'Invalid file type. Use JPEG, PNG, WebP or GIF.',

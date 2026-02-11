@@ -49,7 +49,7 @@ export function SidebarNavList({
               'flex items-center gap-3 text-sm font-medium transition-colors',
               variant === 'sidebar' && 'rounded-md px-3 py-2',
               variant === 'list' &&
-              'rounded-md px-3 py-3 bg-muted/50 hover:bg-muted border border-border',
+                'rounded-md px-3 py-3 bg-muted/50 hover:bg-muted border border-border',
               isActive
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',

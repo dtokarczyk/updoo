@@ -357,7 +357,9 @@ export async function linkCompanyByNip(
   const res = await fetch(`${API_URL}/company/link`, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ nip: nip.trim().replace(/\s/g, '').replace(/-/g, '') }),
+    body: JSON.stringify({
+      nip: nip.trim().replace(/\s/g, '').replace(/-/g, ''),
+    }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -798,9 +800,12 @@ export async function getProfileBySlug(slug: string): Promise<Profile> {
     const locale = getUserLocale();
     headers['Accept-Language'] = locale;
   }
-  const res = await fetch(`${API_URL}/profiles/slug/${encodeURIComponent(slug)}`, {
-    headers,
-  });
+  const res = await fetch(
+    `${API_URL}/profiles/slug/${encodeURIComponent(slug)}`,
+    {
+      headers,
+    },
+  );
   if (!res.ok) {
     if (res.status === 404) throw new Error('Profile not found');
     throw new Error('Failed to fetch profile');
@@ -1051,10 +1056,7 @@ export async function publishJob(jobId: string): Promise<Job> {
   return res.json();
 }
 
-export async function rejectJob(
-  jobId: string,
-  reason: string,
-): Promise<Job> {
+export async function rejectJob(jobId: string, reason: string): Promise<Job> {
   const token = getToken();
   if (!token) throw new Error('Not authenticated');
   const headers: HeadersInit = {

@@ -101,7 +101,9 @@ export async function getLocaleFromRequest(): Promise<Locale> {
   // implementations without fighting type overloads.
   try {
     const { cookies } = await import('next/headers');
-    const cookieStore = (await (cookies() as Promise<{ get?: (name: string) => { value?: string } | undefined }>)) as {
+    const cookieStore = (await (cookies() as Promise<{
+      get?: (name: string) => { value?: string } | undefined;
+    }>)) as {
       get?: (name: string) => { value?: string } | undefined;
     };
     const cookieLocale = cookieStore.get?.('locale')?.value;
@@ -114,7 +116,9 @@ export async function getLocaleFromRequest(): Promise<Locale> {
 
   try {
     const { headers } = await import('next/headers');
-    const headersList = (await (headers() as Promise<{ get?: (name: string) => string | null | undefined }>)) as {
+    const headersList = (await (headers() as Promise<{
+      get?: (name: string) => string | null | undefined;
+    }>)) as {
       get?: (name: string) => string | null | undefined;
     };
     const acceptLanguage = headersList.get?.('accept-language');

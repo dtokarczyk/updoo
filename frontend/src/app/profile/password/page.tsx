@@ -55,10 +55,15 @@ export default function ProfilePasswordPage() {
     mode: 'onSubmit',
   });
 
-  const { handleSubmit, reset, control, formState: { isSubmitting } } = form;
+  const {
+    handleSubmit,
+    reset,
+    control,
+    formState: { isSubmitting },
+  } = form;
 
   useEffect(() => {
-    setMounted(true);
+    queueMicrotask(() => setMounted(true));
   }, []);
 
   async function onSubmit(data: PasswordFormValues) {
@@ -201,11 +206,7 @@ export default function ProfilePasswordPage() {
             />
 
             <CardFooter className="px-0">
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isSubmitting}
-              >
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isSubmitting
                   ? t('common.saving')
                   : hasPassword

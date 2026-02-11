@@ -34,9 +34,7 @@ export default function ProfileNotificationsPage() {
       setPreferences(prefs);
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : t('notifications.saveFailed'),
+        err instanceof Error ? err.message : t('notifications.saveFailed'),
       );
     } finally {
       setLoading(false);
@@ -64,9 +62,7 @@ export default function ProfileNotificationsPage() {
       setSuccess(t('notifications.saved'));
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : t('notifications.saveFailed'),
+        err instanceof Error ? err.message : t('notifications.saveFailed'),
       );
     }
   }
@@ -87,9 +83,7 @@ export default function ProfileNotificationsPage() {
       setSuccess(t('notifications.saved'));
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : t('notifications.saveFailed'),
+        err instanceof Error ? err.message : t('notifications.saveFailed'),
       );
     }
   }
@@ -118,9 +112,7 @@ export default function ProfileNotificationsPage() {
         )}
 
         {loading && (
-          <p className="text-sm text-muted-foreground">
-            {t('common.loading')}
-          </p>
+          <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
         )}
 
         {!loading &&
@@ -153,10 +145,7 @@ function NotificationItem({
   ) => void;
 }) {
   // Map notification type to translation keys
-  const typeLabels: Record<
-    string,
-    { title: string; description: string }
-  > = {
+  const typeLabels: Record<string, { title: string; description: string }> = {
     NEW_JOB_MATCHING_SKILLS: {
       title: t('notifications.newJobMatchingSkills'),
       description: t('notifications.newJobMatchingSkillsDesc'),
@@ -243,9 +232,7 @@ function FrequencyOption({
           selected ? 'border-primary' : 'border-muted-foreground'
         }`}
       >
-        {selected && (
-          <div className="h-2 w-2 rounded-full bg-primary" />
-        )}
+        {selected && <div className="h-2 w-2 rounded-full bg-primary" />}
       </div>
       <div>
         <p className="text-sm font-medium">{label}</p>

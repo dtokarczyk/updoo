@@ -46,7 +46,12 @@ export default function ProfileSkillsPage() {
     mode: 'onSubmit',
   });
 
-  const { handleSubmit, reset, control, formState: { isSubmitting } } = form;
+  const {
+    handleSubmit,
+    reset,
+    control,
+    formState: { isSubmitting },
+  } = form;
 
   useEffect(() => {
     const user = getStoredUser();
@@ -95,7 +100,9 @@ export default function ProfileSkillsPage() {
     <Card className="w-full">
       <CardHeader>
         <CardTitle>{t('profile.tabSkills')}</CardTitle>
-        <CardDescription>{t('onboarding.freelancerSkillsDesc')}</CardDescription>
+        <CardDescription>
+          {t('onboarding.freelancerSkillsDesc')}
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {submitError && (
@@ -123,16 +130,14 @@ export default function ProfileSkillsPage() {
               skillsLoading={skillsLoading}
               disabled={isSubmitting}
               formId={formId}
-              searchPlaceholder={t('onboarding.freelancerSkillsSearchPlaceholder')}
+              searchPlaceholder={t(
+                'onboarding.freelancerSkillsSearchPlaceholder',
+              )}
               emptyLabel={t('onboarding.freelancerSkillsEmpty')}
               noResultsLabel={t('onboarding.freelancerSkillsNoResults')}
             />
             <CardFooter className="px-0">
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isSubmitting}
-              >
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isSubmitting ? t('common.saving') : t('common.save')}
               </Button>
             </CardFooter>

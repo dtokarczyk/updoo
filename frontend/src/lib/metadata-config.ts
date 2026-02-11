@@ -46,15 +46,13 @@ const metadataByLocale: Record<
         'Publikuj i szukaj ofert dla freelancerów. Połącz firmy z najlepszymi wykonawcami.',
     },
     home: {
-      title:
-        `${PROJECT_NAME} - Oferty dla freelancerów | Znajdź zlecenia lub zatrudnij najlepszych`,
+      title: `${PROJECT_NAME} - Oferty dla freelancerów | Znajdź zlecenia lub zatrudnij najlepszych`,
       description:
         'Platforma łącząca firmy z freelancerami. Przeglądaj ogłoszenia, publikuj oferty i znajdź idealne zlecenie lub wykonawcę. Szybko, prosto, bez pośredników.',
     },
     login: {
       title: 'Logowanie',
-      description:
-        `Zaloguj się do ${PROJECT_NAME}. Wprowadź adres e-mail i hasło, aby uzyskać dostęp do ofert i swojego konta.`,
+      description: `Zaloguj się do ${PROJECT_NAME}. Wprowadź adres e-mail i hasło, aby uzyskać dostęp do ofert i swojego konta.`,
     },
     forgotPassword: {
       title: 'Odzyskiwanie hasła',
@@ -67,53 +65,43 @@ const metadataByLocale: Record<
     },
     register: {
       title: 'Rejestracja',
-      description:
-        `Zarejestruj się w ${PROJECT_NAME}. Załóż konto w 30 sekund i zacznij przeglądać oferty lub publikować zlecenia.`,
+      description: `Zarejestruj się w ${PROJECT_NAME}. Załóż konto w 30 sekund i zacznij przeglądać oferty lub publikować zlecenia.`,
     },
     admin: {
       title: 'Panel administracyjny',
-      description:
-        `Panel administracyjny ${PROJECT_NAME}. Zarządzaj ofertami i generuj oferty z wykorzystaniem AI.`,
+      description: `Panel administracyjny ${PROJECT_NAME}. Zarządzaj ofertami i generuj oferty z wykorzystaniem AI.`,
     },
     favorites: {
       title: 'Ulubione ogłoszenia',
-      description:
-        `Twoja lista ulubionych ofert w ${PROJECT_NAME}. Szybki dostęp do zapisanych ogłoszeń.`,
+      description: `Twoja lista ulubionych ofert w ${PROJECT_NAME}. Szybki dostęp do zapisanych ogłoszeń.`,
     },
     my: {
       title: 'Moje',
-      description:
-        `Twoje ostatnie aplikacje i ulubione oferty w ${PROJECT_NAME}.`,
+      description: `Twoje ostatnie aplikacje i ulubione oferty w ${PROJECT_NAME}.`,
     },
     onboarding: {
       title: 'Konfiguracja konta',
-      description:
-        `Dokończ konfigurację konta w ${PROJECT_NAME}. Wybierz typ konta (klient lub freelancer) i uzupełnij profil.`,
+      description: `Dokończ konfigurację konta w ${PROJECT_NAME}. Wybierz typ konta (klient lub freelancer) i uzupełnij profil.`,
     },
     profileEdit: {
       title: 'Edycja profilu',
-      description:
-        `Zmień dane profilu w ${PROJECT_NAME}: imię, nazwisko, e-mail, hasło lub domyślną wiadomość powitalną.`,
+      description: `Zmień dane profilu w ${PROJECT_NAME}: imię, nazwisko, e-mail, hasło lub domyślną wiadomość powitalną.`,
     },
     profileCreate: {
       title: 'Załóż profil wykonawcy',
-      description:
-        `Utwórz profil firmy lub osoby prywatnej w ${PROJECT_NAME}. Po weryfikacji profil będzie widoczny publicznie.`,
+      description: `Utwórz profil firmy lub osoby prywatnej w ${PROJECT_NAME}. Po weryfikacji profil będzie widoczny publicznie.`,
     },
     jobNew: {
       title: 'Nowe ogłoszenie',
-      description:
-        `Dodaj nowe ogłoszenie w ${PROJECT_NAME}. Wypełnij szczegóły oferty, kategorię i warunki współpracy.`,
+      description: `Dodaj nowe ogłoszenie w ${PROJECT_NAME}. Wypełnij szczegóły oferty, kategorię i warunki współpracy.`,
     },
     jobEdit: {
       title: 'Edycja ogłoszenia',
-      description:
-        `Edytuj ogłoszenie w ${PROJECT_NAME}. Po zapisie oferta wróci do statusu szkicu i będzie wymagała ponownej akceptacji.`,
+      description: `Edytuj ogłoszenie w ${PROJECT_NAME}. Po zapisie oferta wróci do statusu szkicu i będzie wymagała ponownej akceptacji.`,
     },
     offers: {
       title: 'Ogłoszenia',
-      description:
-        `Przeglądaj oferty pracy dla freelancerów w ${PROJECT_NAME}. Filtruj po kategorii i języku ogłoszenia.`,
+      description: `Przeglądaj oferty pracy dla freelancerów w ${PROJECT_NAME}. Filtruj po kategorii i języku ogłoszenia.`,
     },
     jobDetail: (title: string) => ({
       title,
@@ -141,8 +129,7 @@ const metadataByLocale: Record<
     },
     login: {
       title: 'Login',
-      description:
-        `Log in to ${PROJECT_NAME}. Enter your email and password to access job offers and your account.`,
+      description: `Log in to ${PROJECT_NAME}. Enter your email and password to access job offers and your account.`,
     },
     forgotPassword: {
       title: 'Forgot password',
@@ -155,53 +142,43 @@ const metadataByLocale: Record<
     },
     register: {
       title: 'Register',
-      description:
-        `Sign up for ${PROJECT_NAME}. Create an account in 30 seconds and start browsing jobs or publishing listings.`,
+      description: `Sign up for ${PROJECT_NAME}. Create an account in 30 seconds and start browsing jobs or publishing listings.`,
     },
     admin: {
       title: 'Admin panel',
-      description:
-        `${PROJECT_NAME} admin panel. Manage job offers and generate listings with AI.`,
+      description: `${PROJECT_NAME} admin panel. Manage job offers and generate listings with AI.`,
     },
     favorites: {
       title: 'Favorite jobs',
-      description:
-        `Your list of favorite job offers in ${PROJECT_NAME}. Quick access to saved listings.`,
+      description: `Your list of favorite job offers in ${PROJECT_NAME}. Quick access to saved listings.`,
     },
     my: {
       title: 'My',
-      description:
-        `Your recent applications and favorite offers on ${PROJECT_NAME}.`,
+      description: `Your recent applications and favorite offers on ${PROJECT_NAME}.`,
     },
     onboarding: {
       title: 'Account setup',
-      description:
-        `Complete your ${PROJECT_NAME} account setup. Choose account type (client or freelancer) and fill in your profile.`,
+      description: `Complete your ${PROJECT_NAME} account setup. Choose account type (client or freelancer) and fill in your profile.`,
     },
     profileEdit: {
       title: 'Edit profile',
-      description:
-        `Update your ${PROJECT_NAME} profile: name, email, password, or default welcome message.`,
+      description: `Update your ${PROJECT_NAME} profile: name, email, password, or default welcome message.`,
     },
     profileCreate: {
       title: 'Create contractor profile',
-      description:
-        `Create a company or individual profile on ${PROJECT_NAME}. After verification the profile will be publicly visible.`,
+      description: `Create a company or individual profile on ${PROJECT_NAME}. After verification the profile will be publicly visible.`,
     },
     jobNew: {
       title: 'New job listing',
-      description:
-        `Add a new job listing on ${PROJECT_NAME}. Fill in offer details, category, and terms.`,
+      description: `Add a new job listing on ${PROJECT_NAME}. Fill in offer details, category, and terms.`,
     },
     jobEdit: {
       title: 'Edit job listing',
-      description:
-        `Edit your job listing on ${PROJECT_NAME}. After saving, the offer will return to draft status and require re-approval.`,
+      description: `Edit your job listing on ${PROJECT_NAME}. After saving, the offer will return to draft status and require re-approval.`,
     },
     offers: {
       title: 'Job listings',
-      description:
-        `Browse freelancer job offers on ${PROJECT_NAME}. Filter by category and listing language.`,
+      description: `Browse freelancer job offers on ${PROJECT_NAME}. Filter by category and listing language.`,
     },
     jobDetail: (title: string) => ({
       title,

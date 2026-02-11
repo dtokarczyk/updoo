@@ -52,13 +52,8 @@ export default async function RootLayout({
   const locale = await getLocaleFromRequest();
 
   return (
-    <html
-      lang={locale}
-      suppressHydrationWarning
-    >
-      <body
-        className={`${geistMono.variable} antialiased`}
-      >
+    <html lang={locale} suppressHydrationWarning>
+      <body className={`${geistMono.variable} antialiased`}>
         <ThemeScript />
         <ThemeProvider>
           <TooltipProvider delayDuration={200}>

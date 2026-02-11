@@ -20,14 +20,12 @@ const PASSWORD_MIN_LENGTH = 6;
  */
 export function getPasswordFormSchema(
   t: (key: string) => string,
-  hasPassword: boolean
+  hasPassword: boolean,
 ) {
   return z
     .object({
       oldPassword: hasPassword
-        ? z
-          .string()
-          .min(1, t('profile.validation.oldPasswordRequired'))
+        ? z.string().min(1, t('profile.validation.oldPasswordRequired'))
         : z.string(),
       password: z
         .string()

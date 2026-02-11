@@ -41,7 +41,12 @@ export function ChangeCompanyForm({
     mode: 'onSubmit',
   });
 
-  const { handleSubmit, reset, control, formState: { isSubmitting } } = form;
+  const {
+    handleSubmit,
+    reset,
+    control,
+    formState: { isSubmitting },
+  } = form;
 
   async function onSubmit(data: ChangeCompanyFormValues) {
     const normalized = data.nip.trim().replace(/\s/g, '').replace(/-/g, '');
@@ -82,11 +87,7 @@ export function ChangeCompanyForm({
 
   return (
     <FormProvider {...form}>
-      <form
-        id={formId}
-        onSubmit={handleSubmit(onSubmit)}
-        className="space-y-4"
-      >
+      <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <FieldGroup>
           <Controller
             name="nip"
@@ -106,10 +107,14 @@ export function ChangeCompanyForm({
                   maxLength={10}
                   aria-invalid={fieldState.invalid}
                   onChange={(e) =>
-                    field.onChange(e.target.value.replace(/\D/g, '').slice(0, 10))
+                    field.onChange(
+                      e.target.value.replace(/\D/g, '').slice(0, 10),
+                    )
                   }
                 />
-                <FieldDescription>{t('profile.companyChangeHint')}</FieldDescription>
+                <FieldDescription>
+                  {t('profile.companyChangeHint')}
+                </FieldDescription>
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
                 )}
@@ -126,12 +131,10 @@ export function ChangeCompanyForm({
           >
             {t('common.cancel')}
           </Button>
-          <Button
-            type="submit"
-            className="flex-1"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? t('common.submitting') : t('profile.companyLinkOther')}
+          <Button type="submit" className="flex-1" disabled={isSubmitting}>
+            {isSubmitting
+              ? t('common.submitting')
+              : t('profile.companyLinkOther')}
           </Button>
         </div>
       </form>

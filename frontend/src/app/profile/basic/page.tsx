@@ -6,7 +6,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CheckCircle2, CircleAlert, Camera, Trash2 } from 'lucide-react';
 import {
   Card,
@@ -57,7 +56,12 @@ export default function ProfileBasicPage() {
     mode: 'onSubmit',
   });
 
-  const { handleSubmit, reset, control, formState: { isSubmitting } } = form;
+  const {
+    handleSubmit,
+    reset,
+    control,
+    formState: { isSubmitting },
+  } = form;
 
   // Sync form with user from React Query (including after refetch from mutations)
   useEffect(() => {
@@ -202,7 +206,9 @@ export default function ProfileBasicPage() {
                         className="w-fit text-destructive hover:text-destructive"
                       >
                         <Trash2 className="size-4" />
-                        {avatarRemoving ? t('common.saving') : t('profile.removeAvatar')}
+                        {avatarRemoving
+                          ? t('common.saving')
+                          : t('profile.removeAvatar')}
                       </Button>
                     )}
                   </div>
@@ -342,11 +348,7 @@ export default function ProfileBasicPage() {
             )}
 
             <CardFooter className="px-0">
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isSubmitting}
-              >
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isSubmitting ? t('common.saving') : t('common.save')}
               </Button>
             </CardFooter>

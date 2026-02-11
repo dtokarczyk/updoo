@@ -34,9 +34,7 @@ export function StepAccountType({
   return (
     <>
       <CardHeader>
-        <CardTitle>
-          {t('onboarding.chooseAccountType')}
-        </CardTitle>
+        <CardTitle>{t('onboarding.chooseAccountType')}</CardTitle>
         <CardDescription>
           {t('onboarding.chooseAccountTypeDesc')}
         </CardDescription>
@@ -58,10 +56,11 @@ export function StepAccountType({
               type="button"
               disabled={loading}
               onClick={() => setValue('accountType', 'CLIENT')}
-              className={`flex w-full items-start gap-4 rounded-lg border p-5 text-left text-base transition-colors ${accountType === 'CLIENT'
+              className={`flex w-full items-start gap-4 rounded-lg border p-5 text-left text-base transition-colors ${
+                accountType === 'CLIENT'
                   ? 'border-primary bg-primary/5'
                   : 'border-border hover:border-primary/60'
-                }`}
+              }`}
             >
               <div className="mt-1 rounded-md bg-primary/10 p-2">
                 <Megaphone className="h-5 w-5 text-primary" />
@@ -78,10 +77,11 @@ export function StepAccountType({
               type="button"
               disabled={loading}
               onClick={() => setValue('accountType', 'FREELANCER')}
-              className={`flex w-full items-start gap-4 rounded-lg border p-5 text-left text-base transition-colors ${accountType === 'FREELANCER'
+              className={`flex w-full items-start gap-4 rounded-lg border p-5 text-left text-base transition-colors ${
+                accountType === 'FREELANCER'
                   ? 'border-primary bg-primary/5'
                   : 'border-border hover:border-primary/60'
-                }`}
+              }`}
             >
               <div className="mt-1 rounded-md bg-primary/10 p-2">
                 <Search className="h-5 w-5 text-primary" />

@@ -38,9 +38,7 @@ export function StepCompany({
   return (
     <>
       <CardHeader>
-        <CardTitle>
-          {t('onboarding.companyTitle')}
-        </CardTitle>
+        <CardTitle>{t('onboarding.companyTitle')}</CardTitle>
       </CardHeader>
       <form
         onSubmit={(e) => {
@@ -59,10 +57,11 @@ export function StepCompany({
               type="button"
               disabled={loading}
               onClick={() => setValue('hasCompany', true)}
-              className={`flex w-full items-center gap-4 rounded-lg border p-5 text-left text-base transition-colors ${hasCompany === true
+              className={`flex w-full items-center gap-4 rounded-lg border p-5 text-left text-base transition-colors ${
+                hasCompany === true
                   ? 'border-primary bg-primary/5'
                   : 'border-border hover:border-primary/60'
-                }`}
+              }`}
             >
               <div className="shrink-0 rounded-md bg-primary/10 p-2">
                 <Building2 className="h-5 w-5 text-primary" />
@@ -78,10 +77,11 @@ export function StepCompany({
                 setValue('hasCompany', false);
                 setValue('nipCompany', '');
               }}
-              className={`flex w-full items-center gap-4 rounded-lg border p-5 text-left text-base transition-colors ${hasCompany === false
+              className={`flex w-full items-center gap-4 rounded-lg border p-5 text-left text-base transition-colors ${
+                hasCompany === false
                   ? 'border-primary bg-primary/5'
                   : 'border-border hover:border-primary/60'
-                }`}
+              }`}
             >
               <div className="shrink-0 rounded-md bg-primary/10 p-2">
                 <UserCircle className="h-5 w-5 text-primary" />

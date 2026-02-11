@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Readable } from 'stream';
-import { S3Client, DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  DeleteObjectCommand,
+  GetObjectCommand,
+  PutObjectCommand,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import sharp from 'sharp';
 
@@ -72,7 +77,10 @@ export class StorageService {
     if (width != null && height != null) {
       pipeline = pipeline.resize(width, height, { fit: 'cover' });
     } else {
-      pipeline = pipeline.resize(size, size, { fit: 'inside', withoutEnlargement: true });
+      pipeline = pipeline.resize(size, size, {
+        fit: 'inside',
+        withoutEnlargement: true,
+      });
     }
 
     const resized = await pipeline.webp({ quality }).toBuffer();
@@ -89,7 +97,6 @@ export class StorageService {
 
     return `${this.publicBaseUrl}/${key}`;
   }
-
 
   async getImage(imageUrl: string | null): Promise<Buffer | null> {
     if (!imageUrl) {
@@ -133,7 +140,6 @@ export class StorageService {
     );
   }
 
-
   async getPresignedImageUrl(
     imageUrl: string | null,
     expiresInSeconds: number = PRESIGNED_IMAGE_EXPIRY_SECONDS,
@@ -167,7 +173,9 @@ export class StorageService {
     return this.getImage(avatarUrl);
   }
 
-  async getPresignedAvatarUrl(avatarUrl: string | null): Promise<string | null> {
+  async getPresignedAvatarUrl(
+    avatarUrl: string | null,
+  ): Promise<string | null> {
     return this.getPresignedImageUrl(avatarUrl);
   }
 
@@ -187,11 +195,16 @@ export class StorageService {
     quality: 85,
   };
 
-  async getPresignedCoverUrl(coverPhotoUrl: string | null): Promise<string | null> {
+  async getPresignedCoverUrl(
+    coverPhotoUrl: string | null,
+  ): Promise<string | null> {
     return this.getPresignedImageUrl(coverPhotoUrl);
   }
 
-  async uploadCoverPhoto(buffer: Buffer, profileId: string): Promise<string | null> {
+  async uploadCoverPhoto(
+    buffer: Buffer,
+    profileId: string,
+  ): Promise<string | null> {
     return this.uploadImage(buffer, profileId, StorageService.COVER_CONFIG);
   }
 

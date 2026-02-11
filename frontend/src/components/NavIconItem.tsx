@@ -35,22 +35,27 @@ export function NavIconItem({
         className,
         isActive
           ? 'bg-accent text-accent-foreground'
-          : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+          : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
       )}
       aria-label={label}
       aria-current={isActive ? 'page' : undefined}
     >
-      <div className={cn(
-        'flex items-center justify-center overflow-hidden rounded-lg',
-        orientation === 'vertical' ? `h-${boxSize} w-${boxSize}` : `h-${boxSize} w-${boxSize}`,
-      )}>
-        <Icon className={cn(
-          orientation === 'vertical' ? `h-${iconSize} w-${iconSize}` : ``,
-        )} aria-hidden />
+      <div
+        className={cn(
+          'flex items-center justify-center overflow-hidden rounded-lg',
+          orientation === 'vertical'
+            ? `h-${boxSize} w-${boxSize}`
+            : `h-${boxSize} w-${boxSize}`,
+        )}
+      >
+        <Icon
+          className={cn(
+            orientation === 'vertical' ? `h-${iconSize} w-${iconSize}` : ``,
+          )}
+          aria-hidden
+        />
       </div>
-      <span className="shrink text-xs font-medium truncate">
-        {label}
-      </span>
+      <span className="shrink text-xs font-medium truncate">{label}</span>
     </Link>
   );
 }

@@ -140,7 +140,7 @@ export default function OnboardingPage() {
           {state.step === STEP_NAME && (
             <StepName
               onSubmit={actions.handleNameSubmit}
-              onBack={() => { }}
+              onBack={() => {}}
               loading={state.loading}
               error={rootError}
               t={t}

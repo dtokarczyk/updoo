@@ -34,9 +34,7 @@ export function StepDefaultMessage({
   return (
     <>
       <CardHeader>
-        <CardTitle>
-          {t('onboarding.freelancerDefaultMessageTitle')}
-        </CardTitle>
+        <CardTitle>{t('onboarding.freelancerDefaultMessageTitle')}</CardTitle>
         <CardDescription>
           {t('onboarding.freelancerDefaultMessageDesc')}
         </CardDescription>

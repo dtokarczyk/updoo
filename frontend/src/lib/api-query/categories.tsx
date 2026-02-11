@@ -33,7 +33,9 @@ export function useSkillsQuery() {
   });
 }
 
-export function usePopularSkillsForCategoryQuery(categoryId: string | undefined) {
+export function usePopularSkillsForCategoryQuery(
+  categoryId: string | undefined,
+) {
   return useQuery({
     queryKey: queryKeys.popularSkills(categoryId ?? ''),
     queryFn: () => getPopularSkillsForCategory(categoryId!),

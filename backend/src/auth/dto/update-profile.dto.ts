@@ -57,4 +57,8 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   companyId?: string;
+
+  @IsOptional()
+  @IsString()
+  avatarUrl?: string;
 }

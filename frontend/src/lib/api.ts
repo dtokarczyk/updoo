@@ -9,6 +9,8 @@ export interface AuthUser {
   email: string;
   name: string | null;
   surname: string | null;
+  /** Avatar image URL (S3-compatible storage, 500x500). */
+  avatarUrl?: string | null;
   /** Phone number – used only for important notifications about application status. */
   phone?: string | null;
   /** Linked company id. */
@@ -67,6 +69,8 @@ export interface UpdateProfilePayload {
   surname?: string;
   email?: string;
   phone?: string;
+  /** Avatar image URL (after upload). */
+  avatarUrl?: string | null;
   companyId?: string | null;
   accountType?: AccountType;
   password?: string;
@@ -99,6 +103,7 @@ export async function updateProfile(
   if (payload.skillIds !== undefined) body.skillIds = payload.skillIds;
   if (payload.defaultMessage !== undefined)
     body.defaultMessage = payload.defaultMessage;
+  if (payload.avatarUrl !== undefined) body.avatarUrl = payload.avatarUrl;
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
@@ -121,6 +126,36 @@ export async function updateProfile(
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
     throw new Error(msg ?? 'Update failed');
+  }
+  return res.json();
+}
+
+/** Upload avatar image (compressed to 500x500 on server). Returns updated user and avatarUrl. */
+export async function uploadAvatar(
+  file: File,
+): Promise<{ user: AuthUser; avatarUrl: string }> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const headers: HeadersInit = {
+    Authorization: `Bearer ${token}`,
+  };
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
+    headers['Accept-Language'] = getUserLocale();
+  }
+
+  const res = await fetch(`${API_URL}/auth/avatar`, {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Upload failed');
   }
   return res.json();
 }

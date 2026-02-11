@@ -1,13 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Controller, useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle2, CircleAlert } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { CheckCircle2, CircleAlert, Camera } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -27,6 +28,7 @@ import {
   getStoredUser,
   updateProfile,
   updateStoredUser,
+  uploadAvatar,
 } from '@/lib/api';
 import { useTranslations } from '@/hooks/useTranslations';
 import {
@@ -37,6 +39,15 @@ import {
 
 const formId = 'profile-basic-form';
 
+function getInitials(name: string | null, surname: string | null): string {
+  const n = (name ?? '').trim().charAt(0).toUpperCase();
+  const s = (surname ?? '').trim().charAt(0).toUpperCase();
+  if (n && s) return `${n}${s}`;
+  if (n) return n;
+  if (s) return s;
+  return '?';
+}
+
 export default function ProfileBasicPage() {
   const router = useRouter();
   const { t } = useTranslations();
@@ -46,6 +57,10 @@ export default function ProfileBasicPage() {
   const [submitError, setSubmitError] = useState('');
   const [success, setSuccess] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<BasicProfileFormValues>({
     resolver: zodResolver(getBasicProfileFormSchema(t)),
@@ -60,6 +75,7 @@ export default function ProfileBasicPage() {
     const user = getStoredUser();
     if (user) {
       setAccountType(user.accountType);
+      setAvatarUrl(user.avatarUrl ?? null);
       reset({
         name: user.name ?? '',
         surname: user.surname ?? '',
@@ -69,6 +85,35 @@ export default function ProfileBasicPage() {
       });
     }
   }, [reset]);
+
+  async function onAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowed.includes(file.type)) {
+      setAvatarError(t('profile.avatarUploadFailed'));
+      return;
+    }
+    setAvatarError('');
+    setAvatarUploading(true);
+    try {
+      const { user: updated } = await uploadAvatar(file);
+      updateStoredUser(updated);
+      setAvatarUrl(updated.avatarUrl ?? null);
+      setSuccess(true);
+      router.refresh();
+    } catch {
+      setAvatarError(t('profile.avatarUploadFailed'));
+    } finally {
+      setAvatarUploading(false);
+      e.target.value = '';
+    }
+  }
+
+  const currentUser = mounted ? getStoredUser() : null;
+  const initials = currentUser
+    ? getInitials(currentUser.name ?? null, currentUser.surname ?? null)
+    : '?';
 
   async function onSubmit(data: BasicProfileFormValues) {
     setSubmitError('');
@@ -122,6 +167,50 @@ export default function ProfileBasicPage() {
             onSubmit={handleSubmit(onSubmit)}
             className="space-y-4"
           >
+            <Field>
+              <FieldLabel>{t('profile.avatar')}</FieldLabel>
+              <div className="flex items-center gap-4">
+                <label htmlFor={`${formId}-avatar`} className="cursor-pointer">
+                  <Avatar className="h-20 w-20 ring-2 ring-muted">
+                    <AvatarImage src={avatarUrl ?? undefined} alt="" />
+                    <AvatarFallback className="text-lg">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <input
+                    ref={fileInputRef}
+                    id={`${formId}-avatar`}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    className="sr-only"
+                    disabled={avatarUploading}
+                    onChange={onAvatarChange}
+                    aria-label={t('profile.changeAvatar')}
+                  />
+                </label>
+                <div className="flex flex-col gap-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={avatarUploading}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-fit"
+                  >
+                    <Camera className="size-4" />
+                    {avatarUploading
+                      ? t('profile.avatarUploading')
+                      : t('profile.changeAvatar')}
+                  </Button>
+                  {avatarError && (
+                    <span className="text-sm text-destructive">
+                      {avatarError}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </Field>
+
             <Controller
               name="name"
               control={control}

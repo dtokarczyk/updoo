@@ -30,6 +30,8 @@ export interface AuthResponseUser {
   email: string;
   name: string | null;
   surname: string | null;
+  /** Avatar image URL (S3-compatible storage, 500x500). */
+  avatarUrl: string | null;
   phone: string | null;
   /** NIP from linked company (company.nip). */
   nipCompany: string | null;
@@ -72,7 +74,7 @@ export class AuthService {
     private readonly agreementsService: AgreementsService,
     private readonly i18nService: I18nService,
     private readonly regonService: RegonService,
-  ) {}
+  ) { }
 
   /** Company payload returned by GET /auth/company and after link/refresh. */
   getCompanyPayload(company: {
@@ -190,6 +192,7 @@ export class AuthService {
       email: user.email,
       name: user.name,
       surname: user.surname,
+      avatarUrl: user.avatarUrl ?? null,
       phone: user.phone,
       nipCompany: userCompany.company?.nip ?? null,
       companyId: user.companyId ?? null,
@@ -382,6 +385,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
         surname: user.surname,
+        avatarUrl: user.avatarUrl ?? null,
         phone: user.phone,
         nipCompany: null,
         companyId: user.companyId ?? null,
@@ -408,6 +412,7 @@ export class AuthService {
       email: withRelations.email,
       name: withRelations.name,
       surname: withRelations.surname,
+      avatarUrl: withRelations.avatarUrl ?? null,
       phone: withRelations.phone,
       nipCompany: withRelationsCompany.company?.nip ?? null,
       companyId: withRelations.companyId ?? null,
@@ -452,6 +457,7 @@ export class AuthService {
       email: user.email,
       name: user.name,
       surname: user.surname,
+      avatarUrl: user.avatarUrl ?? null,
       phone: user.phone,
       nipCompany: userCompany.company?.nip ?? null,
       companyId: user.companyId ?? null,
@@ -507,6 +513,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
         surname: user.surname,
+        avatarUrl: user.avatarUrl ?? null,
         phone: user.phone,
         nipCompany: userCompany.company?.nip ?? null,
         companyId: user.companyId ?? null,
@@ -548,6 +555,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
         surname: user.surname,
+        avatarUrl: user.avatarUrl ?? null,
         phone: user.phone,
         nipCompany: userCompany.company?.nip ?? null,
         companyId: user.companyId ?? null,
@@ -586,6 +594,7 @@ export class AuthService {
         email: newUser.email,
         name: newUser.name,
         surname: newUser.surname,
+        avatarUrl: newUser.avatarUrl ?? null,
         phone: newUser.phone,
         nipCompany: null,
         companyId: newUser.companyId ?? null,
@@ -612,6 +621,7 @@ export class AuthService {
       email: withRelations.email,
       name: withRelations.name,
       surname: withRelations.surname,
+      avatarUrl: withRelations.avatarUrl ?? null,
       phone: withRelations.phone,
       nipCompany: newUserCompany.company?.nip ?? null,
       companyId: withRelations.companyId ?? null,
@@ -647,6 +657,7 @@ export class AuthService {
     const updateData: Parameters<typeof this.prisma.user.update>[0]['data'] = {
       ...(dto.name !== undefined && { name: dto.name || null }),
       ...(dto.surname !== undefined && { surname: dto.surname || null }),
+      ...(dto.avatarUrl !== undefined && { avatarUrl: dto.avatarUrl?.trim() || null }),
       ...(dto.phone !== undefined && { phone: dto.phone?.trim() || null }),
       ...(dto.companyId !== undefined && {
         companyId: dto.companyId?.trim() || null,
@@ -713,6 +724,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
         surname: user.surname,
+        avatarUrl: user.avatarUrl ?? null,
         phone: user.phone,
         nipCompany: userCompany.company?.nip ?? null,
         companyId: user.companyId ?? null,
@@ -752,6 +764,7 @@ export class AuthService {
       email: user.email,
       name: user.name,
       surname: user.surname,
+      avatarUrl: user.avatarUrl ?? null,
       phone: user.phone,
       nipCompany: userCompany.company?.nip ?? null,
       companyId: user.companyId ?? null,
@@ -801,6 +814,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
         surname: user.surname,
+        avatarUrl: user.avatarUrl ?? null,
         phone: user.phone,
         nipCompany: userCompany.company?.nip ?? null,
         companyId: user.companyId ?? null,
@@ -828,6 +842,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
         surname: user.surname,
+        avatarUrl: user.avatarUrl,
         phone: user.phone,
         nipCompany: user.nipCompany,
         companyId: user.companyId,

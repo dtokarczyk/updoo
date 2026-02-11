@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -9,10 +10,15 @@ import {
   Res,
   UnauthorizedException,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import type { Response } from 'express';
 import { Request } from 'express';
 import { AuthService, AuthResponse } from './auth.service';
+import { StorageService } from '../storage/storage.service';
 import { AgreementsService } from '../agreements/agreements.service';
 import { GetUser } from './get-user.decorator';
 import type { JwtUser } from './get-user.decorator';
@@ -33,6 +39,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly agreementsService: AgreementsService,
     private readonly i18nService: I18nService,
+    private readonly storageService: StorageService,
   ) {}
 
   private getLanguage(acceptLanguage?: string): SupportedLanguage {
@@ -125,6 +132,38 @@ export class AuthController {
     @Body() dto: UpdateProfileDto,
   ): Promise<{ user: AuthResponse['user'] }> {
     return this.authService.updateProfile(user.id, dto);
+  }
+
+  @Post('avatar')
+  @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+    }),
+  )
+  async uploadAvatar(
+    @GetUser() user: JwtUser,
+    @UploadedFile() file: Express.Multer.File | undefined,
+  ): Promise<{ user: AuthResponse['user']; avatarUrl: string }> {
+    if (!file?.buffer) {
+      throw new BadRequestException('File is required');
+    }
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.mimetype)) {
+      throw new BadRequestException('Invalid file type. Use JPEG, PNG, WebP or GIF.');
+    }
+    if (!this.storageService.isConfigured()) {
+      throw new BadRequestException('Avatar upload is not configured');
+    }
+    const avatarUrl = await this.storageService.uploadAvatar(file.buffer, user.id);
+    if (!avatarUrl) {
+      throw new BadRequestException('Failed to upload avatar');
+    }
+    const { user: updatedUser } = await this.authService.updateProfile(user.id, {
+      avatarUrl,
+    });
+    return { user: updatedUser, avatarUrl };
   }
 
   @Post('accept-agreements')

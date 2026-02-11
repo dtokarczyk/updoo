@@ -1,11 +1,10 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AgreementsModule } from '../agreements/agreements.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { EmailModule } from '../email/email.module';
 import { I18nModule } from '../i18n/i18n.module';
-import { RegonModule } from '../regon/regon.module';
 import { StorageModule } from '../storage/storage.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -19,7 +18,6 @@ import { JwtStrategy } from './jwt.strategy';
     PrismaModule,
     EmailModule,
     I18nModule,
-    forwardRef(() => RegonModule),
     StorageModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
@@ -36,4 +34,4 @@ import { JwtStrategy } from './jwt.strategy';
   ],
   exports: [AuthService, AgreementsAcceptedGuard],
 })
-export class AuthModule { }
+export class AuthModule {}

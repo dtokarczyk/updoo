@@ -4,6 +4,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AgreementsModule } from './agreements/agreements.module';
 import { AuthModule } from './auth/auth.module';
+import { AccountModule } from './account/account.module';
+import { CompanyModule } from './company/company.module';
 import { JobsModule } from './jobs/jobs.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { I18nModule } from './i18n/i18n.module';
@@ -21,6 +23,8 @@ import { NotificationsModule } from './notifications/notifications.module';
     PrismaModule,
     AgreementsModule,
     AuthModule,
+    AccountModule,
+    CompanyModule,
     JobsModule,
     ProfilesModule,
     I18nModule,

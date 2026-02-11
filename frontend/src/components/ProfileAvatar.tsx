@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthQuery } from '@/lib/api-query';
 import type { AuthUser } from '@/lib/api';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
@@ -21,33 +21,32 @@ type ProfileAvatarProps = {
 };
 
 /**
- * Avatar for the current logged-in user. Uses AuthContext for user data.
- * Shows avatar image when available, otherwise initials. When not logged in, shows "?".
+ * Avatar for the current logged-in user. Uses React Query auth profile – updates
+ * automatically after profile/avatar mutations (refetch). Key on image forces
+ * remount when URL or userKey changes so the browser loads the new image.
  */
-/** Append cache buster to avatar URL so browser refetches after upload/remove. */
-function avatarUrlWithCacheBuster(url: string | null, userKey: number): string | undefined {
-  if (!url) return undefined;
-  const separator = url.includes('?') ? '&' : '?';
-  return `${url}${separator}v=${userKey}`;
-}
-
 export function ProfileAvatar({ className }: ProfileAvatarProps) {
-  const { user, userKey } = useAuth();
+  const { user, userKey } = useAuthQuery();
   const initials = getInitials(user);
   const avatarUrl = user?.avatarUrl ?? null;
-  const avatarSrc = avatarUrlWithCacheBuster(avatarUrl, userKey);
+
+  console.log(avatarUrl);
 
   return (
     <Avatar
       className={cn('shrink-0', className)}
       aria-hidden
     >
-      {avatarSrc ? (
-        <AvatarImage src={avatarSrc} alt="" />
-      ) : null}
-      <AvatarFallback className="text-sm font-medium text-muted-foreground">
+      {avatarUrl ? (
+        <AvatarImage
+          key={`${avatarUrl}-${userKey}`}
+          src={avatarUrl}
+          alt=""
+        />
+      ) : <AvatarFallback className="text-sm font-medium text-muted-foreground">
         {initials}
-      </AvatarFallback>
+      </AvatarFallback>}
+
     </Avatar>
   );
 }

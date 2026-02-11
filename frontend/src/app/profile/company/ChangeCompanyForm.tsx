@@ -12,7 +12,7 @@ import {
   FieldGroup,
   FieldLabel,
 } from '@/components/ui/field';
-import { linkCompanyByNip, updateStoredUser, type Company } from '@/lib/api';
+import { useLinkCompanyByNipMutation } from '@/lib/api-query';
 import { useTranslations } from '@/hooks/useTranslations';
 import {
   getChangeCompanyFormSchema,
@@ -23,18 +23,17 @@ import {
 const formId = 'change-company-form';
 
 type ChangeCompanyFormProps = {
-  onSuccess: (company: Company) => void;
   onError?: (message: string) => void;
   onSuccessMessage?: (message: string) => void;
 };
 
 export function ChangeCompanyForm({
-  onSuccess,
   onError,
   onSuccessMessage,
 }: ChangeCompanyFormProps) {
   const { t } = useTranslations();
   const [expanded, setExpanded] = useState(false);
+  const linkMutation = useLinkCompanyByNipMutation();
 
   const form = useForm<ChangeCompanyFormValues>({
     resolver: zodResolver(getChangeCompanyFormSchema(t)),
@@ -49,11 +48,9 @@ export function ChangeCompanyForm({
     onError?.('');
     onSuccessMessage?.('');
     try {
-      const { user, company: c } = await linkCompanyByNip(normalized);
-      updateStoredUser(user);
+      await linkMutation.mutateAsync(normalized);
       reset(defaultChangeCompanyFormValues);
       setExpanded(false);
-      onSuccess(c);
       onSuccessMessage?.(t('profile.companyLinked'));
     } catch (err) {
       onError?.(err instanceof Error ? err.message : t('common.error'));

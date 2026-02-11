@@ -1,7 +1,22 @@
 import { Injectable } from '@nestjs/common';
+import { Readable } from 'stream';
 import { S3Client, DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import sharp from 'sharp';
+
+/** Config for image upload: path prefix, dimensions and WebP quality. */
+export interface ImageUploadConfig {
+  /** S3 key prefix (e.g. "avatars", "covers"). Key becomes `${path}/${identifier}.webp`. */
+  path: string;
+  /** Max dimension for fit 'inside' (keep aspect). Ignored when width/height are set. */
+  size: number;
+  /** WebP quality 1–100. */
+  quality: number;
+  /** Optional: exact width for fit 'cover'. */
+  width?: number;
+  /** Optional: exact height for fit 'cover'. When both width and height set, uses fit 'cover'. */
+  height?: number;
+}
 
 /** Build virtual-hosted-style base URL: https://bucket-name.endpoint-host (no trailing slash) */
 function buildVirtualHostedBaseUrl(endpoint: string, bucket: string): string {
@@ -9,19 +24,11 @@ function buildVirtualHostedBaseUrl(endpoint: string, bucket: string): string {
   return `${url.protocol}//${bucket}.${url.host}`;
 }
 
-const AVATAR_SIZE = 500;
-const AVATAR_QUALITY = 85;
-/** Cover photo: 16:9, max width 1920. */
-const COVER_WIDTH = 1920;
-const COVER_HEIGHT = 1080;
-const COVER_QUALITY = 85;
-/** Presigned URL expiry for private buckets (e.g. Railway). */
-const PRESIGNED_AVATAR_EXPIRY_SECONDS = 3600; // 1 hour
-const PRESIGNED_COVER_EXPIRY_SECONDS = 3600;
+const PRESIGNED_IMAGE_EXPIRY_SECONDS = 3600; // 1 hour
 
 @Injectable()
 export class StorageService {
-  private readonly s3: S3Client | null = null;
+  private readonly s3: S3Client;
   private readonly bucket: string;
   private readonly publicBaseUrl: string;
 
@@ -31,15 +38,11 @@ export class StorageService {
     const region = process.env.AWS_DEFAULT_REGION ?? 'auto';
     const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
     const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
-    const publicUrlOverride = process.env.S3_PUBLIC_URL;
 
-    this.bucket = bucket ?? '';
-    // Virtual-hosted-style URL: https://bucket-name.endpoint-host (required for public access on many S3-compatible providers)
-    this.publicBaseUrl =
-      publicUrlOverride?.replace(/\/$/, '') ??
-      (endpoint && bucket ? buildVirtualHostedBaseUrl(endpoint, bucket) : '');
+    if (bucket && endpoint && accessKeyId && secretAccessKey && region) {
+      this.bucket = bucket;
+      this.publicBaseUrl = buildVirtualHostedBaseUrl(endpoint, bucket);
 
-    if (bucket && endpoint && accessKeyId && secretAccessKey) {
       this.s3 = new S3Client({
         endpoint,
         region,
@@ -47,139 +50,152 @@ export class StorageService {
           accessKeyId,
           secretAccessKey,
         },
-        forcePathStyle: false, // virtual-hosted-style for API calls
       });
+    } else {
+      throw new Error('S3 is not configured');
     }
   }
 
+  /** Whether S3 storage is available (constructor did not throw). */
   isConfigured(): boolean {
-    return this.s3 != null && this.bucket.length > 0;
+    return !!this.s3 && !!this.bucket;
   }
 
-  /**
-   * For private buckets (e.g. Railway), returns a presigned GET URL so the client can load the avatar.
-   * If avatarUrl is not our storage URL, returns the original URL. Returns null if not configured.
-   */
+  async uploadImage(
+    buffer: Buffer,
+    identifier: string,
+    config: ImageUploadConfig,
+  ): Promise<string | null> {
+    const { path, size, quality, width, height } = config;
+    let pipeline = sharp(buffer);
+
+    if (width != null && height != null) {
+      pipeline = pipeline.resize(width, height, { fit: 'cover' });
+    } else {
+      pipeline = pipeline.resize(size, size, { fit: 'inside', withoutEnlargement: true });
+    }
+
+    const resized = await pipeline.webp({ quality }).toBuffer();
+    const key = `${path}/${identifier}.webp`;
+
+    await this.s3.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        Body: resized,
+        ContentType: 'image/webp',
+      }),
+    );
+
+    return `${this.publicBaseUrl}/${key}`;
+  }
+
+
+  async getImage(imageUrl: string | null): Promise<Buffer | null> {
+    if (!imageUrl) {
+      return null;
+    }
+    const prefix = `${this.publicBaseUrl}/`;
+    if (!imageUrl.startsWith(prefix)) {
+      return null;
+    }
+    const pathPart = imageUrl.split('?')[0];
+    const key = pathPart.slice(prefix.length);
+    if (!key) return null;
+    try {
+      const res = await this.s3.send(
+        new GetObjectCommand({ Bucket: this.bucket, Key: key }),
+      );
+      if (!res.Body) return null;
+      const stream = Readable.from(res.Body as NodeJS.ReadableStream);
+      const chunks: Buffer[] = [];
+      for await (const chunk of stream) {
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+      }
+      return Buffer.concat(chunks);
+    } catch {
+      return null;
+    }
+  }
+
+  async deleteImage(imageUrl: string | null): Promise<void> {
+    if (!imageUrl || !this.s3 || !this.bucket || !this.publicBaseUrl) {
+      return;
+    }
+    const prefix = `${this.publicBaseUrl}/`;
+    if (!imageUrl.startsWith(prefix)) {
+      return;
+    }
+    const pathPart = imageUrl.split('?')[0];
+    const key = pathPart.slice(prefix.length);
+    await this.s3.send(
+      new DeleteObjectCommand({ Bucket: this.bucket, Key: key }),
+    );
+  }
+
+
+  async getPresignedImageUrl(
+    imageUrl: string | null,
+    expiresInSeconds: number = PRESIGNED_IMAGE_EXPIRY_SECONDS,
+  ): Promise<string | null> {
+    if (!imageUrl || !this.s3 || !this.bucket || !this.publicBaseUrl) {
+      return imageUrl;
+    }
+    const prefix = `${this.publicBaseUrl}/`;
+    if (!imageUrl.startsWith(prefix)) {
+      return imageUrl;
+    }
+    const pathPart = imageUrl.split('?')[0];
+    const key = pathPart.slice(prefix.length);
+    const url = await getSignedUrl(
+      this.s3,
+      new GetObjectCommand({ Bucket: this.bucket, Key: key }),
+      { expiresIn: expiresInSeconds },
+    );
+    return url;
+  }
+
+  // --- Avatar (backward-compatible wrappers) ---
+
+  private static readonly AVATAR_CONFIG: ImageUploadConfig = {
+    path: 'avatars',
+    size: 500,
+    quality: 85,
+  };
+
+  async getAvatarBuffer(avatarUrl: string | null): Promise<Buffer | null> {
+    return this.getImage(avatarUrl);
+  }
+
   async getPresignedAvatarUrl(avatarUrl: string | null): Promise<string | null> {
-    if (!avatarUrl || !this.s3 || !this.bucket || !this.publicBaseUrl) {
-      return avatarUrl;
-    }
-    const prefix = `${this.publicBaseUrl}/`;
-    if (!avatarUrl.startsWith(prefix)) {
-      return avatarUrl; // external URL (e.g. S3_PUBLIC_URL override)
-    }
-    const key = avatarUrl.slice(prefix.length);
-    const url = await getSignedUrl(
-      this.s3,
-      new GetObjectCommand({ Bucket: this.bucket, Key: key }),
-      { expiresIn: PRESIGNED_AVATAR_EXPIRY_SECONDS },
-    );
-    return url;
+    return this.getPresignedImageUrl(avatarUrl);
   }
 
-  /**
-   * Resize image to max 500x500 (fit inside, keep aspect ratio), convert to WebP, then upload to S3.
-   * Returns public URL of the uploaded avatar or null if storage is not configured.
-   */
   async uploadAvatar(buffer: Buffer, userId: string): Promise<string | null> {
-    if (!this.s3 || !this.bucket) {
-      return null;
-    }
-
-    const resized = await sharp(buffer)
-      .resize(AVATAR_SIZE, AVATAR_SIZE, { fit: 'inside', withoutEnlargement: true })
-      .webp({ quality: AVATAR_QUALITY })
-      .toBuffer();
-
-    const key = `avatars/${userId}.webp`;
-
-    await this.s3.send(
-      new PutObjectCommand({
-        Bucket: this.bucket,
-        Key: key,
-        Body: resized,
-        ContentType: 'image/webp',
-      }),
-    );
-
-    return `${this.publicBaseUrl}/${key}`;
+    return this.uploadImage(buffer, userId, StorageService.AVATAR_CONFIG);
   }
 
-  /**
-   * Delete avatar object from S3 if avatarUrl points to our bucket.
-   * Does nothing if URL is external or storage is not configured.
-   */
   async deleteAvatar(avatarUrl: string | null): Promise<void> {
-    if (!avatarUrl || !this.s3 || !this.bucket || !this.publicBaseUrl) {
-      return;
-    }
-    const prefix = `${this.publicBaseUrl}/`;
-    if (!avatarUrl.startsWith(prefix)) {
-      return; // external URL, do not delete
-    }
-    const key = avatarUrl.slice(prefix.length);
-    await this.s3.send(
-      new DeleteObjectCommand({ Bucket: this.bucket, Key: key }),
-    );
+    return this.deleteImage(avatarUrl);
   }
 
-  /**
-   * Presigned GET URL for profile cover photo (private buckets).
-   */
+  // --- Cover photo (for profiles) ---
+
+  private static readonly COVER_CONFIG: ImageUploadConfig = {
+    path: 'covers',
+    size: 1200,
+    quality: 85,
+  };
+
   async getPresignedCoverUrl(coverPhotoUrl: string | null): Promise<string | null> {
-    if (!coverPhotoUrl || !this.s3 || !this.bucket || !this.publicBaseUrl) {
-      return coverPhotoUrl;
-    }
-    const prefix = `${this.publicBaseUrl}/`;
-    if (!coverPhotoUrl.startsWith(prefix)) {
-      return coverPhotoUrl;
-    }
-    const key = coverPhotoUrl.slice(prefix.length);
-    const url = await getSignedUrl(
-      this.s3,
-      new GetObjectCommand({ Bucket: this.bucket, Key: key }),
-      { expiresIn: PRESIGNED_COVER_EXPIRY_SECONDS },
-    );
-    return url;
+    return this.getPresignedImageUrl(coverPhotoUrl);
   }
 
-  /**
-   * Resize image to 1920x1080 (16:9), convert to WebP, upload. Returns public URL or null.
-   */
   async uploadCoverPhoto(buffer: Buffer, profileId: string): Promise<string | null> {
-    if (!this.s3 || !this.bucket) {
-      return null;
-    }
-    const resized = await sharp(buffer)
-      .resize(COVER_WIDTH, COVER_HEIGHT, { fit: 'cover' })
-      .webp({ quality: COVER_QUALITY })
-      .toBuffer();
-    const key = `covers/${profileId}.webp`;
-    await this.s3.send(
-      new PutObjectCommand({
-        Bucket: this.bucket,
-        Key: key,
-        Body: resized,
-        ContentType: 'image/webp',
-      }),
-    );
-    return `${this.publicBaseUrl}/${key}`;
+    return this.uploadImage(buffer, profileId, StorageService.COVER_CONFIG);
   }
 
-  /**
-   * Delete cover photo from S3 if URL points to our bucket.
-   */
   async deleteCoverPhoto(coverPhotoUrl: string | null): Promise<void> {
-    if (!coverPhotoUrl || !this.s3 || !this.bucket || !this.publicBaseUrl) {
-      return;
-    }
-    const prefix = `${this.publicBaseUrl}/`;
-    if (!coverPhotoUrl.startsWith(prefix)) {
-      return;
-    }
-    const key = coverPhotoUrl.slice(prefix.length);
-    await this.s3.send(
-      new DeleteObjectCommand({ Bucket: this.bucket, Key: key }),
-    );
+    return this.deleteImage(coverPhotoUrl);
   }
 }

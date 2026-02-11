@@ -331,7 +331,7 @@ export async function getMyCompany(): Promise<{ company: Company | null }> {
     const { getUserLocale } = await import('./i18n');
     headers['Accept-Language'] = getUserLocale();
   }
-  const res = await fetch(`${API_URL}/auth/company`, { headers });
+  const res = await fetch(`${API_URL}/company`, { headers });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
@@ -354,7 +354,7 @@ export async function linkCompanyByNip(
     const { getUserLocale } = await import('./i18n');
     headers['Accept-Language'] = getUserLocale();
   }
-  const res = await fetch(`${API_URL}/auth/company/link`, {
+  const res = await fetch(`${API_URL}/company/link`, {
     method: 'POST',
     headers,
     body: JSON.stringify({ nip: nip.trim().replace(/\s/g, '').replace(/-/g, '') }),
@@ -376,7 +376,7 @@ export async function refreshCompany(): Promise<{ company: Company }> {
     const { getUserLocale } = await import('./i18n');
     headers['Accept-Language'] = getUserLocale();
   }
-  const res = await fetch(`${API_URL}/auth/company/refresh`, {
+  const res = await fetch(`${API_URL}/company/refresh`, {
     method: 'POST',
     headers,
   });

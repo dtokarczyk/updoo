@@ -2,7 +2,6 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -11,48 +10,19 @@ import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
 import { AgreementsService } from '../agreements/agreements.service';
-import { RegonService } from '../regon/regon.service';
-import type { SearchResultRow } from '../regon/regon-contact.util';
 import { StorageService } from '../storage/storage.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { I18nService, SupportedLanguage } from '../i18n/i18n.service';
+import type {
+  JwtPayload,
+  AuthResponseUser,
+  AuthResponse,
+} from './auth.types';
 
-export interface JwtPayload {
-  sub: string;
-  email: string;
-}
-
-export interface AuthResponseUser {
-  id: string;
-  email: string;
-  name: string | null;
-  surname: string | null;
-  /** Avatar image URL (S3-compatible storage, 500x500). */
-  avatarUrl: string | null;
-  phone: string | null;
-  /** NIP from linked company (company.nip). */
-  nipCompany: string | null;
-  companyId: string | null;
-  accountType: string | null;
-  language: string;
-  defaultMessage: string | null;
-  skills: { id: string; name: string }[];
-  /** False when user signed up with Google only and has not set a password yet. */
-  hasPassword: boolean;
-  /** Timestamp (version) of accepted terms of service, or null if not accepted. */
-  acceptedTermsVersion: string | null;
-  /** Timestamp (version) of accepted privacy policy, or null if not accepted. */
-  acceptedPrivacyPolicyVersion: string | null;
-}
-
-export interface AuthResponse {
-  access_token: string;
-  user: AuthResponseUser;
-}
+export type { JwtPayload, AuthResponseUser, AuthResponse };
 
 const PASSWORD_RESET_EXPIRY_HOURS = 1;
 
@@ -74,178 +44,47 @@ export class AuthService {
     private readonly emailService: EmailService,
     private readonly agreementsService: AgreementsService,
     private readonly i18nService: I18nService,
-    private readonly regonService: RegonService,
     private readonly storageService: StorageService,
   ) { }
 
-  /** Resolve avatar URL to presigned URL for private buckets (e.g. Railway). */
-  private async resolveAvatarUrlForResponse(
+  /** Short-lived JWT for avatar proxy URL (GET /auth/avatar?token=...). */
+  private signAvatarToken(userId: string): string {
+    return this.jwtService.sign(
+      { sub: userId, purpose: 'avatar' },
+      { expiresIn: '1h' },
+    );
+  }
+
+  /**
+   * Resolve avatar URL for API response. When proxy is used (path or base URL set), returns
+   * a link to avatar that works with the profile – relative path (e.g. /api/auth/avatar?token=...)
+   * or full URL. Otherwise returns presigned URL for private buckets.
+   * Exposed for AccountService and JWT user building.
+   */
+  async resolveAvatarUrlForResponse(
+    userId: string,
     avatarUrl: string | null,
   ): Promise<string | null> {
+    if (!avatarUrl) return null;
     const presigned =
       await this.storageService.getPresignedAvatarUrl(avatarUrl);
+    if (!presigned || presigned === avatarUrl) return presigned ?? avatarUrl;
+
+    const token = this.signAvatarToken(userId);
+    const pathSuffix = `/auth/avatar?token=${encodeURIComponent(token)}`;
+
+    const pathPrefix = process.env.AVATAR_PATH_PREFIX ?? process.env.API_PATH;
+    if (pathPrefix != null && pathPrefix !== '') {
+      const base = pathPrefix.replace(/\/$/, '');
+      return base ? `${base}${pathSuffix}` : pathSuffix;
+    }
+
+    const baseUrl = process.env.BACKEND_PUBLIC_URL ?? process.env.API_URL;
+    if (baseUrl) {
+      return `${baseUrl.replace(/\/$/, '')}${pathSuffix}`;
+    }
+
     return presigned ?? avatarUrl;
-  }
-
-  /** Company payload returned by GET /auth/company and after link/refresh. */
-  getCompanyPayload(company: {
-    id: string;
-    regon: string;
-    nip: string;
-    name: string;
-    voivodeship: string | null;
-    county: string | null;
-    commune: string | null;
-    locality: string | null;
-    postalCode: string | null;
-    street: string | null;
-    propertyNumber: string | null;
-    apartmentNumber: string | null;
-    type: string | null;
-    isActive: boolean;
-    updatedAt: Date;
-  }) {
-    return {
-      id: company.id,
-      regon: company.regon,
-      nip: company.nip,
-      name: company.name,
-      voivodeship: company.voivodeship,
-      county: company.county,
-      commune: company.commune,
-      locality: company.locality,
-      postalCode: company.postalCode,
-      street: company.street,
-      propertyNumber: company.propertyNumber,
-      apartmentNumber: company.apartmentNumber,
-      type: company.type,
-      isActive: company.isActive,
-      updatedAt: company.updatedAt,
-    };
-  }
-
-  /** Map GUS search row to Company create/update payload. */
-  private mapGusRowToCompany(row: SearchResultRow) {
-    const nip = String(row.Nip ?? '').replace(/\s/g, '');
-    const regon = String(row.Regon ?? '').replace(/\s/g, '');
-    if (!nip || !regon) {
-      throw new BadRequestException('GUS data missing NIP or REGON');
-    }
-    return {
-      regon,
-      nip,
-      name: String(row.Nazwa ?? '').trim() || '—',
-      voivodeship: row.Wojewodztwo?.trim() || null,
-      county: row.Powiat?.trim() || null,
-      commune: row.Gmina?.trim() || null,
-      locality: row.Miejscowosc?.trim() || null,
-      postalCode: row.KodPocztowy?.trim() || null,
-      street: row.Ulica?.trim() || null,
-      propertyNumber: row.NrNieruchomosci?.trim() || null,
-      apartmentNumber: row.NrLokalu?.trim() || null,
-      type: row.Typ?.trim() || null,
-    };
-  }
-
-  /** Get current user's linked company. Returns null if none. */
-  async getMyCompany(
-    userId: string,
-  ): Promise<ReturnType<AuthService['getCompanyPayload']> | null> {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      include: { company: true },
-    });
-    if (!user?.companyId || !user.company) return null;
-    return this.getCompanyPayload(user.company);
-  }
-
-  /** Link company to user by NIP: find in DB or fetch from GUS, create, then assign. */
-  async linkCompanyByNip(
-    userId: string,
-    nipRaw: string,
-  ): Promise<{
-    user: AuthResponseUser;
-    company: ReturnType<AuthService['getCompanyPayload']>;
-  }> {
-    const nip = String(nipRaw).replace(/\s/g, '').replace(/-/g, '');
-    if (!/^\d{10}$/.test(nip)) {
-      throw new BadRequestException('validation.nipInvalid');
-    }
-
-    let company = await this.prisma.company.findUnique({ where: { nip } });
-    if (!company) {
-      const gus = await this.regonService.getCompanyDataByNipRegonOrKrs(nip);
-      if (!gus.searchResult.length) {
-        throw new BadRequestException('messages.companyNotFoundInGus');
-      }
-      const data = this.mapGusRowToCompany(gus.searchResult[0]);
-      company = await this.prisma.company.create({ data });
-    }
-
-    const user = await this.prisma.user.update({
-      where: { id: userId },
-      data: { companyId: company.id },
-      include: {
-        company: true,
-
-        ...({ skills: { include: { skill: true } } } as any),
-      },
-    });
-    const skillsFromUser =
-      (
-        user as unknown as {
-          skills?: { skill: { id: string; name: string } }[];
-        }
-      ).skills ?? [];
-    const userCompany = user as { company?: { nip: string } | null };
-    const resolvedAvatarUrl =
-      await this.resolveAvatarUrlForResponse(user.avatarUrl ?? null);
-    const authUser: AuthResponseUser = {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      surname: user.surname,
-      avatarUrl: resolvedAvatarUrl ?? user.avatarUrl ?? null,
-      phone: user.phone,
-      nipCompany: userCompany.company?.nip ?? null,
-      companyId: user.companyId ?? null,
-      accountType: user.accountType,
-      language: user.language,
-      defaultMessage: user.defaultMessage,
-      skills: skillsFromUser.map((r) => ({
-        id: r.skill.id,
-        name: r.skill.name,
-      })),
-      hasPassword: !!user.password,
-      acceptedTermsVersion: user.acceptedTermsVersion,
-      acceptedPrivacyPolicyVersion: user.acceptedPrivacyPolicyVersion,
-    };
-    return { user: authUser, company: this.getCompanyPayload(company) };
-  }
-
-  /** Refresh current user's company data from GUS. */
-  async refreshCompany(
-    userId: string,
-  ): Promise<{ company: ReturnType<AuthService['getCompanyPayload']> }> {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      include: { company: true },
-    });
-    if (!user?.companyId || !user.company) {
-      throw new NotFoundException('messages.noCompanyLinked');
-    }
-    const gus = await this.regonService.getCompanyDataByNipRegonOrKrs(
-      user.company.nip,
-    );
-    if (!gus.searchResult.length) {
-      throw new BadRequestException('messages.companyNotFoundInGus');
-    }
-    const data = this.mapGusRowToCompany(gus.searchResult[0]);
-    const company = await this.prisma.company.update({
-      where: { id: user.company.id },
-      data,
-    });
-    return { company: this.getCompanyPayload(company) };
   }
 
   /**
@@ -320,9 +159,6 @@ export class AuthService {
     return { message: successMessage };
   }
 
-  /**
-   * Reset password using token from email. Validates token and expiry, then updates password.
-   */
   async resetPassword(
     dto: ResetPasswordDto,
     lang: SupportedLanguage,
@@ -487,7 +323,6 @@ export class AuthService {
     });
   }
 
-  /** Find or create user from Google OAuth profile; returns JWT + user. */
   async loginOrCreateFromGoogle(profile: {
     id: string;
     emails?: { value: string; verified?: boolean }[];
@@ -651,125 +486,6 @@ export class AuthService {
     });
   }
 
-  async updateProfile(
-    userId: string,
-    dto: UpdateProfileDto,
-  ): Promise<{ user: AuthResponse['user'] }> {
-    if (dto.email !== undefined && dto.email.trim()) {
-      const normalizedEmail = dto.email.trim().toLowerCase();
-      const existing = await this.prisma.user.findFirst({
-        where: {
-          email: normalizedEmail,
-          id: { not: userId },
-        },
-      });
-      if (existing) {
-        throw new ConflictException('User with this email already exists');
-      }
-    }
-    const updateData: Parameters<typeof this.prisma.user.update>[0]['data'] = {
-      ...(dto.name !== undefined && { name: dto.name || null }),
-      ...(dto.surname !== undefined && { surname: dto.surname || null }),
-      ...(dto.avatarUrl !== undefined && { avatarUrl: dto.avatarUrl?.trim() || null }),
-      ...(dto.phone !== undefined && { phone: dto.phone?.trim() || null }),
-      ...(dto.companyId !== undefined && {
-        companyId: dto.companyId?.trim() || null,
-      }),
-      ...(dto.accountType !== undefined && {
-        accountType: dto.accountType || null,
-      }),
-      ...(dto.email !== undefined &&
-        dto.email.trim() && { email: dto.email.trim().toLowerCase() }),
-      ...(dto.language !== undefined && { language: dto.language }),
-      ...(dto.defaultMessage !== undefined && {
-        defaultMessage: dto.defaultMessage || null,
-      }),
-    };
-    if (dto.password !== undefined && dto.password.trim()) {
-      const existingUser = await this.prisma.user.findUnique({
-        where: { id: userId },
-      });
-      if (!existingUser) {
-        throw new UnauthorizedException('Invalid user');
-      }
-      if (existingUser.password) {
-        if (!dto.oldPassword || !dto.oldPassword.trim()) {
-          throw new UnauthorizedException('Current password is required');
-        }
-        const isOldPasswordValid = await bcrypt.compare(
-          dto.oldPassword.trim(),
-          existingUser.password,
-        );
-        if (!isOldPasswordValid) {
-          throw new UnauthorizedException('Current password is incorrect');
-        }
-      }
-      updateData.password = await bcrypt.hash(
-        dto.password.trim(),
-        this.saltRounds,
-      );
-    }
-    if (Array.isArray(dto.skillIds)) {
-      (updateData as any).skills = {
-        deleteMany: {},
-        create: dto.skillIds.map((skillId) => ({ skillId })),
-      };
-    }
-    const user = await this.prisma.user.update({
-      where: { id: userId },
-      data: updateData,
-      include: {
-        company: true,
-
-        ...({ skills: { include: { skill: true } } } as any),
-      },
-    });
-    const skillsFromUser =
-      (
-        user as unknown as {
-          skills?: { skill: { id: string; name: string } }[];
-        }
-      ).skills ?? [];
-    const userCompany = user as { company?: { nip: string } | null };
-    const resolvedAvatarUrl =
-      await this.resolveAvatarUrlForResponse(user.avatarUrl ?? null);
-    return {
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        surname: user.surname,
-        avatarUrl: resolvedAvatarUrl ?? user.avatarUrl ?? null,
-        phone: user.phone,
-        nipCompany: userCompany.company?.nip ?? null,
-        companyId: user.companyId ?? null,
-        accountType: user.accountType,
-        language: user.language,
-        defaultMessage: user.defaultMessage,
-        skills: skillsFromUser.map((relation) => ({
-          id: relation.skill.id,
-          name: relation.skill.name,
-        })),
-        hasPassword: !!user.password,
-        acceptedTermsVersion: user.acceptedTermsVersion,
-        acceptedPrivacyPolicyVersion: user.acceptedPrivacyPolicyVersion,
-      },
-    };
-  }
-
-  /** Remove user avatar from storage and set avatarUrl to null. */
-  async removeAvatar(userId: string): Promise<{ user: AuthResponse['user'] }> {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { avatarUrl: true },
-    });
-    const avatarUrl = user?.avatarUrl ?? null;
-    if (avatarUrl) {
-      await this.storageService.deleteAvatar(avatarUrl);
-    }
-    return this.updateProfile(userId, { avatarUrl: '' });
-  }
-
   async validateUser(payload: JwtPayload) {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
@@ -788,7 +504,7 @@ export class AuthService {
       ).skills ?? [];
     const userCompany = user as { company?: { nip: string } | null };
     const resolvedAvatarUrl =
-      await this.resolveAvatarUrlForResponse(user.avatarUrl ?? null);
+      await this.resolveAvatarUrlForResponse(user.id, user.avatarUrl ?? null);
     return {
       id: user.id,
       email: user.email,
@@ -808,59 +524,6 @@ export class AuthService {
       hasPassword: !!user.password,
       acceptedTermsVersion: user.acceptedTermsVersion,
       acceptedPrivacyPolicyVersion: user.acceptedPrivacyPolicyVersion,
-    };
-  }
-
-  /** Accept current terms and privacy policy. Backend records current versions and acceptance timestamps. Uses 'none' when no document is configured. */
-  async acceptAgreements(
-    userId: string,
-  ): Promise<{ user: AuthResponse['user'] }> {
-    const current = this.agreementsService.getCurrentVersions();
-    const acceptedAt = new Date();
-    const user = await this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        acceptedTermsVersion: current.termsVersion ?? 'none',
-        acceptedTermsAt: acceptedAt,
-        acceptedPrivacyPolicyVersion: current.privacyPolicyVersion ?? 'none',
-        acceptedPrivacyPolicyAt: acceptedAt,
-      },
-      include: {
-        company: true,
-
-        ...({ skills: { include: { skill: true } } } as any),
-      },
-    });
-    const skillsFromUser =
-      (
-        user as unknown as {
-          skills?: { skill: { id: string; name: string } }[];
-        }
-      ).skills ?? [];
-    const userCompany = user as { company?: { nip: string } | null };
-    const resolvedAvatarUrl =
-      await this.resolveAvatarUrlForResponse(user.avatarUrl ?? null);
-    return {
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        surname: user.surname,
-        avatarUrl: resolvedAvatarUrl ?? user.avatarUrl ?? null,
-        phone: user.phone,
-        nipCompany: userCompany.company?.nip ?? null,
-        companyId: user.companyId ?? null,
-        accountType: user.accountType,
-        language: user.language,
-        defaultMessage: user.defaultMessage,
-        skills: skillsFromUser.map((r) => ({
-          id: r.skill.id,
-          name: r.skill.name,
-        })),
-        hasPassword: !!user.password,
-        acceptedTermsVersion: user.acceptedTermsVersion,
-        acceptedPrivacyPolicyVersion: user.acceptedPrivacyPolicyVersion,
-      },
     };
   }
 
@@ -892,11 +555,15 @@ export class AuthService {
   private async buildAuthResponseAsync(
     user: AuthResponseUser,
   ): Promise<AuthResponse> {
-    const resolvedAvatarUrl =
-      await this.resolveAvatarUrlForResponse(user.avatarUrl);
-    return this.buildAuthResponseAsync({
+    // Skip resolution if avatarUrl is already our proxy URL (avoid infinite recursion)
+    const isProxyUrl =
+      user.avatarUrl != null && user.avatarUrl.includes('/auth/avatar?token=');
+    const resolvedAvatarUrl = isProxyUrl
+      ? user.avatarUrl
+      : await this.resolveAvatarUrlForResponse(user.id, user.avatarUrl ?? null);
+    return this.buildAuthResponse({
       ...user,
-      avatarUrl: resolvedAvatarUrl,
+      avatarUrl: resolvedAvatarUrl ?? user.avatarUrl ?? null,
     });
   }
 }

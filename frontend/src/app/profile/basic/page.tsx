@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Controller, useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -25,47 +24,32 @@ import {
 } from '@/components/ui/field';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  getStoredUser,
-  updateProfile,
-  removeAvatar,
-  updateStoredUser,
-  uploadAvatar,
-} from '@/lib/api';
-import { useAuth } from '@/contexts/AuthContext';
+  useAuthQuery,
+  useUpdateProfileMutation,
+  useUploadAvatarMutation,
+  useRemoveAvatarMutation,
+} from '@/lib/api-query';
 import { useTranslations } from '@/hooks/useTranslations';
 import {
   getBasicProfileFormSchema,
   defaultBasicProfileFormValues,
   type BasicProfileFormValues,
 } from './schema';
+import { ProfileAvatar } from '@/components/ProfileAvatar';
 
 const formId = 'profile-basic-form';
 
-function getInitials(name: string | null, surname: string | null): string {
-  const n = (name ?? '').trim().charAt(0).toUpperCase();
-  const s = (surname ?? '').trim().charAt(0).toUpperCase();
-  if (n && s) return `${n}${s}`;
-  if (n) return n;
-  if (s) return s;
-  return '?';
-}
-
 export default function ProfileBasicPage() {
-  const router = useRouter();
   const { t } = useTranslations();
-  const [accountType, setAccountType] = useState<
-    'CLIENT' | 'FREELANCER' | 'ADMIN' | null
-  >(null);
   const [submitError, setSubmitError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const { refreshAuth } = useAuth();
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [avatarCacheBuster, setAvatarCacheBuster] = useState<number | null>(null);
-  const [avatarUploading, setAvatarUploading] = useState(false);
-  const [avatarRemoving, setAvatarRemoving] = useState(false);
   const [avatarError, setAvatarError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { user } = useAuthQuery();
+  const updateProfileMutation = useUpdateProfileMutation();
+  const uploadAvatarMutation = useUploadAvatarMutation();
+  const removeAvatarMutation = useRemoveAvatarMutation();
 
   const form = useForm<BasicProfileFormValues>({
     resolver: zodResolver(getBasicProfileFormSchema(t)),
@@ -75,21 +59,22 @@ export default function ProfileBasicPage() {
 
   const { handleSubmit, reset, control, formState: { isSubmitting } } = form;
 
+  // Sync form with user from React Query (including after refetch from mutations)
   useEffect(() => {
-    setMounted(true);
-    const user = getStoredUser();
-    if (user) {
-      setAccountType(user.accountType);
-      setAvatarUrl(user.avatarUrl ?? null);
-      reset({
-        name: user.name ?? '',
-        surname: user.surname ?? '',
-        email: user.email ?? '',
-        phone: user.phone ?? '',
-        defaultMessage: user.defaultMessage ?? '',
-      });
-    }
-  }, [reset]);
+    if (!user) return;
+    reset({
+      name: user.name ?? '',
+      surname: user.surname ?? '',
+      email: user.email ?? '',
+      phone: user.phone ?? '',
+      defaultMessage: user.defaultMessage ?? '',
+    });
+  }, [user, reset]);
+
+  const accountType = user?.accountType ?? null;
+  const avatarUrl = user?.avatarUrl ?? null;
+  const avatarUploading = uploadAvatarMutation.isPending;
+  const avatarRemoving = removeAvatarMutation.isPending;
 
   async function onAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -100,19 +85,13 @@ export default function ProfileBasicPage() {
       return;
     }
     setAvatarError('');
-    setAvatarUploading(true);
+    setSuccess(false);
     try {
-      const { user: updated } = await uploadAvatar(file);
-      updateStoredUser(updated);
-      setAvatarUrl(updated.avatarUrl ?? null);
-      setAvatarCacheBuster(Date.now());
-      await refreshAuth();
+      await uploadAvatarMutation.mutateAsync(file);
       setSuccess(true);
-      router.refresh();
     } catch {
       setAvatarError(t('profile.avatarUploadFailed'));
     } finally {
-      setAvatarUploading(false);
       e.target.value = '';
     }
   }
@@ -120,32 +99,20 @@ export default function ProfileBasicPage() {
   async function onRemoveAvatar() {
     if (!avatarUrl) return;
     setAvatarError('');
-    setAvatarRemoving(true);
+    setSuccess(false);
     try {
-      const { user: updated } = await removeAvatar();
-      updateStoredUser(updated);
-      setAvatarUrl(null);
-      setAvatarCacheBuster(Date.now());
-      await refreshAuth();
+      await removeAvatarMutation.mutateAsync();
       setSuccess(true);
-      router.refresh();
     } catch {
       setAvatarError(t('profile.avatarUploadFailed'));
-    } finally {
-      setAvatarRemoving(false);
     }
   }
-
-  const currentUser = mounted ? getStoredUser() : null;
-  const initials = currentUser
-    ? getInitials(currentUser.name ?? null, currentUser.surname ?? null)
-    : '?';
 
   async function onSubmit(data: BasicProfileFormValues) {
     setSubmitError('');
     setSuccess(false);
     try {
-      const payload: Parameters<typeof updateProfile>[0] = {
+      const payload = {
         name: data.name.trim() || undefined,
         surname: data.surname.trim() || undefined,
         email: data.email.trim() || undefined,
@@ -154,10 +121,8 @@ export default function ProfileBasicPage() {
           defaultMessage: data.defaultMessage?.trim() || undefined,
         }),
       };
-      const { user: updated } = await updateProfile(payload);
-      updateStoredUser(updated);
+      await updateProfileMutation.mutateAsync(payload);
       setSuccess(true);
-      router.refresh();
     } catch (err) {
       setSubmitError(
         err instanceof Error ? err.message : t('profile.saveFailed'),
@@ -165,7 +130,9 @@ export default function ProfileBasicPage() {
     }
   }
 
-  if (!mounted) return null;
+  if (!user) return null;
+
+  console.log(avatarUrl);
 
   return (
     <Card className="w-full">
@@ -187,6 +154,7 @@ export default function ProfileBasicPage() {
             <AlertDescription>{t('profile.profileSaved')}</AlertDescription>
           </Alert>
         )}
+
         <FormProvider {...form}>
           <form
             id={formId}
@@ -197,19 +165,7 @@ export default function ProfileBasicPage() {
               <FieldLabel>{t('profile.avatar')}</FieldLabel>
               <div className="flex items-center gap-4">
                 <label htmlFor={`${formId}-avatar`} className="cursor-pointer">
-                  <Avatar className="h-20 w-20 ring-2 ring-muted">
-                    <AvatarImage
-                      src={
-                        avatarUrl
-                          ? `${avatarUrl}${avatarCacheBuster ? `?v=${avatarCacheBuster}` : ''}`
-                          : undefined
-                      }
-                      alt=""
-                    />
-                    <AvatarFallback className="text-lg">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
+                  <ProfileAvatar className="h-20 w-20 ring-2 ring-muted" />
                   <input
                     ref={fileInputRef}
                     id={`${formId}-avatar`}

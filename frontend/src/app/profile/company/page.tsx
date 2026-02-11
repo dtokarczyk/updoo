@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,12 +15,11 @@ import {
 } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
 import {
-  getMyCompany,
-  linkCompanyByNip,
-  refreshCompany,
-  updateStoredUser,
-  type Company,
-} from '@/lib/api';
+  useMyCompanyQuery,
+  useLinkCompanyByNipMutation,
+  useRefreshCompanyMutation,
+} from '@/lib/api-query';
+import { type Company } from '@/lib/api';
 import { useTranslations } from '@/hooks/useTranslations';
 import { ChangeCompanyForm } from './ChangeCompanyForm';
 
@@ -89,32 +88,13 @@ function CompanyDetails({ company }: { company: Company }) {
 
 export default function ProfileCompanyPage() {
   const { t } = useTranslations();
-  const [company, setCompany] = useState<Company | null | undefined>(undefined);
   const [nip, setNip] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-    let cancelled = false;
-    getMyCompany()
-      .then(({ company: c }) => {
-        if (!cancelled) setCompany(c ?? null);
-      })
-      .catch(() => {
-        if (!cancelled) setCompany(null);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [mounted]);
+  const { data: company, isLoading: companyLoading } = useMyCompanyQuery();
+  const linkMutation = useLinkCompanyByNipMutation();
+  const refreshMutation = useRefreshCompanyMutation();
 
   async function handleLinkNip(e: React.FormEvent) {
     e.preventDefault();
@@ -125,37 +105,26 @@ export default function ProfileCompanyPage() {
       setError(t('profile.companyNipInvalid'));
       return;
     }
-    setLoading(true);
     try {
-      const { user, company: c } = await linkCompanyByNip(normalized);
-      updateStoredUser(user);
-      setCompany(c);
+      await linkMutation.mutateAsync(normalized);
       setNip('');
       setSuccess(t('profile.companyLinked'));
     } catch (err) {
       setError(err instanceof Error ? err.message : t('common.error'));
-    } finally {
-      setLoading(false);
     }
   }
 
   async function handleRefresh() {
-    if (!company) return;
+    if (company == null) return;
     setError('');
     setSuccess('');
-    setRefreshing(true);
     try {
-      const { company: c } = await refreshCompany();
-      setCompany(c);
+      await refreshMutation.mutateAsync();
       setSuccess(t('profile.companyRefreshed'));
     } catch (err) {
       setError(err instanceof Error ? err.message : t('common.error'));
-    } finally {
-      setRefreshing(false);
     }
   }
-
-  if (!mounted) return null;
 
   return (
     <Card className="w-full">
@@ -177,7 +146,7 @@ export default function ProfileCompanyPage() {
           </Alert>
         )}
 
-        {company === undefined && (
+        {companyLoading && (
           <Card className="py-4 rounded-lg">
             <CardContent className="flex justify-center py-8">
               <Spinner className="size-8 text-muted-foreground" />
@@ -185,7 +154,7 @@ export default function ProfileCompanyPage() {
           </Card>
         )}
 
-        {company === null && (
+        {!companyLoading && company === null && (
           <>
             <p className="text-sm text-muted-foreground">
               {t('profile.companyNoNip')}
@@ -200,24 +169,23 @@ export default function ProfileCompanyPage() {
                   placeholder={t('profile.companyNipPlaceholder')}
                   value={nip}
                   onChange={(e) => setNip(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                  disabled={loading}
+                  disabled={linkMutation.isPending}
                   maxLength={10}
                 />
                 <p className="text-xs text-muted-foreground">
                   {t('profile.companyNipHint')}
                 </p>
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? t('common.submitting') : t('profile.companyLinkByNip')}
+              <Button type="submit" className="w-full" disabled={linkMutation.isPending}>
+                {linkMutation.isPending ? t('common.submitting') : t('profile.companyLinkByNip')}
               </Button>
             </form>
           </>
         )}
 
-        {company != null && (
+        {!companyLoading && company != null && (
           <div className="space-y-6">
             <ChangeCompanyForm
-              onSuccess={(c) => setCompany(c)}
               onError={setError}
               onSuccessMessage={setSuccess}
             />
@@ -228,10 +196,10 @@ export default function ProfileCompanyPage() {
                 type="button"
                 variant="outline"
                 className="w-full"
-                disabled={refreshing}
+                disabled={refreshMutation.isPending}
                 onClick={handleRefresh}
               >
-                {refreshing ? t('common.loading') : t('profile.companyRefreshFromGus')}
+                {refreshMutation.isPending ? t('common.loading') : t('profile.companyRefreshFromGus')}
               </Button>
             </div>
           </div>

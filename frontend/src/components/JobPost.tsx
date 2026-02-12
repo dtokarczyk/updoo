@@ -159,7 +159,9 @@ export function JobPost({
                   <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                     <Hand className="h-3.5 w-3.5 stroke-2" aria-hidden />
                     <span className="font-bold text-foreground">
-                      {job.applicationsCount}
+                      {job.expectedOffers != null
+                        ? `${job.applicationsCount}/${job.expectedOffers}`
+                        : job.applicationsCount}
                     </span>
                   </span>
                 )}

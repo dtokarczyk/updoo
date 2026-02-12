@@ -187,6 +187,8 @@ model Job {
   isRemote        Boolean        @default(false)
   projectType     ProjectType
   deadline        DateTime?      // last day to submit offers (createdAt + offerDays)
+  /** Max number of applications (6, 10 or 14). When null, no limit. */
+  expectedOffers  Int?           // 6, 10 or 14
   closedAt        DateTime?      // when job was closed (manually or automatically)
   rejectedAt      DateTime?     // when admin rejected the job
   rejectedReason  String?       @db.Text  // admin's reason for rejection (for author to fix)

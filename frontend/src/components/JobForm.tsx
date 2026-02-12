@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import { useForm, Controller, useFieldArray } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   getCategories,
   getLocations,
@@ -32,6 +34,12 @@ import { SelectBox } from '@/components/ui/SelectBox';
 import { cn } from '@/lib/utils';
 import { useTranslations } from '@/hooks/useTranslations';
 import ReactCountryFlag from 'react-country-flag';
+import {
+  jobFormSchema,
+  defaultJobFormValues,
+  type JobFormValues,
+  type SelectedSkill,
+} from '@/components/job-form-schema';
 
 const CURRENCIES = ['PLN', 'EUR', 'USD', 'GBP', 'CHF'];
 
@@ -62,25 +70,8 @@ function getSuggestedHourlyRatePln(
   return DEFAULT_SUGGESTED_HOURLY_PLN;
 }
 
-type SelectedSkill = { id: string | null; name: string };
-
-export interface JobFormData {
-  title: string;
-  description: string;
-  categoryId: string;
-  language: JobLanguage;
-  billingType: BillingType | '';
-  hoursPerWeek: HoursPerWeek | '';
-  rate: string;
-  rateNegotiable: boolean;
-  currency: string;
-  experienceLevel: ExperienceLevel | '';
-  locationId: string;
-  isRemote: boolean;
-  projectType: ProjectType | '';
-  offerDays: number | '';
-  selectedSkills: SelectedSkill[];
-}
+/** @deprecated Use JobFormValues from job-form-schema instead */
+export type JobFormData = JobFormValues;
 
 interface JobFormProps {
   initialData?: Job;
@@ -99,30 +90,36 @@ export function JobForm({
   const [categories, setCategories] = useState<Category[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [categoryId, setCategoryId] = useState('');
-  const [language, setLanguage] = useState<JobLanguage>('POLISH');
-  const [billingType, setBillingType] = useState<BillingType | ''>('');
-  const [hoursPerWeek, setHoursPerWeek] = useState<HoursPerWeek | ''>('');
-  const [rate, setRate] = useState('');
-  const [rateNegotiable, setRateNegotiable] = useState(false);
-  const [currency, setCurrency] = useState('PLN');
-  const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel | ''>(
-    '',
-  );
-  const [locationId, setLocationId] = useState('');
-  const [isRemote, setIsRemote] = useState(true);
-  const [projectType, setProjectType] = useState<ProjectType | ''>('');
-  const [offerDays, setOfferDays] = useState<number | ''>('');
-  const [selectedSkills, setSelectedSkills] = useState<SelectedSkill[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [draftLoaded, setDraftLoaded] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [skillInput, setSkillInput] = useState('');
   const [skillDropdownOpen, setSkillDropdownOpen] = useState(false);
   const skillInputRef = useRef<HTMLInputElement>(null);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [submitting, setSubmitting] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [draftLoaded, setDraftLoaded] = useState(false);
+
+  const form = useForm<JobFormValues>({
+    resolver: zodResolver(jobFormSchema),
+    defaultValues: defaultJobFormValues,
+  });
+
+  const {
+    register,
+    control,
+    handleSubmit: rhfHandleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { errors, isSubmitting },
+  } = form;
+
+  const { fields: selectedSkills, append: appendSkill, remove: removeSkill } = useFieldArray({
+    control,
+    name: 'selectedSkills',
+  });
+
+  const watchedCategoryId = watch('categoryId');
+  const watchedExperienceLevel = watch('experienceLevel');
+  const watchedBillingType = watch('billingType');
 
   const BILLING_LABELS: Record<BillingType, string> = {
     FIXED: t('jobs.fixedRate'),
@@ -166,71 +163,76 @@ export function JobForm({
   // Load initial data for edit mode or draft from localStorage
   useEffect(() => {
     if (mode === 'edit' && initialData) {
-      setTitle(initialData.title);
-      setDescription(initialData.description);
-      setCategoryId(initialData.categoryId);
-      setLanguage(initialData.language ?? 'POLISH');
-      setBillingType(initialData.billingType);
-      setHoursPerWeek(initialData.hoursPerWeek ?? '');
-      setRate(
-        initialData.rateNegotiable &&
-          (initialData.rate === '0' ||
-            initialData.rate === '' ||
-            !initialData.rate)
-          ? ''
-          : (initialData.rate ?? '1000'),
-      );
-      setRateNegotiable(initialData.rateNegotiable ?? false);
-      setCurrency(initialData.currency ?? 'PLN');
-      setExperienceLevel(initialData.experienceLevel);
-      setLocationId(initialData.locationId ?? '');
-      setIsRemote(initialData.isRemote);
-      setProjectType(initialData.projectType);
-      if (initialData.deadline && initialData.createdAt) {
-        const ms =
-          new Date(initialData.deadline).getTime() -
-          new Date(initialData.createdAt).getTime();
-        const days = Math.round(ms / (24 * 60 * 60 * 1000));
-        const allowed = [7, 14, 21, 30];
-        const closest = allowed.reduce((prev, curr) =>
-          Math.abs(curr - days) < Math.abs(prev - days) ? curr : prev,
-        );
-        setOfferDays(closest);
-      } else {
-        setOfferDays(14);
-      }
-      setSelectedSkills(
-        initialData.skills?.map((r) => ({
-          id: r.skill.id,
-          name: r.skill.name,
-        })) ?? [],
-      );
+      const offerDays =
+        initialData.deadline && initialData.createdAt
+          ? (() => {
+              const ms =
+                new Date(initialData.deadline).getTime() -
+                new Date(initialData.createdAt).getTime();
+              const days = Math.round(ms / (24 * 60 * 60 * 1000));
+              const allowed = [7, 14, 21, 30];
+              return allowed.reduce((prev, curr) =>
+                Math.abs(curr - days) < Math.abs(prev - days) ? curr : prev,
+              );
+            })()
+          : 14;
+      const expectedOffers =
+        initialData.expectedOffers != null && [6, 10, 14].includes(initialData.expectedOffers)
+          ? initialData.expectedOffers
+          : 10;
+      reset({
+        title: initialData.title,
+        description: initialData.description,
+        categoryId: initialData.categoryId,
+        language: initialData.language ?? 'POLISH',
+        billingType: initialData.billingType,
+        hoursPerWeek: (initialData.hoursPerWeek ?? '') as JobFormValues['hoursPerWeek'],
+        rate:
+          initialData.rateNegotiable &&
+          (initialData.rate === '0' || initialData.rate === '' || !initialData.rate)
+            ? ''
+            : (initialData.rate ?? '1000'),
+        rateNegotiable: initialData.rateNegotiable ?? false,
+        currency: initialData.currency ?? 'PLN',
+        experienceLevel: initialData.experienceLevel,
+        locationId: initialData.locationId ?? '',
+        isRemote: initialData.isRemote,
+        projectType: initialData.projectType,
+        offerDays: offerDays as JobFormValues['offerDays'],
+        expectedOffers: expectedOffers as JobFormValues['expectedOffers'],
+        selectedSkills:
+          initialData.skills?.map((r) => ({ skillId: r.skill.id, name: r.skill.name })) ?? [],
+      });
     } else if (mode === 'create' && !draftLoaded) {
-      // Try to load draft from localStorage only once
       const draft = getDraftJob();
       if (draft) {
-        setTitle(draft.title);
-        setDescription(draft.description);
-        setCategoryId(draft.categoryId);
-        setLanguage(draft.language ?? 'POLISH');
-        setBillingType(draft.billingType);
-        setHoursPerWeek(draft.hoursPerWeek ?? '');
-        setRate(
-          draft.rateNegotiable && (draft.rate === 0 || draft.rate == null)
-            ? ''
-            : (draft.rate?.toString() ?? ''),
-        );
-        setRateNegotiable(draft.rateNegotiable ?? false);
-        setCurrency(draft.currency ?? 'PLN');
-        setExperienceLevel(draft.experienceLevel);
-        setLocationId(draft.locationId ?? '');
-        setIsRemote(draft.isRemote);
-        setProjectType(draft.projectType);
-        setOfferDays(draft.offerDays ?? 14);
+        reset({
+          title: draft.title,
+          description: draft.description,
+          categoryId: draft.categoryId,
+          language: draft.language ?? 'POLISH',
+          billingType: draft.billingType,
+          hoursPerWeek: (draft.hoursPerWeek ?? '') as JobFormValues['hoursPerWeek'],
+          rate:
+            draft.rateNegotiable && (draft.rate === 0 || draft.rate == null)
+              ? ''
+              : (draft.rate?.toString() ?? ''),
+          rateNegotiable: draft.rateNegotiable ?? false,
+          currency: draft.currency ?? 'PLN',
+          experienceLevel: draft.experienceLevel,
+          locationId: draft.locationId ?? '',
+          isRemote: draft.isRemote,
+          projectType: draft.projectType,
+          offerDays: (draft.offerDays ?? 14) as JobFormValues['offerDays'],
+          expectedOffers: (draft.expectedOffers != null && [6, 10, 14].includes(draft.expectedOffers)
+            ? draft.expectedOffers
+            : 10) as JobFormValues['expectedOffers'],
+          selectedSkills: [],
+        });
         setDraftLoaded(true);
       }
     }
-  }, [initialData, mode, draftLoaded]);
+  }, [initialData, mode, draftLoaded, reset]);
 
   // Load draft skills after skills list is loaded
   useEffect(() => {
@@ -238,28 +240,21 @@ export function JobForm({
       const draft = getDraftJob();
       if (draft) {
         const loadedSkills: SelectedSkill[] = [];
-
-        // Load skills by ID
-        if (draft.skillIds && draft.skillIds.length > 0) {
+        if (draft.skillIds?.length) {
           draft.skillIds.forEach((id) => {
             const skill = skills.find((s) => s.id === id);
-            if (skill) loadedSkills.push({ id: skill.id, name: skill.name });
+            if (skill) loadedSkills.push({ skillId: skill.id, name: skill.name });
           });
         }
-
-        // Add new skill names
-        if (draft.newSkillNames && draft.newSkillNames.length > 0) {
-          draft.newSkillNames.forEach((name) => {
-            loadedSkills.push({ id: null, name });
-          });
+        if (draft.newSkillNames?.length) {
+          draft.newSkillNames.forEach((name) => loadedSkills.push({ skillId: null, name }));
         }
-
         if (loadedSkills.length > 0) {
-          setSelectedSkills(loadedSkills);
+          setValue('selectedSkills', loadedSkills);
         }
       }
     }
-  }, [mode, skills, draftLoaded]);
+  }, [mode, skills, draftLoaded, setValue]);
 
   // Load categories, locations, skills
   useEffect(() => {
@@ -269,28 +264,27 @@ export function JobForm({
         setLocations(locs);
         setSkills(sk);
       })
-      .catch(() => setErrors({ general: t('jobs.failedToLoadData') }))
+      .catch(() => setSubmitError(t('jobs.failedToLoadData')))
       .finally(() => setLoading(false));
   }, [t]);
 
-  // Suggest hourly rate from category × experience level matrix (create mode, HOURLY billing)
+  // Suggest hourly rate from category × experience level (create mode, HOURLY)
   useEffect(() => {
     if (
       mode !== 'create' ||
-      !categoryId ||
-      !experienceLevel ||
-      billingType !== 'HOURLY'
-    ) {
+      !watchedCategoryId ||
+      !watchedExperienceLevel ||
+      watchedBillingType !== 'HOURLY'
+    )
       return;
-    }
-    const category = categories.find((c) => c.id === categoryId);
+    const category = categories.find((c) => c.id === watchedCategoryId);
     if (!category) return;
     const suggested = getSuggestedHourlyRatePln(
       category.slug,
-      experienceLevel as ExperienceLevel,
+      watchedExperienceLevel as ExperienceLevel,
     );
-    setRate(String(suggested));
-  }, [mode, categoryId, experienceLevel, billingType, categories]);
+    setValue('rate', String(suggested));
+  }, [mode, watchedCategoryId, watchedExperienceLevel, watchedBillingType, categories, setValue]);
 
   const addSkill = (skill: SelectedSkill) => {
     if (selectedSkills.length >= 5) return;
@@ -300,14 +294,10 @@ export function JobForm({
       )
     )
       return;
-    setSelectedSkills((prev) => [...prev, skill]);
+    appendSkill(skill);
     setSkillInput('');
     setSkillDropdownOpen(false);
     skillInputRef.current?.focus();
-  };
-
-  const removeSkill = (index: number) => {
-    setSelectedSkills((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSkillKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -319,11 +309,8 @@ export function JobForm({
       const fromDict = skills.find(
         (s) => s.name.toLowerCase() === raw.toLowerCase(),
       );
-      if (fromDict) {
-        addSkill({ id: fromDict.id, name: fromDict.name });
-      } else {
-        addSkill({ id: null, name: raw });
-      }
+      if (fromDict) addSkill({ skillId: fromDict.id, name: fromDict.name });
+      else addSkill({ skillId: null, name: raw });
     }
   };
 
@@ -331,91 +318,48 @@ export function JobForm({
     ? skills.filter(
         (s) =>
           s.name.toLowerCase().includes(skillInput.toLowerCase()) &&
-          !selectedSkills.some((sel) => sel.id === s.id),
+          !selectedSkills.some((sel) => sel.skillId === s.id),
       )
     : [];
 
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (!title.trim()) {
-      newErrors.title = t('jobs.fillRequired');
-    }
-    if (!description.trim()) {
-      newErrors.description = t('jobs.fillRequired');
-    }
-    if (!categoryId) {
-      newErrors.category = t('jobs.fillRequired');
-    }
-    if (!experienceLevel) {
-      newErrors.experienceLevel = t('jobs.newJobForm.selectExperienceLevel');
-    }
-    if (!projectType) {
-      newErrors.projectType = t('jobs.newJobForm.selectProjectType');
-    }
-    if (!billingType) {
-      newErrors.billingType = t('jobs.newJobForm.selectBillingType');
-    }
-    if (billingType === 'HOURLY' && !hoursPerWeek) {
-      newErrors.hoursPerWeek = t('jobs.selectHoursPerWeek');
-    }
-    // Rate is optional: empty or invalid => treat as "do negocjacji" (rateNegotiable), no validation error
-    const rateNum = parseFloat(rate.replace(',', '.'));
-    if (rate.trim() !== '' && (isNaN(rateNum) || rateNum < 0)) {
-      newErrors.rate = t('jobs.invalidRate');
-    }
-    const allowedOfferDays = [7, 14, 21, 30];
-    if (!offerDays || !allowedOfferDays.includes(offerDays)) {
-      newErrors.offerDays = t('jobs.invalidOfferDays');
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrors({});
-
-    if (!validateForm()) {
-      return;
-    }
-
-    const rateNum = parseFloat(rate.replace(',', '.'));
-    const rateOmitted = rate.trim() === '' || isNaN(rateNum) || rateNum < 0;
-    const effectiveRate: number | null = rateOmitted ? null : rateNum;
-    const effectiveRateNegotiable = rateNegotiable || rateOmitted;
-    setSubmitting(true);
+  const onFormSubmit = async (data: JobFormValues) => {
+    setSubmitError(null);
+    const rateNum = parseFloat(data.rate.replace(',', '.'));
+    const rateOmitted =
+      data.rate.trim() === '' || Number.isNaN(rateNum) || rateNum < 0;
+    const effectiveRate = rateOmitted ? null : rateNum;
+    const effectiveRateNegotiable = data.rateNegotiable || rateOmitted;
     try {
       await onSubmit({
-        title: title.trim(),
-        description: description.trim(),
-        categoryId,
-        language,
-        billingType: billingType as BillingType,
+        title: data.title.trim(),
+        description: data.description.trim(),
+        categoryId: data.categoryId,
+        language: data.language,
+        billingType: data.billingType as BillingType,
         hoursPerWeek:
-          billingType === 'HOURLY' ? (hoursPerWeek as HoursPerWeek) : undefined,
+          data.billingType === 'HOURLY'
+            ? (data.hoursPerWeek as HoursPerWeek)
+            : undefined,
         rate: effectiveRate,
         rateNegotiable: effectiveRateNegotiable,
-        currency,
-        experienceLevel: experienceLevel as ExperienceLevel,
-        locationId: locationId || undefined,
-        isRemote,
-        projectType: projectType as ProjectType,
-        offerDays: offerDays as number,
-        skillIds: selectedSkills
-          .filter((s) => s.id != null)
-          .map((s) => s.id as string),
-        newSkillNames: selectedSkills
-          .filter((s) => s.id == null)
+        currency: data.currency,
+        experienceLevel: data.experienceLevel as ExperienceLevel,
+        locationId: data.locationId || undefined,
+        isRemote: data.isRemote,
+        projectType: data.projectType as ProjectType,
+        offerDays: data.offerDays as number,
+        expectedOffers: data.expectedOffers as number,
+        skillIds: data.selectedSkills
+          .filter((s) => s.skillId != null)
+          .map((s) => s.skillId as string),
+        newSkillNames: data.selectedSkills
+          .filter((s) => s.skillId == null)
           .map((s) => s.name),
       });
     } catch (err) {
-      setErrors({
-        general: err instanceof Error ? err.message : t('jobs.failedToCreate'),
-      });
-    } finally {
-      setSubmitting(false);
+      setSubmitError(
+        err instanceof Error ? err.message : t('jobs.failedToCreate'),
+      );
     }
   };
 
@@ -428,10 +372,10 @@ export function JobForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      {errors.general && (
+    <form onSubmit={rhfHandleSubmit(onFormSubmit)} className="space-y-8">
+      {submitError && (
         <p className="text-sm text-red-600 dark:text-red-400">
-          {errors.general}
+          {submitError}
         </p>
       )}
 
@@ -440,14 +384,18 @@ export function JobForm({
         <h2 className="text-xl font-semibold">{t('jobs.newJobForm.step1')}</h2>
         <div className="space-y-2">
           <Label>{t('jobs.language')}</Label>
+          <Controller
+            name="language"
+            control={control}
+            render={({ field }) => (
           <div className="flex gap-4">
             <button
               type="button"
-              onClick={() => setLanguage('POLISH')}
-              disabled={submitting}
+              onClick={() => field.onChange('POLISH')}
+              disabled={isSubmitting}
               className={cn(
                 'flex items-center gap-2 px-4 py-3 rounded-lg border-2 transition-all',
-                language === 'POLISH'
+                field.value === 'POLISH'
                   ? 'border-primary bg-primary/5 dark:bg-primary/10'
                   : 'border-input bg-background hover:border-ring',
                 'disabled:opacity-50',
@@ -462,11 +410,11 @@ export function JobForm({
             </button>
             <button
               type="button"
-              onClick={() => setLanguage('ENGLISH')}
-              disabled={submitting}
+              onClick={() => field.onChange('ENGLISH')}
+              disabled={isSubmitting}
               className={cn(
                 'flex items-center gap-2 px-4 py-3 rounded-lg border-2 transition-all',
-                language === 'ENGLISH'
+                field.value === 'ENGLISH'
                   ? 'border-primary bg-primary/5 dark:bg-primary/10'
                   : 'border-input bg-background hover:border-ring',
                 'disabled:opacity-50',
@@ -480,30 +428,26 @@ export function JobForm({
               <span className="font-medium">{t('jobs.english')}</span>
             </button>
           </div>
+            )}
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="title">{t('jobs.title')}</Label>
           <Input
             id="title"
-            value={title}
-            onChange={(e) => {
-              setTitle(e.target.value);
-              if (errors.title) {
-                setErrors((prev) => ({ ...prev, title: '' }));
-              }
-            }}
+            {...register('title')}
             placeholder={t('jobs.newJobForm.titlePlaceholder')}
             maxLength={200}
-            disabled={submitting}
+            disabled={isSubmitting}
             className={cn(
               'h-11 text-base',
               errors.title && 'border-destructive',
             )}
             aria-invalid={!!errors.title}
           />
-          {errors.title && (
+          {errors.title?.message && (
             <p className="text-sm text-red-600 dark:text-red-400">
-              {errors.title}
+              {t(errors.title.message)}
             </p>
           )}
         </div>
@@ -511,17 +455,11 @@ export function JobForm({
           <Label htmlFor="description">{t('jobs.description')}</Label>
           <textarea
             id="description"
-            value={description}
-            onChange={(e) => {
-              setDescription(e.target.value);
-              if (errors.description) {
-                setErrors((prev) => ({ ...prev, description: '' }));
-              }
-            }}
+            {...register('description')}
             placeholder={t('jobs.newJobForm.descriptionPlaceholder')}
             maxLength={5000}
             rows={6}
-            disabled={submitting}
+            disabled={isSubmitting}
             className={cn(
               'flex w-full rounded-md border bg-transparent px-4 py-3 text-base shadow-xs transition-[color,box-shadow] outline-none',
               'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]',
@@ -530,9 +468,9 @@ export function JobForm({
             )}
             aria-invalid={!!errors.description}
           />
-          {errors.description && (
+          {errors.description?.message && (
             <p className="text-sm text-red-600 dark:text-red-400">
-              {errors.description}
+              {t(errors.description.message)}
             </p>
           )}
         </div>
@@ -543,33 +481,34 @@ export function JobForm({
               {t('common.loading')}
             </p>
           ) : (
-            <>
-              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {categories.map((c) => (
-                  <SelectBox
-                    key={c.id}
-                    value={c.id}
-                    label={c.name}
-                    selected={categoryId === c.id}
-                    onSelect={() => {
-                      setCategoryId(c.id);
-                      if (errors.category) {
-                        setErrors((prev) => ({ ...prev, category: '' }));
-                      }
-                    }}
-                    disabled={submitting}
-                    className={
-                      errors.category ? 'border-destructive' : undefined
-                    }
-                  />
-                ))}
-              </div>
-              {errors.category && (
-                <p className="text-sm text-red-600 dark:text-red-400">
-                  {errors.category}
-                </p>
+            <Controller
+              name="categoryId"
+              control={control}
+              render={({ field }) => (
+                <>
+                  <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {categories.map((c) => (
+                      <SelectBox
+                        key={c.id}
+                        value={c.id}
+                        label={c.name}
+                        selected={field.value === c.id}
+                        onSelect={() => field.onChange(c.id)}
+                        disabled={isSubmitting}
+                        className={
+                          errors.categoryId ? 'border-destructive' : undefined
+                        }
+                      />
+                    ))}
+                  </div>
+                  {errors.categoryId?.message && (
+                    <p className="text-sm text-red-600 dark:text-red-400">
+                      {t(errors.categoryId.message)}
+                    </p>
+                  )}
+                </>
               )}
-            </>
+            />
           )}
         </div>
       </div>
@@ -580,32 +519,33 @@ export function JobForm({
 
         <div className="space-y-3">
           <Label>{t('jobs.experienceLevel')}</Label>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {(Object.keys(EXPERIENCE_LABELS) as ExperienceLevel[]).map(
-              (level) => (
-                <SelectBox
-                  key={level}
-                  value={level}
-                  label={EXPERIENCE_LABELS[level]}
-                  description={EXPERIENCE_DESCRIPTIONS[level]}
-                  selected={experienceLevel === level}
-                  onSelect={() => {
-                    setExperienceLevel(level);
-                    if (errors.experienceLevel) {
-                      setErrors((prev) => ({ ...prev, experienceLevel: '' }));
-                    }
-                  }}
-                  disabled={submitting}
-                  className={
-                    errors.experienceLevel ? 'border-destructive' : undefined
-                  }
-                />
-              ),
+          <Controller
+            name="experienceLevel"
+            control={control}
+            render={({ field }) => (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {(Object.keys(EXPERIENCE_LABELS) as ExperienceLevel[]).map(
+                  (level) => (
+                    <SelectBox
+                      key={level}
+                      value={level}
+                      label={EXPERIENCE_LABELS[level]}
+                      description={EXPERIENCE_DESCRIPTIONS[level]}
+                      selected={field.value === level}
+                      onSelect={() => field.onChange(level)}
+                      disabled={isSubmitting}
+                      className={
+                        errors.experienceLevel ? 'border-destructive' : undefined
+                      }
+                    />
+                  ),
+                )}
+              </div>
             )}
-          </div>
-          {errors.experienceLevel && (
+          />
+          {errors.experienceLevel?.message && (
             <p className="text-sm text-red-600 dark:text-red-400">
-              {errors.experienceLevel}
+              {t(errors.experienceLevel.message)}
             </p>
           )}
         </div>
@@ -619,14 +559,14 @@ export function JobForm({
           <div className="flex flex-wrap gap-2 p-2 border border-input rounded-md bg-transparent min-h-10">
             {selectedSkills.map((s, i) => (
               <span
-                key={i}
+                key={s.id}
                 className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-sm"
               >
                 {s.name}
                 <button
                   type="button"
                   onClick={() => removeSkill(i)}
-                  disabled={submitting}
+                  disabled={isSubmitting}
                   className="ml-0.5 rounded-full hover:bg-muted-foreground/20 p-0.5 leading-none"
                   aria-label={t('jobs.newJobForm.remove')}
                 >
@@ -652,7 +592,7 @@ export function JobForm({
                     ? t('jobs.newJobForm.skillsMaxCount')
                     : t('jobs.newJobForm.addSkillPlaceholder')
                 }
-                disabled={submitting || selectedSkills.length >= 5}
+                disabled={isSubmitting || selectedSkills.length >= 5}
                 className="border-0 shadow-none focus-visible:ring-0 h-11 text-base min-w-0"
               />
               {skillDropdownOpen &&
@@ -666,7 +606,7 @@ export function JobForm({
                         className="w-full px-3 py-1.5 text-left text-sm hover:bg-muted"
                         onMouseDown={(e) => {
                           e.preventDefault();
-                          addSkill({ id: s.id, name: s.name });
+                          addSkill({ skillId: s.id, name: s.name });
                         }}
                       >
                         {s.name}
@@ -683,7 +623,7 @@ export function JobForm({
                           className="w-full px-3 py-1.5 text-left text-sm hover:bg-muted text-muted-foreground"
                           onMouseDown={(e) => {
                             e.preventDefault();
-                            addSkill({ id: null, name: skillInput.trim() });
+                            addSkill({ skillId: null, name: skillInput.trim() });
                           }}
                         >
                           {t('jobs.newJobForm.addNewSkill', {
@@ -698,42 +638,56 @@ export function JobForm({
         </div>
 
         <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="isRemote"
-              checked={isRemote}
-              onCheckedChange={(checked) => setIsRemote(checked === true)}
-              disabled={submitting}
-            />
-            <Label
-              htmlFor="isRemote"
-              className="cursor-pointer text-base font-medium"
-            >
-              {t('jobs.remoteWork')}
-            </Label>
-          </div>
+          <Controller
+            name="isRemote"
+            control={control}
+            render={({ field }) => (
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="isRemote"
+                  checked={field.value}
+                  onCheckedChange={(checked) => field.onChange(checked === true)}
+                  disabled={isSubmitting}
+                />
+                <Label
+                  htmlFor="isRemote"
+                  className="cursor-pointer text-base font-medium"
+                >
+                  {t('jobs.remoteWork')}
+                </Label>
+              </div>
+            )}
+          />
 
-          {!isRemote && (
-            <div className="space-y-2">
-              <Label htmlFor="location">{t('jobs.location')}</Label>
-              <Select
-                value={locationId}
-                onValueChange={setLocationId}
-                disabled={submitting || locations.length === 0}
-              >
-                <SelectTrigger className="h-11 text-base">
-                  <SelectValue placeholder={t('jobs.newJobForm.notSelected')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {locations.map((loc) => (
-                    <SelectItem key={loc.id} value={loc.id}>
-                      {loc.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+          <Controller
+            name="locationId"
+            control={control}
+            render={({ field }) =>
+              !watch('isRemote') ? (
+                <div className="space-y-2">
+                  <Label htmlFor="location">{t('jobs.location')}</Label>
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    disabled={isSubmitting || locations.length === 0}
+                  >
+                    <SelectTrigger className="h-11 text-base">
+                      <SelectValue placeholder={t('jobs.newJobForm.notSelected')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {locations.map((loc) => (
+                        <SelectItem key={loc.id} value={loc.id}>
+                          {loc.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : (
+                <></>
+              )
+            }
+          />
         </div>
       </div>
 
@@ -743,100 +697,103 @@ export function JobForm({
 
         <div className="space-y-3">
           <Label>{t('jobs.projectType')}</Label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {(Object.keys(PROJECT_TYPE_LABELS) as ProjectType[]).map((type) => (
-              <SelectBox
-                key={type}
-                value={type}
-                label={PROJECT_TYPE_LABELS[type]}
-                description={PROJECT_TYPE_DESCRIPTIONS[type]}
-                selected={projectType === type}
-                onSelect={() => {
-                  setProjectType(type);
-                  if (errors.projectType) {
-                    setErrors((prev) => ({ ...prev, projectType: '' }));
-                  }
-                }}
-                disabled={submitting}
-                className={
-                  errors.projectType ? 'border-destructive' : undefined
-                }
-              />
-            ))}
-          </div>
-          {errors.projectType && (
+          <Controller
+            name="projectType"
+            control={control}
+            render={({ field }) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {(Object.keys(PROJECT_TYPE_LABELS) as ProjectType[]).map((type) => (
+                  <SelectBox
+                    key={type}
+                    value={type}
+                    label={PROJECT_TYPE_LABELS[type]}
+                    description={PROJECT_TYPE_DESCRIPTIONS[type]}
+                    selected={field.value === type}
+                    onSelect={() => field.onChange(type)}
+                    disabled={isSubmitting}
+                    className={
+                      errors.projectType ? 'border-destructive' : undefined
+                    }
+                  />
+                ))}
+              </div>
+            )}
+          />
+          {errors.projectType?.message && (
             <p className="text-sm text-red-600 dark:text-red-400">
-              {errors.projectType}
+              {t(errors.projectType.message)}
             </p>
           )}
         </div>
 
         <div className="space-y-3">
           <Label>{t('jobs.billingType')}</Label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {(Object.keys(BILLING_LABELS) as BillingType[]).map((type) => (
-              <SelectBox
-                key={type}
-                value={type}
-                label={BILLING_LABELS[type]}
-                description={BILLING_DESCRIPTIONS[type]}
-                selected={billingType === type}
-                onSelect={() => {
-                  setBillingType(type);
-                  if (errors.billingType) {
-                    setErrors((prev) => ({ ...prev, billingType: '' }));
-                  }
-                }}
-                disabled={submitting}
-                className={
-                  errors.billingType ? 'border-destructive' : undefined
-                }
-              />
-            ))}
-          </div>
-          {errors.billingType && (
-            <p className="text-sm text-red-600 dark:text-red-400">
-              {errors.billingType}
-            </p>
-          )}
-
-          {billingType === 'HOURLY' && (
-            <div className="space-y-3 mt-4">
-              <Label>{t('jobs.hoursPerWeek')}</Label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {(Object.keys(HOURS_LABELS) as HoursPerWeek[]).map((hours) => (
+          <Controller
+            name="billingType"
+            control={control}
+            render={({ field }) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {(Object.keys(BILLING_LABELS) as BillingType[]).map((type) => (
                   <SelectBox
-                    key={hours}
-                    value={hours}
-                    label={HOURS_LABELS[hours]}
-                    selected={hoursPerWeek === hours}
-                    onSelect={() => {
-                      setHoursPerWeek(hours);
-                      if (errors.hoursPerWeek) {
-                        setErrors((prev) => ({ ...prev, hoursPerWeek: '' }));
-                      }
-                    }}
-                    disabled={submitting}
+                    key={type}
+                    value={type}
+                    label={BILLING_LABELS[type]}
+                    description={BILLING_DESCRIPTIONS[type]}
+                    selected={field.value === type}
+                    onSelect={() => field.onChange(type)}
+                    disabled={isSubmitting}
                     className={
-                      errors.hoursPerWeek ? 'border-destructive' : undefined
+                      errors.billingType ? 'border-destructive' : undefined
                     }
                   />
                 ))}
               </div>
-              {errors.hoursPerWeek && (
-                <p className="text-sm text-red-600 dark:text-red-400">
-                  {errors.hoursPerWeek}
-                </p>
-              )}
-            </div>
+            )}
+          />
+          {errors.billingType?.message && (
+            <p className="text-sm text-red-600 dark:text-red-400">
+              {t(errors.billingType.message)}
+            </p>
           )}
 
-          {billingType && (
+          {watch('billingType') === 'HOURLY' && (
+            <Controller
+              name="hoursPerWeek"
+              control={control}
+              render={({ field }) => (
+                <div className="space-y-3 mt-4">
+                  <Label>{t('jobs.hoursPerWeek')}</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {(Object.keys(HOURS_LABELS) as HoursPerWeek[]).map((hours) => (
+                      <SelectBox
+                        key={hours}
+                        value={hours}
+                        label={HOURS_LABELS[hours]}
+                        selected={field.value === hours}
+                        onSelect={() => field.onChange(hours)}
+                        disabled={isSubmitting}
+                        className={
+                          errors.hoursPerWeek ? 'border-destructive' : undefined
+                        }
+                      />
+                    ))}
+                  </div>
+                  {errors.hoursPerWeek?.message && (
+                    <p className="text-sm text-red-600 dark:text-red-400">
+                      {t(errors.hoursPerWeek.message)}
+                    </p>
+                  )}
+                </div>
+              )}
+            />
+          )}
+
+          {watch('billingType') && (
             <div className="space-y-3 mt-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="rate">
-                    {billingType === 'HOURLY'
+                    {watch('billingType') === 'HOURLY'
                       ? t('jobs.newJobForm.hourlyRate')
                       : t('jobs.newJobForm.fixedRate')}
                   </Label>
@@ -845,27 +802,21 @@ export function JobForm({
                     type="number"
                     min={0}
                     step="0.01"
-                    value={rate}
-                    onChange={(e) => {
-                      setRate(e.target.value);
-                      if (errors.rate) {
-                        setErrors((prev) => ({ ...prev, rate: '' }));
-                      }
-                    }}
+                    {...register('rate')}
                     placeholder={t('jobs.rateOptionalPlaceholder')}
-                    disabled={submitting}
+                    disabled={isSubmitting}
                     className={cn(
                       'h-11 text-base',
                       errors.rate && 'border-destructive',
                     )}
                     aria-invalid={!!errors.rate}
                   />
-                  {errors.rate && (
+                  {errors.rate?.message && (
                     <p className="text-sm text-red-600 dark:text-red-400">
-                      {errors.rate}
+                      {t(errors.rate.message)}
                     </p>
                   )}
-                  {billingType === 'HOURLY' && (
+                  {watch('billingType') === 'HOURLY' && (
                     <p className="text-xs text-muted-foreground">
                       {t('jobs.newJobForm.suggestedRateNote')}
                     </p>
@@ -873,37 +824,49 @@ export function JobForm({
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="currency">{t('jobs.currency')}</Label>
-                  <Select
-                    value={currency}
-                    onValueChange={setCurrency}
-                    disabled={submitting}
-                  >
-                    <SelectTrigger className="h-11 text-base">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CURRENCIES.map((c) => (
-                        <SelectItem key={c} value={c}>
-                          {c}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Controller
+                    name="currency"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={isSubmitting}
+                      >
+                        <SelectTrigger className="h-11 text-base">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CURRENCIES.map((c) => (
+                            <SelectItem key={c} value={c}>
+                              {c}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="rateNegotiable"
-                  checked={rateNegotiable}
-                  onCheckedChange={(checked) =>
-                    setRateNegotiable(checked === true)
-                  }
-                  disabled={submitting}
-                />
-                <Label htmlFor="rateNegotiable" className="cursor-pointer">
-                  {t('jobs.rateNegotiable')}
-                </Label>
-              </div>
+              <Controller
+                name="rateNegotiable"
+                control={control}
+                render={({ field }) => (
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="rateNegotiable"
+                      checked={field.value}
+                      onCheckedChange={(checked) =>
+                        field.onChange(checked === true)
+                      }
+                      disabled={isSubmitting}
+                    />
+                    <Label htmlFor="rateNegotiable" className="cursor-pointer">
+                      {t('jobs.rateNegotiable')}
+                    </Label>
+                  </div>
+                )}
+              />
             </div>
           )}
         </div>
@@ -915,34 +878,66 @@ export function JobForm({
 
         <div className="space-y-3">
           <Label>{t('jobs.offerDays')}</Label>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {[7, 14, 21, 30].map((days) => (
-              <SelectBox
-                key={days}
-                value={days.toString()}
-                label={`${days} ${t('jobs.newJobForm.days')}`}
-                selected={offerDays === days}
-                onSelect={() => {
-                  setOfferDays(days);
-                  if (errors.offerDays) {
-                    setErrors((prev) => ({ ...prev, offerDays: '' }));
-                  }
-                }}
-                disabled={submitting}
-                className={errors.offerDays ? 'border-destructive' : undefined}
-              />
-            ))}
-          </div>
-          {errors.offerDays && (
+          <Controller
+            name="offerDays"
+            control={control}
+            render={({ field }) => (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {([7, 14, 21, 30] as const).map((days) => (
+                  <SelectBox
+                    key={days}
+                    value={days.toString()}
+                    label={`${days} ${t('jobs.newJobForm.days')}`}
+                    selected={field.value === days}
+                    onSelect={() => field.onChange(days)}
+                    disabled={isSubmitting}
+                    className={errors.offerDays ? 'border-destructive' : undefined}
+                  />
+                ))}
+              </div>
+            )}
+          />
+          {errors.offerDays?.message && (
             <p className="text-sm text-red-600 dark:text-red-400">
-              {errors.offerDays}
+              {t(errors.offerDays.message)}
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-3">
+          <Label>{t('jobs.expectedOffers')}</Label>
+          <p className="text-sm text-muted-foreground">
+            {t('jobs.newJobForm.expectedOffersDescription')}
+          </p>
+          <Controller
+            name="expectedOffers"
+            control={control}
+            render={({ field }) => (
+              <div className="grid grid-cols-3 gap-3">
+                {([6, 10, 14] as const).map((num) => (
+                  <SelectBox
+                    key={num}
+                    value={num.toString()}
+                    label={num.toString()}
+                    selected={field.value === num}
+                    onSelect={() => field.onChange(num)}
+                    disabled={isSubmitting}
+                    className={errors.expectedOffers ? 'border-destructive' : undefined}
+                  />
+                ))}
+              </div>
+            )}
+          />
+          {errors.expectedOffers?.message && (
+            <p className="text-sm text-red-600 dark:text-red-400">
+              {t(errors.expectedOffers.message)}
             </p>
           )}
         </div>
       </div>
 
-      <Button type="submit" disabled={submitting} size="lg" className="w-full">
-        {submitting
+      <Button type="submit" disabled={isSubmitting} size="lg" className="w-full">
+        {isSubmitting
           ? t('jobs.newJobForm.submitting')
           : mode === 'create'
             ? t('jobs.newJobForm.submit')

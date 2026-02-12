@@ -20,6 +20,7 @@
     "rateNonNegative": "Stawka musi być nieujemna",
     "currencyLength": "Waluta musi mieć 3 znaki (np. PLN, EUR)",
     "offerDaysInvalid": "Ilość dni na zebranie ofert musi być 7, 14, 21 lub 30",
+    "expectedOffersInvalid": "Oczekiwana liczba ofert musi być 6, 10 lub 14",
     "skillsMaxCount": "Można dodać maksymalnie 5 skilli do oferty",
     "accountTypeInvalid": "accountType musi być CLIENT lub FREELANCER",
     "languageInvalid": "language musi być POLISH lub ENGLISH",

@@ -20,6 +20,7 @@
     "rateNonNegative": "Rate must be non-negative",
     "currencyLength": "Currency must be 3 characters (e.g. PLN, EUR)",
     "offerDaysInvalid": "Offer days must be 7, 14, 21 or 30",
+    "expectedOffersInvalid": "Expected number of offers must be 6, 10 or 14",
     "skillsMaxCount": "You can add at most 5 skills to an offer",
     "accountTypeInvalid": "accountType must be CLIENT or FREELANCER",
     "languageInvalid": "language must be POLISH or ENGLISH",

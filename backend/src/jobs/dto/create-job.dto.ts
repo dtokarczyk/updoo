@@ -112,6 +112,13 @@ export class CreateJobDto {
   @Type(() => Number)
   offerDays?: number;
 
+  /** Expected number of offers (slots). Only 6, 10 or 14 allowed. */
+  @IsOptional()
+  @IsNumber()
+  @IsIn([6, 10, 14], { message: 'validation.expectedOffersInvalid' })
+  @Type(() => Number)
+  expectedOffers?: number;
+
   @IsOptional()
   @IsArray()
   @IsString({ each: true })

@@ -682,6 +682,8 @@ export interface Job {
   isFavorite?: boolean;
   /** Number of applications for this job */
   applicationsCount?: number;
+  /** Max number of offers (6, 10 or 14). When null, no limit. */
+  expectedOffers?: number | null;
 }
 
 export interface PaginationInfo {
@@ -1114,6 +1116,8 @@ export interface CreateJobPayload {
   projectType: ProjectType;
   /** Number of days to collect offers (7–30). */
   offerDays?: number;
+  /** Expected number of offers (6, 10 or 14). */
+  expectedOffers?: number;
   skillIds?: string[];
   newSkillNames?: string[];
 }

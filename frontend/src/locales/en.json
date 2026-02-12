@@ -393,6 +393,9 @@
     "applicationMessageContent": "Your application message",
     "applications": "Applications",
     "applicationsCount": "Applications ({count})",
+    "applicationsCountLimit": "Applications ({submitted}/{expected})",
+    "expectedOffers": "Expected number of offers",
+    "invalidExpectedOffers": "Select 6, 10 or 14",
     "appliedFreelancer": "Applied freelancer",
     "author": "Author",
     "posted": "Published {ago}",
@@ -404,6 +407,7 @@
     "recentApplications": "Recent applications",
     "noApplications": "No applications",
     "noApplicationsYetBeFirst": "No applications yet, be the first!",
+    "maxOffersReachedMessage": "Maximum number of offers for this job has been reached.",
     "myJobs": "My jobs",
     "noJobs": "No jobs",
     "newJobForm": {
@@ -439,7 +443,8 @@
       "selectProjectType": "Select project type",
       "suggestedRateNote": "We've suggested a market rate, but you can change it",
       "billingTypeHourlyDescription": "Billing for each hour worked",
-      "billingTypeFixedDescription": "Fixed rate for the entire project regardless of working time"
+      "billingTypeFixedDescription": "Fixed rate for the entire project regardless of working time",
+      "expectedOffersDescription": "Maximum number of offers freelancers can submit."
     },
     "draftModal": {
       "beforeLoginTitle": "Job saved in memory",

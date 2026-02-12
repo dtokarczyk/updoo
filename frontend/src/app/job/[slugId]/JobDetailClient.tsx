@@ -362,16 +362,21 @@ export function JobDetailClient({
   const deadlineMsLeft = getDeadlineMsLeft(job.deadline);
   const deadlinePassed = deadlineMsLeft !== null && deadlineMsLeft <= 0;
   const deadlineSoon = isDeadlineSoon(deadlineMsLeft, isClosed);
+  const applications = job.applications ?? [];
+  const slotsFull =
+    job.expectedOffers != null &&
+    applications.length >= job.expectedOffers &&
+    !job.currentUserApplied;
   const canApply =
     user?.accountType === 'FREELANCER' &&
     !isOwnJob &&
     !isDraft &&
     !isClosed &&
     !deadlinePassed &&
-    !job.currentUserApplied;
+    !job.currentUserApplied &&
+    !slotsFull;
 
   const canClose = (isOwnJob || isAdmin) && !isClosed && !isDraft;
-  const applications = job.applications ?? [];
 
   async function handleApply(e: React.FormEvent) {
     e.preventDefault();
@@ -607,7 +612,12 @@ export function JobDetailClient({
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
-                {t('jobs.applicationsCount', { count: applications.length })}
+                {job.expectedOffers != null
+                  ? t('jobs.applicationsCountLimit', {
+                      submitted: applications.length,
+                      expected: job.expectedOffers,
+                    })
+                  : t('jobs.applicationsCount', { count: applications.length })}
               </p>
               <ul className="space-y-2 mb-6">
                 {applications.length === 0 ? (
@@ -649,6 +659,10 @@ export function JobDetailClient({
                   ) : deadlinePassed ? (
                     <p className="text-sm text-muted-foreground">
                       {t('jobs.deadlinePassedMessage')}
+                    </p>
+                  ) : slotsFull ? (
+                    <p className="text-sm text-muted-foreground">
+                      {t('jobs.maxOffersReachedMessage')}
                     </p>
                   ) : (
                     <form onSubmit={handleApply} className="space-y-3">
@@ -715,6 +729,15 @@ export function JobDetailClient({
               icon={Banknote}
               label={t('jobs.rate')}
               value={<JobRateValue user={user} job={job} t={t} />}
+            />
+            <DetailRow
+              icon={Users}
+              label={t('jobs.applications')}
+              value={
+                job.expectedOffers != null
+                  ? `${applications.length}/${job.expectedOffers}`
+                  : String(applications.length)
+              }
             />
             <DetailRow
               icon={Briefcase}

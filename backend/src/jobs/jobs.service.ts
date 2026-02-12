@@ -340,6 +340,10 @@ export class JobsService implements OnModuleInit {
         isRemote: dto.isRemote,
         projectType: dto.projectType as ProjectType,
         deadline,
+        expectedOffers:
+          dto.expectedOffers != null && [6, 10, 14].includes(dto.expectedOffers)
+            ? dto.expectedOffers
+            : null,
       },
       include: {
         category: {
@@ -848,6 +852,24 @@ export class JobsService implements OnModuleInit {
     if (job.authorId === freelancerId) {
       throw new ForbiddenException('Nie możesz zgłosić się do własnej oferty');
     }
+    if (job.expectedOffers != null) {
+      const existingApplication = await this.prisma.jobApplication.findUnique({
+        where: {
+          jobId_freelancerId: { jobId, freelancerId },
+        },
+      });
+      if (!existingApplication) {
+        const applicationsCount =
+          await this.prisma.jobApplication.count({
+            where: { jobId },
+          });
+        if (applicationsCount >= job.expectedOffers) {
+          throw new ForbiddenException(
+            'Osiągnięto maksymalną liczbę ofert dla tego ogłoszenia',
+          );
+        }
+      }
+    }
     const now = new Date();
     if (job.deadline && job.deadline < now) {
       throw new ForbiddenException('Termin zgłoszeń minął');
@@ -1064,6 +1086,10 @@ export class JobsService implements OnModuleInit {
         isRemote: dto.isRemote,
         projectType: dto.projectType as ProjectType,
         ...(newDeadline != null && { deadline: newDeadline }),
+        expectedOffers:
+          dto.expectedOffers != null && [6, 10, 14].includes(dto.expectedOffers)
+            ? dto.expectedOffers
+            : job.expectedOffers,
       },
       include: {
         category: {

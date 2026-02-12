@@ -392,6 +392,9 @@
     "applicationMessageContent": "Treść Twojego zgłoszenia",
     "applications": "Zgłoszenia",
     "applicationsCount": "Zgłoszenia ({count})",
+    "applicationsCountLimit": "Zgłoszenia ({submitted}/{expected})",
+    "expectedOffers": "Oczekiwana liczba ofert",
+    "invalidExpectedOffers": "Wybierz 6, 10 lub 14",
     "appliedFreelancer": "Zgłoszony freelancer",
     "author": "Autor",
     "posted": "Opublikowano {ago}",
@@ -403,6 +406,7 @@
     "recentApplications": "Ostatnie aplikacje",
     "noApplications": "Brak aplikacji",
     "noApplicationsYetBeFirst": "Nie ma jeszcze zgłoszeń, bądź pierwszy!",
+    "maxOffersReachedMessage": "Osiągnięto maksymalną liczbę ofert dla tego ogłoszenia.",
     "myJobs": "Moje oferty",
     "noJobs": "brak ofert",
     "newJobForm": {
@@ -438,7 +442,8 @@
       "selectProjectType": "Wybierz typ projektu",
       "suggestedRateNote": "Zasugerowaliśmy rynkową stawkę, ale możesz ją zmienić",
       "billingTypeHourlyDescription": "Rozliczenie za każdą przepracowaną godzinę",
-      "billingTypeFixedDescription": "Stała stawka za cały projekt niezależnie od czasu pracy"
+      "billingTypeFixedDescription": "Stała stawka za cały projekt niezależnie od czasu pracy",
+      "expectedOffersDescription": "Maksymalna liczba ofert, które mogą złożyć wykonawcy."
     },
     "draftModal": {
       "beforeLoginTitle": "Ogłoszenie zapisane w pamięci",

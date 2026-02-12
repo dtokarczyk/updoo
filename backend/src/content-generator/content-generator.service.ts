@@ -11,16 +11,9 @@ import {
 } from '@prisma/client';
 import { BENCHMARK_EXAMPLES } from './examples';
 import { fakerPL as faker } from '@faker-js/faker';
+import { ALLOWED } from './constants';
 
 export type SupportedLanguage = 'POLISH' | 'ENGLISH';
-
-/** Allowed values for AI-generated job metadata (used for validation and random offerDays). */
-const ALLOWED = {
-  billingType: Object.values(BillingType),
-  experienceLevel: Object.values(ExperienceLevel),
-  projectType: Object.values(ProjectType),
-  offerDays: [7, 14, 21, 30] as const,
-} as const;
 
 export interface GeneratedJobFormData {
   user: {

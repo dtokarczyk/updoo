@@ -8,10 +8,7 @@ import { MailerLogService } from '../mailer-log/mailer-log.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailerLogStatus } from '@prisma/client';
 import { MailerSendStatus, SendEmailInput } from './mailer.types';
-
-/** Plain-text sentinel stored as password for auto-generated (fake) users.
- *  Any user whose password column equals this value is silently skipped. */
-const FAKE_PASSWORD = 'FAKE';
+import { FAKE_PASSWORD } from './constants';
 
 @Injectable()
 export class MailerService {

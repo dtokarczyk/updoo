@@ -27,53 +27,10 @@ import { EmailService } from '../email/email.service';
 import { I18nService } from '../i18n/i18n.service';
 import type { SupportedLanguage } from '../i18n/i18n.service';
 import { slugFromName } from '../common/slug.helper';
-
-const DEFAULT_CATEGORIES = [
-  {
-    slug: 'programming',
-    translations: [
-      { language: JobLanguage.POLISH, name: 'Programowanie' },
-      { language: JobLanguage.ENGLISH, name: 'Programming' },
-    ],
-  },
-  {
-    slug: 'design',
-    translations: [
-      { language: JobLanguage.POLISH, name: 'Design' },
-      { language: JobLanguage.ENGLISH, name: 'Design' },
-    ],
-  },
-  {
-    slug: 'marketing',
-    translations: [
-      { language: JobLanguage.POLISH, name: 'Marketing' },
-      { language: JobLanguage.ENGLISH, name: 'Marketing' },
-    ],
-  },
-  {
-    slug: 'writing',
-    translations: [
-      { language: JobLanguage.POLISH, name: 'Pisanie' },
-      { language: JobLanguage.ENGLISH, name: 'Writing' },
-    ],
-  },
-  {
-    slug: 'office-working',
-    translations: [
-      { language: JobLanguage.POLISH, name: 'Prace biurowe' },
-      { language: JobLanguage.ENGLISH, name: 'Office Work' },
-    ],
-  },
-  {
-    slug: 'other',
-    translations: [
-      { language: JobLanguage.POLISH, name: 'Inne' },
-      { language: JobLanguage.ENGLISH, name: 'Other' },
-    ],
-  },
-];
-
-const ALLOWED_CATEGORY_SLUGS = DEFAULT_CATEGORIES.map((c) => c.slug);
+import {
+  DEFAULT_CATEGORIES,
+  ALLOWED_CATEGORY_SLUGS,
+} from './constants';
 
 @Injectable()
 export class JobsService implements OnModuleInit {
@@ -85,7 +42,7 @@ export class JobsService implements OnModuleInit {
     private readonly i18nService: I18nService,
     @Inject(forwardRef(() => NotificationsService))
     private readonly notificationsService: NotificationsService,
-  ) { }
+  ) {}
 
   async onModuleInit() {
     await this.ensureCategories();
@@ -497,18 +454,18 @@ export class JobsService implements OnModuleInit {
     const appliedIds =
       userId && jobs.length
         ? new Set(
-          (
-            await this.prisma.jobApplication.findMany({
-              where: {
-                freelancerId: userId,
-                jobId: {
-                  in: jobs.map((j) => j.id),
+            (
+              await this.prisma.jobApplication.findMany({
+                where: {
+                  freelancerId: userId,
+                  jobId: {
+                    in: jobs.map((j) => j.id),
+                  },
                 },
-              },
-              select: { jobId: true },
-            })
-          ).map((a) => a.jobId),
-        )
+                select: { jobId: true },
+              })
+            ).map((a) => a.jobId),
+          )
         : new Set<string>();
 
     const items = jobs.map((item) => {
@@ -860,10 +817,9 @@ export class JobsService implements OnModuleInit {
         },
       });
       if (!existingApplication) {
-        const applicationsCount =
-          await this.prisma.jobApplication.count({
-            where: { jobId },
-          });
+        const applicationsCount = await this.prisma.jobApplication.count({
+          where: { jobId },
+        });
         if (applicationsCount >= job.expectedOffers) {
           throw new ForbiddenException(
             'Osiągnięto maksymalną liczbę ofert dla tego ogłoszenia',
@@ -897,9 +853,7 @@ export class JobsService implements OnModuleInit {
       if (hasCompany && isCompanySize) userTypes.push('COMPANY');
       const meetsCriteria = userTypes.some((t) => allowedTypes.includes(t));
       if (!meetsCriteria) {
-        throw new ForbiddenException(
-          'messages.applyApplicantTypeMismatch',
-        );
+        throw new ForbiddenException('messages.applyApplicantTypeMismatch');
       }
     }
     const trimmedMessage = message?.trim() || undefined;
@@ -1099,8 +1053,8 @@ export class JobsService implements OnModuleInit {
     const newDeadline =
       dto.offerDays != null && allowedDays.includes(dto.offerDays)
         ? new Date(
-          job.createdAt.getTime() + dto.offerDays * 24 * 60 * 60 * 1000,
-        )
+            job.createdAt.getTime() + dto.offerDays * 24 * 60 * 60 * 1000,
+          )
         : undefined;
     const language = dto.language
       ? (dto.language as JobLanguage)

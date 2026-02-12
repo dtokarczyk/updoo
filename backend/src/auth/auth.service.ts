@@ -17,10 +17,9 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { I18nService, SupportedLanguage } from '../i18n/i18n.service';
 import type { JwtPayload, AuthResponseUser, AuthResponse } from './auth.types';
+import { PASSWORD_RESET_EXPIRY_HOURS } from './constants';
 
 export type { JwtPayload, AuthResponseUser, AuthResponse };
-
-const PASSWORD_RESET_EXPIRY_HOURS = 1;
 
 function escapeHtml(s: string): string {
   return s
@@ -41,7 +40,7 @@ export class AuthService {
     private readonly agreementsService: AgreementsService,
     private readonly i18nService: I18nService,
     private readonly storageService: StorageService,
-  ) { }
+  ) {}
 
   /** Short-lived JWT for avatar proxy URL (GET /auth/avatar?token=...). */
   private signAvatarToken(userId: string): string {

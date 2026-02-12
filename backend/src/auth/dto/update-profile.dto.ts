@@ -5,12 +5,15 @@ import {
   IsString,
   MinLength,
 } from 'class-validator';
+import {
+  ACCOUNT_TYPES,
+  LANGUAGES,
+  type UpdateProfileAccountType,
+  type UserLanguage,
+} from '../constants';
 
-export const ACCOUNT_TYPES = ['CLIENT', 'FREELANCER'] as const;
-export type UpdateProfileAccountType = (typeof ACCOUNT_TYPES)[number];
-
-export const LANGUAGES = ['POLISH', 'ENGLISH'] as const;
-export type UserLanguage = (typeof LANGUAGES)[number];
+export { ACCOUNT_TYPES, LANGUAGES };
+export type { UpdateProfileAccountType, UserLanguage };
 
 export class UpdateProfileDto {
   @IsOptional()

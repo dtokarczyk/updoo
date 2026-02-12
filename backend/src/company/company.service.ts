@@ -124,7 +124,14 @@ export class CompanyService {
     ) {
       company = await this.prisma.company.update({
         where: { id: company.id },
-        data: { companySize: companySize as 'FREELANCER' | 'MICRO' | 'SMALL' | 'MEDIUM' | 'LARGE' },
+        data: {
+          companySize: companySize as
+            | 'FREELANCER'
+            | 'MICRO'
+            | 'SMALL'
+            | 'MEDIUM'
+            | 'LARGE',
+        },
       });
     }
 
@@ -154,7 +161,12 @@ export class CompanyService {
     const company = await this.prisma.company.update({
       where: { id: user.company.id },
       data: {
-        companySize: companySize as 'FREELANCER' | 'MICRO' | 'SMALL' | 'MEDIUM' | 'LARGE',
+        companySize: companySize as
+          | 'FREELANCER'
+          | 'MICRO'
+          | 'SMALL'
+          | 'MEDIUM'
+          | 'LARGE',
       },
     });
     return { company: this.getCompanyPayload(company) };

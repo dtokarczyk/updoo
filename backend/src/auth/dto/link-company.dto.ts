@@ -1,12 +1,8 @@
 import { IsIn, IsOptional, IsString, Matches } from 'class-validator';
-
-const COMPANY_SIZE_VALUES = [
-  'FREELANCER',
-  'MICRO',
-  'SMALL',
-  'MEDIUM',
-  'LARGE',
-] as const;
+import {
+  COMPANY_SIZE_VALUES,
+  type CompanySizeValue,
+} from '../../company/constants';
 
 /** NIP: 10 digits, optional spaces/dashes stripped on backend. */
 export class LinkCompanyDto {
@@ -18,5 +14,5 @@ export class LinkCompanyDto {
 
   @IsOptional()
   @IsIn(COMPANY_SIZE_VALUES, { message: 'validation.companySizeInvalid' })
-  companySize?: (typeof COMPANY_SIZE_VALUES)[number];
+  companySize?: CompanySizeValue;
 }

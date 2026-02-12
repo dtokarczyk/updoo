@@ -7,10 +7,7 @@ import {
   NotificationFrequency,
   JobStatus,
 } from '@prisma/client';
-
-/** Default preference when user has no row: enabled + instant. */
-const DEFAULT_ENABLED = true;
-const DEFAULT_FREQUENCY = NotificationFrequency.INSTANT;
+import { DEFAULT_ENABLED, DEFAULT_FREQUENCY } from './constants';
 
 @Injectable()
 export class NotificationsService {

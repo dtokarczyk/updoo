@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Patch,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AgreementsAcceptedGuard } from '../auth/agreements-accepted.guard';
 import { GetUser } from '../auth/get-user.decorator';
@@ -27,10 +20,7 @@ export class CompanyController {
 
   @Patch()
   @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
-  async updateCompany(
-    @GetUser() user: JwtUser,
-    @Body() dto: UpdateCompanyDto,
-  ) {
+  async updateCompany(@GetUser() user: JwtUser, @Body() dto: UpdateCompanyDto) {
     if (dto.companySize != null) {
       return this.companyService.updateCompanySize(user.id, dto.companySize);
     }

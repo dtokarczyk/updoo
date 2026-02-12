@@ -1,9 +1,9 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import type { SearchResultRow } from './regon-contact.util';
-
-/** Report names for bir1.report() – BIR11 for full data including email, www, phone */
-const BIR11_REPORT_LEGAL = 'BIR11OsPrawna';
-const BIR11_REPORT_NATURAL_CEIDG = 'BIR11OsFizycznaDzialalnoscCeidg';
+import {
+  BIR11_REPORT_LEGAL,
+  BIR11_REPORT_NATURAL_CEIDG,
+} from './regon.constants';
 
 export type { SearchResultRow };
 

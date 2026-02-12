@@ -8,6 +8,7 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import sharp from 'sharp';
+import { PRESIGNED_IMAGE_EXPIRY_SECONDS } from './constants';
 
 /** Config for image upload: path prefix, dimensions and WebP quality. */
 export interface ImageUploadConfig {
@@ -28,8 +29,6 @@ function buildVirtualHostedBaseUrl(endpoint: string, bucket: string): string {
   const url = new URL(endpoint);
   return `${url.protocol}//${bucket}.${url.host}`;
 }
-
-const PRESIGNED_IMAGE_EXPIRY_SECONDS = 3600; // 1 hour
 
 @Injectable()
 export class StorageService {

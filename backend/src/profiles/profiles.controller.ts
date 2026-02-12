@@ -28,9 +28,7 @@ export class ProfilesController {
 
   private assertNotClient(user: JwtUser) {
     if (user.accountType === 'CLIENT') {
-      throw new ForbiddenException(
-        'errors.contractorProfileClientForbidden',
-      );
+      throw new ForbiddenException('errors.contractorProfileClientForbidden');
     }
   }
 

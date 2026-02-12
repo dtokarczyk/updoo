@@ -1,11 +1,13 @@
 import { IsBoolean, IsIn, IsOptional, IsString } from 'class-validator';
+import {
+  NOTIFICATION_TYPES,
+  NOTIFICATION_FREQUENCIES,
+  type NotificationTypeValue,
+  type NotificationFrequencyValue,
+} from '../constants';
 
-export const NOTIFICATION_TYPES = ['NEW_JOB_MATCHING_SKILLS'] as const;
-export type NotificationTypeValue = (typeof NOTIFICATION_TYPES)[number];
-
-export const NOTIFICATION_FREQUENCIES = ['INSTANT', 'DAILY_DIGEST'] as const;
-export type NotificationFrequencyValue =
-  (typeof NOTIFICATION_FREQUENCIES)[number];
+export { NOTIFICATION_TYPES, NOTIFICATION_FREQUENCIES };
+export type { NotificationTypeValue, NotificationFrequencyValue };
 
 export class UpdateNotificationPreferenceDto {
   @IsString()

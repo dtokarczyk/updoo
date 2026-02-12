@@ -1,10 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
-
-const AGREEMENTS_DIR = 'agreements';
-const TERMS_DIR = 'terms-of-service';
-const PRIVACY_DIR = 'privacy-policy';
+import { AGREEMENTS_DIR, TERMS_DIR, PRIVACY_DIR } from './constants';
 
 export interface CurrentVersions {
   termsVersion: string | null;

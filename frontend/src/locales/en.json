@@ -418,7 +418,9 @@
     "applicationsCount": "Applications ({count})",
     "applicationsCountLimit": "Applications ({submitted}/{expected})",
     "expectedOffers": "Expected number of offers",
+    "expectedApplicantType": "Expected applicant type",
     "invalidExpectedOffers": "Select 6, 10 or 14",
+    "applyCriteriaNotMet": "You do not meet the criteria for this job (required applicant type).",
     "appliedFreelancer": "Applied freelancer",
     "author": "Author",
     "posted": "Published {ago}",
@@ -467,7 +469,12 @@
       "suggestedRateNote": "We've suggested a market rate, but you can change it",
       "billingTypeHourlyDescription": "Billing for each hour worked",
       "billingTypeFixedDescription": "Fixed rate for the entire project regardless of working time",
-      "expectedOffersDescription": "Maximum number of offers freelancers can submit."
+      "expectedOffersDescription": "Maximum number of offers freelancers can submit.",
+      "expectedApplicantTypeDescription": "Who can apply to this job. Restriction is visible to freelancers.",
+      "expectedApplicantTypeFreelancerNoB2B": "Freelancer without B2B",
+      "expectedApplicantTypeFreelancerB2B": "Freelancer B2B",
+      "expectedApplicantTypeCompany": "Companies",
+      "selectExpectedApplicantType": "Select expected applicant type"
     },
     "draftModal": {
       "beforeLoginTitle": "Job saved in memory",

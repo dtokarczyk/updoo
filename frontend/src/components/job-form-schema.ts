@@ -13,6 +13,11 @@ const hoursPerWeekEnum = z.enum([
 ]);
 const experienceLevelEnum = z.enum(['JUNIOR', 'MID', 'SENIOR']);
 const projectTypeEnum = z.enum(['ONE_TIME', 'CONTINUOUS']);
+const expectedApplicantTypeEnum = z.enum([
+  'FREELANCER_NO_B2B',
+  'FREELANCER_B2B',
+  'COMPANY',
+]);
 
 const selectedSkillSchema = z.object({
   /** Skill ID from DB, or null for new (tag) skills. Avoids clash with useFieldArray's `id`. */
@@ -46,6 +51,10 @@ export const jobFormSchema = z
       z.literal(6),
       z.literal(10),
       z.literal(14),
+      z.literal(''),
+    ]),
+    expectedApplicantType: z.union([
+      expectedApplicantTypeEnum,
       z.literal(''),
     ]),
     selectedSkills: z.array(selectedSkillSchema).max(5),
@@ -107,6 +116,18 @@ export const jobFormSchema = z
         code: z.ZodIssueCode.custom,
       });
     }
+    if (
+      data.expectedApplicantType === '' ||
+      !['FREELANCER_NO_B2B', 'FREELANCER_B2B', 'COMPANY'].includes(
+        data.expectedApplicantType,
+      )
+    ) {
+      ctx.addIssue({
+        path: ['expectedApplicantType'],
+        message: msg('jobs.newJobForm.selectExpectedApplicantType'),
+        code: z.ZodIssueCode.custom,
+      });
+    }
   });
 
 export type JobFormValues = z.infer<typeof jobFormSchema>;
@@ -129,5 +150,6 @@ export const defaultJobFormValues: JobFormValues = {
   projectType: '',
   offerDays: 14,
   expectedOffers: 10,
+  expectedApplicantType: '',
   selectedSkills: [],
 };

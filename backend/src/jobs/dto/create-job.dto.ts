@@ -43,6 +43,12 @@ export enum JobLanguageDto {
   POLISH = 'POLISH',
 }
 
+export enum ExpectedApplicantTypeDto {
+  FREELANCER_NO_B2B = 'FREELANCER_NO_B2B',
+  FREELANCER_B2B = 'FREELANCER_B2B',
+  COMPANY = 'COMPANY',
+}
+
 export class CreateJobDto {
   @IsString()
   @MinLength(1, { message: 'validation.titleRequired' })
@@ -118,6 +124,13 @@ export class CreateJobDto {
   @IsIn([6, 10, 14], { message: 'validation.expectedOffersInvalid' })
   @Type(() => Number)
   expectedOffers?: number;
+
+  /** Restrict who can apply: freelancer without B2B, freelancer with B2B, or companies. */
+  @IsOptional()
+  @IsEnum(ExpectedApplicantTypeDto, {
+    message: 'validation.expectedApplicantTypeInvalid',
+  })
+  expectedApplicantType?: ExpectedApplicantTypeDto;
 
   @IsOptional()
   @IsArray()

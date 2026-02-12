@@ -200,6 +200,7 @@ export function JobForm({
         projectType: initialData.projectType,
         offerDays: offerDays as JobFormValues['offerDays'],
         expectedOffers: expectedOffers as JobFormValues['expectedOffers'],
+        expectedApplicantType: (initialData.expectedApplicantType ?? '') as JobFormValues['expectedApplicantType'],
         selectedSkills:
           initialData.skills?.map((r) => ({ skillId: r.skill.id, name: r.skill.name })) ?? [],
       });
@@ -227,6 +228,7 @@ export function JobForm({
           expectedOffers: (draft.expectedOffers != null && [6, 10, 14].includes(draft.expectedOffers)
             ? draft.expectedOffers
             : 10) as JobFormValues['expectedOffers'],
+          expectedApplicantType: (draft.expectedApplicantType ?? '') as JobFormValues['expectedApplicantType'],
           selectedSkills: [],
         });
         setDraftLoaded(true);
@@ -349,6 +351,16 @@ export function JobForm({
         projectType: data.projectType as ProjectType,
         offerDays: data.offerDays as number,
         expectedOffers: data.expectedOffers as number,
+        expectedApplicantType:
+          data.expectedApplicantType &&
+          ['FREELANCER_NO_B2B', 'FREELANCER_B2B', 'COMPANY'].includes(
+            data.expectedApplicantType,
+          )
+            ? (data.expectedApplicantType as
+                | 'FREELANCER_NO_B2B'
+                | 'FREELANCER_B2B'
+                | 'COMPANY')
+            : undefined,
         skillIds: data.selectedSkills
           .filter((s) => s.skillId != null)
           .map((s) => s.skillId as string),
@@ -931,6 +943,43 @@ export function JobForm({
           {errors.expectedOffers?.message && (
             <p className="text-sm text-red-600 dark:text-red-400">
               {t(errors.expectedOffers.message)}
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-3">
+          <Label>{t('jobs.expectedApplicantType')}</Label>
+          <p className="text-sm text-muted-foreground">
+            {t('jobs.newJobForm.expectedApplicantTypeDescription')}
+          </p>
+          <Controller
+            name="expectedApplicantType"
+            control={control}
+            render={({ field }) => (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {(
+                  [
+                    { value: 'FREELANCER_NO_B2B', labelKey: 'jobs.newJobForm.expectedApplicantTypeFreelancerNoB2B' },
+                    { value: 'FREELANCER_B2B', labelKey: 'jobs.newJobForm.expectedApplicantTypeFreelancerB2B' },
+                    { value: 'COMPANY', labelKey: 'jobs.newJobForm.expectedApplicantTypeCompany' },
+                  ] as const
+                ).map(({ value, labelKey }) => (
+                  <SelectBox
+                    key={value}
+                    value={value}
+                    label={t(labelKey)}
+                    selected={field.value === value}
+                    onSelect={() => field.onChange(value)}
+                    disabled={isSubmitting}
+                    className={errors.expectedApplicantType ? 'border-destructive' : undefined}
+                  />
+                ))}
+              </div>
+            )}
+          />
+          {errors.expectedApplicantType?.message && (
+            <p className="text-sm text-red-600 dark:text-red-400">
+              {t(errors.expectedApplicantType.message)}
             </p>
           )}
         </div>

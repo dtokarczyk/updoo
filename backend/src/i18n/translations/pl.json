@@ -21,6 +21,7 @@
     "currencyLength": "Waluta musi mieć 3 znaki (np. PLN, EUR)",
     "offerDaysInvalid": "Ilość dni na zebranie ofert musi być 7, 14, 21 lub 30",
     "expectedOffersInvalid": "Oczekiwana liczba ofert musi być 6, 10 lub 14",
+    "expectedApplicantTypeInvalid": "Oczekiwany typ wykonawcy musi być FREELANCER_NO_B2B, FREELANCER_B2B lub COMPANY",
     "skillsMaxCount": "Można dodać maksymalnie 5 skilli do oferty",
     "accountTypeInvalid": "accountType musi być CLIENT lub FREELANCER",
     "languageInvalid": "language musi być POLISH lub ENGLISH",
@@ -59,6 +60,7 @@
     "jobRejectedEmailIntro": "Twoja oferta „{title}” została odrzucona przez administratora.",
     "jobRejectedEmailReason": "Powód odrzucenia",
     "jobRejectedEmailCta": "Popraw ofertę i wyślij ponownie",
-    "jobRejectedEmailOutro": "Po wprowadzeniu poprawek Twoja oferta zostanie ponownie sprawdzona przez administratora."
+    "jobRejectedEmailOutro": "Po wprowadzeniu poprawek Twoja oferta zostanie ponownie sprawdzona przez administratora.",
+    "applyApplicantTypeMismatch": "Nie spełniasz kryteriów tej oferty (wymagany typ wykonawcy)."
   }
 }

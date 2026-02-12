@@ -20,6 +20,7 @@ import {
   JobStatus,
   JobLanguage,
   AccountType,
+  ExpectedApplicantType,
 } from '@prisma/client';
 import { ContentGeneratorService } from '../content-generator/content-generator.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -85,7 +86,7 @@ export class JobsService implements OnModuleInit {
     private readonly i18nService: I18nService,
     @Inject(forwardRef(() => NotificationsService))
     private readonly notificationsService: NotificationsService,
-  ) {}
+  ) { }
 
   async onModuleInit() {
     await this.ensureCategories();
@@ -344,6 +345,10 @@ export class JobsService implements OnModuleInit {
           dto.expectedOffers != null && [6, 10, 14].includes(dto.expectedOffers)
             ? dto.expectedOffers
             : null,
+        expectedApplicantType:
+          dto.expectedApplicantType != null
+            ? (dto.expectedApplicantType as ExpectedApplicantType)
+            : null,
       },
       include: {
         category: {
@@ -496,18 +501,18 @@ export class JobsService implements OnModuleInit {
     const appliedIds =
       userId && jobs.length
         ? new Set(
-            (
-              await this.prisma.jobApplication.findMany({
-                where: {
-                  freelancerId: userId,
-                  jobId: {
-                    in: jobs.map((j) => j.id),
-                  },
+          (
+            await this.prisma.jobApplication.findMany({
+              where: {
+                freelancerId: userId,
+                jobId: {
+                  in: jobs.map((j) => j.id),
                 },
-                select: { jobId: true },
-              })
-            ).map((a) => a.jobId),
-          )
+              },
+              select: { jobId: true },
+            })
+          ).map((a) => a.jobId),
+        )
         : new Set<string>();
 
     const items = jobs.map((item) => {
@@ -874,6 +879,40 @@ export class JobsService implements OnModuleInit {
     if (job.deadline && job.deadline < now) {
       throw new ForbiddenException('Termin zgłoszeń minął');
     }
+    // Check expected applicant type: freelancer must match job restriction
+    if (job.expectedApplicantType != null) {
+      const freelancer = await this.prisma.user.findUnique({
+        where: { id: freelancerId },
+        include: { company: { select: { companySize: true } } },
+      });
+      if (!freelancer) {
+        throw new NotFoundException('User not found');
+      }
+      const hasCompany = freelancer.companyId != null;
+      const companySize = freelancer.company?.companySize ?? null;
+      const isCompanySize =
+        companySize != null &&
+        ['MICRO', 'SMALL', 'MEDIUM', 'LARGE'].includes(companySize);
+      let meetsCriteria = false;
+      switch (job.expectedApplicantType) {
+        case ExpectedApplicantType.FREELANCER_NO_B2B:
+          meetsCriteria = !hasCompany;
+          break;
+        case ExpectedApplicantType.FREELANCER_B2B:
+          meetsCriteria = hasCompany && companySize === 'FREELANCER';
+          break;
+        case ExpectedApplicantType.COMPANY:
+          meetsCriteria = hasCompany && isCompanySize;
+          break;
+        default:
+          meetsCriteria = true;
+      }
+      if (!meetsCriteria) {
+        throw new ForbiddenException(
+          'messages.applyApplicantTypeMismatch',
+        );
+      }
+    }
     const trimmedMessage = message?.trim() || undefined;
     await this.prisma.jobApplication.upsert({
       where: {
@@ -886,6 +925,21 @@ export class JobsService implements OnModuleInit {
       },
       update: { message: trimmedMessage },
     });
+
+    // Auto-close job when expected number of applications is reached
+    if (job.expectedOffers != null && job.status === JobStatus.PUBLISHED) {
+      const applicationsCount = await this.prisma.jobApplication.count({
+        where: { jobId },
+      });
+      if (applicationsCount >= job.expectedOffers) {
+        const now = new Date();
+        await this.prisma.job.update({
+          where: { id: jobId },
+          data: { status: JobStatus.CLOSED, closedAt: now },
+        });
+      }
+    }
+
     return { ok: true };
   }
 
@@ -1056,8 +1110,8 @@ export class JobsService implements OnModuleInit {
     const newDeadline =
       dto.offerDays != null && allowedDays.includes(dto.offerDays)
         ? new Date(
-            job.createdAt.getTime() + dto.offerDays * 24 * 60 * 60 * 1000,
-          )
+          job.createdAt.getTime() + dto.offerDays * 24 * 60 * 60 * 1000,
+        )
         : undefined;
     const language = dto.language
       ? (dto.language as JobLanguage)
@@ -1090,6 +1144,10 @@ export class JobsService implements OnModuleInit {
           dto.expectedOffers != null && [6, 10, 14].includes(dto.expectedOffers)
             ? dto.expectedOffers
             : job.expectedOffers,
+        expectedApplicantType:
+          dto.expectedApplicantType !== undefined
+            ? (dto.expectedApplicantType as ExpectedApplicantType | null)
+            : job.expectedApplicantType,
       },
       include: {
         category: {

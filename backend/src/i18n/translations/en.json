@@ -21,6 +21,7 @@
     "currencyLength": "Currency must be 3 characters (e.g. PLN, EUR)",
     "offerDaysInvalid": "Offer days must be 7, 14, 21 or 30",
     "expectedOffersInvalid": "Expected number of offers must be 6, 10 or 14",
+    "expectedApplicantTypeInvalid": "Expected applicant type must be FREELANCER_NO_B2B, FREELANCER_B2B or COMPANY",
     "skillsMaxCount": "You can add at most 5 skills to an offer",
     "accountTypeInvalid": "accountType must be CLIENT or FREELANCER",
     "languageInvalid": "language must be POLISH or ENGLISH",
@@ -59,6 +60,7 @@
     "jobRejectedEmailIntro": "Your job \"{title}\" has been rejected by an administrator.",
     "jobRejectedEmailReason": "Rejection reason",
     "jobRejectedEmailCta": "Fix the job and submit again",
-    "jobRejectedEmailOutro": "After making corrections, your job will be reviewed again by an administrator."
+    "jobRejectedEmailOutro": "After making corrections, your job will be reviewed again by an administrator.",
+    "applyApplicantTypeMismatch": "You do not meet the criteria for this job (required applicant type)."
   }
 }

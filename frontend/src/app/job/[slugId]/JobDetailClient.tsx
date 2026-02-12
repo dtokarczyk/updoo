@@ -183,6 +183,7 @@ function JobActions({
   isClosed,
   user,
   canApply,
+  criteriaNotMet,
   currentUserApplied,
   deadlinePassed,
   canClose,
@@ -199,6 +200,8 @@ function JobActions({
   isClosed: boolean;
   user: ReturnType<typeof getStoredUser>;
   canApply: boolean;
+  /** True when freelancer would apply but does not meet job's expected applicant type. */
+  criteriaNotMet: boolean;
   currentUserApplied: boolean | undefined;
   deadlinePassed: boolean;
   canClose: boolean;
@@ -260,6 +263,16 @@ function JobActions({
         <Button disabled className="w-full" size="lg" variant="outline">
           {t('jobs.appliedShort')}
         </Button>
+      ) : criteriaNotMet ? (
+        <div className="space-y-1.5 w-full">
+          <Button disabled className="w-full" size="lg" variant="outline">
+            <Send className="mr-2 h-4 w-4" />
+            {t('jobs.apply')}
+          </Button>
+          <p className="text-sm text-muted-foreground px-1">
+            {t('jobs.applyCriteriaNotMet')}
+          </p>
+        </div>
       ) : deadlinePassed ? (
         <Button disabled className="w-full" size="lg" variant="outline">
           {t('jobs.deadlinePassed')}
@@ -367,6 +380,28 @@ export function JobDetailClient({
     job.expectedOffers != null &&
     applications.length >= job.expectedOffers &&
     !job.currentUserApplied;
+
+  // Whether current user (freelancer) meets job's expected applicant type. When job has no restriction, true.
+  const meetsApplicantCriteria = (() => {
+    if (!job.expectedApplicantType) return true;
+    if (!user || user.accountType !== 'FREELANCER') return true;
+    const hasCompany = !!user.companyId;
+    const companySize = user.companySize ?? null;
+    const isCompanySize =
+      companySize != null &&
+      ['MICRO', 'SMALL', 'MEDIUM', 'LARGE'].includes(companySize);
+    switch (job.expectedApplicantType) {
+      case 'FREELANCER_NO_B2B':
+        return !hasCompany;
+      case 'FREELANCER_B2B':
+        return hasCompany && companySize === 'FREELANCER';
+      case 'COMPANY':
+        return hasCompany && isCompanySize;
+      default:
+        return true;
+    }
+  })();
+
   const canApply =
     user?.accountType === 'FREELANCER' &&
     !isOwnJob &&
@@ -374,7 +409,19 @@ export function JobDetailClient({
     !isClosed &&
     !deadlinePassed &&
     !job.currentUserApplied &&
-    !slotsFull;
+    !slotsFull &&
+    meetsApplicantCriteria;
+
+  /** Freelancer would apply but does not meet job's expected applicant type. */
+  const criteriaNotMet =
+    user?.accountType === 'FREELANCER' &&
+    !isOwnJob &&
+    !isDraft &&
+    !isClosed &&
+    !deadlinePassed &&
+    !job.currentUserApplied &&
+    !slotsFull &&
+    !meetsApplicantCriteria;
 
   const canClose = (isOwnJob || isAdmin) && !isClosed && !isDraft;
 
@@ -713,6 +760,7 @@ export function JobDetailClient({
                 isClosed={isClosed}
                 user={user}
                 canApply={canApply}
+                criteriaNotMet={criteriaNotMet}
                 currentUserApplied={job.currentUserApplied}
                 deadlinePassed={deadlinePassed}
                 canClose={canClose}
@@ -845,6 +893,7 @@ export function JobDetailClient({
               isClosed={isClosed}
               user={user}
               canApply={canApply}
+              criteriaNotMet={criteriaNotMet}
               currentUserApplied={job.currentUserApplied}
               deadlinePassed={deadlinePassed}
               canClose={canClose}

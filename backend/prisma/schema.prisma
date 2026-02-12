@@ -50,6 +50,13 @@ enum JobLanguage {
   POLISH
 }
 
+/** Who can apply: freelancer without B2B, freelancer with B2B, or companies (MICRO/SMALL/MEDIUM/LARGE). */
+enum ExpectedApplicantType {
+  FREELANCER_NO_B2B
+  FREELANCER_B2B
+  COMPANY
+}
+
 /** Company size: freelancer (1), micro (≤10), small (≤50), medium (≤250), large (>250). */
 enum CompanySize {
   FREELANCER
@@ -200,6 +207,8 @@ model Job {
   deadline        DateTime?      // last day to submit offers (createdAt + offerDays)
   /** Max number of applications (6, 10 or 14). When null, no limit. */
   expectedOffers  Int?           // 6, 10 or 14
+  /** Restrict who can apply: freelancer without company, freelancer with B2B, or companies. When null, no restriction. */
+  expectedApplicantType  ExpectedApplicantType?
   closedAt        DateTime?      // when job was closed (manually or automatically)
   rejectedAt      DateTime?     // when admin rejected the job
   rejectedReason  String?       @db.Text  // admin's reason for rejection (for author to fix)

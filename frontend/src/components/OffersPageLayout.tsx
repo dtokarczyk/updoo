@@ -2,7 +2,7 @@ import { CategoriesSidebarMobile } from '@/components/CategoriesSidebarMobile';
 import { JobsSectionHeader } from '@/components/JobsSectionHeader';
 import { HeroBannerForGuests } from '@/components/HeroBannerForGuests';
 import { t } from '@/lib/translations';
-import type { Category, JobLanguage } from '@/lib/api';
+import type { Category } from '@/lib/api';
 import type { Locale } from '@/lib/i18n';
 
 export interface OffersPageLayoutProps {
@@ -11,7 +11,6 @@ export interface OffersPageLayoutProps {
   /** Route segment: 'all' or category slug */
   categorySlug: string;
   page: number;
-  initialLanguage?: JobLanguage;
   initialSkillIds?: string[];
   isHomePage: boolean;
 }
@@ -25,7 +24,6 @@ export function OffersPageLayout({
   initialLocale,
   categorySlug,
   page,
-  initialLanguage,
   initialSkillIds,
   isHomePage,
 }: OffersPageLayoutProps) {
@@ -65,7 +63,6 @@ export function OffersPageLayout({
         categorySlugForRouting={routingCategorySlug}
         page={page}
         categoryName={categoryNameForHeader}
-        initialLanguage={initialLanguage}
         initialSkillIds={initialSkillIds}
         initialLocale={initialLocale}
       />

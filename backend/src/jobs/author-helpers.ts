@@ -1,10 +1,6 @@
-/** Author shape returned from Prisma when selecting id, email, name, surname. */
-export interface AuthorFields {
-  id: string;
-  email: string;
-  name: string | null;
-  surname: string | null;
-}
+import type { AuthorFields } from './jobs.types';
+
+export type { AuthorFields } from './jobs.types';
 
 /**
  * Returns author with surname masked to first letter only (e.g. "K.") for public API responses.

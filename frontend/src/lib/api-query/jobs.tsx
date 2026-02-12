@@ -19,7 +19,6 @@ import {
   updateJob,
   type CreateJobPayload,
   type Job,
-  type JobLanguage,
 } from '@/lib/api';
 import { useAuthQuery } from './auth';
 import { queryKeys } from './keys';
@@ -28,22 +27,19 @@ export interface JobsFeedParams {
   page?: number;
   pageSize?: number;
   categoryId?: string;
-  language?: JobLanguage | '';
   skillIds?: string[];
 }
 
 export function useJobsFeedQuery(params: JobsFeedParams = {}) {
-  const { page = 1, pageSize = 15, categoryId, language, skillIds } = params;
+  const { page = 1, pageSize = 15, categoryId, skillIds } = params;
   return useQuery({
     queryKey: queryKeys.jobsFeed({
       page,
       pageSize,
       categoryId,
-      language:
-        language === 'POLISH' || language === 'ENGLISH' ? language : undefined,
       skillIds,
     }),
-    queryFn: () => getJobsFeed(page, pageSize, categoryId, language, skillIds),
+    queryFn: () => getJobsFeed(page, pageSize, categoryId, skillIds),
     staleTime: 60 * 1000,
   });
 }

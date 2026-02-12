@@ -34,7 +34,6 @@ const FEED_STATE_KEY = 'jobsFeedState';
 type FeedState = {
   page: number;
   categoryId?: string;
-  language?: JobLanguage;
   skillIds?: string[];
 };
 
@@ -73,10 +72,6 @@ function readFeedState(): FeedState | null {
       page: parsed.page,
       categoryId:
         typeof parsed.categoryId === 'string' ? parsed.categoryId : undefined,
-      language:
-        parsed.language === 'POLISH' || parsed.language === 'ENGLISH'
-          ? parsed.language
-          : undefined,
       skillIds: Array.isArray(parsed.skillIds)
         ? parsed.skillIds.filter((v): v is string => typeof v === 'string')
         : undefined,
@@ -106,14 +101,12 @@ export function JobsFeed({
   categoryId,
   categorySlug,
   page,
-  language,
   skillIds,
   onCountChange,
 }: {
   categoryId?: string;
   categorySlug: string;
   page: number;
-  language?: JobLanguage;
   skillIds?: string[];
   onCountChange?: (count: number) => void;
 }) {
@@ -134,7 +127,7 @@ export function JobsFeed({
   const loadFeed = useCallback(
     (currentPage: number = page) => {
       setLoading(true);
-      getJobsFeed(currentPage, 15, categoryId, language, skillIds)
+      getJobsFeed(currentPage, 15, categoryId, skillIds)
         .then((res) => {
           setJobs(res.items);
           setPagination(res.pagination);
@@ -146,7 +139,7 @@ export function JobsFeed({
         })
         .finally(() => setLoading(false));
     },
-    [categoryId, language, skillIds, onCountChange, page, t],
+    [categoryId, skillIds, onCountChange, page, t],
   );
 
   useEffect(() => {
@@ -155,9 +148,8 @@ export function JobsFeed({
     const matchesFilters =
       restored &&
       (restored.categoryId ?? undefined) === (categoryId ?? undefined) &&
-      (restored.language ?? undefined) === (language ?? undefined) &&
       JSON.stringify(restored.skillIds ?? []) ===
-        JSON.stringify(skillIds ?? []) &&
+      JSON.stringify(skillIds ?? []) &&
       restored.page === page;
 
     if (restored && matchesFilters) {
@@ -167,14 +159,11 @@ export function JobsFeed({
     }
 
     queueMicrotask(() => loadFeed(page));
-  }, [loadFeed, categoryId, language, page, skillIds]);
+  }, [loadFeed, categoryId, page, skillIds]);
 
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || (pagination && newPage > pagination.totalPages)) return;
     const searchParams = new URLSearchParams();
-    if (language && (language === 'ENGLISH' || language === 'POLISH')) {
-      searchParams.set('language', language);
-    }
     if (skillIds && skillIds.length > 0) {
       searchParams.set('skills', skillIds.join(','));
     }
@@ -200,7 +189,6 @@ export function JobsFeed({
     writeFeedState({
       page,
       categoryId,
-      language,
       skillIds,
     });
   };

@@ -4,8 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { RegonService } from '../regon/regon.service';
-import type { SearchResultRow } from '../regon/regon-contact.util';
+import { RegonService, SearchResultRow } from '../regon/regon.service';
 import { AccountService } from '../account/account.service';
 import type { AuthResponseUser } from '../auth/auth.types';
 import type { CompanyPayload } from '../auth/auth.types';
@@ -61,7 +60,7 @@ export class CompanyService {
     const nip = String(row.Nip ?? '').replace(/\s/g, '');
     const regon = String(row.Regon ?? '').replace(/\s/g, '');
     if (!nip || !regon) {
-      throw new BadRequestException('GUS data missing NIP or REGON');
+      throw new BadRequestException('errors.gusDataMissingNipOrRegon');
     }
     return {
       regon,
@@ -80,7 +79,7 @@ export class CompanyService {
   }
 
   /** Get current user's linked company. Returns null if none. */
-  async getMyCompany(userId: string): Promise<CompanyPayload | null> {
+  async getCompany(userId: string): Promise<CompanyPayload | null> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: { company: true },
@@ -99,6 +98,7 @@ export class CompanyService {
     company: CompanyPayload;
   }> {
     const nip = String(nipRaw).replace(/\s/g, '').replace(/-/g, '');
+
     if (!/^\d{10}$/.test(nip)) {
       throw new BadRequestException('validation.nipInvalid');
     }
@@ -137,7 +137,7 @@ export class CompanyService {
 
     const user = await this.accountService.getUserForResponse(userId);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('errors.userNotFound');
     }
     return { user, company: this.getCompanyPayload(company) };
   }
@@ -180,7 +180,7 @@ export class CompanyService {
     });
     const user = await this.accountService.getUserForResponse(userId);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('errors.userNotFound');
     }
     return { user };
   }

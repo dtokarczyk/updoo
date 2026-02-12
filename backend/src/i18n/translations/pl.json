@@ -33,6 +33,9 @@
   "errors": {
     "passwordsDoNotMatch": "Hasła nie są takie same",
     "termsMustBeAccepted": "Musisz zaakceptować regulamin i politykę prywatności",
+    "gusDataMissingNipOrRegon": "Dane GUS nie zawierają NIP lub REGON",
+    "userNotFound": "Użytkownik nie został znaleziony",
+    "benchmarkNotFound": "Brak dostępnego benchmarku",
     "userEmailExists": "Użytkownik z tym adresem e-mail już istnieje",
     "invalidEmailOrPassword": "Nieprawidłowy adres e-mail lub hasło",
     "currentPasswordRequired": "Aktualne hasło jest wymagane",
@@ -45,7 +48,10 @@
     "profileUpdateForbidden": "Brak uprawnień do edycji tego profilu",
     "profileDeleteForbidden": "Brak uprawnień do usunięcia tego profilu",
     "profileVerifyAdminOnly": "Tylko administrator może weryfikować profile",
-    "contractorProfileClientForbidden": "Tylko konta wykonawców mogą zakładać i zarządzać profilami wykonawcy"
+    "contractorProfileClientForbidden": "Tylko konta wykonawców mogą zakładać i zarządzać profilami wykonawcy",
+    "acceptTermsAndPrivacyRequired": "Aby korzystać z serwisu, musisz zaakceptować regulamin i politykę prywatności.",
+    "acceptCurrentTermsRequired": "Aby korzystać z serwisu, musisz zaakceptować aktualny regulamin.",
+    "acceptCurrentPrivacyRequired": "Aby korzystać z serwisu, musisz zaakceptować aktualną politykę prywatności."
   },
   "messages": {
     "forgotPasswordSuccess": "Jeśli konto z tym adresem e-mail istnieje, otrzymasz link do ustawienia nowego hasła.",

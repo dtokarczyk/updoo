@@ -2,11 +2,9 @@ import { Injectable } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import { AGREEMENTS_DIR, TERMS_DIR, PRIVACY_DIR } from './constants';
+import type { CurrentVersions } from './types';
 
-export interface CurrentVersions {
-  termsVersion: string | null;
-  privacyPolicyVersion: string | null;
-}
+export type { CurrentVersions } from './types';
 
 @Injectable()
 export class AgreementsService {

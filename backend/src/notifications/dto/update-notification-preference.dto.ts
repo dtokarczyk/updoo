@@ -1,10 +1,9 @@
 import { IsBoolean, IsIn, IsOptional, IsString } from 'class-validator';
-import {
-  NOTIFICATION_TYPES,
-  NOTIFICATION_FREQUENCIES,
-  type NotificationTypeValue,
-  type NotificationFrequencyValue,
-} from '../constants';
+import { NOTIFICATION_TYPES, NOTIFICATION_FREQUENCIES } from '../constants';
+import type {
+  NotificationTypeValue,
+  NotificationFrequencyValue,
+} from '../notifications.types';
 
 export { NOTIFICATION_TYPES, NOTIFICATION_FREQUENCIES };
 export type { NotificationTypeValue, NotificationFrequencyValue };

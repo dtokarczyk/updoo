@@ -27,10 +27,7 @@ import { EmailService } from '../email/email.service';
 import { I18nService } from '../i18n/i18n.service';
 import type { SupportedLanguage } from '../i18n/i18n.service';
 import { slugFromName } from '../common/slug.helper';
-import {
-  DEFAULT_CATEGORIES,
-  ALLOWED_CATEGORY_SLUGS,
-} from './constants';
+import { DEFAULT_CATEGORIES, ALLOWED_CATEGORY_SLUGS } from './jobs.constants';
 
 @Injectable()
 export class JobsService implements OnModuleInit {
@@ -353,7 +350,7 @@ export class JobsService implements OnModuleInit {
 
   /** Feed: published for everyone; when userId is set, also include that user's draft jobs.
    * When isAdmin is true, include all draft jobs (not just user's own).
-   * Optional filters: categoryId, language and skills (at least one of the job skills must match).
+   * Optional filters: categoryId and skills (at least one of the job skills must match).
    */
   async getFeed(
     page = 1,
@@ -361,7 +358,6 @@ export class JobsService implements OnModuleInit {
     userId?: string,
     isAdmin?: boolean,
     categoryId?: string,
-    language?: string,
     skillIds?: string[],
     userLanguage: JobLanguage = JobLanguage.POLISH,
   ) {
@@ -395,9 +391,6 @@ export class JobsService implements OnModuleInit {
     let where: Record<string, unknown> = categoryId
       ? { ...statusWhere, categoryId }
       : statusWhere;
-    if (language && (language === 'ENGLISH' || language === 'POLISH')) {
-      where = { ...where, language: language as JobLanguage };
-    }
     if (skillIds && skillIds.length > 0) {
       // At least one of the selected skills must be attached to the job.
       where = {
@@ -839,7 +832,7 @@ export class JobsService implements OnModuleInit {
         include: { company: { select: { companySize: true } } },
       });
       if (!freelancer) {
-        throw new NotFoundException('User not found');
+        throw new NotFoundException('errors.userNotFound');
       }
       const hasCompany = freelancer.companyId != null;
       const companySize = freelancer.company?.companySize ?? null;

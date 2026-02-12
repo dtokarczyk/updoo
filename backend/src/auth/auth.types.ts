@@ -1,6 +1,26 @@
+import { ACCOUNT_TYPES, LANGUAGES } from './auth.constants';
+
 /**
  * Shared auth types used by auth, account and company modules.
  */
+
+export type UpdateProfileAccountType = (typeof ACCOUNT_TYPES)[number];
+export type UserLanguage = (typeof LANGUAGES)[number];
+
+/** User attached by JwtStrategy has acceptedTermsVersion and acceptedPrivacyPolicyVersion. */
+export interface UserWithAgreements {
+  acceptedTermsVersion?: string | null;
+  acceptedPrivacyPolicyVersion?: string | null;
+}
+
+export interface JwtUser {
+  id: string;
+  email: string;
+  name: string | null;
+  surname: string | null;
+  accountType: string | null;
+  language: string;
+}
 
 export interface JwtPayload {
   sub: string;

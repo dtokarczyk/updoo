@@ -1,20 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
+import type { SupportedLanguage, Translations } from './i18n.types';
 
-export type SupportedLanguage = 'en' | 'pl';
-
-interface Translations {
-  validation: {
-    [key: string]: string;
-  };
-  errors: {
-    [key: string]: string;
-  };
-  messages?: {
-    [key: string]: string;
-  };
-}
+export type { SupportedLanguage } from './i18n.types';
 
 @Injectable()
 export class I18nService {

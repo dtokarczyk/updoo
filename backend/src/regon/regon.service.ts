@@ -1,17 +1,11 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import type { SearchResultRow } from './regon-contact.util';
 import {
   BIR11_REPORT_LEGAL,
   BIR11_REPORT_NATURAL_CEIDG,
 } from './regon.constants';
+import type { RegonCompanyData, SearchResultRow } from './regon.types';
 
-export type { SearchResultRow };
-
-export interface RegonCompanyData {
-  searchResult: SearchResultRow[];
-  /** Reports parsed to JSON (e.g. BIR11OsFizycznaDzialalnoscCeidg, BIR11OsPrawna) */
-  reports: Record<string, Record<string, unknown>>;
-}
+export type { RegonCompanyData, SearchResultRow } from './regon.types';
 
 @Injectable()
 export class RegonService {

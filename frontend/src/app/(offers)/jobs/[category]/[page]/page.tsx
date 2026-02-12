@@ -6,8 +6,6 @@ import {
 } from '@/lib/metadata-config';
 import { getCategoriesServer } from '@/lib/categories-server';
 import { OffersPageLayout } from '@/components/OffersPageLayout';
-import type { JobLanguage } from '@/lib/api';
-
 export const revalidate = 300;
 
 function parsePageParam(raw: string | undefined): number {
@@ -15,26 +13,19 @@ function parsePageParam(raw: string | undefined): number {
   return Number.isFinite(n) && n > 0 ? n : 1;
 }
 
-function parseSearchParams(resolved: { language?: string; skills?: string }): {
-  initialLanguage?: JobLanguage;
+function parseSearchParams(resolved: { skills?: string }): {
   initialSkillIds: string[];
 } {
-  const languageParam = resolved.language;
   const rawSkills = resolved.skills;
-
-  const initialLanguage =
-    languageParam === 'ENGLISH' || languageParam === 'POLISH'
-      ? (languageParam as JobLanguage)
-      : undefined;
 
   const initialSkillIds = rawSkills
     ? rawSkills
-        .split(',')
-        .map((id) => id.trim())
-        .filter(Boolean)
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean)
     : [];
 
-  return { initialLanguage, initialSkillIds };
+  return { initialSkillIds };
 }
 
 export async function generateMetadata({
@@ -73,7 +64,7 @@ export default async function OffersPage({
   searchParams,
 }: {
   params: Promise<{ category: string; page: string }>;
-  searchParams: Promise<{ language?: string; skills?: string }>;
+  searchParams: Promise<{ skills?: string }>;
 }) {
   const { category: categoryParam, page: pageParam } = await params;
   const categorySlug =
@@ -85,8 +76,7 @@ export default async function OffersPage({
   const categories = await getCategoriesServer();
   const locale = await getLocaleFromRequest();
   const resolvedSearch = await searchParams;
-  const { initialLanguage, initialSkillIds } =
-    parseSearchParams(resolvedSearch);
+  const { initialSkillIds } = parseSearchParams(resolvedSearch);
 
   const isHomePage = categorySlug === 'all' && page === 1;
 
@@ -96,7 +86,6 @@ export default async function OffersPage({
       initialLocale={locale}
       categorySlug={categorySlug}
       page={page}
-      initialLanguage={initialLanguage}
       initialSkillIds={initialSkillIds}
       isHomePage={isHomePage}
     />

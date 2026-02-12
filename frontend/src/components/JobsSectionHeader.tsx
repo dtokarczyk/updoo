@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { JobsFeed } from '@/components/JobsFeed';
-import type { JobLanguage, PopularSkill } from '@/lib/api';
+import type { PopularSkill } from '@/lib/api';
 import { getPopularSkillsForCategory } from '@/lib/api';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useRouter } from 'next/navigation';
-import ReactCountryFlag from 'react-country-flag';
 import { Button } from '@/components/ui/button';
 import { getUserLocale, type Locale } from '@/lib/i18n';
 import { t as translate } from '@/lib/translations';
@@ -17,7 +16,6 @@ export function JobsSectionHeader({
   categorySlugForRouting,
   page,
   categoryName,
-  initialLanguage,
   initialSkillIds,
   initialLocale,
 }: {
@@ -26,7 +24,6 @@ export function JobsSectionHeader({
   categorySlugForRouting: string;
   page: number;
   categoryName?: string;
-  initialLanguage?: JobLanguage;
   initialSkillIds?: string[];
   /** Initial locale from server to avoid hydration mismatch */
   initialLocale?: Locale;
@@ -53,9 +50,6 @@ export function JobsSectionHeader({
   };
   const router = useRouter();
   const [count, setCount] = useState<number | null>(null);
-  const [language, setLanguage] = useState<'' | JobLanguage>(
-    initialLanguage ?? '',
-  );
   const [popularSkills, setPopularSkills] = useState<PopularSkill[]>([]);
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>(
     initialSkillIds ?? [],
@@ -63,20 +57,12 @@ export function JobsSectionHeader({
 
   const buildUrl = (opts?: {
     page?: number;
-    language?: '' | JobLanguage;
     skillIds?: string[];
   }) => {
     const nextPage = opts?.page ?? 1;
-    const nextLanguage = opts?.language ?? language;
     const nextSkillIds = opts?.skillIds ?? selectedSkillIds;
 
     const searchParams = new URLSearchParams();
-    if (
-      nextLanguage &&
-      (nextLanguage === 'ENGLISH' || nextLanguage === 'POLISH')
-    ) {
-      searchParams.set('language', nextLanguage);
-    }
     if (nextSkillIds.length > 0) {
       searchParams.set('skills', nextSkillIds.join(','));
     }
@@ -117,16 +103,6 @@ export function JobsSectionHeader({
     };
   }, [categoryId]);
 
-  const LANGUAGE_OPTIONS: {
-    value: '' | JobLanguage;
-    label: string;
-    countryCode?: string;
-  }[] = [
-    { value: '', label: t('jobs.allLanguages') },
-    { value: 'ENGLISH', label: t('jobs.english'), countryCode: 'GB' },
-    { value: 'POLISH', label: t('jobs.polish'), countryCode: 'PL' },
-  ];
-
   return (
     <section
       className="flex-1 min-w-0 space-y-6 lg:min-h-[60vh]"
@@ -137,74 +113,12 @@ export function JobsSectionHeader({
           <h2 className="text-2xl font-semibold tracking-tight text-foreground">
             {categoryName
               ? t('jobs.headerSampleWithCategory', {
-                  category: categoryName,
-                  count,
-                })
+                category: categoryName,
+                count,
+              })
               : t('jobs.headerSampleWithoutCategory', { count })}
           </h2>
         )}
-
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex flex-wrap items-center gap-1">
-            {LANGUAGE_OPTIONS.map((opt) => {
-              const isActive = language === opt.value;
-              if (opt.value === '') {
-                return (
-                  <Button
-                    key="all-languages"
-                    type="button"
-                    size="sm"
-                    variant={isActive ? 'default' : 'outline'}
-                    className="rounded-full px-3 py-1 text-xs cursor-pointer"
-                    onClick={() => {
-                      setLanguage('');
-                      const target = buildUrl({
-                        page: 1,
-                        language: '',
-                        skillIds: selectedSkillIds,
-                      });
-                      router.replace(target, { scroll: false });
-                    }}
-                  >
-                    {opt.label}
-                  </Button>
-                );
-              }
-              return (
-                <Button
-                  key={opt.value}
-                  type="button"
-                  size="sm"
-                  variant={isActive ? 'default' : 'outline'}
-                  className="rounded-full px-3 py-1 text-xs flex items-center gap-1 cursor-pointer"
-                  onClick={() => {
-                    const nextValue =
-                      language === opt.value ? '' : (opt.value as JobLanguage);
-                    setLanguage(nextValue as '' | JobLanguage);
-                    const target = buildUrl({
-                      page: 1,
-                      language: nextValue as '' | JobLanguage,
-                      skillIds: selectedSkillIds,
-                    });
-                    router.replace(target, { scroll: false });
-                  }}
-                  aria-pressed={isActive}
-                  aria-label={opt.label}
-                >
-                  {opt.countryCode && (
-                    <ReactCountryFlag
-                      svg
-                      countryCode={opt.countryCode}
-                      className="mr-1"
-                      style={{ width: '1em', height: '1em' }}
-                    />
-                  )}
-                  <span>{opt.label}</span>
-                </Button>
-              );
-            })}
-          </div>
-        </div>
 
         {popularSkills.length > 0 && (
           <div className="flex flex-wrap gap-2">
@@ -225,7 +139,6 @@ export function JobsSectionHeader({
                     setSelectedSkillIds(nextSkillIds);
                     const target = buildUrl({
                       page: 1,
-                      language,
                       skillIds: nextSkillIds,
                     });
                     router.replace(target, { scroll: false });
@@ -243,7 +156,6 @@ export function JobsSectionHeader({
         categoryId={categoryId}
         categorySlug={categorySlugForRouting}
         page={page}
-        language={language || undefined}
         skillIds={selectedSkillIds}
         onCountChange={setCount}
       />

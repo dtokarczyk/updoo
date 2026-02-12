@@ -1,8 +1,4 @@
-import {
-  BillingType,
-  ExperienceLevel,
-  ProjectType,
-} from '@prisma/client';
+import { BillingType, ExperienceLevel, ProjectType } from '@prisma/client';
 
 /** Allowed values for AI-generated job metadata (used for validation and random offerDays). */
 export const ALLOWED = {

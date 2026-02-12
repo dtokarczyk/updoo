@@ -13,9 +13,11 @@ export class FavoritesService {
       where: { id: jobId },
       select: { id: true, status: true },
     });
+
     if (!job || job.status !== JobStatus.PUBLISHED) {
-      throw new NotFoundException('Job not found');
+      throw new NotFoundException('errors.jobNotFound');
     }
+
     await this.prisma.favorite.upsert({
       where: {
         userId_jobId: { userId, jobId },

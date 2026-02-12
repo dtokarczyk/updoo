@@ -977,16 +977,12 @@ export async function getJobsFeed(
   page: number = 1,
   pageSize: number = 15,
   categoryId?: string,
-  language?: JobLanguage | '' | undefined,
   skillIds?: string[],
 ): Promise<JobsFeedResponse> {
   const params = new URLSearchParams();
   params.set('page', String(page));
   params.set('pageSize', String(pageSize));
   if (categoryId) params.set('categoryId', categoryId);
-  if (language === 'POLISH' || language === 'ENGLISH') {
-    params.set('language', language as JobLanguage);
-  }
   if (skillIds && skillIds.length > 0) {
     params.set('skillIds', skillIds.join(','));
   }

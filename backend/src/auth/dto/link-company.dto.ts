@@ -1,8 +1,6 @@
 import { IsIn, IsOptional, IsString, Matches } from 'class-validator';
-import {
-  COMPANY_SIZE_VALUES,
-  type CompanySizeValue,
-} from '../../company/constants';
+import { COMPANY_SIZE_VALUES } from '../../company/company.constants';
+import type { CompanySizeValue } from '../../company/company.types';
 
 /** NIP: 10 digits, optional spaces/dashes stripped on backend. */
 export class LinkCompanyDto {

@@ -5,12 +5,8 @@ import {
   MAX_POSTS_PER_DAY,
   HOUR_START,
   HOUR_END,
-} from './constants';
-
-interface DailySlot {
-  hour: number;
-  minute: number;
-}
+} from './content-generator.constants';
+import type { DailySlot } from './content-generator.types';
 
 @Injectable()
 export class ContentGeneratorSchedulerService implements OnModuleDestroy {

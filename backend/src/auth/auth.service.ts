@@ -17,17 +17,10 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { I18nService, SupportedLanguage } from '../i18n/i18n.service';
 import type { JwtPayload, AuthResponseUser, AuthResponse } from './auth.types';
-import { PASSWORD_RESET_EXPIRY_HOURS } from './constants';
+import { PASSWORD_RESET_EXPIRY_HOURS } from './auth.constants';
+import escapeHtml = require('escape-html');
 
 export type { JwtPayload, AuthResponseUser, AuthResponse };
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
 
 @Injectable()
 export class AuthService {

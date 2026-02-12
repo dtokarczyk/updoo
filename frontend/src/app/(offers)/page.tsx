@@ -3,8 +3,6 @@ import { getLocaleFromRequest } from '@/lib/i18n';
 import { getMetadataConfig } from '@/lib/metadata-config';
 import { getCategoriesServer } from '@/lib/categories-server';
 import { OffersPageLayout } from '@/components/OffersPageLayout';
-import type { JobLanguage } from '@/lib/api';
-
 export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -24,36 +22,29 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 function parseSearchParams(searchParams: {
-  language?: string;
   skills?: string;
-}): { initialLanguage?: JobLanguage; initialSkillIds: string[] } {
-  const languageParam = searchParams.language;
+}): { initialSkillIds: string[] } {
   const rawSkills = searchParams.skills;
-
-  const initialLanguage =
-    languageParam === 'ENGLISH' || languageParam === 'POLISH'
-      ? (languageParam as JobLanguage)
-      : undefined;
 
   const initialSkillIds = rawSkills
     ? rawSkills
-        .split(',')
-        .map((id) => id.trim())
-        .filter(Boolean)
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean)
     : [];
 
-  return { initialLanguage, initialSkillIds };
+  return { initialSkillIds };
 }
 
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ language?: string; skills?: string }>;
+  searchParams: Promise<{ skills?: string }>;
 }) {
   const categories = await getCategoriesServer();
   const locale = await getLocaleFromRequest();
   const resolved = await searchParams;
-  const { initialLanguage, initialSkillIds } = parseSearchParams(resolved);
+  const { initialSkillIds } = parseSearchParams(resolved);
 
   return (
     <OffersPageLayout
@@ -61,7 +52,6 @@ export default async function Home({
       initialLocale={locale}
       categorySlug="all"
       page={1}
-      initialLanguage={initialLanguage}
       initialSkillIds={initialSkillIds}
       isHomePage
     />

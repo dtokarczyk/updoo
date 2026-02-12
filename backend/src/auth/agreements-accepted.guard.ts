@@ -6,21 +6,21 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { AgreementsService } from '../agreements/agreements.service';
-
-/** User attached by JwtStrategy has acceptedTermsVersion and acceptedPrivacyPolicyVersion. */
-interface UserWithAgreements {
-  acceptedTermsVersion?: string | null;
-  acceptedPrivacyPolicyVersion?: string | null;
-}
+import { I18nService, SupportedLanguage } from '../i18n/i18n.service';
+import type { UserWithAgreements } from './auth.types';
 
 @Injectable()
 export class AgreementsAcceptedGuard implements CanActivate {
-  constructor(private readonly agreementsService: AgreementsService) {}
+  constructor(
+    private readonly agreementsService: AgreementsService,
+    private readonly i18nService: I18nService,
+  ) {}
 
   canActivate(context: ExecutionContext): boolean {
     const request = context
       .switchToHttp()
       .getRequest<Request & { user?: UserWithAgreements }>();
+
     const user = request.user;
     if (!user) {
       return true;
@@ -33,13 +33,21 @@ export class AgreementsAcceptedGuard implements CanActivate {
     if (method === 'POST' && path.endsWith('/auth/accept-agreements')) {
       return true;
     }
+
+    const lang: SupportedLanguage = this.i18nService.parseLanguageFromHeader(
+      request.headers['accept-language'],
+    );
+
     // User must have explicitly accepted terms and privacy policy (no null)
     if (
       user.acceptedTermsVersion == null ||
       user.acceptedPrivacyPolicyVersion == null
     ) {
       throw new ForbiddenException(
-        'You must accept the terms of service and privacy policy to use this service.',
+        this.i18nService.translate(
+          'errors.acceptTermsAndPrivacyRequired',
+          lang,
+        ),
       );
     }
     const current = this.agreementsService.getCurrentVersions();
@@ -48,7 +56,7 @@ export class AgreementsAcceptedGuard implements CanActivate {
       user.acceptedTermsVersion !== current.termsVersion
     ) {
       throw new ForbiddenException(
-        'You must accept the current terms of service to use this service.',
+        this.i18nService.translate('errors.acceptCurrentTermsRequired', lang),
       );
     }
     if (
@@ -56,7 +64,7 @@ export class AgreementsAcceptedGuard implements CanActivate {
       user.acceptedPrivacyPolicyVersion !== current.privacyPolicyVersion
     ) {
       throw new ForbiddenException(
-        'You must accept the current privacy policy to use this service.',
+        this.i18nService.translate('errors.acceptCurrentPrivacyRequired', lang),
       );
     }
     return true;

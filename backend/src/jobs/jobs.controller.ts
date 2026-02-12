@@ -20,24 +20,8 @@ import { CreateJobDto } from './dto/create-job.dto';
 import { RejectJobDto } from './dto/reject-job.dto';
 import { FavoritesService } from './favorites.service';
 import { JobsService } from './jobs.service';
+import { parseLanguageFromHeader } from '../common/parse-language.helper';
 import { JobLanguage } from '@prisma/client';
-
-/**
- * Parses Accept-Language header and returns JobLanguage.
- * Accepts "pl", "en", "pl-PL", "en-US", etc.
- * Returns POLISH for "pl", ENGLISH for "en", default POLISH otherwise.
- */
-function parseLanguageFromHeader(acceptLanguage?: string): JobLanguage {
-  if (!acceptLanguage) return JobLanguage.POLISH;
-
-  const normalized = acceptLanguage.toLowerCase().trim();
-  const langCode = normalized.split('-')[0];
-
-  if (langCode === 'en') return JobLanguage.ENGLISH;
-  if (langCode === 'pl') return JobLanguage.POLISH;
-
-  return JobLanguage.POLISH;
-}
 
 @Controller('jobs')
 export class JobsController {
@@ -77,7 +61,6 @@ export class JobsController {
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('categoryId') categoryId?: string,
-    @Query('language') language?: string,
     @Query('skillIds') skillIds?: string,
     @Headers('accept-language') acceptLanguage?: string,
     @GetUser() user?: JwtUser,
@@ -104,7 +87,6 @@ export class JobsController {
       user?.id,
       user?.accountType === 'ADMIN',
       categoryId,
-      language,
       parsedSkillIds,
       finalLanguage,
     );

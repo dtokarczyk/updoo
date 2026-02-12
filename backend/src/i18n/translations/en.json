@@ -33,6 +33,9 @@
   "errors": {
     "passwordsDoNotMatch": "Passwords do not match",
     "termsMustBeAccepted": "Terms and privacy policy must be accepted",
+    "gusDataMissingNipOrRegon": "GUS data missing NIP or REGON",
+    "userNotFound": "User not found",
+    "benchmarkNotFound": "No benchmark available",
     "userEmailExists": "User with this email already exists",
     "invalidEmailOrPassword": "Invalid email or password",
     "currentPasswordRequired": "Current password is required",
@@ -45,7 +48,10 @@
     "profileUpdateForbidden": "Not allowed to update this profile",
     "profileDeleteForbidden": "Not allowed to delete this profile",
     "profileVerifyAdminOnly": "Only admin can verify profiles",
-    "contractorProfileClientForbidden": "Only freelancer accounts can create or manage contractor profiles"
+    "contractorProfileClientForbidden": "Only freelancer accounts can create or manage contractor profiles",
+    "acceptTermsAndPrivacyRequired": "You must accept the terms of service and privacy policy to use this service.",
+    "acceptCurrentTermsRequired": "You must accept the current terms of service to use this service.",
+    "acceptCurrentPrivacyRequired": "You must accept the current privacy policy to use this service."
   },
   "messages": {
     "forgotPasswordSuccess": "If an account exists with this email, you will receive a link to set a new password.",

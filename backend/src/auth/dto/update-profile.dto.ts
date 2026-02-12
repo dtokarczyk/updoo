@@ -5,15 +5,11 @@ import {
   IsString,
   MinLength,
 } from 'class-validator';
-import {
-  ACCOUNT_TYPES,
-  LANGUAGES,
-  type UpdateProfileAccountType,
-  type UserLanguage,
-} from '../constants';
+import { ACCOUNT_TYPES, LANGUAGES } from '../auth.constants';
+import type { UpdateProfileAccountType, UserLanguage } from '../auth.types';
 
 export { ACCOUNT_TYPES, LANGUAGES };
-export type { UpdateProfileAccountType, UserLanguage };
+export type { UpdateProfileAccountType, UserLanguage } from '../auth.types';
 
 export class UpdateProfileDto {
   @IsOptional()

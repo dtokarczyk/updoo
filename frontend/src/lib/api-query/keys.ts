@@ -12,7 +12,6 @@ export const queryKeys = {
     page: number;
     pageSize: number;
     categoryId?: string;
-    language?: string;
     skillIds?: string[];
   }) => ['jobs', 'feed', params] as const,
   profileBySlug: (slug: string) => ['profiles', 'slug', slug] as const,

@@ -14,7 +14,7 @@ export class CompanyController {
   @Get()
   @UseGuards(JwtAuthGuard)
   async getMyCompany(@GetUser() user: JwtUser) {
-    const company = await this.companyService.getMyCompany(user.id);
+    const company = await this.companyService.getCompany(user.id);
     return { company };
   }
 
@@ -24,7 +24,7 @@ export class CompanyController {
     if (dto.companySize != null) {
       return this.companyService.updateCompanySize(user.id, dto.companySize);
     }
-    const company = await this.companyService.getMyCompany(user.id);
+    const company = await this.companyService.getCompany(user.id);
     return { company };
   }
 

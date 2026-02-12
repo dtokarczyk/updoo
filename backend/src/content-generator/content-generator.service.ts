@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { AiService } from '../ai/ai.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
@@ -9,33 +9,17 @@ import {
   JobStatus,
   ProjectType,
 } from '@prisma/client';
-import { BENCHMARK_EXAMPLES } from './examples';
 import { fakerPL as faker } from '@faker-js/faker';
-import { ALLOWED } from './constants';
+import { ALLOWED } from './content-generator.constants';
+import type {
+  GeneratedJobFormData,
+  SupportedLanguage,
+} from './content-generator.types';
 
-export type SupportedLanguage = 'POLISH' | 'ENGLISH';
-
-export interface GeneratedJobFormData {
-  user: {
-    email: string;
-    name: string;
-    surname: string;
-  };
-  job: {
-    title: string;
-    description: string;
-    categoryId: string;
-    billingType: BillingType;
-    rate: number;
-    currency: string;
-    experienceLevel: ExperienceLevel;
-    isRemote: boolean;
-    projectType: ProjectType;
-    language?: JobLanguage;
-    offerDays?: number;
-    skillIds: string[];
-  };
-}
+export type {
+  GeneratedJobFormData,
+  SupportedLanguage,
+} from './content-generator.types';
 
 @Injectable()
 export class ContentGeneratorService {
@@ -201,33 +185,26 @@ export class ContentGeneratorService {
 
   /**
    * Get a random benchmark text from database (BenchmarkContent table).
-   * Falls back to hardcoded examples if no records exist.
+   * Throws when no records exist or content is empty.
    */
   private async getRandomBenchmark(): Promise<string> {
-    try {
-      const count = await this.prisma.benchmarkContent.count();
-      if (count === 0) {
-        this.logger.warn('No benchmark records in database');
-        return BENCHMARK_EXAMPLES[0] || 'No benchmark available';
-      }
-
-      const random = await this.prisma.benchmarkContent.findFirst({
-        take: 1,
-        skip: Math.floor(Math.random() * count),
-        select: { content: true },
-      });
-
-      return (
-        random?.content?.trim() ??
-        BENCHMARK_EXAMPLES[0] ??
-        'No benchmark available'
-      );
-    } catch (error) {
-      this.logger.error(
-        `Error fetching random benchmark from DB: ${(error as Error).message}`,
-      );
-      return BENCHMARK_EXAMPLES[0] || 'No benchmark available';
+    const count = await this.prisma.benchmarkContent.count();
+    if (count === 0) {
+      this.logger.warn('No benchmark records in database');
+      throw new NotFoundException('errors.benchmarkNotFound');
     }
+
+    const random = await this.prisma.benchmarkContent.findFirst({
+      take: 1,
+      skip: Math.floor(Math.random() * count),
+      select: { content: true },
+    });
+
+    const content = random?.content?.trim();
+    if (!content) {
+      throw new NotFoundException('errors.benchmarkNotFound');
+    }
+    return content;
   }
 
   /**

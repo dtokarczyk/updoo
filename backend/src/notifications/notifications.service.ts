@@ -72,9 +72,9 @@ export class NotificationsService {
   // ──────────────────────────── Job publish trigger ─────────────────────────
 
   /**
-   * Called when a job is published. Finds freelancers whose skills overlap
-   * with the job's skills and either sends an instant email or queues for
-   * daily digest.
+   * Called only when a job is published (status change to PUBLISHED), not when a job is created.
+   * Finds freelancers whose skills overlap with the job's skills and either sends an instant
+   * email or queues for daily digest. Instant emails are sent only for published jobs.
    */
   async onJobPublished(jobId: string): Promise<void> {
     const job = await this.prisma.job.findUnique({
@@ -86,6 +86,7 @@ export class NotificationsService {
         },
       },
     });
+    // Only process published jobs – never send instant notifications for drafts or when creating
     if (!job || job.status !== JobStatus.PUBLISHED) return;
 
     const jobSkillIds = job.skills.map((js) => js.skillId);
@@ -143,7 +144,7 @@ export class NotificationsService {
 
   // ──────────────────────────── Daily digest cron ───────────────────────────
 
-  /** Runs every day at 06:00 UTC. Sends digest emails for undispatched notifications. */
+  /** Runs every day at 06:00 UTC. Sends digest emails for undispatched notifications. Only includes jobs that are still PUBLISHED. */
   @Cron('0 6 * * *')
   async sendDailyDigest(): Promise<void> {
     this.logger.log('Running daily digest cron…');
@@ -170,7 +171,10 @@ export class NotificationsService {
       return;
     }
 
-    // Group by user
+    // Logs for jobs that are no longer published: mark as dispatched so we don't retry every day
+    const skipLogIds: string[] = [];
+
+    // Group by user – only include jobs that are still PUBLISHED
     const byUser = new Map<
       string,
       {
@@ -181,7 +185,14 @@ export class NotificationsService {
     >();
 
     for (const log of pending) {
-      if (!log.job) continue; // job was deleted
+      if (!log.job) {
+        skipLogIds.push(log.id);
+        continue; // job was deleted
+      }
+      if (log.job.status !== JobStatus.PUBLISHED) {
+        skipLogIds.push(log.id);
+        continue; // only send digest for published jobs
+      }
       const entry = byUser.get(log.userId) ?? {
         user: log.user,
         jobs: [],
@@ -190,6 +201,13 @@ export class NotificationsService {
       entry.jobs.push(log.job);
       entry.logIds.push(log.id);
       byUser.set(log.userId, entry);
+    }
+
+    if (skipLogIds.length > 0) {
+      await this.prisma.notificationLog.updateMany({
+        where: { id: { in: skipLogIds } },
+        data: { dispatched: true },
+      });
     }
 
     for (const [, { user, jobs, logIds }] of byUser) {

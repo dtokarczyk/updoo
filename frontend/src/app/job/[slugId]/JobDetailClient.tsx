@@ -405,7 +405,7 @@ export function JobDetailClient({
     if (!hasCompany) userType = 'FREELANCER_NO_B2B';
     else if (companySize === 'FREELANCER') userType = 'FREELANCER_B2B';
     else if (isCompanySize) userType = 'COMPANY';
-    return userType != null && allowedTypes.includes(userType);
+    return userType != null && allowedTypes.includes(userType as ('FREELANCER_NO_B2B' | 'FREELANCER_B2B' | 'COMPANY'));
   })();
 
   const canApply =

@@ -10,12 +10,12 @@ import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
 import { AgreementsService } from '../agreements/agreements.service';
-import { StorageService } from '../storage/storage.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { I18nService, SupportedLanguage } from '../i18n/i18n.service';
+import { StorageService } from '../storage/storage.service';
 import type { JwtPayload, AuthResponseUser, AuthResponse } from './auth.types';
 import { PASSWORD_RESET_EXPIRY_HOURS } from './auth.constants';
 import escapeHtml = require('escape-html');
@@ -33,47 +33,7 @@ export class AuthService {
     private readonly agreementsService: AgreementsService,
     private readonly i18nService: I18nService,
     private readonly storageService: StorageService,
-  ) {}
-
-  /** Short-lived JWT for avatar proxy URL (GET /auth/avatar?token=...). */
-  private signAvatarToken(userId: string): string {
-    return this.jwtService.sign(
-      { sub: userId, purpose: 'avatar' },
-      { expiresIn: '1h' },
-    );
-  }
-
-  /**
-   * Resolve avatar URL for API response. When proxy is used (path or base URL set), returns
-   * a link to avatar that works with the profile – relative path (e.g. /api/auth/avatar?token=...)
-   * or full URL. Otherwise returns presigned URL for private buckets.
-   * Exposed for AccountService and JWT user building.
-   */
-  async resolveAvatarUrlForResponse(
-    userId: string,
-    avatarUrl: string | null,
-  ): Promise<string | null> {
-    if (!avatarUrl) return null;
-    const presigned =
-      await this.storageService.getPresignedAvatarUrl(avatarUrl);
-    if (!presigned || presigned === avatarUrl) return presigned ?? avatarUrl;
-
-    const token = this.signAvatarToken(userId);
-    const pathSuffix = `/auth/avatar?token=${encodeURIComponent(token)}`;
-
-    const pathPrefix = process.env.AVATAR_PATH_PREFIX ?? process.env.API_PATH;
-    if (pathPrefix != null && pathPrefix !== '') {
-      const base = pathPrefix.replace(/\/$/, '');
-      return base ? `${base}${pathSuffix}` : pathSuffix;
-    }
-
-    const baseUrl = process.env.BACKEND_PUBLIC_URL ?? process.env.API_URL;
-    if (baseUrl) {
-      return `${baseUrl.replace(/\/$/, '')}${pathSuffix}`;
-    }
-
-    return presigned ?? avatarUrl;
-  }
+  ) { }
 
   /**
    * Request password reset: find user by email (must have password), generate token,
@@ -217,7 +177,7 @@ export class AuthService {
       },
     });
     if (!withRelations) {
-      return this.buildAuthResponseAsync({
+      return this.buildAuthResponseWithResolvedAvatarUrl({
         id: user.id,
         email: user.email,
         name: user.name,
@@ -245,7 +205,7 @@ export class AuthService {
     const withRelationsCompany = withRelations as {
       company?: { nip: string; companySize: string | null } | null;
     };
-    return this.buildAuthResponseAsync({
+    return this.buildAuthResponseWithResolvedAvatarUrl({
       id: withRelations.id,
       email: withRelations.email,
       name: withRelations.name,
@@ -293,7 +253,7 @@ export class AuthService {
     const userCompany = user as {
       company?: { nip: string; companySize: string | null } | null;
     };
-    return this.buildAuthResponseAsync({
+    return this.buildAuthResponseWithResolvedAvatarUrl({
       id: user.id,
       email: user.email,
       name: user.name,
@@ -351,7 +311,7 @@ export class AuthService {
       const userCompany = user as {
         company?: { nip: string; companySize: string | null } | null;
       };
-      return this.buildAuthResponseAsync({
+      return this.buildAuthResponseWithResolvedAvatarUrl({
         id: user.id,
         email: user.email,
         name: user.name,
@@ -396,7 +356,7 @@ export class AuthService {
       const userCompany = user as {
         company?: { nip: string; companySize: string | null } | null;
       };
-      return this.buildAuthResponseAsync({
+      return this.buildAuthResponseWithResolvedAvatarUrl({
         id: user.id,
         email: user.email,
         name: user.name,
@@ -436,7 +396,7 @@ export class AuthService {
       },
     });
     if (!withRelations) {
-      return this.buildAuthResponseAsync({
+      return this.buildAuthResponseWithResolvedAvatarUrl({
         id: newUser.id,
         email: newUser.email,
         name: newUser.name,
@@ -464,7 +424,7 @@ export class AuthService {
     const newUserCompany = withRelations as {
       company?: { nip: string; companySize: string | null } | null;
     };
-    return this.buildAuthResponseAsync({
+    return this.buildAuthResponseWithResolvedAvatarUrl({
       id: withRelations.id,
       email: withRelations.email,
       name: withRelations.name,
@@ -506,10 +466,8 @@ export class AuthService {
     const userCompany = user as {
       company?: { nip: string; companySize: string | null } | null;
     };
-    const resolvedAvatarUrl = await this.resolveAvatarUrlForResponse(
-      user.id,
-      user.avatarUrl ?? null,
-    );
+    const resolvedAvatarUrl =
+      await this.storageService.getImageUrlForResponse(user.avatarUrl ?? null);
     return {
       id: user.id,
       email: user.email,
@@ -559,15 +517,13 @@ export class AuthService {
     };
   }
 
-  private async buildAuthResponseAsync(
+  /** Build auth response with avatar URL resolved (signed) for client. */
+  private async buildAuthResponseWithResolvedAvatarUrl(
     user: AuthResponseUser,
   ): Promise<AuthResponse> {
-    // Skip resolution if avatarUrl is already our proxy URL (avoid infinite recursion)
-    const isProxyUrl =
-      user.avatarUrl != null && user.avatarUrl.includes('/auth/avatar?token=');
-    const resolvedAvatarUrl = isProxyUrl
-      ? user.avatarUrl
-      : await this.resolveAvatarUrlForResponse(user.id, user.avatarUrl ?? null);
+    const resolvedAvatarUrl =
+      await this.storageService.getImageUrlForResponse(user.avatarUrl ?? null);
+
     return this.buildAuthResponse({
       ...user,
       avatarUrl: resolvedAvatarUrl ?? user.avatarUrl ?? null,

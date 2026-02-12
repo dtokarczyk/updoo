@@ -83,7 +83,8 @@ export class ProfilesService {
   private async withResolvedCoverUrl<
     T extends { coverPhotoUrl: string | null },
   >(profile: T): Promise<T> {
-    const resolved = await this.resolveCoverUrl(profile.coverPhotoUrl);
+    const resolved =
+      await this.storageService.getImageUrlForResponse(profile.coverPhotoUrl);
     return { ...profile, coverPhotoUrl: resolved };
   }
 
@@ -204,16 +205,6 @@ export class ProfilesService {
       },
     });
     return this.withResolvedCoverUrl(updated);
-  }
-
-  /** Resolve cover photo URL to presigned when using private bucket. */
-  private async resolveCoverUrl(
-    coverPhotoUrl: string | null,
-  ): Promise<string | null> {
-    if (!coverPhotoUrl) return null;
-    const resolved =
-      await this.storageService.getPresignedCoverUrl(coverPhotoUrl);
-    return resolved ?? coverPhotoUrl;
   }
 
   async uploadCover(

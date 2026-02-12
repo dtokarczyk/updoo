@@ -8,16 +8,11 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import sharp from 'sharp';
-import { PRESIGNED_IMAGE_EXPIRY_SECONDS } from './constants';
+import { IMAGE_URL_EXPIRY_SECONDS } from './storage.constants';
 import type { ImageUploadConfig } from './storage.types';
+import { buildVirtualHostedBaseUrl } from './storage.utils';
 
 export type { ImageUploadConfig } from './storage.types';
-
-/** Build virtual-hosted-style base URL: https://bucket-name.endpoint-host (no trailing slash) */
-function buildVirtualHostedBaseUrl(endpoint: string, bucket: string): string {
-  const url = new URL(endpoint);
-  return `${url.protocol}//${bucket}.${url.host}`;
-}
 
 @Injectable()
 export class StorageService {
@@ -128,19 +123,24 @@ export class StorageService {
     );
   }
 
-  async getPresignedImageUrl(
+  /**
+   * Single method for "get image URL for client". Use after upload when returning
+   * URL in API response (avatar, cover, etc.). For our bucket returns signed URL.
+   */
+  async getImageUrlForResponse(
     imageUrl: string | null,
-    expiresInSeconds: number = PRESIGNED_IMAGE_EXPIRY_SECONDS,
+    expiresInSeconds: number = IMAGE_URL_EXPIRY_SECONDS,
   ): Promise<string | null> {
     if (!imageUrl || !this.s3 || !this.bucket || !this.publicBaseUrl) {
-      return imageUrl;
+      return imageUrl ?? null;
     }
     const prefix = `${this.publicBaseUrl}/`;
-    if (!imageUrl.startsWith(prefix)) {
+    const pathPart = imageUrl.split('?')[0];
+    if (!pathPart.startsWith(prefix)) {
       return imageUrl;
     }
-    const pathPart = imageUrl.split('?')[0];
     const key = pathPart.slice(prefix.length);
+    if (!key) return imageUrl;
     const url = await getSignedUrl(
       this.s3,
       new GetObjectCommand({ Bucket: this.bucket, Key: key }),
@@ -149,7 +149,7 @@ export class StorageService {
     return url;
   }
 
-  // --- Avatar (backward-compatible wrappers) ---
+  // --- Avatar ---
 
   private static readonly AVATAR_CONFIG: ImageUploadConfig = {
     path: 'avatars',
@@ -159,12 +159,6 @@ export class StorageService {
 
   async getAvatarBuffer(avatarUrl: string | null): Promise<Buffer | null> {
     return this.getImage(avatarUrl);
-  }
-
-  async getPresignedAvatarUrl(
-    avatarUrl: string | null,
-  ): Promise<string | null> {
-    return this.getPresignedImageUrl(avatarUrl);
   }
 
   async uploadAvatar(buffer: Buffer, userId: string): Promise<string | null> {
@@ -182,12 +176,6 @@ export class StorageService {
     size: 1200,
     quality: 85,
   };
-
-  async getPresignedCoverUrl(
-    coverPhotoUrl: string | null,
-  ): Promise<string | null> {
-    return this.getPresignedImageUrl(coverPhotoUrl);
-  }
 
   async uploadCoverPhoto(
     buffer: Buffer,

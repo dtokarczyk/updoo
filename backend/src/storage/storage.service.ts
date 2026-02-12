@@ -9,9 +9,9 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import sharp from 'sharp';
 import { PRESIGNED_IMAGE_EXPIRY_SECONDS } from './constants';
-import type { ImageUploadConfig } from './types';
+import type { ImageUploadConfig } from './storage.types';
 
-export type { ImageUploadConfig } from './types';
+export type { ImageUploadConfig } from './storage.types';
 
 /** Build virtual-hosted-style base URL: https://bucket-name.endpoint-host (no trailing slash) */
 function buildVirtualHostedBaseUrl(endpoint: string, bucket: string): string {

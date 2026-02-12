@@ -18,6 +18,8 @@ interface StepAccountTypeProps {
   loading: boolean;
   error?: string;
   t: (key: string) => string;
+  /** When false, back button is hidden (e.g. when this is the first step) */
+  showBack?: boolean;
 }
 
 export function StepAccountType({
@@ -26,6 +28,7 @@ export function StepAccountType({
   loading,
   error,
   t,
+  showBack = true,
 }: StepAccountTypeProps) {
   const { watch, setValue, formState } = useFormContext<OnboardingFormValues>();
   const accountType = watch('accountType');
@@ -96,16 +99,18 @@ export function StepAccountType({
           </div>
         </CardContent>
         <CardFooter className="mt-4 flex gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            className="flex-1 h-12 text-base"
-            size="lg"
-            disabled={loading}
-            onClick={onBack}
-          >
-            {t('common.back')}
-          </Button>
+          {showBack && (
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1 h-12 text-base"
+              size="lg"
+              disabled={loading}
+              onClick={onBack}
+            >
+              {t('common.back')}
+            </Button>
+          )}
           <Button
             type="submit"
             className="flex-1 h-12 text-base"

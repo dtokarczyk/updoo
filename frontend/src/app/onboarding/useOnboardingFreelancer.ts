@@ -6,12 +6,10 @@ import { useRouter } from 'next/navigation';
 import {
   updateProfile,
   updateStoredUser,
-  needsOnboarding,
   getSkills,
   getDraftJob,
   createContractorProfile,
   getLocations,
-  type AccountType,
   type Skill,
   type AuthUser,
 } from '@/lib/api';
@@ -21,23 +19,21 @@ import {
   type OnboardingFormValues,
   stepPhoneSchema,
   stepNameSchema,
-  stepAccountTypeSchema,
   stepCompanySchema,
   stepSkillsSchema,
   stepDefaultMessageSchema,
   stepProfileFormSchema,
 } from './schemas';
 
-export const STEP_NAME = 0;
-export const STEP_PHONE = 1;
-export const STEP_ACCOUNT_TYPE = 2;
-export const STEP_COMPANY = 3;
-export const STEP_SKILLS = 4;
-export const STEP_DEFAULT_MESSAGE = 5;
-export const STEP_PROFILE_QUESTION = 6;
-export const STEP_PROFILE_FORM = 7;
+export const FREELANCER_STEP_NAME = 0;
+export const FREELANCER_STEP_PHONE = 1;
+export const FREELANCER_STEP_COMPANY = 2;
+export const FREELANCER_STEP_SKILLS = 3;
+export const FREELANCER_STEP_DEFAULT_MESSAGE = 4;
+export const FREELANCER_STEP_PROFILE_QUESTION = 5;
+export const FREELANCER_STEP_PROFILE_FORM = 6;
 
-export interface OnboardingState {
+export interface FreelancerOnboardingState {
   user: AuthUser | null;
   step: number;
   loading: boolean;
@@ -48,7 +44,7 @@ export interface OnboardingState {
   availableLocations: { id: string; name: string; slug: string }[];
 }
 
-type OnboardingAction =
+type FreelancerOnboardingAction =
   | { type: 'INIT'; payload: { user: AuthUser; step: number } }
   | { type: 'SET_STEP'; payload: number }
   | { type: 'SET_LOADING'; payload: boolean }
@@ -62,10 +58,10 @@ type OnboardingAction =
       payload: { id: string; name: string; slug: string }[];
     };
 
-function onboardingReducer(
-  state: OnboardingState,
-  action: OnboardingAction,
-): OnboardingState {
+function freelancerOnboardingReducer(
+  state: FreelancerOnboardingState,
+  action: FreelancerOnboardingAction,
+): FreelancerOnboardingState {
   switch (action.type) {
     case 'INIT':
       return {
@@ -94,9 +90,9 @@ function onboardingReducer(
   }
 }
 
-const initialState: OnboardingState = {
+const initialState: FreelancerOnboardingState = {
   user: null,
-  step: STEP_NAME,
+  step: FREELANCER_STEP_NAME,
   loading: false,
   skillsLoading: false,
   skillsError: '',
@@ -105,24 +101,26 @@ const initialState: OnboardingState = {
   availableLocations: [],
 };
 
-export interface UseOnboardingOptions {
+export interface UseOnboardingFreelancerOptions {
   t: TranslateFn;
 }
 
-export function useOnboarding(
+export function useOnboardingFreelancer(
   form: UseFormReturn<OnboardingFormValues>,
-  options: UseOnboardingOptions,
+  options: UseOnboardingFreelancerOptions,
 ) {
   const { t } = options;
   const router = useRouter();
   const { refreshAuth } = useAuth();
-  const [state, dispatch] = useReducer(onboardingReducer, initialState);
+  const [state, dispatch] = useReducer(
+    freelancerOnboardingReducer,
+    initialState,
+  );
 
-  const { watch, getValues, setError, clearErrors } = form;
-  const accountType = watch('accountType');
+  const { getValues, setError, clearErrors } = form;
 
   useEffect(() => {
-    if (state.step !== STEP_SKILLS || accountType !== 'FREELANCER') return;
+    if (state.step !== FREELANCER_STEP_SKILLS) return;
     if (state.availableSkills.length > 0) return;
     let cancelled = false;
     async function loadSkills() {
@@ -149,12 +147,11 @@ export function useOnboarding(
     return () => {
       cancelled = true;
     };
-    // t omitted: used only for error message fallback; including it causes infinite loop (new ref every render)
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- t causes infinite re-runs
-  }, [state.step, state.availableSkills.length, accountType]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.step, state.availableSkills.length]);
 
   useEffect(() => {
-    if (state.step !== STEP_PROFILE_FORM) return;
+    if (state.step !== FREELANCER_STEP_PROFILE_FORM) return;
     if (state.availableLocations.length > 0) return;
     let cancelled = false;
     async function loadLocations() {
@@ -237,7 +234,7 @@ export function useOnboarding(
       });
       updateStoredUser(updated);
       dispatch({ type: 'SET_USER', payload: updated });
-      dispatch({ type: 'SET_STEP', payload: STEP_PHONE });
+      dispatch({ type: 'SET_STEP', payload: FREELANCER_STEP_PHONE });
     } catch (err) {
       setError('root', {
         message:
@@ -264,7 +261,7 @@ export function useOnboarding(
       });
       updateStoredUser(updated);
       dispatch({ type: 'SET_USER', payload: updated });
-      dispatch({ type: 'SET_STEP', payload: STEP_ACCOUNT_TYPE });
+      dispatch({ type: 'SET_STEP', payload: FREELANCER_STEP_COMPANY });
     } catch (err) {
       setError('root', {
         message:
@@ -274,35 +271,6 @@ export function useOnboarding(
       dispatch({ type: 'SET_LOADING', payload: false });
     }
   }, [clearErrors, getValues, setError, setValidationErrors, t]);
-
-  const handleAccountTypeSubmit = useCallback(async () => {
-    clearErrors();
-    dispatch({ type: 'SET_LOADING', payload: true });
-    const raw = getValues();
-    const result = stepAccountTypeSchema(t).safeParse({
-      accountType: raw.accountType,
-    });
-    if (!result.success) {
-      setValidationErrors(result.error.issues);
-      dispatch({ type: 'SET_LOADING', payload: false });
-      return;
-    }
-    try {
-      const { user: updated } = await updateProfile({
-        accountType: result.data.accountType as AccountType,
-      });
-      updateStoredUser(updated);
-      dispatch({ type: 'SET_USER', payload: updated });
-      dispatch({ type: 'SET_STEP', payload: STEP_COMPANY });
-    } catch (err) {
-      setError('root', {
-        message:
-          err instanceof Error ? err.message : t('onboarding.saveFailed'),
-      });
-    } finally {
-      dispatch({ type: 'SET_LOADING', payload: false });
-    }
-  }, [t, clearErrors, getValues, setError, setValidationErrors]);
 
   const handleCompanySubmit = useCallback(async () => {
     clearErrors();
@@ -318,16 +286,10 @@ export function useOnboarding(
       return;
     }
     try {
-      // Company is linked via companyId in profile edit; NIP is stored in Company table.
       const { user: updated } = await updateProfile({});
       updateStoredUser(updated);
       dispatch({ type: 'SET_USER', payload: updated });
-      if (accountType === 'FREELANCER') {
-        dispatch({ type: 'SET_STEP', payload: STEP_SKILLS });
-      } else {
-        dispatch({ type: 'SET_LOADING', payload: false });
-        dispatch({ type: 'SET_STEP', payload: STEP_PROFILE_QUESTION });
-      }
+      dispatch({ type: 'SET_STEP', payload: FREELANCER_STEP_SKILLS });
     } catch (err) {
       setError('root', {
         message:
@@ -336,7 +298,7 @@ export function useOnboarding(
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
-  }, [t, accountType, clearErrors, getValues, setError, setValidationErrors]);
+  }, [t, clearErrors, getValues, setError, setValidationErrors]);
 
   const handleSkillsSubmit = useCallback(async () => {
     clearErrors();
@@ -356,7 +318,7 @@ export function useOnboarding(
       });
       updateStoredUser(updated);
       dispatch({ type: 'SET_USER', payload: updated });
-      dispatch({ type: 'SET_STEP', payload: STEP_DEFAULT_MESSAGE });
+      dispatch({ type: 'SET_STEP', payload: FREELANCER_STEP_DEFAULT_MESSAGE });
     } catch (err) {
       setError('root', {
         message:
@@ -384,9 +346,8 @@ export function useOnboarding(
         defaultMessage: (result.data.defaultMessage ?? '').trim() || undefined,
       });
       updateStoredUser(updated);
-      dispatch({ type: 'SET_USER', payload: updated });
       dispatch({ type: 'SET_LOADING', payload: false });
-      dispatch({ type: 'SET_STEP', payload: STEP_PROFILE_QUESTION });
+      dispatch({ type: 'SET_STEP', payload: FREELANCER_STEP_PROFILE_QUESTION });
     } catch (err) {
       setError('root', {
         message:
@@ -404,7 +365,7 @@ export function useOnboarding(
   }, [openDraftModal, finishOnboarding]);
 
   const handleProfileQuestionYes = useCallback(() => {
-    dispatch({ type: 'SET_STEP', payload: STEP_PROFILE_FORM });
+    dispatch({ type: 'SET_STEP', payload: FREELANCER_STEP_PROFILE_FORM });
   }, []);
 
   const handleProfileFormSubmit = useCallback(async () => {
@@ -456,14 +417,11 @@ export function useOnboarding(
 
   return {
     state,
-    accountType,
     actions: {
       init,
       goToStep,
-      setValidationErrors,
       handleNameSubmit,
       handlePhoneSubmit,
-      handleAccountTypeSubmit,
       handleCompanySubmit,
       handleSkillsSubmit,
       handleDefaultMessageSubmit,
@@ -475,6 +433,5 @@ export function useOnboarding(
       finishOnboarding,
       goToNewJob,
     },
-    needsOnboarding,
   };
 }

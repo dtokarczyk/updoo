@@ -35,8 +35,24 @@ import {
   type BasicProfileFormValues,
 } from './schema';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
+import Link from 'next/link';
+import { type AccountType } from '@/lib/api';
+import { Rocket } from 'lucide-react';
 
 const formId = 'profile-basic-form';
+
+function accountTypeLabel(
+  type: AccountType | null,
+  t: (key: string) => string,
+): string {
+  if (!type) return '—';
+  const labels: Record<AccountType, string> = {
+    CLIENT: t('accountTypes.client'),
+    FREELANCER: t('accountTypes.freelancer'),
+    ADMIN: t('accountTypes.admin'),
+  };
+  return labels[type];
+}
 
 export default function ProfileBasicPage() {
   const { t } = useTranslations();
@@ -136,8 +152,6 @@ export default function ProfileBasicPage() {
 
   if (!user) return null;
 
-  console.log(avatarUrl);
-
   return (
     <Card className="w-full">
       <CardHeader>
@@ -146,6 +160,28 @@ export default function ProfileBasicPage() {
       </CardHeader>
 
       <CardContent className="space-y-4">
+        <div className="flex flex-col gap-3 rounded-lg border border-border bg-muted/30 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <span className="text-sm font-medium text-muted-foreground">
+                {t('profile.accountType')}:{' '}
+              </span>
+              <span className="text-sm font-medium">
+                {accountTypeLabel(accountType, t)}
+              </span>
+            </div>
+            <Link
+              href="/onboarding?force=true"
+              className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+            >
+              <Rocket className="size-4" />
+              {t('profile.runOnboarding')}
+            </Link>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {t('profile.runOnboardingDesc')}
+          </p>
+        </div>
         {submitError && (
           <Alert variant="destructive">
             <CircleAlert />

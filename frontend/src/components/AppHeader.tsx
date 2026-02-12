@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Logotype } from '@/components/Logotype';
 import { useAuth } from '@/contexts/AuthContext';
+import { useMyProfilesQuery } from '@/lib/api-query/profiles';
 import { useTranslations } from '@/hooks/useTranslations';
 import type { Locale } from '@/lib/i18n';
 import { UserDrawerContent } from '@/components/UserDrawer';
@@ -24,19 +25,41 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
   const pathname = usePathname();
 
   const { t } = useTranslations();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, user } = useAuth();
+  const { data: myProfiles } = useMyProfilesQuery();
   const [authDrawerOpen, setAuthDrawerOpen] = useState(false);
 
-  const navItems = [
-    { href: '/', icon: LayoutDashboard, labelKey: 'nav.board' },
-    { href: '/my', icon: FolderOpen, labelKey: 'nav.myThings' },
-    {
-      href: '/company/moja-nazwa-profilu',
-      icon: UserCircle,
-      labelKey: 'nav.businessCard',
-    },
-    { href: '/profile/basic', icon: Settings, labelKey: 'nav.profile' },
-  ] as const;
+  const isFreelancer = user?.accountType === 'FREELANCER';
+  const hasProfile = (myProfiles?.length ?? 0) > 0;
+  const firstProfileSlug = myProfiles?.[0]?.slug;
+
+  const navItems = useMemo(() => {
+    const items: Array<{
+      href: string;
+      icon: typeof LayoutDashboard;
+      labelKey: string;
+    }> = [
+      { href: '/', icon: LayoutDashboard, labelKey: 'nav.board' },
+      { href: '/my', icon: FolderOpen, labelKey: 'nav.myThings' },
+    ];
+    if (isFreelancer) {
+      if (hasProfile && firstProfileSlug) {
+        items.push({
+          href: `/company/${firstProfileSlug}`,
+          icon: UserCircle,
+          labelKey: 'nav.businessCard',
+        });
+      } else {
+        items.push({
+          href: '/profile/create',
+          icon: UserCircle,
+          labelKey: 'nav.createBusinessCard',
+        });
+      }
+    }
+    items.push({ href: '/profile/basic', icon: Settings, labelKey: 'nav.profile' });
+    return items;
+  }, [isFreelancer, hasProfile, firstProfileSlug]);
 
   return (
     <>

@@ -369,6 +369,27 @@ export async function linkCompanyByNip(
   return res.json();
 }
 
+/** Unlink company from current user (set user.companyId to null). */
+export async function unlinkCompany(): Promise<{ user: AuthUser }> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const headers: HeadersInit = { Authorization: `Bearer ${token}` };
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
+    headers['Accept-Language'] = getUserLocale();
+  }
+  const res = await fetch(`${API_URL}/company/unlink`, {
+    method: 'POST',
+    headers,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to unlink company');
+  }
+  return res.json();
+}
+
 /** Refresh current user's company data from GUS. */
 export async function refreshCompany(): Promise<{ company: Company }> {
   const token = getToken();

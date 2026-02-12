@@ -1,7 +1,13 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { getMyCompany, linkCompanyByNip, refreshCompany } from '@/lib/api';
+import {
+  getMyCompany,
+  linkCompanyByNip,
+  refreshCompany,
+  unlinkCompany,
+  updateStoredUser,
+} from '@/lib/api';
 import { useAuthQuery } from './auth';
 import { queryKeys } from './keys';
 
@@ -31,6 +37,18 @@ export function useRefreshCompanyMutation() {
   return useMutation({
     mutationFn: refreshCompany,
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.myCompany() });
+    },
+  });
+}
+
+export function useUnlinkCompanyMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: unlinkCompany,
+    onSuccess: (data) => {
+      if (data?.user) updateStoredUser(data.user);
+      queryClient.invalidateQueries({ queryKey: queryKeys.authProfile() });
       queryClient.invalidateQueries({ queryKey: queryKeys.myCompany() });
     },
   });

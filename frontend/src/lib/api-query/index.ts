@@ -67,6 +67,7 @@ export {
   useMyCompanyQuery,
   useLinkCompanyByNipMutation,
   useRefreshCompanyMutation,
+  useUnlinkCompanyMutation,
 } from './company';
 
 export {

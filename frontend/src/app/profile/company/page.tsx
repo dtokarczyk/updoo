@@ -15,9 +15,18 @@ import {
 } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
   useMyCompanyQuery,
   useLinkCompanyByNipMutation,
   useRefreshCompanyMutation,
+  useUnlinkCompanyMutation,
 } from '@/lib/api-query';
 import { type Company } from '@/lib/api';
 import { useTranslations } from '@/hooks/useTranslations';
@@ -113,10 +122,12 @@ export default function ProfileCompanyPage() {
   const [nip, setNip] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [unlinkDialogOpen, setUnlinkDialogOpen] = useState(false);
 
   const { data: company, isLoading: companyLoading } = useMyCompanyQuery();
   const linkMutation = useLinkCompanyByNipMutation();
   const refreshMutation = useRefreshCompanyMutation();
+  const unlinkMutation = useUnlinkCompanyMutation();
 
   async function handleLinkNip(e: React.FormEvent) {
     e.preventDefault();
@@ -143,6 +154,18 @@ export default function ProfileCompanyPage() {
     try {
       await refreshMutation.mutateAsync();
       setSuccess(t('profile.companyRefreshed'));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('common.error'));
+    }
+  }
+
+  async function handleUnlink() {
+    setError('');
+    setSuccess('');
+    try {
+      await unlinkMutation.mutateAsync();
+      setUnlinkDialogOpen(false);
+      setSuccess(t('profile.companyUnlinked'));
     } catch (err) {
       setError(err instanceof Error ? err.message : t('common.error'));
     }
@@ -236,6 +259,47 @@ export default function ProfileCompanyPage() {
                   : t('profile.companyRefreshFromGus')}
               </Button>
             </div>
+            <div className="pt-2 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
+                disabled={unlinkMutation.isPending}
+                onClick={() => setUnlinkDialogOpen(true)}
+              >
+                {t('profile.companyUnlinkTitle')}
+              </Button>
+            </div>
+            <Dialog open={unlinkDialogOpen} onOpenChange={setUnlinkDialogOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{t('profile.companyUnlinkTitle')}</DialogTitle>
+                  <DialogDescription>
+                    {t('profile.companyUnlinkConfirm')}
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setUnlinkDialogOpen(false)}
+                    disabled={unlinkMutation.isPending}
+                  >
+                    {t('common.cancel')}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={handleUnlink}
+                    disabled={unlinkMutation.isPending}
+                  >
+                    {unlinkMutation.isPending
+                      ? t('common.loading')
+                      : t('profile.companyUnlinkTitle')}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         )}
       </CardContent>

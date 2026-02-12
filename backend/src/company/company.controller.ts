@@ -23,6 +23,12 @@ export class CompanyController {
     return this.companyService.linkCompanyByNip(user.id, dto.nip);
   }
 
+  @Post('unlink')
+  @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
+  async unlinkCompany(@GetUser() user: JwtUser) {
+    return this.companyService.unlinkCompany(user.id);
+  }
+
   @Post('refresh')
   @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
   async refreshCompany(@GetUser() user: JwtUser) {

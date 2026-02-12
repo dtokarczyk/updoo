@@ -122,6 +122,19 @@ export class CompanyService {
     return { user, company: this.getCompanyPayload(company) };
   }
 
+  /** Unlink company from user (set user.companyId to null). */
+  async unlinkCompany(userId: string): Promise<{ user: AuthResponseUser }> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { companyId: null },
+    });
+    const user = await this.accountService.getUserForResponse(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return { user };
+  }
+
   /** Refresh current user's company data from GUS. */
   async refreshCompany(userId: string): Promise<{ company: CompanyPayload }> {
     const user = await this.prisma.user.findUnique({

@@ -41,7 +41,7 @@ export class AuthService {
     private readonly agreementsService: AgreementsService,
     private readonly i18nService: I18nService,
     private readonly storageService: StorageService,
-  ) {}
+  ) { }
 
   /** Short-lived JWT for avatar proxy URL (GET /auth/avatar?token=...). */
   private signAvatarToken(userId: string): string {
@@ -234,6 +234,7 @@ export class AuthService {
         phone: user.phone,
         nipCompany: null,
         companyId: user.companyId ?? null,
+        companySize: null,
         accountType: user.accountType,
         language: user.language,
         defaultMessage: user.defaultMessage,
@@ -250,7 +251,7 @@ export class AuthService {
         }
       ).skills ?? [];
     const withRelationsCompany = withRelations as {
-      company?: { nip: string } | null;
+      company?: { nip: string; companySize: string | null } | null;
     };
     return this.buildAuthResponseAsync({
       id: withRelations.id,
@@ -261,6 +262,7 @@ export class AuthService {
       phone: withRelations.phone,
       nipCompany: withRelationsCompany.company?.nip ?? null,
       companyId: withRelations.companyId ?? null,
+      companySize: withRelationsCompany.company?.companySize ?? null,
       accountType: withRelations.accountType,
       language: withRelations.language,
       defaultMessage: withRelations.defaultMessage,
@@ -296,7 +298,9 @@ export class AuthService {
           skills?: { skill: { id: string; name: string } }[];
         }
       ).skills ?? [];
-    const userCompany = user as { company?: { nip: string } | null };
+    const userCompany = user as {
+      company?: { nip: string; companySize: string | null } | null;
+    };
     return this.buildAuthResponseAsync({
       id: user.id,
       email: user.email,
@@ -306,6 +310,7 @@ export class AuthService {
       phone: user.phone,
       nipCompany: userCompany.company?.nip ?? null,
       companyId: user.companyId ?? null,
+      companySize: userCompany.company?.companySize ?? null,
       accountType: user.accountType,
       language: user.language,
       defaultMessage: user.defaultMessage,
@@ -351,7 +356,9 @@ export class AuthService {
             skills?: { skill: { id: string; name: string } }[];
           }
         ).skills ?? [];
-      const userCompany = user as { company?: { nip: string } | null };
+      const userCompany = user as {
+        company?: { nip: string; companySize: string | null } | null;
+      };
       return this.buildAuthResponseAsync({
         id: user.id,
         email: user.email,
@@ -361,6 +368,7 @@ export class AuthService {
         phone: user.phone,
         nipCompany: userCompany.company?.nip ?? null,
         companyId: user.companyId ?? null,
+        companySize: userCompany.company?.companySize ?? null,
         accountType: user.accountType,
         language: user.language,
         defaultMessage: user.defaultMessage,
@@ -393,7 +401,9 @@ export class AuthService {
             skills?: { skill: { id: string; name: string } }[];
           }
         ).skills ?? [];
-      const userCompany = user as { company?: { nip: string } | null };
+      const userCompany = user as {
+        company?: { nip: string; companySize: string | null } | null;
+      };
       return this.buildAuthResponseAsync({
         id: user.id,
         email: user.email,
@@ -403,6 +413,7 @@ export class AuthService {
         phone: user.phone,
         nipCompany: userCompany.company?.nip ?? null,
         companyId: user.companyId ?? null,
+        companySize: userCompany.company?.companySize ?? null,
         accountType: user.accountType,
         language: user.language,
         defaultMessage: user.defaultMessage,
@@ -442,6 +453,7 @@ export class AuthService {
         phone: newUser.phone,
         nipCompany: null,
         companyId: newUser.companyId ?? null,
+        companySize: null,
         accountType: newUser.accountType,
         language: newUser.language,
         defaultMessage: newUser.defaultMessage,
@@ -458,7 +470,7 @@ export class AuthService {
         }
       ).skills ?? [];
     const newUserCompany = withRelations as {
-      company?: { nip: string } | null;
+      company?: { nip: string; companySize: string | null } | null;
     };
     return this.buildAuthResponseAsync({
       id: withRelations.id,
@@ -469,6 +481,7 @@ export class AuthService {
       phone: withRelations.phone,
       nipCompany: newUserCompany.company?.nip ?? null,
       companyId: withRelations.companyId ?? null,
+      companySize: newUserCompany.company?.companySize ?? null,
       accountType: withRelations.accountType,
       language: withRelations.language,
       defaultMessage: withRelations.defaultMessage,
@@ -498,7 +511,9 @@ export class AuthService {
           skills?: { skill: { id: string; name: string } }[];
         }
       ).skills ?? [];
-    const userCompany = user as { company?: { nip: string } | null };
+    const userCompany = user as {
+      company?: { nip: string; companySize: string | null } | null;
+    };
     const resolvedAvatarUrl = await this.resolveAvatarUrlForResponse(
       user.id,
       user.avatarUrl ?? null,
@@ -512,6 +527,7 @@ export class AuthService {
       phone: user.phone,
       nipCompany: userCompany.company?.nip ?? null,
       companyId: user.companyId ?? null,
+      companySize: userCompany.company?.companySize ?? null,
       accountType: user.accountType,
       language: user.language,
       defaultMessage: user.defaultMessage,
@@ -539,6 +555,7 @@ export class AuthService {
         phone: user.phone,
         nipCompany: user.nipCompany,
         companyId: user.companyId,
+        companySize: user.companySize ?? null,
         accountType: user.accountType,
         language: user.language,
         defaultMessage: user.defaultMessage,

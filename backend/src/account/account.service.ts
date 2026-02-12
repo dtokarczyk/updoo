@@ -38,7 +38,9 @@ export class AccountService {
           skills?: { skill: { id: string; name: string } }[];
         }
       ).skills ?? [];
-    const userCompany = user as { company?: { nip: string } | null };
+    const userCompany = user as {
+      company?: { nip: string; companySize: string | null } | null;
+    };
     const resolvedAvatarUrl =
       await this.authService.resolveAvatarUrlForResponse(
         user.id,
@@ -53,6 +55,7 @@ export class AccountService {
       phone: user.phone,
       nipCompany: userCompany.company?.nip ?? null,
       companyId: user.companyId ?? null,
+      companySize: userCompany.company?.companySize ?? null,
       accountType: user.accountType,
       language: user.language,
       defaultMessage: user.defaultMessage,

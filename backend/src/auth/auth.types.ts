@@ -18,6 +18,8 @@ export interface AuthResponseUser {
   /** NIP from linked company (company.nip). */
   nipCompany: string | null;
   companyId: string | null;
+  /** From linked company (company.companySize). */
+  companySize: string | null;
   accountType: string | null;
   language: string;
   defaultMessage: string | null;
@@ -50,5 +52,6 @@ export interface CompanyPayload {
   apartmentNumber: string | null;
   type: string | null;
   isActive: boolean;
+  companySize: string | null;
   updatedAt: Date;
 }

@@ -50,10 +50,19 @@ enum JobLanguage {
   POLISH
 }
 
+/** Company size: freelancer (1), micro (≤10), small (≤50), medium (≤250), large (>250). */
+enum CompanySize {
+  FREELANCER
+  MICRO
+  SMALL
+  MEDIUM
+  LARGE
+}
+
 model Company {
-  id               String    @id @default(cuid())
-  regon            String    @unique
-  nip              String    @unique
+  id               String      @id @default(cuid())
+  regon            String      @unique
+  nip              String      @unique
   name             String
   voivodeship      String?
   county           String?
@@ -64,9 +73,11 @@ model Company {
   propertyNumber   String?
   apartmentNumber  String?
   type             String?
-  isActive         Boolean   @default(true)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  isActive         Boolean     @default(true)
+  /** Company size: freelancer (1), micro (≤10), small (≤50), medium (≤250), large (>250). */
+  companySize      CompanySize?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
 
   users            User[]
 

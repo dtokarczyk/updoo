@@ -53,7 +53,7 @@ export function ChangeCompanyForm({
     onError?.('');
     onSuccessMessage?.('');
     try {
-      await linkMutation.mutateAsync(normalized);
+      await linkMutation.mutateAsync({ nip: normalized });
       reset(defaultChangeCompanyFormValues);
       setExpanded(false);
       onSuccessMessage?.(t('profile.companyLinked'));

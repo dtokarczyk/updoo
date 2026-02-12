@@ -7,6 +7,8 @@ import {
   updateProfile,
   updateStoredUser,
   getDraftJob,
+  unlinkCompany,
+  updateCompany,
   type AuthUser,
 } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
@@ -184,6 +186,10 @@ export function useOnboardingClient(
     }
   }, [clearErrors, getValues, setError, setValidationErrors, t]);
 
+  const handleCompanyFetched = useCallback((user: AuthUser) => {
+    dispatch({ type: 'SET_USER', payload: user });
+  }, []);
+
   const handleCompanySubmit = useCallback(async () => {
     clearErrors();
     dispatch({ type: 'SET_LOADING', payload: true });
@@ -191,6 +197,7 @@ export function useOnboardingClient(
     const result = stepCompanySchema(t).safeParse({
       hasCompany: raw.hasCompany,
       nipCompany: raw.nipCompany,
+      companySize: raw.companySize,
     });
     if (!result.success) {
       setValidationErrors(result.error.issues);
@@ -198,9 +205,15 @@ export function useOnboardingClient(
       return;
     }
     try {
-      const { user: updated } = await updateProfile({});
-      updateStoredUser(updated);
-      dispatch({ type: 'SET_USER', payload: updated });
+      if (result.data.hasCompany && result.data.companySize) {
+        await updateCompany({
+          companySize: result.data.companySize,
+        });
+      } else if (!result.data.hasCompany) {
+        const { user: updated } = await unlinkCompany();
+        updateStoredUser(updated);
+        dispatch({ type: 'SET_USER', payload: updated });
+      }
       dispatch({ type: 'SET_LOADING', payload: false });
       const draft = getDraftJob();
       if (draft) openDraftModal();
@@ -229,6 +242,7 @@ export function useOnboardingClient(
       goToStep,
       handleNameSubmit,
       handlePhoneSubmit,
+      handleCompanyFetched,
       handleCompanySubmit,
       openDraftModal,
       closeDraftModal,

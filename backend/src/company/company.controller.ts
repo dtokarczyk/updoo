@@ -1,10 +1,18 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AgreementsAcceptedGuard } from '../auth/agreements-accepted.guard';
 import { GetUser } from '../auth/get-user.decorator';
 import type { JwtUser } from '../auth/get-user.decorator';
 import { LinkCompanyDto } from '../auth/dto/link-company.dto';
 import { CompanyService } from './company.service';
+import { UpdateCompanyDto } from './dto/update-company.dto';
 
 @Controller('company')
 export class CompanyController {
@@ -17,10 +25,27 @@ export class CompanyController {
     return { company };
   }
 
+  @Patch()
+  @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
+  async updateCompany(
+    @GetUser() user: JwtUser,
+    @Body() dto: UpdateCompanyDto,
+  ) {
+    if (dto.companySize != null) {
+      return this.companyService.updateCompanySize(user.id, dto.companySize);
+    }
+    const company = await this.companyService.getMyCompany(user.id);
+    return { company };
+  }
+
   @Post('link')
   @UseGuards(JwtAuthGuard, AgreementsAcceptedGuard)
   async linkCompany(@GetUser() user: JwtUser, @Body() dto: LinkCompanyDto) {
-    return this.companyService.linkCompanyByNip(user.id, dto.nip);
+    return this.companyService.linkCompanyByNip(
+      user.id,
+      dto.nip,
+      dto.companySize,
+    );
   }
 
   @Post('unlink')

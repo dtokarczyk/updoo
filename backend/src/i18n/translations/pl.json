@@ -24,6 +24,7 @@
     "skillsMaxCount": "Można dodać maksymalnie 5 skilli do oferty",
     "accountTypeInvalid": "accountType musi być CLIENT lub FREELANCER",
     "languageInvalid": "language musi być POLISH lub ENGLISH",
+    "companySizeInvalid": "companySize musi być FREELANCER, MICRO, SMALL, MEDIUM lub LARGE",
     "nipInvalid": "NIP musi składać się z 10 cyfr",
     "rejectReasonMinLength": "Powód odrzucenia musi mieć co najmniej 10 znaków",
     "rejectReasonMaxLength": "Powód odrzucenia może mieć maksymalnie 2000 znaków"

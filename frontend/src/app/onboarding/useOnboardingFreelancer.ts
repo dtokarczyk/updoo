@@ -10,6 +10,8 @@ import {
   getDraftJob,
   createContractorProfile,
   getLocations,
+  unlinkCompany,
+  updateCompany,
   type Skill,
   type AuthUser,
 } from '@/lib/api';
@@ -272,6 +274,10 @@ export function useOnboardingFreelancer(
     }
   }, [clearErrors, getValues, setError, setValidationErrors, t]);
 
+  const handleCompanyFetched = useCallback((user: AuthUser) => {
+    dispatch({ type: 'SET_USER', payload: user });
+  }, []);
+
   const handleCompanySubmit = useCallback(async () => {
     clearErrors();
     dispatch({ type: 'SET_LOADING', payload: true });
@@ -279,6 +285,7 @@ export function useOnboardingFreelancer(
     const result = stepCompanySchema(t).safeParse({
       hasCompany: raw.hasCompany,
       nipCompany: raw.nipCompany,
+      companySize: raw.companySize,
     });
     if (!result.success) {
       setValidationErrors(result.error.issues);
@@ -286,9 +293,15 @@ export function useOnboardingFreelancer(
       return;
     }
     try {
-      const { user: updated } = await updateProfile({});
-      updateStoredUser(updated);
-      dispatch({ type: 'SET_USER', payload: updated });
+      if (result.data.hasCompany && result.data.companySize) {
+        await updateCompany({
+          companySize: result.data.companySize,
+        });
+      } else if (!result.data.hasCompany) {
+        const { user: updated } = await unlinkCompany();
+        updateStoredUser(updated);
+        dispatch({ type: 'SET_USER', payload: updated });
+      }
       dispatch({ type: 'SET_STEP', payload: FREELANCER_STEP_SKILLS });
     } catch (err) {
       setError('root', {
@@ -422,6 +435,7 @@ export function useOnboardingFreelancer(
       goToStep,
       handleNameSubmit,
       handlePhoneSubmit,
+      handleCompanyFetched,
       handleCompanySubmit,
       handleSkillsSubmit,
       handleDefaultMessageSubmit,

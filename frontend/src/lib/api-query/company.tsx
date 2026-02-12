@@ -6,6 +6,7 @@ import {
   linkCompanyByNip,
   refreshCompany,
   unlinkCompany,
+  updateCompany,
   updateStoredUser,
 } from '@/lib/api';
 import { useAuthQuery } from './auth';
@@ -24,7 +25,25 @@ export function useMyCompanyQuery() {
 export function useLinkCompanyByNipMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (nip: string) => linkCompanyByNip(nip),
+    mutationFn: ({
+      nip,
+      companySize,
+    }: {
+      nip: string;
+      companySize?: string | null;
+    }) => linkCompanyByNip(nip, companySize),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.authProfile() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.myCompany() });
+    },
+  });
+}
+
+export function useUpdateCompanyMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { companySize?: string | null }) =>
+      updateCompany(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.authProfile() });
       queryClient.invalidateQueries({ queryKey: queryKeys.myCompany() });

@@ -24,6 +24,7 @@
     "skillsMaxCount": "You can add at most 5 skills to an offer",
     "accountTypeInvalid": "accountType must be CLIENT or FREELANCER",
     "languageInvalid": "language must be POLISH or ENGLISH",
+    "companySizeInvalid": "companySize must be FREELANCER, MICRO, SMALL, MEDIUM or LARGE",
     "nipInvalid": "NIP must be 10 digits",
     "rejectReasonMinLength": "Rejection reason must be at least 10 characters",
     "rejectReasonMaxLength": "Rejection reason can be at most 2000 characters"

@@ -101,6 +101,13 @@ function OnboardingContent() {
             ? false
             : null,
       nipCompany: stored.nipCompany ?? '',
+      companySize:
+        stored.companySize &&
+        ['FREELANCER', 'MICRO', 'SMALL', 'MEDIUM', 'LARGE'].includes(
+          stored.companySize,
+        )
+          ? stored.companySize
+          : null,
       selectedSkillIds: Array.isArray(stored.skills)
         ? stored.skills.map((s) => s.id)
         : [],

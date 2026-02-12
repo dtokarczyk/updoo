@@ -10,6 +10,8 @@ export interface OnboardingFormValues {
   accountType: '' | 'CLIENT' | 'FREELANCER';
   hasCompany: boolean | null;
   nipCompany: string;
+  /** When hasCompany: FREELANCER (solo) or MICRO/SMALL/MEDIUM/LARGE (larger firm). */
+  companySize: 'FREELANCER' | 'MICRO' | 'SMALL' | 'MEDIUM' | 'LARGE' | null;
   selectedSkillIds: string[];
   defaultMessage: string;
   /** Optional: whether user wants to create a contractor profile */
@@ -29,6 +31,7 @@ export const defaultOnboardingValues: OnboardingFormValues = {
   accountType: '',
   hasCompany: null,
   nipCompany: '',
+  companySize: null,
   selectedSkillIds: [],
   defaultMessage: '',
   wantsProfile: null,
@@ -69,7 +72,15 @@ export function stepAccountTypeSchema(t: TranslateFn) {
   });
 }
 
-/** Step 3: hasCompany required; nipCompany required when hasCompany is true */
+const companySizeEnum = z.enum([
+  'FREELANCER',
+  'MICRO',
+  'SMALL',
+  'MEDIUM',
+  'LARGE',
+]);
+
+/** Step 3: hasCompany required; nipCompany and companySize required only when hasCompany is true */
 export function stepCompanySchema(t: TranslateFn) {
   return z
     .object({
@@ -77,10 +88,26 @@ export function stepCompanySchema(t: TranslateFn) {
         error: t('onboarding.companyChooseOption'),
       }),
       nipCompany: z.string().optional(),
+      /** Required only when hasCompany is true; null/undefined when no company */
+      companySize: z
+        .union([companySizeEnum, z.null(), z.undefined()])
+        .optional(),
     })
     .refine(
       (data) => !data.hasCompany || (data.nipCompany?.trim()?.length ?? 0) > 0,
       { message: t('onboarding.companyNipRequired'), path: ['nipCompany'] },
+    )
+    .refine(
+      (data) =>
+        !data.hasCompany ||
+        (data.companySize != null &&
+          ['FREELANCER', 'MICRO', 'SMALL', 'MEDIUM', 'LARGE'].includes(
+            data.companySize,
+          )),
+      {
+        message: t('onboarding.companySizeRequired'),
+        path: ['companySize'],
+      },
     );
 }
 

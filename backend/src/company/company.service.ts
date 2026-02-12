@@ -33,6 +33,7 @@ export class CompanyService {
     apartmentNumber: string | null;
     type: string | null;
     isActive: boolean;
+    companySize?: string | null;
     updatedAt: Date;
   }): CompanyPayload {
     return {
@@ -50,6 +51,7 @@ export class CompanyService {
       apartmentNumber: company.apartmentNumber,
       type: company.type,
       isActive: company.isActive,
+      companySize: company.companySize ?? null,
       updatedAt: company.updatedAt,
     };
   }
@@ -87,10 +89,11 @@ export class CompanyService {
     return this.getCompanyPayload(user.company);
   }
 
-  /** Link company to user by NIP: find in DB or fetch from GUS, create, then assign. */
+  /** Link company to user by NIP: find in DB or fetch from GUS, create, then assign. Optionally set companySize. */
   async linkCompanyByNip(
     userId: string,
     nipRaw: string,
+    companySize?: string | null,
   ): Promise<{
     user: AuthResponseUser;
     company: CompanyPayload;
@@ -115,11 +118,46 @@ export class CompanyService {
       data: { companyId: company.id },
     });
 
+    if (
+      companySize &&
+      ['FREELANCER', 'MICRO', 'SMALL', 'MEDIUM', 'LARGE'].includes(companySize)
+    ) {
+      company = await this.prisma.company.update({
+        where: { id: company.id },
+        data: { companySize: companySize as 'FREELANCER' | 'MICRO' | 'SMALL' | 'MEDIUM' | 'LARGE' },
+      });
+    }
+
     const user = await this.accountService.getUserForResponse(userId);
     if (!user) {
       throw new NotFoundException('User not found');
     }
     return { user, company: this.getCompanyPayload(company) };
+  }
+
+  /** Update current user's linked company size. */
+  async updateCompanySize(
+    userId: string,
+    companySize: string,
+  ): Promise<{ company: CompanyPayload }> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { company: true },
+    });
+    if (!user?.companyId || !user.company) {
+      throw new NotFoundException('messages.noCompanyLinked');
+    }
+    const valid = ['FREELANCER', 'MICRO', 'SMALL', 'MEDIUM', 'LARGE'];
+    if (!valid.includes(companySize)) {
+      throw new BadRequestException('validation.companySizeInvalid');
+    }
+    const company = await this.prisma.company.update({
+      where: { id: user.company.id },
+      data: {
+        companySize: companySize as 'FREELANCER' | 'MICRO' | 'SMALL' | 'MEDIUM' | 'LARGE',
+      },
+    });
+    return { company: this.getCompanyPayload(company) };
   }
 
   /** Unlink company from user (set user.companyId to null). */

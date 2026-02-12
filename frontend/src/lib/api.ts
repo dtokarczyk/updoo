@@ -17,6 +17,8 @@ export interface AuthUser {
   companyId?: string | null;
   /** NIP of linked company (from Company.nip). */
   nipCompany?: string | null;
+  /** When user has company: FREELANCER (solo) or MICRO/SMALL/MEDIUM/LARGE (larger firm). */
+  companySize?: 'FREELANCER' | 'MICRO' | 'SMALL' | 'MEDIUM' | 'LARGE' | null;
   accountType: AccountType | null;
   language: UserLanguage;
   /** Default message for freelancer applications (with portfolio links). */
@@ -319,6 +321,7 @@ export interface Company {
   apartmentNumber: string | null;
   type: string | null;
   isActive: boolean;
+  companySize: string | null;
   updatedAt: string;
 }
 
@@ -340,9 +343,10 @@ export async function getMyCompany(): Promise<{ company: Company | null }> {
   return res.json();
 }
 
-/** Link company to user by NIP (find in DB or fetch from GUS, then assign). */
+/** Link company to user by NIP (find in DB or fetch from GUS, then assign). Optionally set companySize on the company. */
 export async function linkCompanyByNip(
   nip: string,
+  companySize?: string | null,
 ): Promise<{ user: AuthUser; company: Company }> {
   const token = getToken();
   if (!token) throw new Error('Not authenticated');
@@ -354,17 +358,51 @@ export async function linkCompanyByNip(
     const { getUserLocale } = await import('./i18n');
     headers['Accept-Language'] = getUserLocale();
   }
+  const body: { nip: string; companySize?: string } = {
+    nip: nip.trim().replace(/\s/g, '').replace(/-/g, ''),
+  };
+  if (
+    companySize &&
+    ['FREELANCER', 'MICRO', 'SMALL', 'MEDIUM', 'LARGE'].includes(companySize)
+  ) {
+    body.companySize = companySize;
+  }
   const res = await fetch(`${API_URL}/company/link`, {
     method: 'POST',
     headers,
-    body: JSON.stringify({
-      nip: nip.trim().replace(/\s/g, '').replace(/-/g, ''),
-    }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
     throw new Error(msg ?? 'Failed to link company');
+  }
+  return res.json();
+}
+
+/** Update current user's linked company (e.g. companySize). */
+export async function updateCompany(payload: {
+  companySize?: string | null;
+}): Promise<{ company: Company }> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  };
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
+    headers['Accept-Language'] = getUserLocale();
+  }
+  const res = await fetch(`${API_URL}/company`, {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to update company');
   }
   return res.json();
 }

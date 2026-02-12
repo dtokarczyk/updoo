@@ -27,10 +27,20 @@ import {
   useLinkCompanyByNipMutation,
   useRefreshCompanyMutation,
   useUnlinkCompanyMutation,
+  useUpdateCompanyMutation,
 } from '@/lib/api-query';
 import { type Company } from '@/lib/api';
 import { useTranslations } from '@/hooks/useTranslations';
 import { ChangeCompanyForm } from './ChangeCompanyForm';
+
+const COMPANY_SIZE_VALUES = [
+  'FREELANCER',
+  'MICRO',
+  'SMALL',
+  'MEDIUM',
+  'LARGE',
+] as const;
+type CompanySizeValue = (typeof COMPANY_SIZE_VALUES)[number];
 
 function CompanyDetails({ company }: { company: Company }) {
   const { t } = useTranslations();
@@ -117,6 +127,11 @@ function CompanyDetails({ company }: { company: Company }) {
   );
 }
 
+function companySizeToLabelKey(size: CompanySizeValue, t: (key: string) => string): string {
+  if (size === 'FREELANCER') return t('onboarding.companySizeSolo');
+  return t(`onboarding.companySize${size}`);
+}
+
 export default function ProfileCompanyPage() {
   const { t } = useTranslations();
   const [nip, setNip] = useState('');
@@ -128,6 +143,7 @@ export default function ProfileCompanyPage() {
   const linkMutation = useLinkCompanyByNipMutation();
   const refreshMutation = useRefreshCompanyMutation();
   const unlinkMutation = useUnlinkCompanyMutation();
+  const updateCompanyMutation = useUpdateCompanyMutation();
 
   async function handleLinkNip(e: React.FormEvent) {
     e.preventDefault();
@@ -139,7 +155,7 @@ export default function ProfileCompanyPage() {
       return;
     }
     try {
-      await linkMutation.mutateAsync(normalized);
+      await linkMutation.mutateAsync({ nip: normalized });
       setNip('');
       setSuccess(t('profile.companyLinked'));
     } catch (err) {
@@ -242,6 +258,38 @@ export default function ProfileCompanyPage() {
               onError={setError}
               onSuccessMessage={setSuccess}
             />
+            <div className="space-y-2">
+              <Label htmlFor="profile-company-size">
+                {t('profile.companySizeLabel')}
+              </Label>
+              <select
+                id="profile-company-size"
+                value={company?.companySize ?? ''}
+                onChange={(e) => {
+                  const val = e.target.value as CompanySizeValue | '';
+                  if (!val) return;
+                  setError('');
+                  setSuccess('');
+                  updateCompanyMutation.mutate(
+                    { companySize: val },
+                    {
+                      onSuccess: () => setSuccess(t('profile.companySizeSaved')),
+                      onError: (err) =>
+                        setError(err instanceof Error ? err.message : t('common.error')),
+                    },
+                  );
+                }}
+                disabled={updateCompanyMutation.isPending}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="">{t('profile.companySizePlaceholder')}</option>
+                {COMPANY_SIZE_VALUES.map((size) => (
+                  <option key={size} value={size}>
+                    {companySizeToLabelKey(size, t)}
+                  </option>
+                ))}
+              </select>
+            </div>
             <CompanyDetails company={company} />
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">

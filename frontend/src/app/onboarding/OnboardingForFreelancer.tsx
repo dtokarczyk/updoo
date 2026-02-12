@@ -91,6 +91,7 @@ export function OnboardingForFreelancer({
                 loading={state.loading}
                 error={rootError}
                 t={t}
+                onCompanyFetched={actions.handleCompanyFetched}
               />
             )}
             {state.step === FREELANCER_STEP_SKILLS && (

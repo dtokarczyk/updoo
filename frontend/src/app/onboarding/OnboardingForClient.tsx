@@ -79,6 +79,7 @@ export function OnboardingForClient({
                 loading={state.loading}
                 error={rootError}
                 t={t}
+                onCompanyFetched={actions.handleCompanyFetched}
               />
             )}
           </Card>

@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   Param,
   Patch,
@@ -25,9 +26,18 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 export class ProfilesController {
   constructor(private readonly profilesService: ProfilesService) {}
 
+  private assertNotClient(user: JwtUser) {
+    if (user.accountType === 'CLIENT') {
+      throw new ForbiddenException(
+        'errors.contractorProfileClientForbidden',
+      );
+    }
+  }
+
   @Post()
   @UseGuards(JwtAuthGuard)
   create(@GetUser() user: JwtUser, @Body() dto: CreateProfileDto) {
+    this.assertNotClient(user);
     return this.profilesService.create(user.id, dto);
   }
 
@@ -60,6 +70,7 @@ export class ProfilesController {
     @GetUser() user: JwtUser,
     @Body() dto: UpdateProfileDto,
   ) {
+    this.assertNotClient(user);
     return this.profilesService.update(
       id,
       user.id,
@@ -81,6 +92,7 @@ export class ProfilesController {
     @GetUser() user: JwtUser,
     @UploadedFile() file: Express.Multer.File | undefined,
   ) {
+    this.assertNotClient(user);
     if (!file?.buffer) {
       throw new BadRequestException('File is required');
     }
@@ -101,6 +113,7 @@ export class ProfilesController {
   @Delete(':id/cover')
   @UseGuards(JwtAuthGuard)
   removeCover(@Param('id') id: string, @GetUser() user: JwtUser) {
+    this.assertNotClient(user);
     return this.profilesService.removeCover(
       id,
       user.id,
@@ -111,6 +124,7 @@ export class ProfilesController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   remove(@Param('id') id: string, @GetUser() user: JwtUser) {
+    this.assertNotClient(user);
     return this.profilesService.remove(
       id,
       user.id,

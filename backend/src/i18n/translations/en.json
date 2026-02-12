@@ -42,7 +42,8 @@
     "profileNotFound": "Profile not found",
     "profileUpdateForbidden": "Not allowed to update this profile",
     "profileDeleteForbidden": "Not allowed to delete this profile",
-    "profileVerifyAdminOnly": "Only admin can verify profiles"
+    "profileVerifyAdminOnly": "Only admin can verify profiles",
+    "contractorProfileClientForbidden": "Only freelancer accounts can create or manage contractor profiles"
   },
   "messages": {
     "forgotPasswordSuccess": "If an account exists with this email, you will receive a link to set a new password.",

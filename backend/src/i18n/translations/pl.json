@@ -42,7 +42,8 @@
     "profileNotFound": "Profil nie został znaleziony",
     "profileUpdateForbidden": "Brak uprawnień do edycji tego profilu",
     "profileDeleteForbidden": "Brak uprawnień do usunięcia tego profilu",
-    "profileVerifyAdminOnly": "Tylko administrator może weryfikować profile"
+    "profileVerifyAdminOnly": "Tylko administrator może weryfikować profile",
+    "contractorProfileClientForbidden": "Tylko konta wykonawców mogą zakładać i zarządzać profilami wykonawcy"
   },
   "messages": {
     "forgotPasswordSuccess": "Jeśli konto z tym adresem e-mail istnieje, otrzymasz link do ustawienia nowego hasła.",

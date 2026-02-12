@@ -5,6 +5,7 @@ import {
   SidebarNavList,
   type SidebarNavItem,
 } from '@/components/SidebarNavList';
+import { useAuthQuery } from '@/lib/api-query';
 
 const PROFILE_NAV: SidebarNavItem[] = [
   { href: '/profile/basic', labelKey: 'profile.tabBasic', icon: User },
@@ -28,9 +29,16 @@ export function ProfileSidebar({
 }: {
   variant?: 'sidebar' | 'list';
 }) {
+  const { user } = useAuthQuery();
+  const isClient = user?.accountType === 'CLIENT';
+
+  const items = isClient
+    ? PROFILE_NAV.filter((item) => item.href !== '/profile/business-profile')
+    : PROFILE_NAV;
+
   return (
     <SidebarNavList
-      items={PROFILE_NAV}
+      items={items}
       ariaLabelKey="profile.editProfile"
       variant={variant}
     />

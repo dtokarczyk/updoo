@@ -15,7 +15,7 @@ export default async function MyApplicationsPage() {
 
   if (applications.length === 0) {
     return (
-      <div className="w-full py-8">
+      <div className="w-full">
         <h1 className="text-2xl font-bold text-foreground mb-6">
           {t('my.recentApplications')}
         </h1>
@@ -27,7 +27,7 @@ export default async function MyApplicationsPage() {
   }
 
   return (
-    <div className="w-full py-8">
+    <div className="w-full">
       <h1 className="text-2xl font-bold text-foreground mb-6">
         {t('my.recentApplications')}
       </h1>

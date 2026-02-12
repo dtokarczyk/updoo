@@ -52,7 +52,7 @@ export default function CreateProfilePage() {
       .then((profiles) => {
         if (profiles.length > 0) router.replace('/profile');
       })
-      .catch(() => {});
+      .catch(() => { });
   }, [router]);
 
   const onSubmit = async (data: ProfileFormValues) => {
@@ -80,52 +80,50 @@ export default function CreateProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background py-12 px-4">
-      <main className="max-w-xl mx-auto">
-        <Card>
-          <CardHeader>
-            <CardTitle>Załóż profil wykonawcy</CardTitle>
-            <CardDescription>
-              Profil pozwala zaprezentować firmę lub osobę prywatną. Po
-              weryfikacji będzie widoczny pod adresem /company/nazwa-profilu.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <FormProvider {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-6"
-              >
-                {error && (
-                  <p className="text-sm text-red-600 dark:text-red-400">
-                    {error}
-                  </p>
-                )}
+    <main className="w-full">
+      <Card>
+        <CardHeader>
+          <CardTitle>Załóż profil wykonawcy</CardTitle>
+          <CardDescription>
+            Profil pozwala zaprezentować firmę lub osobę prywatną. Po
+            weryfikacji będzie widoczny pod adresem /company/nazwa-profilu.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <FormProvider {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-6"
+            >
+              {error && (
+                <p className="text-sm text-red-600 dark:text-red-400">
+                  {error}
+                </p>
+              )}
 
-                <ContractorProfileFormFields
-                  variant="standalone"
-                  locations={locations}
+              <ContractorProfileFormFields
+                variant="standalone"
+                locations={locations}
+                disabled={submitting}
+              />
+
+              <div className="flex gap-2">
+                <Button type="submit" disabled={submitting}>
+                  {submitting ? 'Zapisywanie...' : 'Utwórz profil'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  asChild
                   disabled={submitting}
-                />
-
-                <div className="flex gap-2">
-                  <Button type="submit" disabled={submitting}>
-                    {submitting ? 'Zapisywanie...' : 'Utwórz profil'}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    asChild
-                    disabled={submitting}
-                  >
-                    <Link href="/">Anuluj</Link>
-                  </Button>
-                </div>
-              </form>
-            </FormProvider>
-          </CardContent>
-        </Card>
-      </main>
-    </div>
+                >
+                  <Link href="/">Anuluj</Link>
+                </Button>
+              </div>
+            </form>
+          </FormProvider>
+        </CardContent>
+      </Card>
+    </main>
   );
 }

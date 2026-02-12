@@ -45,7 +45,7 @@ export function OffersPageLayout({
   const sectionTitle = t(initialLocale, 'jobs.jobs');
 
   return (
-    <div className="min-w-0 lg:w-3/5 pt-6">
+    <div className="min-w-0 lg:w-3/5 lg:pt-6">
       <HeroBannerForGuests
         isHomePage={isHomePage}
         initialLocale={initialLocale}

@@ -29,7 +29,6 @@ export default async function ProfileLayout({
   return (
     <SettingsLayout
       sidebar={<ProfileSidebar variant="sidebar" />}
-      mobileList={<ProfileSidebar variant="list" />}
     >
       {children}
     </SettingsLayout>

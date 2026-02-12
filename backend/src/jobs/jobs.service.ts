@@ -270,9 +270,8 @@ export class JobsService implements OnModuleInit {
       dto.offerDays != null && allowedDays.includes(dto.offerDays)
         ? new Date(now.getTime() + dto.offerDays * 24 * 60 * 60 * 1000)
         : null;
-    const language = dto.language
-      ? (dto.language as JobLanguage)
-      : JobLanguage.POLISH;
+    // Job announcements are always in Polish
+    const language = JobLanguage.POLISH;
     const job = await this.prisma.job.create({
       data: {
         title: dto.title.trim(),
@@ -1049,9 +1048,8 @@ export class JobsService implements OnModuleInit {
             job.createdAt.getTime() + dto.offerDays * 24 * 60 * 60 * 1000,
           )
         : undefined;
-    const language = dto.language
-      ? (dto.language as JobLanguage)
-      : job.language;
+    // Job announcements are always in Polish
+    const language = JobLanguage.POLISH;
     // When editing REJECTED job, clear rejection data and set to DRAFT for re-approval
     const updated = await this.prisma.job.update({
       where: { id: jobId },

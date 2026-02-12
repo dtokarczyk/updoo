@@ -15,7 +15,6 @@ import {
   type HoursPerWeek,
   type ExperienceLevel,
   type ProjectType,
-  type JobLanguage,
   type CreateJobPayload,
   type Job,
 } from '@/lib/api';
@@ -33,7 +32,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { SelectBox } from '@/components/ui/SelectBox';
 import { cn } from '@/lib/utils';
 import { useTranslations } from '@/hooks/useTranslations';
-import ReactCountryFlag from 'react-country-flag';
 import {
   jobFormSchema,
   defaultJobFormValues,
@@ -166,15 +164,15 @@ export function JobForm({
       const offerDays =
         initialData.deadline && initialData.createdAt
           ? (() => {
-              const ms =
-                new Date(initialData.deadline).getTime() -
-                new Date(initialData.createdAt).getTime();
-              const days = Math.round(ms / (24 * 60 * 60 * 1000));
-              const allowed = [7, 14, 21, 30];
-              return allowed.reduce((prev, curr) =>
-                Math.abs(curr - days) < Math.abs(prev - days) ? curr : prev,
-              );
-            })()
+            const ms =
+              new Date(initialData.deadline).getTime() -
+              new Date(initialData.createdAt).getTime();
+            const days = Math.round(ms / (24 * 60 * 60 * 1000));
+            const allowed = [7, 14, 21, 30];
+            return allowed.reduce((prev, curr) =>
+              Math.abs(curr - days) < Math.abs(prev - days) ? curr : prev,
+            );
+          })()
           : 14;
       const expectedOffers =
         initialData.expectedOffers != null && [6, 10, 14].includes(initialData.expectedOffers)
@@ -189,7 +187,7 @@ export function JobForm({
         hoursPerWeek: (initialData.hoursPerWeek ?? '') as JobFormValues['hoursPerWeek'],
         rate:
           initialData.rateNegotiable &&
-          (initialData.rate === '0' || initialData.rate === '' || !initialData.rate)
+            (initialData.rate === '0' || initialData.rate === '' || !initialData.rate)
             ? ''
             : (initialData.rate ?? '1000'),
         rateNegotiable: initialData.rateNegotiable ?? false,
@@ -318,10 +316,10 @@ export function JobForm({
 
   const filteredSkills = skillInput.trim()
     ? skills.filter(
-        (s) =>
-          s.name.toLowerCase().includes(skillInput.toLowerCase()) &&
-          !selectedSkills.some((sel) => sel.skillId === s.id),
-      )
+      (s) =>
+        s.name.toLowerCase().includes(skillInput.toLowerCase()) &&
+        !selectedSkills.some((sel) => sel.skillId === s.id),
+    )
     : [];
 
   const onFormSubmit = async (data: JobFormValues) => {
@@ -336,7 +334,7 @@ export function JobForm({
         title: data.title.trim(),
         description: data.description.trim(),
         categoryId: data.categoryId,
-        language: data.language,
+        language: 'POLISH',
         billingType: data.billingType as BillingType,
         hoursPerWeek:
           data.billingType === 'HOURLY'
@@ -382,58 +380,9 @@ export function JobForm({
         </p>
       )}
 
-      {/* Step 1: Language, Title, Description, Category */}
+      {/* Step 1: Title, Description, Category (language always POLISH, set on backend) */}
       <div className="space-y-4">
         <h2 className="text-xl font-semibold">{t('jobs.newJobForm.step1')}</h2>
-        <div className="space-y-2">
-          <Label>{t('jobs.language')}</Label>
-          <Controller
-            name="language"
-            control={control}
-            render={({ field }) => (
-          <div className="flex gap-4">
-            <button
-              type="button"
-              onClick={() => field.onChange('POLISH')}
-              disabled={isSubmitting}
-              className={cn(
-                'flex items-center gap-2 px-4 py-3 rounded-lg border-2 transition-all',
-                field.value === 'POLISH'
-                  ? 'border-primary bg-primary/5 dark:bg-primary/10'
-                  : 'border-input bg-background hover:border-ring',
-                'disabled:opacity-50',
-              )}
-            >
-              <ReactCountryFlag
-                svg
-                countryCode="PL"
-                style={{ width: '1.5em', height: '1.5em' }}
-              />
-              <span className="font-medium">{t('jobs.polish')}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => field.onChange('ENGLISH')}
-              disabled={isSubmitting}
-              className={cn(
-                'flex items-center gap-2 px-4 py-3 rounded-lg border-2 transition-all',
-                field.value === 'ENGLISH'
-                  ? 'border-primary bg-primary/5 dark:bg-primary/10'
-                  : 'border-input bg-background hover:border-ring',
-                'disabled:opacity-50',
-              )}
-            >
-              <ReactCountryFlag
-                svg
-                countryCode="GB"
-                style={{ width: '1.5em', height: '1.5em' }}
-              />
-              <span className="font-medium">{t('jobs.english')}</span>
-            </button>
-          </div>
-            )}
-          />
-        </div>
         <div className="space-y-2">
           <Label htmlFor="title">{t('jobs.title')}</Label>
           <Input

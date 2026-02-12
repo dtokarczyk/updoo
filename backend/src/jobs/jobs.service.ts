@@ -20,7 +20,6 @@ import {
   JobStatus,
   JobLanguage,
   AccountType,
-  ExpectedApplicantType,
 } from '@prisma/client';
 import { ContentGeneratorService } from '../content-generator/content-generator.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -345,10 +344,7 @@ export class JobsService implements OnModuleInit {
           dto.expectedOffers != null && [6, 10, 14].includes(dto.expectedOffers)
             ? dto.expectedOffers
             : null,
-        expectedApplicantType:
-          dto.expectedApplicantType != null
-            ? (dto.expectedApplicantType as ExpectedApplicantType)
-            : null,
+        expectedApplicantTypes: dto.expectedApplicantTypes ?? [],
       },
       include: {
         category: {
@@ -879,8 +875,9 @@ export class JobsService implements OnModuleInit {
     if (job.deadline && job.deadline < now) {
       throw new ForbiddenException('Termin zgłoszeń minął');
     }
-    // Check expected applicant type: freelancer must match job restriction
-    if (job.expectedApplicantType != null) {
+    // Check expected applicant types: freelancer must match at least one allowed type
+    const allowedTypes = job.expectedApplicantTypes ?? [];
+    if (allowedTypes.length > 0) {
       const freelancer = await this.prisma.user.findUnique({
         where: { id: freelancerId },
         include: { company: { select: { companySize: true } } },
@@ -893,20 +890,12 @@ export class JobsService implements OnModuleInit {
       const isCompanySize =
         companySize != null &&
         ['MICRO', 'SMALL', 'MEDIUM', 'LARGE'].includes(companySize);
-      let meetsCriteria = false;
-      switch (job.expectedApplicantType) {
-        case ExpectedApplicantType.FREELANCER_NO_B2B:
-          meetsCriteria = !hasCompany;
-          break;
-        case ExpectedApplicantType.FREELANCER_B2B:
-          meetsCriteria = hasCompany && companySize === 'FREELANCER';
-          break;
-        case ExpectedApplicantType.COMPANY:
-          meetsCriteria = hasCompany && isCompanySize;
-          break;
-        default:
-          meetsCriteria = true;
-      }
+      const userTypes: string[] = [];
+      if (!hasCompany) userTypes.push('FREELANCER_NO_B2B');
+      if (hasCompany && companySize === 'FREELANCER')
+        userTypes.push('FREELANCER_B2B');
+      if (hasCompany && isCompanySize) userTypes.push('COMPANY');
+      const meetsCriteria = userTypes.some((t) => allowedTypes.includes(t));
       if (!meetsCriteria) {
         throw new ForbiddenException(
           'messages.applyApplicantTypeMismatch',
@@ -1144,10 +1133,10 @@ export class JobsService implements OnModuleInit {
           dto.expectedOffers != null && [6, 10, 14].includes(dto.expectedOffers)
             ? dto.expectedOffers
             : job.expectedOffers,
-        expectedApplicantType:
-          dto.expectedApplicantType !== undefined
-            ? (dto.expectedApplicantType as ExpectedApplicantType | null)
-            : job.expectedApplicantType,
+        expectedApplicantTypes:
+          dto.expectedApplicantTypes !== undefined
+            ? dto.expectedApplicantTypes
+            : job.expectedApplicantTypes,
       },
       include: {
         category: {

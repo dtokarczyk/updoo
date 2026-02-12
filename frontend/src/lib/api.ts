@@ -743,8 +743,8 @@ export interface Job {
   applicationsCount?: number;
   /** Max number of offers (6, 10 or 14). When null, no limit. */
   expectedOffers?: number | null;
-  /** Restrict who can apply: freelancer without B2B, freelancer with B2B, or companies. When null, no restriction. */
-  expectedApplicantType?: 'FREELANCER_NO_B2B' | 'FREELANCER_B2B' | 'COMPANY' | null;
+  /** Restrict who can apply: one or more of freelancer without B2B, freelancer with B2B, companies. Empty = no restriction. */
+  expectedApplicantTypes?: ('FREELANCER_NO_B2B' | 'FREELANCER_B2B' | 'COMPANY')[];
 }
 
 export interface PaginationInfo {
@@ -1179,8 +1179,8 @@ export interface CreateJobPayload {
   offerDays?: number;
   /** Expected number of offers (6, 10 or 14). */
   expectedOffers?: number;
-  /** Restrict who can apply: freelancer without B2B, freelancer with B2B, or companies. */
-  expectedApplicantType?: 'FREELANCER_NO_B2B' | 'FREELANCER_B2B' | 'COMPANY';
+  /** Restrict who can apply: one or more of freelancer without B2B, freelancer with B2B, companies. */
+  expectedApplicantTypes?: ('FREELANCER_NO_B2B' | 'FREELANCER_B2B' | 'COMPANY')[];
   skillIds?: string[];
   newSkillNames?: string[];
 }

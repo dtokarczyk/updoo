@@ -53,10 +53,7 @@ export const jobFormSchema = z
       z.literal(14),
       z.literal(''),
     ]),
-    expectedApplicantType: z.union([
-      expectedApplicantTypeEnum,
-      z.literal(''),
-    ]),
+    expectedApplicantTypes: z.array(expectedApplicantTypeEnum).min(1, msg('jobs.newJobForm.selectExpectedApplicantType')),
     selectedSkills: z.array(selectedSkillSchema).max(5),
   })
   .superRefine((data, ctx) => {
@@ -116,18 +113,6 @@ export const jobFormSchema = z
         code: z.ZodIssueCode.custom,
       });
     }
-    if (
-      data.expectedApplicantType === '' ||
-      !['FREELANCER_NO_B2B', 'FREELANCER_B2B', 'COMPANY'].includes(
-        data.expectedApplicantType,
-      )
-    ) {
-      ctx.addIssue({
-        path: ['expectedApplicantType'],
-        message: msg('jobs.newJobForm.selectExpectedApplicantType'),
-        code: z.ZodIssueCode.custom,
-      });
-    }
   });
 
 export type JobFormValues = z.infer<typeof jobFormSchema>;
@@ -150,6 +135,6 @@ export const defaultJobFormValues: JobFormValues = {
   projectType: '',
   offerDays: 14,
   expectedOffers: 10,
-  expectedApplicantType: '',
+  expectedApplicantTypes: [],
   selectedSkills: [],
 };

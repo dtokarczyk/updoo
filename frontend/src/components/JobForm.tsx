@@ -200,7 +200,7 @@ export function JobForm({
         projectType: initialData.projectType,
         offerDays: offerDays as JobFormValues['offerDays'],
         expectedOffers: expectedOffers as JobFormValues['expectedOffers'],
-        expectedApplicantType: (initialData.expectedApplicantType ?? '') as JobFormValues['expectedApplicantType'],
+        expectedApplicantTypes: initialData.expectedApplicantTypes ?? [],
         selectedSkills:
           initialData.skills?.map((r) => ({ skillId: r.skill.id, name: r.skill.name })) ?? [],
       });
@@ -228,7 +228,7 @@ export function JobForm({
           expectedOffers: (draft.expectedOffers != null && [6, 10, 14].includes(draft.expectedOffers)
             ? draft.expectedOffers
             : 10) as JobFormValues['expectedOffers'],
-          expectedApplicantType: (draft.expectedApplicantType ?? '') as JobFormValues['expectedApplicantType'],
+          expectedApplicantTypes: draft.expectedApplicantTypes ?? [],
           selectedSkills: [],
         });
         setDraftLoaded(true);
@@ -351,16 +351,7 @@ export function JobForm({
         projectType: data.projectType as ProjectType,
         offerDays: data.offerDays as number,
         expectedOffers: data.expectedOffers as number,
-        expectedApplicantType:
-          data.expectedApplicantType &&
-          ['FREELANCER_NO_B2B', 'FREELANCER_B2B', 'COMPANY'].includes(
-            data.expectedApplicantType,
-          )
-            ? (data.expectedApplicantType as
-                | 'FREELANCER_NO_B2B'
-                | 'FREELANCER_B2B'
-                | 'COMPANY')
-            : undefined,
+        expectedApplicantTypes: data.expectedApplicantTypes,
         skillIds: data.selectedSkills
           .filter((s) => s.skillId != null)
           .map((s) => s.skillId as string),
@@ -953,7 +944,7 @@ export function JobForm({
             {t('jobs.newJobForm.expectedApplicantTypeDescription')}
           </p>
           <Controller
-            name="expectedApplicantType"
+            name="expectedApplicantTypes"
             control={control}
             render={({ field }) => (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -968,18 +959,23 @@ export function JobForm({
                     key={value}
                     value={value}
                     label={t(labelKey)}
-                    selected={field.value === value}
-                    onSelect={() => field.onChange(value)}
+                    selected={field.value.includes(value)}
+                    onSelect={() => {
+                      const next = field.value.includes(value)
+                        ? field.value.filter((v) => v !== value)
+                        : [...field.value, value];
+                      field.onChange(next);
+                    }}
                     disabled={isSubmitting}
-                    className={errors.expectedApplicantType ? 'border-destructive' : undefined}
+                    className={errors.expectedApplicantTypes ? 'border-destructive' : undefined}
                   />
                 ))}
               </div>
             )}
           />
-          {errors.expectedApplicantType?.message && (
+          {errors.expectedApplicantTypes?.message && (
             <p className="text-sm text-red-600 dark:text-red-400">
-              {t(errors.expectedApplicantType.message)}
+              {t(errors.expectedApplicantTypes.message)}
             </p>
           )}
         </div>

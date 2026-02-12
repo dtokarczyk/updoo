@@ -125,12 +125,14 @@ export class CreateJobDto {
   @Type(() => Number)
   expectedOffers?: number;
 
-  /** Restrict who can apply: freelancer without B2B, freelancer with B2B, or companies. */
+  /** Restrict who can apply: one or more of freelancer without B2B, freelancer with B2B, companies. */
   @IsOptional()
+  @IsArray()
   @IsEnum(ExpectedApplicantTypeDto, {
+    each: true,
     message: 'validation.expectedApplicantTypeInvalid',
   })
-  expectedApplicantType?: ExpectedApplicantTypeDto;
+  expectedApplicantTypes?: ExpectedApplicantTypeDto[];
 
   @IsOptional()
   @IsArray()

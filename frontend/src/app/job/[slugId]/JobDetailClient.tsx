@@ -17,6 +17,7 @@ import {
   Send,
   Tag,
   User,
+  UserCheck,
   Users,
   Wrench,
   Laptop,
@@ -74,6 +75,15 @@ const EXPERIENCE_LABELS: Record<string, string> = {
 const PROJECT_TYPE_LABELS: Record<string, string> = {
   ONE_TIME: 'Jednorazowy',
   CONTINUOUS: 'Ciągły',
+};
+
+const EXPECTED_APPLICANT_TYPE_LABEL_KEYS: Record<
+  string,
+  string
+> = {
+  FREELANCER_NO_B2B: 'jobs.newJobForm.expectedApplicantTypeFreelancerNoB2B',
+  FREELANCER_B2B: 'jobs.newJobForm.expectedApplicantTypeFreelancerB2B',
+  COMPANY: 'jobs.newJobForm.expectedApplicantTypeCompany',
 };
 
 function formatDate(iso: string, locale: 'pl' | 'en'): string {
@@ -334,7 +344,7 @@ export function JobDetailClient({
           }
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, [id, user]);
 
   // Fill default message when job loads and user is freelancer
@@ -381,25 +391,21 @@ export function JobDetailClient({
     applications.length >= job.expectedOffers &&
     !job.currentUserApplied;
 
-  // Whether current user (freelancer) meets job's expected applicant type. When job has no restriction, true.
+  // Whether current user (freelancer) meets job's expected applicant types. When job has no restriction (empty array), true.
   const meetsApplicantCriteria = (() => {
-    if (!job.expectedApplicantType) return true;
+    const allowedTypes = job.expectedApplicantTypes ?? [];
+    if (allowedTypes.length === 0) return true;
     if (!user || user.accountType !== 'FREELANCER') return true;
     const hasCompany = !!user.companyId;
     const companySize = user.companySize ?? null;
     const isCompanySize =
       companySize != null &&
       ['MICRO', 'SMALL', 'MEDIUM', 'LARGE'].includes(companySize);
-    switch (job.expectedApplicantType) {
-      case 'FREELANCER_NO_B2B':
-        return !hasCompany;
-      case 'FREELANCER_B2B':
-        return hasCompany && companySize === 'FREELANCER';
-      case 'COMPANY':
-        return hasCompany && isCompanySize;
-      default:
-        return true;
-    }
+    let userType: string | null = null;
+    if (!hasCompany) userType = 'FREELANCER_NO_B2B';
+    else if (companySize === 'FREELANCER') userType = 'FREELANCER_B2B';
+    else if (isCompanySize) userType = 'COMPANY';
+    return userType != null && allowedTypes.includes(userType);
   })();
 
   const canApply =
@@ -560,6 +566,27 @@ export function JobDetailClient({
               label={t('jobs.rate')}
               value={<JobRateValue user={user} job={job} t={t} />}
             />
+            {job.expectedOffers != null ? (
+              <>
+                <DetailRow
+                  icon={Users}
+                  label={t('jobs.expectedOffers')}
+                  value={String(job.expectedOffers)}
+                />
+                <DetailRow
+                  icon={Users}
+                  label={t('jobs.submittedApplications')}
+                  value={String(applications.length)}
+                />
+              </>
+            ) : (
+              <DetailRow
+                icon={Users}
+                label={t('jobs.applications')}
+                value={String(applications.length)}
+              />
+            )}
+
             <DetailRow
               icon={Briefcase}
               label={t('jobs.billingType')}
@@ -661,9 +688,9 @@ export function JobDetailClient({
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
                 {job.expectedOffers != null
                   ? t('jobs.applicationsCountLimit', {
-                      submitted: applications.length,
-                      expected: job.expectedOffers,
-                    })
+                    submitted: applications.length,
+                    expected: job.expectedOffers,
+                  })
                   : t('jobs.applicationsCount', { count: applications.length })}
               </p>
               <ul className="space-y-2 mb-6">
@@ -778,15 +805,35 @@ export function JobDetailClient({
               label={t('jobs.rate')}
               value={<JobRateValue user={user} job={job} t={t} />}
             />
-            <DetailRow
-              icon={Users}
-              label={t('jobs.applications')}
-              value={
-                job.expectedOffers != null
-                  ? `${applications.length}/${job.expectedOffers}`
-                  : String(applications.length)
-              }
-            />
+            {job.expectedOffers != null ? (
+              <>
+                <DetailRow
+                  icon={Users}
+                  label={t('jobs.expectedOffers')}
+                  value={String(job.expectedOffers)}
+                />
+                <DetailRow
+                  icon={Users}
+                  label={t('jobs.submittedApplications')}
+                  value={String(applications.length)}
+                />
+              </>
+            ) : (
+              <DetailRow
+                icon={Users}
+                label={t('jobs.applications')}
+                value={String(applications.length)}
+              />
+            )}
+            {job.expectedApplicantTypes?.length ? (
+              <DetailRow
+                icon={UserCheck}
+                label={t('jobs.expectedApplicantType')}
+                value={job.expectedApplicantTypes
+                  .map((type) => t(EXPECTED_APPLICANT_TYPE_LABEL_KEYS[type] ?? type))
+                  .join(', ')}
+              />
+            ) : null}
             <DetailRow
               icon={Briefcase}
               label={t('jobs.billingType')}
@@ -884,29 +931,29 @@ export function JobDetailClient({
         isAdmin ||
         canApply ||
         (!user && !isDraft && !isClosed)) && (
-        <div className="fixed inset-x-0 bottom-16 z-50 border-t border-border bg-background/95 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
-          <div className="mx-auto max-w-4xl">
-            <JobActions
-              isOwnJob={isOwnJob}
-              isAdmin={isAdmin}
-              isDraft={isDraft}
-              isClosed={isClosed}
-              user={user}
-              canApply={canApply}
-              criteriaNotMet={criteriaNotMet}
-              currentUserApplied={job.currentUserApplied}
-              deadlinePassed={deadlinePassed}
-              canClose={canClose}
-              closeSubmitting={closeSubmitting}
-              job={job}
-              onApplyClick={handleApplyClick}
-              onClose={handleClose}
-              t={t}
-              layout="row"
-            />
+          <div className="fixed inset-x-0 bottom-16 z-50 border-t border-border bg-background/95 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
+            <div className="mx-auto max-w-4xl">
+              <JobActions
+                isOwnJob={isOwnJob}
+                isAdmin={isAdmin}
+                isDraft={isDraft}
+                isClosed={isClosed}
+                user={user}
+                canApply={canApply}
+                criteriaNotMet={criteriaNotMet}
+                currentUserApplied={job.currentUserApplied}
+                deadlinePassed={deadlinePassed}
+                canClose={canClose}
+                closeSubmitting={closeSubmitting}
+                job={job}
+                onApplyClick={handleApplyClick}
+                onClose={handleClose}
+                t={t}
+                layout="row"
+              />
+            </div>
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 }

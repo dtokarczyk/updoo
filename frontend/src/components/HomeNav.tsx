@@ -78,7 +78,12 @@ export function UserDropdown(props: {
       >
         <ProfileAvatar className={cn(iconOnly ? 'h-8 w-8' : 'h-8 w-8')} />
         {!iconOnly && (
-          <span className="hidden min-w-0 flex-col items-start text-left sm:flex">
+          <span
+            className={cn(
+              'min-w-0 flex-col items-start text-left',
+              fullWidth ? 'flex' : 'hidden sm:flex',
+            )}
+          >
             <span className="truncate text-sm font-medium text-foreground leading-tight">
               {user ? displayName(user, t) : t('profile.editProfile')}
             </span>

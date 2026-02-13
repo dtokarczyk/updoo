@@ -150,6 +150,10 @@ function NotificationItem({
       title: t('notifications.newJobMatchingSkills'),
       description: t('notifications.newJobMatchingSkillsDesc'),
     },
+    NEW_APPLICATION_TO_MY_JOB: {
+      title: t('notifications.newApplicationToMyJob'),
+      description: t('notifications.newApplicationToMyJobDesc'),
+    },
   };
 
   const labels = typeLabels[pref.type] ?? {

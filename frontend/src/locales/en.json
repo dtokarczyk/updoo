@@ -569,6 +569,8 @@
     "description": "Manage your email notifications. Choose which notifications you want to receive and how often.",
     "newJobMatchingSkills": "New jobs in followed categories",
     "newJobMatchingSkillsDesc": "Get notified when a new job is posted in categories you follow.",
+    "newApplicationToMyJob": "Applications to my jobs",
+    "newApplicationToMyJobDesc": "Receive an email when someone applies to a job you published. You can disable this.",
     "enabled": "Enabled",
     "disabled": "Disabled",
     "frequency": "Frequency",

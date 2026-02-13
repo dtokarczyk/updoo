@@ -354,6 +354,8 @@ model MailerLog {
 
 enum NotificationType {
   NEW_JOB_MATCHING_SKILLS
+  /** Notify job author when someone applies to their published job. */
+  NEW_APPLICATION_TO_MY_JOB
 }
 
 enum NotificationFrequency {

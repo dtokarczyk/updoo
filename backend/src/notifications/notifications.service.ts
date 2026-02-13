@@ -139,6 +139,99 @@ export class NotificationsService {
     );
   }
 
+  // ──────────────────────────── New application to my job ───────────────────
+
+  /**
+   * Called when a freelancer applies to a job. If the job author has
+   * NEW_APPLICATION_TO_MY_JOB preference enabled, sends an instant email.
+   */
+  async onNewApplicationToMyJob(
+    jobId: string,
+    freelancerId: string,
+  ): Promise<void> {
+    const job = await this.prisma.job.findUnique({
+      where: { id: jobId },
+      include: {
+        author: true,
+        applications: {
+          where: { freelancerId },
+          take: 1,
+          include: {
+            freelancer: {
+              select: { name: true, surname: true },
+            },
+          },
+        },
+      },
+    });
+    if (!job || job.status !== JobStatus.PUBLISHED) return;
+
+    const authorId = job.authorId;
+    if (authorId === freelancerId) return; // should not happen
+
+    const pref = await this.prisma.notificationPreference.findUnique({
+      where: {
+        userId_type: { userId: authorId, type: NotificationType.NEW_APPLICATION_TO_MY_JOB },
+      },
+    });
+    const enabled = pref?.enabled ?? DEFAULT_ENABLED;
+    if (!enabled) return;
+
+    const author = job.author;
+    const application = job.applications[0];
+    const freelancer = application?.freelancer;
+    const isPolish = author.language === 'POLISH';
+    const applicantName =
+      freelancer?.name && freelancer?.surname
+        ? `${freelancer.name} ${freelancer.surname.charAt(0)}.`
+        : freelancer?.name ?? (isPolish ? 'Ktoś' : 'Someone');
+
+    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
+    const jobUrl = `${frontendUrl}/job/${job.id}`;
+    const userName = author.name ?? '';
+
+    const subject = isPolish
+      ? `Nowe zgłoszenie do Twojej oferty: ${job.title}`
+      : `New application to your job: ${job.title}`;
+
+    const greeting = userName
+      ? isPolish
+        ? `Cześć ${userName}!`
+        : `Hi ${userName}!`
+      : isPolish
+        ? 'Cześć!'
+        : 'Hi!';
+
+    const html = `
+      <p>${greeting}</p>
+      <p>${isPolish ? 'Otrzymałeś nowe zgłoszenie do swojej oferty:' : 'You received a new application to your job:'}</p>
+      <h2 style="margin:16px 0 8px;"><a href="${jobUrl}" style="color:#2563eb;text-decoration:none;">${this.escapeHtml(job.title)}</a></h2>
+      <p><strong>${isPolish ? 'Zgłosił się' : 'Applicant'}:</strong> ${this.escapeHtml(applicantName)}</p>
+      <p>
+        <a href="${jobUrl}" style="display:inline-block;padding:10px 20px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px;">
+          ${isPolish ? 'Zobacz zgłoszenia' : 'View applications'}
+        </a>
+      </p>
+      <p style="color:#888;font-size:12px;">${isPolish ? 'Możesz wyłączyć te powiadomienia w ustawieniach profilu.' : 'You can disable these notifications in your profile settings.'}</p>
+      <p>Hoplo</p>
+    `;
+
+    try {
+      if (this.emailService.isConfigured()) {
+        await this.emailService.sendHtml(author.email, subject, html);
+      } else {
+        this.logger.warn(
+          `Email not configured – skipping new-application notification to ${author.email}`,
+        );
+      }
+    } catch (error) {
+      this.logger.error(
+        `Failed to send new-application notification to ${author.email}`,
+        error,
+      );
+    }
+  }
+
   // ──────────────────────────── Daily digest cron ───────────────────────────
 
   /** Runs every day at 06:00 UTC. Sends digest emails for undispatched notifications. Only includes jobs that are still PUBLISHED. */

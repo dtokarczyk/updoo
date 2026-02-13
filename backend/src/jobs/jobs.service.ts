@@ -1088,6 +1088,11 @@ export class JobsService implements OnModuleInit {
       }
     }
     const trimmedMessage = message?.trim() || undefined;
+    const existingApplication = await this.prisma.jobApplication.findUnique({
+      where: {
+        jobId_freelancerId: { jobId, freelancerId },
+      },
+    });
     await this.prisma.jobApplication.upsert({
       where: {
         jobId_freelancerId: { jobId, freelancerId },
@@ -1099,6 +1104,18 @@ export class JobsService implements OnModuleInit {
       },
       update: { message: trimmedMessage },
     });
+
+    // Notify job author about new application (only for first-time applications)
+    if (!existingApplication) {
+      await this.notificationsService
+        .onNewApplicationToMyJob(jobId, freelancerId)
+        .catch((err) =>
+          this.logger.warn(
+            `Failed to send new-application notification for job ${jobId}`,
+            err,
+          ),
+        );
+    }
 
     // Auto-close job when expected number of applications is reached
     if (job.expectedOffers != null && job.status === JobStatus.PUBLISHED) {

@@ -1556,7 +1556,9 @@ export async function generateAiJob(): Promise<{
 
 // ─── Notification preferences ────────────────────────────────────────
 
-export type NotificationType = 'NEW_JOB_MATCHING_SKILLS';
+export type NotificationType =
+  | 'NEW_JOB_MATCHING_SKILLS'
+  | 'NEW_APPLICATION_TO_MY_JOB';
 export type NotificationFrequency = 'INSTANT' | 'DAILY_DIGEST';
 
 export interface NotificationPreference {

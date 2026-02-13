@@ -46,7 +46,7 @@ export function CategoriesSidebarDesktop({
 
   return (
     <nav className="hidden lg:block">
-      <ul className="space-y-2">
+      <ul>
         <li>
           <Link
             href="/"

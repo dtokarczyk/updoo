@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  Logger,
   OnModuleInit,
   NotFoundException,
   forwardRef,
@@ -21,7 +22,7 @@ import {
   JobLanguage,
   AccountType,
 } from '@prisma/client';
-import { ContentGeneratorService } from '../content-generator/content-generator.service';
+import { AiService } from '../ai/ai.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { EmailService } from '../email/email.service';
 import { I18nService } from '../i18n/i18n.service';
@@ -31,10 +32,12 @@ import { DEFAULT_CATEGORIES, ALLOWED_CATEGORY_SLUGS } from './jobs.constants';
 
 @Injectable()
 export class JobsService implements OnModuleInit {
+  private readonly logger = new Logger(JobsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly favoritesService: FavoritesService,
-    private readonly contentGenerator: ContentGeneratorService,
+    private readonly aiService: AiService,
     private readonly emailService: EmailService,
     private readonly i18nService: I18nService,
     @Inject(forwardRef(() => NotificationsService))
@@ -321,6 +324,12 @@ export class JobsService implements OnModuleInit {
           skillId,
         })),
       });
+    } else {
+      void this.attachSkillsFromContentAsync(
+        job.id,
+        dto.title.trim(),
+        dto.description.trim(),
+      );
     }
     const result = await this.prisma.job.findUnique({
       where: { id: job.id },
@@ -345,6 +354,119 @@ export class JobsService implements OnModuleInit {
       author: maskAuthorSurname(result.author),
       category: this.getCategoryWithTranslation(result.category, userLanguage),
     };
+  }
+
+  /**
+   * Extract 1–5 expected skill names from job title and description via AI.
+   * Runs in background; errors are logged and not thrown.
+   */
+  private async extractExpectedSkillNames(
+    title: string,
+    description: string,
+  ): Promise<string[]> {
+    const allSkillNames = (
+      await this.prisma.skill.findMany({ select: { name: true }, orderBy: { name: 'asc' } })
+    ).map((s) => s.name);
+    const allowed = allSkillNames.slice(0, 500);
+    const prompt = [
+      'Na podstawie tytułu i opisu oferty pracy wybierz oczekiwane umiejętności (skille) do realizacji tej oferty.',
+      `Tytuł: ${title}`,
+      `Opis (fragment): ${description.slice(0, 2000)}`,
+      allowed.length > 0
+        ? `Dostępne skille – wybierz wyłącznie 1–5 nazw z tej listy (zwróć tablicę JSON skillNames):\n${allowed.join(', ')}`
+        : 'Brak zdefiniowanych skilli w systemie. Podaj 1–5 krótkich nazw umiejętności (technologie, narzędzia, dziedziny) jako tablicę JSON skillNames.',
+      'Zwróć JSON: {"skillNames": ["Nazwa1", "Nazwa2"]}. Tylko nazwy z podanej listy (gdy lista jest pusta – dowolne krótkie nazwy).',
+    ].join('\n\n');
+
+    try {
+      const raw = await this.aiService.generateText({
+        model: 'gemini-flash-latest',
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          responseJsonSchema: {
+            type: 'object',
+            additionalProperties: false,
+            required: ['skillNames'],
+            properties: {
+              skillNames: {
+                type: 'array',
+                items:
+                  allowed.length > 0
+                    ? { type: 'string' as const, enum: allowed }
+                    : { type: 'string' as const },
+                minItems: 0,
+                maxItems: 5,
+                description:
+                  allowed.length > 0
+                    ? '1–5 nazw umiejętności z podanej listy'
+                    : '1–5 nazw umiejętności',
+              },
+            },
+          },
+        },
+      });
+
+      const parsed = JSON.parse(raw) as { skillNames?: unknown };
+      const arr = Array.isArray(parsed.skillNames) ? parsed.skillNames : [];
+      const allowedSet = new Set(allowed.map((n) => n.trim().toLowerCase()));
+      return arr
+        .filter((n): n is string => typeof n === 'string' && n.trim().length > 0)
+        .map((n) => n.trim())
+        .filter((n) => allowed.length === 0 || allowedSet.has(n.toLowerCase()))
+        .slice(0, 5);
+    } catch (err) {
+      this.logger.warn(
+        'extractExpectedSkillNames failed, returning empty',
+        err as Error,
+      );
+      return [];
+    }
+  }
+
+  /**
+   * Asynchronously attach skills to a job by extracting them from content via AI.
+   * Fire-and-forget: errors are logged only.
+   */
+  private attachSkillsFromContentAsync(
+    jobId: string,
+    title: string,
+    description: string,
+  ): void {
+    void (async () => {
+      try {
+        const names = await this.extractExpectedSkillNames(title, description);
+        if (names.length === 0) return;
+        const skillIdsToAdd: string[] = [];
+        for (const name of names) {
+          const existing = await this.prisma.skill.findUnique({
+            where: { name },
+          });
+          if (existing) {
+            skillIdsToAdd.push(existing.id);
+          } else {
+            const created = await this.prisma.skill.create({
+              data: { name },
+            });
+            skillIdsToAdd.push(created.id);
+          }
+          if (skillIdsToAdd.length >= 5) break;
+        }
+        if (skillIdsToAdd.length > 0) {
+          await this.prisma.jobSkill.createMany({
+            data: skillIdsToAdd.map((skillId) => ({ jobId, skillId })),
+          });
+          this.logger.log(
+            `Attached ${skillIdsToAdd.length} AI-extracted skills to job ${jobId}`,
+          );
+        }
+      } catch (err) {
+        this.logger.warn(
+          `attachSkillsFromContentAsync failed for job ${jobId}`,
+          err as Error,
+        );
+      }
+    })();
   }
 
   /** Feed: published for everyone; when userId is set, also include that user's draft jobs.

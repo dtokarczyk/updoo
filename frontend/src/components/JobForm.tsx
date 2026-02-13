@@ -1,16 +1,14 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import { useForm, Controller, useFieldArray } from 'react-hook-form';
+import { useEffect, useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   getCategories,
   getLocations,
-  getSkills,
   getDraftJob,
   type Category,
   type Location,
-  type Skill,
   type BillingType,
   type HoursPerWeek,
   type ExperienceLevel,
@@ -36,7 +34,6 @@ import {
   jobFormSchema,
   defaultJobFormValues,
   type JobFormValues,
-  type SelectedSkill,
 } from '@/components/job-form-schema';
 
 const CURRENCIES = ['PLN', 'EUR', 'USD', 'GBP', 'CHF'];
@@ -87,13 +84,9 @@ export function JobForm({
   const { t } = useTranslations();
   const [categories, setCategories] = useState<Category[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
-  const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [skillInput, setSkillInput] = useState('');
-  const [skillDropdownOpen, setSkillDropdownOpen] = useState(false);
-  const skillInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<JobFormValues>({
     resolver: zodResolver(jobFormSchema),
@@ -109,11 +102,6 @@ export function JobForm({
     reset,
     formState: { errors, isSubmitting },
   } = form;
-
-  const { fields: selectedSkills, append: appendSkill, remove: removeSkill } = useFieldArray({
-    control,
-    name: 'selectedSkills',
-  });
 
   const watchedCategoryId = watch('categoryId');
   const watchedExperienceLevel = watch('experienceLevel');
@@ -202,7 +190,12 @@ export function JobForm({
         selectedSkills:
           initialData.skills?.map((r) => ({ skillId: r.skill.id, name: r.skill.name })) ?? [],
       });
-    } else if (mode === 'create' && !draftLoaded) {
+    }
+  }, [initialData, mode, reset]);
+
+  // Load draft for create mode (no skills – backend will derive from content)
+  useEffect(() => {
+    if (mode === 'create' && !draftLoaded) {
       const draft = getDraftJob();
       if (draft) {
         reset({
@@ -232,37 +225,14 @@ export function JobForm({
         setDraftLoaded(true);
       }
     }
-  }, [initialData, mode, draftLoaded, reset]);
+  }, [mode, draftLoaded, reset]);
 
-  // Load draft skills after skills list is loaded
+  // Load categories and locations
   useEffect(() => {
-    if (mode === 'create' && skills.length > 0 && draftLoaded) {
-      const draft = getDraftJob();
-      if (draft) {
-        const loadedSkills: SelectedSkill[] = [];
-        if (draft.skillIds?.length) {
-          draft.skillIds.forEach((id) => {
-            const skill = skills.find((s) => s.id === id);
-            if (skill) loadedSkills.push({ skillId: skill.id, name: skill.name });
-          });
-        }
-        if (draft.newSkillNames?.length) {
-          draft.newSkillNames.forEach((name) => loadedSkills.push({ skillId: null, name }));
-        }
-        if (loadedSkills.length > 0) {
-          setValue('selectedSkills', loadedSkills);
-        }
-      }
-    }
-  }, [mode, skills, draftLoaded, setValue]);
-
-  // Load categories, locations, skills
-  useEffect(() => {
-    Promise.all([getCategories(), getLocations(), getSkills()])
-      .then(([cats, locs, sk]) => {
+    Promise.all([getCategories(), getLocations()])
+      .then(([cats, locs]) => {
         setCategories(cats);
         setLocations(locs);
-        setSkills(sk);
       })
       .catch(() => setSubmitError(t('jobs.failedToLoadData')))
       .finally(() => setLoading(false));
@@ -285,42 +255,6 @@ export function JobForm({
     );
     setValue('rate', String(suggested));
   }, [mode, watchedCategoryId, watchedExperienceLevel, watchedBillingType, categories, setValue]);
-
-  const addSkill = (skill: SelectedSkill) => {
-    if (selectedSkills.length >= 5) return;
-    if (
-      selectedSkills.some(
-        (s) => s.name.toLowerCase() === skill.name.toLowerCase(),
-      )
-    )
-      return;
-    appendSkill(skill);
-    setSkillInput('');
-    setSkillDropdownOpen(false);
-    skillInputRef.current?.focus();
-  };
-
-  const handleSkillKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' || e.key === ',') {
-      e.preventDefault();
-      if (selectedSkills.length >= 5) return;
-      const raw = skillInput.trim();
-      if (!raw) return;
-      const fromDict = skills.find(
-        (s) => s.name.toLowerCase() === raw.toLowerCase(),
-      );
-      if (fromDict) addSkill({ skillId: fromDict.id, name: fromDict.name });
-      else addSkill({ skillId: null, name: raw });
-    }
-  };
-
-  const filteredSkills = skillInput.trim()
-    ? skills.filter(
-      (s) =>
-        s.name.toLowerCase().includes(skillInput.toLowerCase()) &&
-        !selectedSkills.some((sel) => sel.skillId === s.id),
-    )
-    : [];
 
   const onFormSubmit = async (data: JobFormValues) => {
     setSubmitError(null);
@@ -500,93 +434,6 @@ export function JobForm({
               {t(errors.experienceLevel.message)}
             </p>
           )}
-        </div>
-
-        <div className="space-y-2">
-          <Label>{t('jobs.newJobForm.expectedSkills')}</Label>
-          <p className="text-xs text-muted-foreground">
-            {t('jobs.newJobForm.skillsDescription')}{' '}
-            {t('jobs.newJobForm.skillsMaxCount')}
-          </p>
-          <div className="flex flex-wrap gap-2 p-2 border border-input rounded-md bg-transparent min-h-10">
-            {selectedSkills.map((s, i) => (
-              <span
-                key={s.id}
-                className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-sm"
-              >
-                {s.name}
-                <button
-                  type="button"
-                  onClick={() => removeSkill(i)}
-                  disabled={isSubmitting}
-                  className="ml-0.5 rounded-full hover:bg-muted-foreground/20 p-0.5 leading-none"
-                  aria-label={t('jobs.newJobForm.remove')}
-                >
-                  ×
-                </button>
-              </span>
-            ))}
-            <div className="relative inline-flex flex-1 min-w-[120px]">
-              <Input
-                ref={skillInputRef}
-                value={skillInput}
-                onChange={(e) => {
-                  setSkillInput(e.target.value);
-                  setSkillDropdownOpen(true);
-                }}
-                onFocus={() => setSkillDropdownOpen(true)}
-                onBlur={() =>
-                  setTimeout(() => setSkillDropdownOpen(false), 150)
-                }
-                onKeyDown={handleSkillKeyDown}
-                placeholder={
-                  selectedSkills.length >= 5
-                    ? t('jobs.newJobForm.skillsMaxCount')
-                    : t('jobs.newJobForm.addSkillPlaceholder')
-                }
-                disabled={isSubmitting || selectedSkills.length >= 5}
-                className="border-0 shadow-none focus-visible:ring-0 h-11 text-base min-w-0"
-              />
-              {skillDropdownOpen &&
-                selectedSkills.length < 5 &&
-                (filteredSkills.length > 0 || skillInput.trim()) && (
-                  <div className="absolute left-0 right-0 top-full z-10 mt-1 max-h-48 overflow-auto rounded-md border border-input bg-background py-1 shadow-md">
-                    {filteredSkills.map((s) => (
-                      <button
-                        key={s.id}
-                        type="button"
-                        className="w-full px-3 py-1.5 text-left text-sm hover:bg-muted"
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          addSkill({ skillId: s.id, name: s.name });
-                        }}
-                      >
-                        {s.name}
-                      </button>
-                    ))}
-                    {skillInput.trim() &&
-                      !skills.some(
-                        (s) =>
-                          s.name.toLowerCase() ===
-                          skillInput.trim().toLowerCase(),
-                      ) && (
-                        <button
-                          type="button"
-                          className="w-full px-3 py-1.5 text-left text-sm hover:bg-muted text-muted-foreground"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            addSkill({ skillId: null, name: skillInput.trim() });
-                          }}
-                        >
-                          {t('jobs.newJobForm.addNewSkill', {
-                            name: skillInput.trim(),
-                          })}
-                        </button>
-                      )}
-                  </div>
-                )}
-            </div>
-          </div>
         </div>
 
         <div className="space-y-3">

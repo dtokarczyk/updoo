@@ -5,7 +5,7 @@ import { JobsController } from './jobs.controller';
 import { JobsService } from './jobs.service';
 import { FavoritesService } from './favorites.service';
 import { PrismaModule } from '../prisma/prisma.module';
-import { ContentGeneratorModule } from '../content-generator/content-generator.module';
+import { AiModule } from '../ai/ai.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { EmailModule } from '../email/email.module';
 import { I18nModule } from '../i18n/i18n.module';
@@ -15,7 +15,7 @@ import { I18nModule } from '../i18n/i18n.module';
     AgreementsModule,
     AuthModule,
     PrismaModule,
-    ContentGeneratorModule,
+    AiModule,
     EmailModule,
     I18nModule,
     forwardRef(() => NotificationsModule),

@@ -53,6 +53,10 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
+      <head>
+        <meta name="apple-mobile-web-app-title" content="Hoplo" />
+      </head>
+
       <body className={`${geistMono.variable} antialiased`}>
         <ThemeScript />
         <ThemeProvider>

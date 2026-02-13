@@ -298,6 +298,33 @@ export async function getProfileWithToken(
   return res.json();
 }
 
+/**
+ * Server-side profile fetch. Accepts token and locale (no localStorage).
+ * Returns null on error or when not authenticated.
+ */
+export async function getProfileServer(
+  token: string | null | undefined,
+  locale: string,
+): Promise<AuthUser | null> {
+  if (!token) return null;
+  try {
+    const headers: HeadersInit = {
+      Authorization: `Bearer ${token}`,
+      'Accept-Language': locale === 'en' ? 'en' : 'pl',
+    };
+    const res = await fetch(`${API_URL}/auth/profile`, {
+      method: 'GET',
+      headers,
+      cache: 'no-store',
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as ProfileResponse;
+    return data.user;
+  } catch {
+    return null;
+  }
+}
+
 /** Fetch profile (user + required agreement versions). Requires auth. */
 export async function getProfile(): Promise<ProfileResponse | null> {
   const token = getToken();
@@ -681,6 +708,8 @@ export interface JobApplicationFreelancer {
   email: string;
   name: string | null;
   surname: string | null;
+  /** Phone number (visible only to job author). */
+  phone?: string | null;
   /** Avatar image URL (optional, from freelancer profile). */
   avatarUrl?: string | null;
   /** Public profile slug for link to /company/[slug] (when freelancer has a profile). */

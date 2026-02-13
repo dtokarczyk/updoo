@@ -129,7 +129,27 @@ export function JobApplications({
                       <span className="font-medium text-foreground block">
                         {applicationDisplayName(app)}
                       </span>
-                      <span className="text-muted-foreground text-sm">
+                      {isApplicationFull(app) && (
+                        <>
+                          {app.freelancer.email && (
+                            <a
+                              href={`mailto:${app.freelancer.email}`}
+                              className="text-muted-foreground text-sm hover:text-foreground block"
+                            >
+                              {app.freelancer.email}
+                            </a>
+                          )}
+                          {app.freelancer.phone && (
+                            <a
+                              href={`tel:${app.freelancer.phone}`}
+                              className="text-muted-foreground text-sm hover:text-foreground block"
+                            >
+                              {app.freelancer.phone}
+                            </a>
+                          )}
+                        </>
+                      )}
+                      <span className="text-muted-foreground text-sm block">
                         {formatApplicationDateTime(app.createdAt, locale)}
                       </span>
                     </div>

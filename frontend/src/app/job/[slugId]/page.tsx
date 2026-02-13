@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { getLocaleFromRequest } from '@/lib/i18n';
 import { parseJobSlugId, jobPath } from '@/lib/job-url';
 import { fetchJobServer, fetchJobPrevNextServer } from '@/lib/job-server';
-import { AUTH_TOKEN_COOKIE } from '@/lib/api';
+import { AUTH_TOKEN_COOKIE, getProfileServer } from '@/lib/api';
 import { JobDetailClient } from './JobDetailClient';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -44,9 +44,10 @@ export default async function JobDetailPage({
   const tokenRaw = cookieStore.get(AUTH_TOKEN_COOKIE)?.value;
   const token = tokenRaw ? decodeURIComponent(tokenRaw) : null;
 
-  const [job, prevNext] = await Promise.all([
+  const [job, prevNext, initialUser] = await Promise.all([
     fetchJobServer(id, locale, token),
     fetchJobPrevNextServer(id, locale, token),
+    getProfileServer(token, locale),
   ]);
 
   if (!job) {
@@ -62,6 +63,7 @@ export default async function JobDetailPage({
     <JobDetailClient
       initialJob={job}
       initialPrevNext={prevNext}
+      initialUser={initialUser ?? undefined}
       slugId={slugId}
     />
   );

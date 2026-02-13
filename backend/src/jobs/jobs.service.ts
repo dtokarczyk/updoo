@@ -39,7 +39,7 @@ export class JobsService implements OnModuleInit {
     private readonly i18nService: I18nService,
     @Inject(forwardRef(() => NotificationsService))
     private readonly notificationsService: NotificationsService,
-  ) {}
+  ) { }
 
   async onModuleInit() {
     await this.ensureCategories();
@@ -446,18 +446,18 @@ export class JobsService implements OnModuleInit {
     const appliedIds =
       userId && jobs.length
         ? new Set(
-            (
-              await this.prisma.jobApplication.findMany({
-                where: {
-                  freelancerId: userId,
-                  jobId: {
-                    in: jobs.map((j) => j.id),
-                  },
+          (
+            await this.prisma.jobApplication.findMany({
+              where: {
+                freelancerId: userId,
+                jobId: {
+                  in: jobs.map((j) => j.id),
                 },
-                select: { jobId: true },
-              })
-            ).map((a) => a.jobId),
-          )
+              },
+              select: { jobId: true },
+            })
+          ).map((a) => a.jobId),
+        )
         : new Set<string>();
 
     const items = jobs.map((item) => {
@@ -523,9 +523,8 @@ export class JobsService implements OnModuleInit {
                 email: true,
                 name: true,
                 surname: true,
+                phone: true,
                 avatarUrl: true,
-              },
-              include: {
                 profiles: { take: 1, select: { slug: true } },
               },
             },
@@ -544,10 +543,11 @@ export class JobsService implements OnModuleInit {
     }
     // CLOSED jobs are visible to everyone (like PUBLISHED)
     const isAuthorOrAdmin = isAuthor || isAdmin;
-    // Author/admin: full application data; others: only freelancer initials
+    // Full freelancer data (email, phone, name, etc.) only for job author/admin; others get first name + initial of surname only
     const applicationsForResponse = job.applications.map((app) => {
       if (isAuthorOrAdmin) {
         const freelancer = app.freelancer as typeof app.freelancer & {
+          phone?: string | null;
           avatarUrl?: string | null;
           profiles?: { slug: string }[];
         };
@@ -558,6 +558,7 @@ export class JobsService implements OnModuleInit {
             email: freelancer.email,
             name: freelancer.name,
             surname: freelancer.surname,
+            phone: freelancer.phone ?? undefined,
             avatarUrl: freelancer.avatarUrl ?? undefined,
             profileSlug: freelancer.profiles?.[0]?.slug ?? undefined,
           },
@@ -1060,8 +1061,8 @@ export class JobsService implements OnModuleInit {
     const newDeadline =
       dto.offerDays != null && allowedDays.includes(dto.offerDays)
         ? new Date(
-            job.createdAt.getTime() + dto.offerDays * 24 * 60 * 60 * 1000,
-          )
+          job.createdAt.getTime() + dto.offerDays * 24 * 60 * 60 * 1000,
+        )
         : undefined;
     // Job announcements are always in Polish
     const language = JobLanguage.POLISH;

@@ -13,12 +13,11 @@ import {
   User,
 } from 'lucide-react';
 import {
-  getJob,
   applyToJob,
   closeJob,
   getStoredUser,
   authorDisplayName,
-  isApplicationFull,
+  type AuthUser,
   type Job,
   type JobPrevNext,
 } from '@/lib/api';
@@ -36,54 +35,43 @@ import { JobSidebar } from './JobSidebar';
 interface JobDetailClientProps {
   initialJob: Job;
   initialPrevNext: JobPrevNext;
+  /** User from SSR when authenticated; client falls back to getStoredUser() after login. */
+  initialUser?: AuthUser | null;
   slugId: string;
 }
 
 export function JobDetailClient({
   initialJob,
   initialPrevNext,
+  initialUser,
   slugId,
 }: JobDetailClientProps) {
   const { t, locale } = useTranslations();
   const router = useRouter();
-  const [job, setJob] = useState<Job>(initialJob);
   const [prevNext] = useState<JobPrevNext>(initialPrevNext);
   const [applyMessage, setApplyMessage] = useState('');
   const [applySubmitting, setApplySubmitting] = useState(false);
   const [applyError, setApplyError] = useState<string | null>(null);
   const [lastApplicationMessage, setLastApplicationMessage] = useState<
     string | null
-  >(null);
+  >(initialJob.currentUserApplicationMessage ?? null);
   const [closeSubmitting, setCloseSubmitting] = useState(false);
-  const user = getStoredUser();
+  const user = initialUser ?? getStoredUser();
   const applyFormRef = useRef<HTMLDivElement>(null);
 
+  const job = initialJob;
   const id = job.id;
 
-  // Refetch job when user is logged in to get currentUserApplied, applications, etc.
+  // After client-side login (e.g. in another tab) we have user from getStoredUser() but no initialUser; refresh once to get fresh job data with token
+  const hasRefreshedForUser = useRef(false);
   useEffect(() => {
-    if (!user) return;
-    getJob(id)
-      .then((data) => {
-        setJob(data);
-        const backendMessage = data.currentUserApplicationMessage;
-        if (backendMessage && backendMessage.trim().length > 0) {
-          setLastApplicationMessage(backendMessage);
-        } else if (
-          data.currentUserApplied &&
-          data.applications &&
-          data.applications.length > 0
-        ) {
-          const maybeOwnApplication = data.applications.find(isApplicationFull);
-          if (maybeOwnApplication && maybeOwnApplication.message) {
-            setLastApplicationMessage(maybeOwnApplication.message);
-          }
-        }
-      })
-      .catch(() => { });
-  }, [id, user]);
+    if (user && !initialUser && !hasRefreshedForUser.current) {
+      hasRefreshedForUser.current = true;
+      router.refresh();
+    }
+  }, [user, initialUser, router]);
 
-  // Fill default message when job loads and user is freelancer
+  // Fill default message when user is freelancer and can apply (client-only, e.g. after login)
   useEffect(() => {
     if (!job || !user) return;
 
@@ -176,15 +164,8 @@ export function JobDetailClient({
     setApplyError(null);
     try {
       await applyToJob(id, messageToSend || undefined);
-      const updated = await getJob(id);
-      setJob(updated);
-      if (
-        updated.currentUserApplicationMessage &&
-        updated.currentUserApplicationMessage.trim().length > 0
-      ) {
-        setLastApplicationMessage(updated.currentUserApplicationMessage);
-      }
       setApplyMessage('');
+      router.refresh();
     } catch (e) {
       setApplyError(e instanceof Error ? e.message : 'Błąd zgłoszenia');
     } finally {
@@ -223,8 +204,8 @@ export function JobDetailClient({
     if (!id || !canClose) return;
     setCloseSubmitting(true);
     try {
-      const updated = await closeJob(id);
-      setJob(updated);
+      await closeJob(id);
+      router.refresh();
     } catch (e) {
       alert(e instanceof Error ? e.message : 'Błąd zamykania oferty');
     } finally {
@@ -328,7 +309,7 @@ export function JobDetailClient({
             isOwnJob={isOwnJob}
             isDraft={isDraft}
             applyFormRef={applyFormRef}
-            lastApplicationMessage={lastApplicationMessage}
+            lastApplicationMessage={job.currentUserApplicationMessage ?? lastApplicationMessage}
             deadlinePassed={deadlinePassed}
             slotsFull={slotsFull}
             onApply={handleApply}

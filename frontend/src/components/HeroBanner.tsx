@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
   Sparkles,
@@ -28,31 +28,14 @@ function tabFromParam(param: string | null): HeroTab | null {
   return null;
 }
 
-function paramFromTab(tab: HeroTab): string {
-  return tab === 'hiring' ? TAB_FOR_CUSTOMERS : TAB_FOR_FREELANCERS;
-}
-
 export function HeroBanner({
   t,
 }: {
   t: (key: string, params?: Record<string, string | number>) => string;
 }) {
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
   const tabFromUrl = tabFromParam(searchParams.get(TAB_PARAM));
-  const [localTab, setLocalTab] = useState<HeroTab>(tabFromUrl ?? 'hiring');
-  const heroTab = tabFromUrl ?? localTab;
-
-  const setHeroTab = useCallback(
-    (tab: HeroTab) => {
-      setLocalTab(tab);
-      const params = new URLSearchParams(searchParams.toString());
-      params.set(TAB_PARAM, paramFromTab(tab));
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    },
-    [searchParams, router, pathname]
-  );
+  const [heroTab, setHeroTab] = useState<HeroTab>(tabFromUrl ?? 'hiring');
 
   return (
     <div className="relative w-full max-w-full rounded-xl overflow-hidden mb-6">

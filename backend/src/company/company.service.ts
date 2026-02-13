@@ -15,7 +15,7 @@ export class CompanyService {
     private readonly prisma: PrismaService,
     private readonly regonService: RegonService,
     private readonly accountService: AccountService,
-  ) {}
+  ) { }
 
   getCompanyPayload(company: {
     id: string;
@@ -65,7 +65,7 @@ export class CompanyService {
     return {
       regon,
       nip,
-      name: String(row.Nazwa ?? '').trim() || '—',
+      name: String(row.Nazwa ?? '').trim() || '-',
       voivodeship: row.Wojewodztwo?.trim() || null,
       county: row.Powiat?.trim() || null,
       commune: row.Gmina?.trim() || null,

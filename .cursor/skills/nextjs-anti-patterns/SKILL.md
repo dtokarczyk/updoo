@@ -84,7 +84,7 @@ export function BrowserGuard() {
 }
 ```
 
-This keeps the logic modular while ensuring the visible component still renders the appropriate message. Apply the same principle to other requirements—compose helpers, but never leave the primary component without the mandated UI.
+This keeps the logic modular while ensuring the visible component still renders the appropriate message. Apply the same principle to other requirements-compose helpers, but never leave the primary component without the mandated UI.
 
 ## Anti-Pattern Categories
 

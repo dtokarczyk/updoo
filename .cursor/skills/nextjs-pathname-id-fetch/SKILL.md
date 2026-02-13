@@ -255,7 +255,7 @@ Before shipping a pathname-driven detail page, confirm:
 - [ ] You await the params and read the identifier safely
 - [ ] Data fetching logic uses that identifier
 - [ ] Rendering handles loading/error states appropriately
-- [ ] Types are explicit—never fall back to `any`
+- [ ] Types are explicit-never fall back to `any`
 
 ## When to Use the Comprehensive Skill Instead
 

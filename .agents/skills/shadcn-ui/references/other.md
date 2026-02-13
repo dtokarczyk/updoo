@@ -22,7 +22,7 @@
 
 > shadcn/ui is a collection of beautifully-designed, accessible components and a code distribution platform. It is built with TypeScript, Tailwind CSS, and Radix UI primitives. It supports multiple frameworks including Next.js, Vite, Remix, Astro, and more. Open Source. Open Code. AI-Ready. It also comes with a command-line tool to install and manage components and a registry system to publish and distribute code.
 
-- [Introduction](https://ui.shadcn.com/docs): Core principles—Open Code, Composition, Distribution, Beautiful Defaults, and AI-Ready design.
+- [Introduction](https://ui.shadcn.com/docs): Core principles-Open Code, Composition, Distribution, Beautiful Defaults, and AI-Ready design.
 - [CLI](https://ui.shadcn.com/docs/cli): Command-line tool for installing and managing components.
 - [components.json](https://ui.shadcn.com/docs/components-json): Configuration file for customizing the CLI and component installation.
 - [Theming](https://ui.shadcn.com/docs/theming): Guide to customizing colors, typography, and design tokens.

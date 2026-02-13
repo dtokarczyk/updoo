@@ -10,7 +10,9 @@
     "profile": "Profile",
     "settings": "Settings",
     "account": "Account",
-    "openAccountMenu": "Open account menu"
+    "openAccountMenu": "Open account menu",
+    "themeLight": "Light theme",
+    "themeDark": "Dark theme"
   },
   "my": {
     "title": "My things",
@@ -345,7 +347,7 @@
     "english": "English",
     "polish": "Polish",
     "draft": "Draft",
-    "draftVisibleOnlyToYou": "Draft — visible only to you.",
+    "draftVisibleOnlyToYou": "Draft - visible only to you.",
     "waitingForAdmin": "Waiting for administrator approval. Visible only to author.",
     "publish": "Publish",
     "publishing": "Publishing…",
@@ -433,6 +435,7 @@
     "recentApplications": "Recent applications",
     "noApplications": "No applications",
     "noApplicationsYetBeFirst": "No applications yet, be the first!",
+    "applicationsContactDataHint": "You see applicants' contact details only because you are the author of this job posting.",
     "viewProfile": "View business card",
     "maxOffersReachedMessage": "Maximum number of offers for this job has been reached.",
     "myJobs": "My jobs",

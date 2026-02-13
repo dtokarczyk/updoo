@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { pl, enUS } from 'date-fns/locale';
@@ -13,10 +12,9 @@ import {
   type Job,
 } from '@/lib/api';
 import { jobPath } from '@/lib/job-url';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/hooks/useTranslations';
-import { UserDropdown } from '@/components/HomeNav';
+import { UserDropdown } from '@/components/UserDropdown';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Locale } from '@/lib/i18n';
 
@@ -26,14 +24,11 @@ interface UserSidebarProps {
 }
 
 export function UserSidebar(_props: UserSidebarProps) {
-  const router = useRouter();
   const { t, locale } = useTranslations();
-  const { user, isLoggedIn, logout } = useAuth();
+  const { user, isLoggedIn } = useAuth();
   const [applications, setApplications] = useState<UserApplication[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isLoggedIn || !user) {
@@ -70,27 +65,6 @@ export function UserSidebar(_props: UserSidebarProps) {
     }
   }, [isLoggedIn, user]);
 
-  useEffect(() => {
-    if (!dropdownOpen) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [dropdownOpen]);
-
-  const handleLogout = () => {
-    setDropdownOpen(false);
-    logout();
-    router.push('/');
-    router.refresh();
-  };
-
   if (!isLoggedIn) {
     return null;
   }
@@ -106,25 +80,6 @@ export function UserSidebar(_props: UserSidebarProps) {
 
   return (
     <>
-      {/* User section with dropdown and theme toggle */}
-      <div className="mb-4 pb-4 border-b border-border">
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1" ref={dropdownRef}>
-            <UserDropdown
-              user={user}
-              dropdownOpen={dropdownOpen}
-              setDropdownOpen={setDropdownOpen}
-              dropdownRef={dropdownRef}
-              handleLogout={handleLogout}
-              locale={locale}
-              t={t}
-              fullWidth
-            />
-          </div>
-          <ThemeToggle className="h-[44px] w-[44px] px-0" />
-        </div>
-      </div>
-
       {user?.accountType === 'CLIENT' && (
         <div className="mb-4">
           <Button
@@ -136,22 +91,6 @@ export function UserSidebar(_props: UserSidebarProps) {
             <Link href="/job/new">
               <Plus className="size-5 shrink-0" aria-hidden />
               {t('jobs.newJob')}
-            </Link>
-          </Button>
-        </div>
-      )}
-
-      {user?.accountType === 'ADMIN' && (
-        <div className="mb-4">
-          <Button
-            asChild
-            variant="outline"
-            size="lg"
-            className="w-full justify-start"
-          >
-            <Link href="/admin">
-              <Plus className="size-5 shrink-0" aria-hidden />
-              Panel administracyjny
             </Link>
           </Button>
         </div>
@@ -214,13 +153,12 @@ export function UserSidebar(_props: UserSidebarProps) {
                       className={`block p-3 rounded-lg border border-border bg-card hover:bg-muted transition-colors ${isRejected ? 'border-red-500/40' : ''}`}
                     >
                       <h4
-                        className={`text-sm font-medium line-clamp-2 mb-1 ${
-                          isClosed
-                            ? 'text-muted-foreground line-through'
-                            : isRejected
-                              ? 'text-red-700 dark:text-red-400'
-                              : 'text-foreground'
-                        }`}
+                        className={`text-sm font-medium line-clamp-2 mb-1 ${isClosed
+                          ? 'text-muted-foreground line-through'
+                          : isRejected
+                            ? 'text-red-700 dark:text-red-400'
+                            : 'text-foreground'
+                          }`}
                       >
                         {job.title}
                       </h4>

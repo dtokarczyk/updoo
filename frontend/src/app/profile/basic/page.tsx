@@ -45,7 +45,7 @@ function accountTypeLabel(
   type: AccountType | null,
   t: (key: string) => string,
 ): string {
-  if (!type) return '—';
+  if (!type) return '-';
   const labels: Record<AccountType, string> = {
     CLIENT: t('accountTypes.client'),
     FREELANCER: t('accountTypes.freelancer'),

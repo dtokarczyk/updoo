@@ -55,7 +55,7 @@ Use this skill when:
 
 ## ⚠️ CRITICAL: Server Action File Naming and Location
 
-When work requirements mention a specific filename, follow that instruction exactly. If no name is given, pick the option that best matches the project conventions—`app/actions.ts` is a safe default for collections of actions, while `app/action.ts` works for a single form handler.
+When work requirements mention a specific filename, follow that instruction exactly. If no name is given, pick the option that best matches the project conventions-`app/actions.ts` is a safe default for collections of actions, while `app/action.ts` works for a single form handler.
 
 ### Choosing between `action.ts` and `actions.ts`
 
@@ -381,7 +381,7 @@ export async function createPost(formData: FormData) {
 
 **File Naming Precision:**
 - When stakeholders specify a filename (e.g., “create a server action in a file called `action.ts`”), mirror it exactly.
-- Common filenames: `action.ts` (singular) or `actions.ts` (plural)—choose the one that matches the brief or existing code.
+- Common filenames: `action.ts` (singular) or `actions.ts` (plural)-choose the one that matches the brief or existing code.
 - Place the file in the appropriate directory: typically `app/action.ts` or `app/actions.ts`.
 
 **Two Patterns for 'use server' Directive:**

@@ -10,7 +10,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 
 **Server Components use DIFFERENT navigation methods than Client Components!**
 
-When requirements call for server-rendered navigation—for example, linking to other pages, redirecting after a check, or demonstrating routing patterns—prefer `<Link>` and `redirect()` within Server Components. You still avoid `'use client'` unless a client-only API is involved.
+When requirements call for server-rendered navigation-for example, linking to other pages, redirecting after a check, or demonstrating routing patterns-prefer `<Link>` and `redirect()` within Server Components. You still avoid `'use client'` unless a client-only API is involved.
 
 ## The Pattern
 

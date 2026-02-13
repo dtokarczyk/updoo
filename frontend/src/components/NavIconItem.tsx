@@ -55,7 +55,7 @@ export function NavIconItem({
           aria-hidden
         />
       </div>
-      <span className="shrink text-xs font-medium truncate">{label}</span>
+      <span className="shrink text-sm font-medium truncate">{label}</span>
     </Link>
   );
 }

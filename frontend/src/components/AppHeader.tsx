@@ -1,33 +1,29 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
   FolderOpen,
   UserCircle,
   Settings,
-  PanelRightOpen,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Logotype } from '@/components/Logotype';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMyProfilesQuery } from '@/lib/api-query/profiles';
 import { useTranslations } from '@/hooks/useTranslations';
 import type { Locale } from '@/lib/i18n';
-import { UserDrawerContent } from '@/components/UserDrawer';
-import { AuthDrawerContent } from '@/components/AuthDrawer';
-import { Drawer, DrawerTrigger } from '@/components/ui/drawer';
 import { NavIconItem } from '@/components/NavIconItem';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { UserDropdown } from '@/components/UserDropdown';
+import { Button } from '@/components/ui/button';
 
 export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
   const pathname = usePathname();
-
   const { t } = useTranslations();
   const { isLoggedIn, user } = useAuth();
   const { data: myProfiles } = useMyProfilesQuery();
-  const [authDrawerOpen, setAuthDrawerOpen] = useState(false);
 
   const isFreelancer = user?.accountType === 'FREELANCER';
   const hasProfile = (myProfiles?.length ?? 0) > 0;
@@ -39,9 +35,9 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
       icon: typeof LayoutDashboard;
       labelKey: string;
     }> = [
-      { href: '/', icon: LayoutDashboard, labelKey: 'nav.board' },
-      { href: '/my', icon: FolderOpen, labelKey: 'nav.myThings' },
-    ];
+        { href: '/', icon: LayoutDashboard, labelKey: 'nav.board' },
+        { href: '/my', icon: FolderOpen, labelKey: 'nav.myThings' },
+      ];
     if (isFreelancer) {
       if (hasProfile && firstProfileSlug) {
         items.push({
@@ -64,7 +60,7 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
   return (
     <>
       <header
-        className={`border-b border-border w-full sticky top-0 z-10 bg-background/70 backdrop-blur`}
+        className={`border-b border-border w-full sticky top-0 z-30 bg-background/70 backdrop-blur`}
       >
         <div
           className={` mx-auto flex flex-row items-center justify-between gap-3 sm:gap-4 px-4 py-2 w-full max-w-7xl`}
@@ -91,40 +87,16 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
           </div>
 
           <div className="flex items-center gap-2 lg:w-1/5 justify-end">
-            <div className="hidden lg:block">
-              <ThemeToggle size="icon-lg" />
-            </div>
-
-            <div className="lg:hidden">
-              <Drawer
-                open={authDrawerOpen}
-                onOpenChange={setAuthDrawerOpen}
-                direction="right"
-              >
-                <DrawerTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon-lg"
-                    className="aspect-square size-10 shrink-0 p-0"
-                    aria-label={t('nav.openAccountMenu')}
-                  >
-                    <PanelRightOpen className="h-5 w-5" />
-                  </Button>
-                </DrawerTrigger>
-
-                {isLoggedIn ? (
-                  <UserDrawerContent
-                    initialLocale={initialLocale}
-                    onClose={() => setAuthDrawerOpen(false)}
-                  />
-                ) : (
-                  <AuthDrawerContent
-                    initialLocale={initialLocale}
-                    onClose={() => setAuthDrawerOpen(false)}
-                  />
-                )}
-              </Drawer>
-            </div>
+            {isLoggedIn ? (
+              <UserDropdown iconOnly />
+            ) : (
+              <>
+                <ThemeToggle size="icon-lg" />
+                <Button size="lg" asChild>
+                  <Link href="/login">{t('auth.logIn')}</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </header>

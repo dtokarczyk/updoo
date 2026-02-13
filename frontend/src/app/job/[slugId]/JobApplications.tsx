@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Send, Users } from 'lucide-react';
+import { Mail, Phone, Send, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl, enUS } from 'date-fns/locale';
 import { isApplicationFull, type Job, type JobApplication } from '@/lib/api';
@@ -104,6 +104,12 @@ export function JobApplications({
             : t('jobs.applicationsCount', { count: applications.length })}
         </p>
 
+        {isOwnJob && applications.length > 0 && (
+          <p className="text-xs text-muted-foreground mb-2">
+            {t('jobs.applicationsContactDataHint')}
+          </p>
+        )}
+
         <ul className="space-y-3 mb-6 list-none p-0">
           {applications.length === 0 ? (
             <p className="text-sm text-muted-foreground py-2">
@@ -130,29 +136,31 @@ export function JobApplications({
                         {applicationDisplayName(app)}
                       </span>
                       {isApplicationFull(app) && (
-                        <>
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1">
                           {app.freelancer.email && (
                             <a
                               href={`mailto:${app.freelancer.email}`}
-                              className="text-muted-foreground text-sm hover:text-foreground block"
+                              className="text-muted-foreground text-sm hover:text-foreground inline-flex items-center gap-1.5"
                             >
+                              <Mail className="h-3.5 w-3.5 shrink-0" />
                               {app.freelancer.email}
                             </a>
                           )}
                           {app.freelancer.phone && (
                             <a
                               href={`tel:${app.freelancer.phone}`}
-                              className="text-muted-foreground text-sm hover:text-foreground block"
+                              className="text-muted-foreground text-sm hover:text-foreground inline-flex items-center gap-1.5"
                             >
+                              <Phone className="h-3.5 w-3.5 shrink-0" />
                               {app.freelancer.phone}
                             </a>
                           )}
-                        </>
+                        </div>
                       )}
-                      <span className="text-muted-foreground text-sm block">
-                        {formatApplicationDateTime(app.createdAt, locale)}
-                      </span>
                     </div>
+                    <span className="text-muted-foreground text-sm shrink-0 ml-auto">
+                      {formatApplicationDateTime(app.createdAt, locale)}
+                    </span>
                     {isApplicationFull(app) &&
                       app.freelancer.profileSlug ? (
                       <Button variant="outline" size="sm" asChild>

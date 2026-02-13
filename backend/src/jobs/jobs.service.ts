@@ -308,7 +308,7 @@ export class JobsService implements OnModuleInit {
           },
         },
         author: {
-          select: { id: true, email: true, name: true, surname: true },
+          select: { id: true, email: true, name: true, surname: true, avatarUrl: true },
         },
         location: true,
         skills: { include: { skill: true } },
@@ -333,7 +333,7 @@ export class JobsService implements OnModuleInit {
           },
         },
         author: {
-          select: { id: true, email: true, name: true, surname: true },
+          select: { id: true, email: true, name: true, surname: true, avatarUrl: true },
         },
         location: true,
         skills: { include: { skill: true } },
@@ -427,7 +427,7 @@ export class JobsService implements OnModuleInit {
           },
         },
         author: {
-          select: { id: true, email: true, name: true, surname: true },
+          select: { id: true, email: true, name: true, surname: true, avatarUrl: true },
         },
         location: true,
         skills: { include: { skill: true } },
@@ -511,7 +511,7 @@ export class JobsService implements OnModuleInit {
           },
         },
         author: {
-          select: { id: true, email: true, name: true, surname: true },
+          select: { id: true, email: true, name: true, surname: true, avatarUrl: true },
         },
         location: true,
         skills: { include: { skill: true } },
@@ -915,7 +915,7 @@ export class JobsService implements OnModuleInit {
               },
             },
             author: {
-              select: { id: true, email: true, name: true, surname: true },
+              select: { id: true, email: true, name: true, surname: true, avatarUrl: true },
             },
             location: true,
             skills: { include: { skill: true } },
@@ -958,7 +958,7 @@ export class JobsService implements OnModuleInit {
           },
         },
         author: {
-          select: { id: true, email: true, name: true, surname: true },
+          select: { id: true, email: true, name: true, surname: true, avatarUrl: true },
         },
         location: true,
         skills: { include: { skill: true } },
@@ -1108,7 +1108,7 @@ export class JobsService implements OnModuleInit {
           },
         },
         author: {
-          select: { id: true, email: true, name: true, surname: true },
+          select: { id: true, email: true, name: true, surname: true, avatarUrl: true },
         },
         location: true,
         skills: { include: { skill: true } },
@@ -1133,7 +1133,7 @@ export class JobsService implements OnModuleInit {
           },
         },
         author: {
-          select: { id: true, email: true, name: true, surname: true },
+          select: { id: true, email: true, name: true, surname: true, avatarUrl: true },
         },
         location: true,
         skills: { include: { skill: true } },
@@ -1176,7 +1176,7 @@ export class JobsService implements OnModuleInit {
           },
         },
         author: {
-          select: { id: true, email: true, name: true, surname: true },
+          select: { id: true, email: true, name: true, surname: true, avatarUrl: true },
         },
         location: true,
         skills: { include: { skill: true } },
@@ -1218,6 +1218,7 @@ export class JobsService implements OnModuleInit {
             name: true,
             surname: true,
             language: true,
+            avatarUrl: true,
           },
         },
       },
@@ -1247,7 +1248,7 @@ export class JobsService implements OnModuleInit {
           },
         },
         author: {
-          select: { id: true, email: true, name: true, surname: true },
+          select: { id: true, email: true, name: true, surname: true, avatarUrl: true },
         },
         location: true,
         skills: { include: { skill: true } },
@@ -1345,7 +1346,7 @@ export class JobsService implements OnModuleInit {
           },
         },
         author: {
-          select: { id: true, email: true, name: true, surname: true },
+          select: { id: true, email: true, name: true, surname: true, avatarUrl: true },
         },
         location: true,
         skills: { include: { skill: true } },
@@ -1414,7 +1415,7 @@ export class JobsService implements OnModuleInit {
           },
         },
         author: {
-          select: { id: true, email: true, name: true, surname: true },
+          select: { id: true, email: true, name: true, surname: true, avatarUrl: true },
         },
         location: true,
         skills: { include: { skill: true } },

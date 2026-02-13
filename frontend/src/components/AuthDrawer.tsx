@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { AuthButtons } from '@/components/AuthButtons';
 import { useTranslations } from '@/hooks/useTranslations';
@@ -61,14 +60,13 @@ export function AuthDrawerContent({
       </DrawerHeader>
 
       <div className="flex-1 overflow-y-auto p-6">
-        {/* Theme and language toggles above the container (same as sidebar) */}
+        {/* Language toggle above the container */}
         <div className="flex items-center justify-end gap-2 mb-4">
           <LanguageToggle
             initialLocale={initialLocale}
             iconOnly
             className="h-[44px] w-[44px] px-0"
           />
-          <ThemeToggle className="h-[44px] w-[44px] px-0" />
         </div>
         {/* Add job posting – above login (same as sidebar) */}
         <Button className="w-full mb-4" size="lg" asChild>

@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { AuthButtons } from '@/components/AuthButtons';
 import { Button } from '@/components/ui/button';
@@ -40,16 +39,6 @@ export function AuthPromoSidebar({ initialLocale }: AuthPromoSidebarProps) {
 
   return (
     <>
-      {/* Theme and language toggles above the container */}
-      <div className="flex items-center justify-end gap-2 mb-4">
-        <LanguageToggle
-          initialLocale={initialLocale}
-          iconOnly
-          className="h-[44px] w-[44px] px-0"
-        />
-        <ThemeToggle className="h-[44px] w-[44px] px-0" />
-      </div>
-
       {/* Add job posting – above login */}
       <Button className="w-full mb-4 min-w-0" size="lg" asChild>
         <Link

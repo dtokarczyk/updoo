@@ -10,7 +10,6 @@ import {
   Calendar,
   FileText,
   Tag,
-  User,
 } from 'lucide-react';
 import {
   applyToJob,
@@ -21,6 +20,7 @@ import {
   type Job,
   type JobPrevNext,
 } from '@/lib/api';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { jobPath, jobPathEdit } from '@/lib/job-url';
 import { useTranslations } from '@/hooks/useTranslations';
 import { getDeadlineMsLeft, isDeadlineSoon } from '@/lib/deadline-utils';
@@ -224,7 +224,19 @@ export function JobDetailClient({
               </h1>
               <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1.5">
-                  <User className="h-3.5 w-3.5" />
+                  <Avatar className="h-5 w-5">
+                    {job.author.avatarUrl ? (
+                      <AvatarImage src={job.author.avatarUrl} alt="" />
+                    ) : null}
+                    <AvatarFallback className="text-[10px]">
+                      {(() => {
+                        const n = (job.author.name?.trim() ?? '').charAt(0).toUpperCase();
+                        const s = (job.author.surname?.trim() ?? '').charAt(0).toUpperCase();
+                        const e = (job.author.email ?? '?').charAt(0).toUpperCase();
+                        return n && s ? `${n}${s}` : n || s || e;
+                      })()}
+                    </AvatarFallback>
+                  </Avatar>
                   {authorDisplayName(job.author) || job.author.email}
                 </span>
                 <span className="flex items-center gap-1.5">

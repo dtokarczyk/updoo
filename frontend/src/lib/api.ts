@@ -686,6 +686,8 @@ export interface JobAuthor {
   email: string;
   name: string | null;
   surname: string | null;
+  /** Avatar image URL (optional, from author profile). */
+  avatarUrl?: string | null;
 }
 
 /** Display "Name Surname" or fallback to name only or email. */

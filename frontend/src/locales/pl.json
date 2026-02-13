@@ -10,7 +10,9 @@
     "profile": "Profil",
     "settings": "Ustawienia",
     "account": "Konto",
-    "openAccountMenu": "Otwórz menu konta"
+    "openAccountMenu": "Otwórz menu konta",
+    "themeLight": "Jasny motyw",
+    "themeDark": "Ciemny motyw"
   },
   "my": {
     "title": "Moje",
@@ -432,6 +434,7 @@
     "recentApplications": "Ostatnie aplikacje",
     "noApplications": "Brak aplikacji",
     "noApplicationsYetBeFirst": "Nie ma jeszcze zgłoszeń, bądź pierwszy!",
+    "applicationsContactDataHint": "Dane kontaktowe wykonawców widzisz tylko Ty - jesteś autorem tego ogłoszenia.",
     "viewProfile": "Zobacz wizytówkę",
     "maxOffersReachedMessage": "Osiągnięto maksymalną liczbę ofert dla tego ogłoszenia.",
     "myJobs": "Moje oferty",

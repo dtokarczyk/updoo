@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Link from 'next/link';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
   Sparkles,
@@ -17,12 +18,41 @@ type HeroTab = 'hiring' | 'finding';
 
 const HERO_VIDEO_SRC = '/videos/video-hero.mp4';
 
+const TAB_PARAM = 'tab';
+const TAB_FOR_CUSTOMERS = 'forCustomers';
+const TAB_FOR_FREELANCERS = 'forFreelancers';
+
+function tabFromParam(param: string | null): HeroTab | null {
+  if (param === TAB_FOR_CUSTOMERS) return 'hiring';
+  if (param === TAB_FOR_FREELANCERS) return 'finding';
+  return null;
+}
+
+function paramFromTab(tab: HeroTab): string {
+  return tab === 'hiring' ? TAB_FOR_CUSTOMERS : TAB_FOR_FREELANCERS;
+}
+
 export function HeroBanner({
   t,
 }: {
   t: (key: string, params?: Record<string, string | number>) => string;
 }) {
-  const [heroTab, setHeroTab] = useState<HeroTab>('hiring');
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const tabFromUrl = tabFromParam(searchParams.get(TAB_PARAM));
+  const [localTab, setLocalTab] = useState<HeroTab>(tabFromUrl ?? 'hiring');
+  const heroTab = tabFromUrl ?? localTab;
+
+  const setHeroTab = useCallback(
+    (tab: HeroTab) => {
+      setLocalTab(tab);
+      const params = new URLSearchParams(searchParams.toString());
+      params.set(TAB_PARAM, paramFromTab(tab));
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    },
+    [searchParams, router, pathname]
+  );
 
   return (
     <div className="relative w-full max-w-full rounded-xl overflow-hidden mb-6">

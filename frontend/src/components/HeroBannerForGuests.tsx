@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { getToken } from '@/lib/api';
 import { HeroBanner } from '@/components/HeroBanner';
 import { t as translate } from '@/lib/translations';
@@ -29,5 +29,9 @@ export function HeroBannerForGuests({
   const t = (key: string, params?: Record<string, string | number>) =>
     translate(initialLocale, key, params);
 
-  return <HeroBanner t={t} />;
+  return (
+    <Suspense fallback={null}>
+      <HeroBanner t={t} />
+    </Suspense>
+  );
 }

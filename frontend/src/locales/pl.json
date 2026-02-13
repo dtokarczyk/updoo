@@ -475,6 +475,7 @@
     "maxOffersReachedMessage": "Osiągnięto maksymalną liczbę ofert dla tego ogłoszenia.",
     "myJobs": "Moje oferty",
     "noJobs": "brak ofert",
+    "noJobsSidebar": "Nie masz jeszcze żadnych ogłoszeń. Dodaj pierwsze ogłoszenie, aby znaleźć wykonawcę.",
     "newJobForm": {
       "title": "Nowe ogłoszenie",
       "description": "Wypełnij szczegóły ogłoszenia. Pola rozliczenia i skille pomogą dopasować ofertę.",

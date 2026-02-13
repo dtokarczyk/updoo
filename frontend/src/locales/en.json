@@ -476,6 +476,7 @@
     "maxOffersReachedMessage": "Maximum number of offers for this job has been reached.",
     "myJobs": "My jobs",
     "noJobs": "No jobs",
+    "noJobsSidebar": "You don't have any job listings yet. Add your first listing to find a freelancer.",
     "newJobForm": {
       "title": "New job",
       "description": "Fill in the job details. Billing fields and skills will help match the offer.",

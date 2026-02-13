@@ -106,16 +106,18 @@ export function UserSidebar(_props: UserSidebarProps) {
               : t('jobs.myJobs')}
           </h3>
           {loading ? (
-            <div className="text-sm text-muted-foreground">
+            <div className="text-sm text-muted-foreground min-h-[120px] flex items-center">
               {t('common.loading')}
             </div>
           ) : user.accountType === 'FREELANCER' ? (
-            applications.length === 0 ? (
-              <EmptyState
-                icon={FileText}
-                message={t('jobs.noApplications')}
-                variant="compact"
-              />
+            (applications?.length ?? 0) === 0 ? (
+              <div className="min-h-[180px] flex flex-col justify-center">
+                <EmptyState
+                  icon={FileText}
+                  message={t('jobs.noApplications')}
+                  variant="compact"
+                />
+              </div>
             ) : (
               <div className="space-y-2">
                 {applications.map((app) => (
@@ -140,12 +142,19 @@ export function UserSidebar(_props: UserSidebarProps) {
               </div>
             )
           ) : user.accountType === 'CLIENT' ? (
-            jobs.length === 0 ? (
-              <EmptyState
-                icon={Briefcase}
-                message={t('jobs.noJobs')}
-                variant="compact"
-              />
+            (jobs?.length ?? 0) === 0 ? (
+              <div className="min-h-[180px] flex flex-col justify-center">
+                <EmptyState
+                  icon={Briefcase}
+                  message={t('jobs.noJobsSidebar')}
+                  variant="compact"
+                  action={
+                    <Button asChild variant="outline" size="sm">
+                      <Link href="/job/new">{t('jobs.newJob')}</Link>
+                    </Button>
+                  }
+                />
+              </div>
             ) : (
               <div className="space-y-2">
                 {jobs.map((job) => {

@@ -187,4 +187,31 @@ export class StorageService {
   async deleteCoverPhoto(coverPhotoUrl: string | null): Promise<void> {
     return this.deleteImage(coverPhotoUrl);
   }
+
+  // --- OG image (job social share) ---
+
+  private static readonly OG_IMAGE_KEY_PREFIX = 'og-images/';
+
+  /** Upload OG image as PNG (no resize/conversion). Returns full URL or null on failure. */
+  async uploadOgImage(buffer: Buffer, jobId: string): Promise<string | null> {
+    const key = `${StorageService.OG_IMAGE_KEY_PREFIX}${jobId}.png`;
+    try {
+      await this.s3.send(
+        new PutObjectCommand({
+          Bucket: this.bucket,
+          Key: key,
+          Body: buffer,
+          ContentType: 'image/png',
+        }),
+      );
+      return `${this.publicBaseUrl}/${key}`;
+    } catch {
+      return null;
+    }
+  }
+
+  /** Delete existing OG image from storage (e.g. before re-upload). */
+  async deleteOgImage(ogImageUrl: string | null): Promise<void> {
+    return this.deleteImage(ogImageUrl);
+  }
 }

@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState, useRef } from 'react';
 import ReactCountryFlag from 'react-country-flag';
 import {
   ArrowLeft,
@@ -38,6 +38,31 @@ interface JobDetailClientProps {
   /** User from SSR when authenticated; client falls back to getStoredUser() after login. */
   initialUser?: AuthUser | null;
   slugId: string;
+}
+
+function JobOgPreview({ job, id }: { job: Job; id: string }) {
+  const searchParams = useSearchParams();
+  if (searchParams.get('debug') !== 'true') return null;
+  return (
+    <section className="rounded-lg border bg-muted/20 p-4">
+      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+        Obraz OG (podgląd do testów)
+      </p>
+      <img
+        src={`${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'}/jobs/${id}/og-image`}
+        alt=""
+        className="w-full max-w-[600px] rounded border border-border"
+        width={1200}
+        height={630}
+        style={{ aspectRatio: '1200/630' }}
+      />
+      {job.ogImageUrl != null && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          Zapisany w storage (ogImageUrl ustawiony)
+        </p>
+      )}
+    </section>
+  );
 }
 
 export function JobDetailClient({
@@ -219,7 +244,7 @@ export function JobDetailClient({
         <div className="lg:col-span-4 space-y-6">
           <div className="space-y-4">
             <div>
-              <h1 className="text-4xl font-semibold leading-tight">
+              <h1 className="text-4xl font-black leading-tight">
                 {job.title}
               </h1>
               <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
@@ -313,6 +338,11 @@ export function JobDetailClient({
               </div>
             </div>
           </section>
+
+          {/* OG image for social sharing – test preview only when ?debug=true */}
+          <Suspense fallback={null}>
+            <JobOgPreview job={job} id={id} />
+          </Suspense>
 
           <JobApplications
             job={job}

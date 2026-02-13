@@ -29,6 +29,8 @@ import { I18nService } from '../i18n/i18n.service';
 import type { SupportedLanguage } from '../i18n/i18n.service';
 import { slugFromName } from '../common/slug.helper';
 import { DEFAULT_CATEGORIES, ALLOWED_CATEGORY_SLUGS } from './jobs.constants';
+import { OgImageService } from './og-image.service';
+import { StorageService } from '../storage/storage.service';
 
 @Injectable()
 export class JobsService implements OnModuleInit {
@@ -40,9 +42,11 @@ export class JobsService implements OnModuleInit {
     private readonly aiService: AiService,
     private readonly emailService: EmailService,
     private readonly i18nService: I18nService,
+    private readonly ogImageService: OgImageService,
+    private readonly storageService: StorageService,
     @Inject(forwardRef(() => NotificationsService))
     private readonly notificationsService: NotificationsService,
-  ) { }
+  ) {}
 
   async onModuleInit() {
     await this.ensureCategories();
@@ -349,8 +353,10 @@ export class JobsService implements OnModuleInit {
       },
     });
     if (!result) return null;
+    const ogImageUrl = await this.ensureJobOgImage(result.id);
     return {
       ...result,
+      ...(ogImageUrl != null && { ogImageUrl }),
       author: maskAuthorSurname(result.author),
       category: this.getCategoryWithTranslation(result.category, userLanguage),
     };
@@ -735,6 +741,90 @@ export class JobsService implements OnModuleInit {
       return { ...withoutRate, rate: null };
     }
     return result;
+  }
+
+  /**
+   * Get OG image buffer for a job: from storage if ogImageUrl is set, otherwise generate.
+   * Uses findUnique (no visibility check) so the image can be served for draft/rejected jobs too (e.g. author preview).
+   */
+  async getJobOgImageBuffer(
+    jobId: string,
+    _userLanguage: JobLanguage = JobLanguage.POLISH,
+  ): Promise<{ buffer: Buffer; contentType: string } | null> {
+    try {
+      const job = await this.prisma.job.findUnique({
+        where: { id: jobId },
+        select: {
+          id: true,
+          title: true,
+          experienceLevel: true,
+          billingType: true,
+          currency: true,
+          projectType: true,
+          ogImageUrl: true,
+        },
+      });
+      if (!job) return null;
+      if (job.ogImageUrl && this.storageService.isConfigured()) {
+        const buffer = await this.storageService.getImage(job.ogImageUrl);
+        if (buffer) {
+          return { buffer, contentType: 'image/png' };
+        }
+      }
+      const payload = {
+        id: job.id,
+        title: job.title,
+        experienceLevel: job.experienceLevel,
+        billingType: job.billingType,
+        currency: job.currency,
+        projectType: job.projectType,
+      };
+      const buffer = await this.ogImageService.generateJobOgImage(payload);
+      return { buffer, contentType: 'image/png' };
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Generate OG image for job, upload to storage, and update job.ogImageUrl.
+   * Called on create, update, and publish. Returns the stored URL or null on failure.
+   */
+  private async ensureJobOgImage(jobId: string): Promise<string | null> {
+    try {
+      if (!this.storageService.isConfigured()) return null;
+      const job = await this.prisma.job.findUnique({
+        where: { id: jobId },
+        select: {
+          id: true,
+          title: true,
+          experienceLevel: true,
+          billingType: true,
+          currency: true,
+          projectType: true,
+        },
+      });
+      if (!job) return null;
+      const buffer = await this.ogImageService.generateJobOgImage({
+        id: job.id,
+        title: job.title,
+        experienceLevel: job.experienceLevel,
+        billingType: job.billingType,
+        currency: job.currency,
+        projectType: job.projectType,
+      });
+      const url = await this.storageService.uploadOgImage(buffer, job.id);
+      if (url) {
+        await this.prisma.job.update({
+          where: { id: jobId },
+          data: { ogImageUrl: url },
+        });
+        return url;
+      }
+    } catch (err) {
+      this.logger.warn(`OG image generation/upload failed for job ${jobId}`, err);
+    }
+    return null;
   }
 
   private getInitials(name: string | null, surname: string | null): string {
@@ -1269,8 +1359,10 @@ export class JobsService implements OnModuleInit {
       },
     });
     if (!result) return null;
+    const ogImageUrl = await this.ensureJobOgImage(jobId);
     return {
       ...result,
+      ...(ogImageUrl != null && { ogImageUrl }),
       author: maskAuthorSurname(result.author),
       category: this.getCategoryWithTranslation(result.category, userLanguage),
     };
@@ -1317,8 +1409,10 @@ export class JobsService implements OnModuleInit {
       console.error('Failed to process notifications for job', jobId, err);
     });
 
+    const ogImageUrl = await this.ensureJobOgImage(jobId);
     return {
       ...result,
+      ...(ogImageUrl != null && { ogImageUrl }),
       author: maskAuthorSurname(result.author),
       category: this.getCategoryWithTranslation(result.category, userLanguage),
     };

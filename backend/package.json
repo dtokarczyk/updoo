@@ -12,7 +12,7 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
+    "start:prod": "node dist/src/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -43,6 +43,7 @@
     "@nestjs/schedule": "^6.1.1",
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
+    "@resvg/resvg-js": "^2.6.2",
     "axios": "^1.13.5",
     "bcrypt": "^6.0.0",
     "bir1": "^4.1.0",
@@ -58,6 +59,7 @@
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "satori": "^0.19.2",
     "sharp": "^0.34.5"
   },
   "devDependencies": {

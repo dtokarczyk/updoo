@@ -8,8 +8,10 @@ import {
   Patch,
   Post,
   Query,
+  Res,
   UseGuards,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { GetUser } from '../auth/get-user.decorator';
 import type { JwtUser } from '../auth/get-user.decorator';
 import { AgreementsAcceptedGuard } from '../auth/agreements-accepted.guard';
@@ -179,6 +181,27 @@ export class JobsController {
       user!.accountType === 'ADMIN',
       finalLanguage,
     );
+  }
+
+  /** Public OG image for social sharing (no auth). Serves from storage or generates on-the-fly. */
+  @Get(':id/og-image')
+  async getJobOgImage(
+    @Param('id') id: string,
+    @Res({ passthrough: false }) res: Response,
+    @Headers('accept-language') acceptLanguage?: string,
+  ) {
+    const headerLanguage = acceptLanguage
+      ? parseLanguageFromHeader(acceptLanguage)
+      : null;
+    const language = (headerLanguage || JobLanguage.POLISH) as JobLanguage;
+    const result = await this.jobsService.getJobOgImageBuffer(id, language);
+    if (!result) {
+      res.status(404).send();
+      return;
+    }
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.contentType(result.contentType);
+    res.send(result.buffer);
   }
 
   @Get(':id')

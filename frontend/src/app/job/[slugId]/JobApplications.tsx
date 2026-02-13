@@ -182,9 +182,6 @@ export function JobApplications({
                     </div>
                     {'message' in app && app.message != null && app.message !== '' && (
                       <div className="mt-2 pt-2">
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
-                          {t('jobs.applicationMessageContent')}
-                        </p>
                         <p className="text-sm whitespace-pre-wrap leading-relaxed text-foreground">
                           {app.message}
                         </p>

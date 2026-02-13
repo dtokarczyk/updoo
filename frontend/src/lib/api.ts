@@ -788,6 +788,8 @@ export interface Job {
   expectedOffers?: number | null;
   /** Restrict who can apply: one or more of freelancer without B2B, freelancer with B2B, companies. Empty = no restriction. */
   expectedApplicantTypes?: ('FREELANCER_NO_B2B' | 'FREELANCER_B2B' | 'COMPANY')[];
+  /** OG image URL (stored in S3, generated on save). Used for social sharing. */
+  ogImageUrl?: string | null;
 }
 
 export interface PaginationInfo {

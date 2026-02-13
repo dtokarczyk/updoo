@@ -140,7 +140,7 @@ export default function CompanyProfilePage() {
         <div className="lg:col-span-4 order-2 lg:order-1 space-y-6">
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-4xl font-semibold leading-tight">
+              <h1 className="text-4xl font-black leading-tight">
                 {profile.name}
               </h1>
               {profile.isVerified && (

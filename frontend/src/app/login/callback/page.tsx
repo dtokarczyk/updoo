@@ -94,12 +94,16 @@ function LoginCallbackContent() {
       }, 3000);
     }, PROFILE_FETCH_TIMEOUT_MS);
 
+    const isNewUser = searchParams.get('isNewUser') === '1';
     getProfileWithToken(token)
       .then(({ user, needsAgreementsAcceptance }) => {
         if (cancelled) return;
         clearTimeout(timeoutId);
         setAuth({ access_token: token, user });
         refreshAuth();
+        if (isNewUser && typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'sign_up', { method: 'google' });
+        }
         const target =
           returnUrl ||
           (needsAgreementsAcceptance

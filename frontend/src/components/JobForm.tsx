@@ -7,7 +7,6 @@ import {
   getCategories,
   getLocations,
   getDraftJob,
-  improveJobDescription as improveJobDescriptionApi,
   type Category,
   type Location,
   type BillingType,
@@ -29,7 +28,6 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { SelectBox } from '@/components/ui/SelectBox';
-import { Wand2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslations } from '@/hooks/useTranslations';
 import {
@@ -89,7 +87,6 @@ export function JobForm({
   const [loading, setLoading] = useState(true);
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [improvingDescription, setImprovingDescription] = useState(false);
 
   const form = useForm<JobFormValues>({
     resolver: zodResolver(jobFormSchema),
@@ -341,45 +338,7 @@ export function JobForm({
           )}
         </div>
         <div className="space-y-2">
-          <div className="flex items-center justify-between gap-2">
-            <Label htmlFor="description">{t('jobs.description')}</Label>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="shrink-0 text-muted-foreground hover:text-foreground"
-              disabled={isSubmitting || improvingDescription}
-              onClick={async () => {
-                const current = watch('description') ?? '';
-                if (!current.trim()) return;
-                setImprovingDescription(true);
-                try {
-                  const improved = await improveJobDescriptionApi(current);
-                  setValue('description', improved, {
-                    shouldValidate: true,
-                    shouldDirty: true,
-                  });
-                  setSubmitError(null);
-                } catch (err) {
-                  setSubmitError(
-                    err instanceof Error ? err.message : t('jobs.newJobForm.improveDescriptionError'),
-                  );
-                } finally {
-                  setImprovingDescription(false);
-                }
-              }}
-              title={t('jobs.newJobForm.improveDescriptionWithAi')}
-              aria-label={t('jobs.newJobForm.improveDescriptionWithAi')}
-            >
-              <Wand2
-                className={cn('h-4 w-4', improvingDescription && 'animate-pulse')}
-                aria-hidden
-              />
-              {improvingDescription && (
-                <span className="ml-1.5 text-xs">{t('common.loading')}</span>
-              )}
-            </Button>
-          </div>
+          <Label htmlFor="description">{t('jobs.description')}</Label>
           <textarea
             id="description"
             {...register('description')}

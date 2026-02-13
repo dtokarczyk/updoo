@@ -16,11 +16,16 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { I18nService, SupportedLanguage } from '../i18n/i18n.service';
 import { StorageService } from '../storage/storage.service';
-import type { JwtPayload, AuthResponseUser, AuthResponse } from './auth.types';
+import type {
+  JwtPayload,
+  AuthResponseUser,
+  AuthResponse,
+  GoogleAuthResponse,
+} from './auth.types';
 import { PASSWORD_RESET_EXPIRY_HOURS } from './auth.constants';
 import escapeHtml = require('escape-html');
 
-export type { JwtPayload, AuthResponseUser, AuthResponse };
+export type { JwtPayload, AuthResponseUser, AuthResponse, GoogleAuthResponse };
 
 @Injectable()
 export class AuthService {
@@ -281,7 +286,7 @@ export class AuthService {
     emails?: { value: string; verified?: boolean }[];
     displayName?: string;
     name?: { givenName?: string; familyName?: string };
-  }): Promise<AuthResponse> {
+  }): Promise<GoogleAuthResponse> {
     const email = profile.emails?.[0]?.value?.toLowerCase();
     if (!email) {
       throw new BadRequestException('Google profile has no email');
@@ -311,7 +316,7 @@ export class AuthService {
       const userCompany = user as {
         company?: { nip: string; companySize: string | null } | null;
       };
-      return this.buildAuthResponseWithResolvedAvatarUrl({
+      const auth = await this.buildAuthResponseWithResolvedAvatarUrl({
         id: user.id,
         email: user.email,
         name: user.name,
@@ -332,6 +337,7 @@ export class AuthService {
         acceptedTermsVersion: user.acceptedTermsVersion,
         acceptedPrivacyPolicyVersion: user.acceptedPrivacyPolicyVersion,
       });
+      return { ...auth, isNewUser: false };
     }
 
     user = await this.prisma.user.findUnique({
@@ -356,7 +362,7 @@ export class AuthService {
       const userCompany = user as {
         company?: { nip: string; companySize: string | null } | null;
       };
-      return this.buildAuthResponseWithResolvedAvatarUrl({
+      const auth = await this.buildAuthResponseWithResolvedAvatarUrl({
         id: user.id,
         email: user.email,
         name: user.name,
@@ -377,6 +383,7 @@ export class AuthService {
         acceptedTermsVersion: user.acceptedTermsVersion,
         acceptedPrivacyPolicyVersion: user.acceptedPrivacyPolicyVersion,
       });
+      return { ...auth, isNewUser: false };
     }
 
     const newUser = await this.prisma.user.create({
@@ -396,7 +403,7 @@ export class AuthService {
       },
     });
     if (!withRelations) {
-      return this.buildAuthResponseWithResolvedAvatarUrl({
+      const auth = await this.buildAuthResponseWithResolvedAvatarUrl({
         id: newUser.id,
         email: newUser.email,
         name: newUser.name,
@@ -414,6 +421,7 @@ export class AuthService {
         acceptedTermsVersion: newUser.acceptedTermsVersion,
         acceptedPrivacyPolicyVersion: newUser.acceptedPrivacyPolicyVersion,
       });
+      return { ...auth, isNewUser: true };
     }
     const skillsFromUser =
       (
@@ -424,7 +432,7 @@ export class AuthService {
     const newUserCompany = withRelations as {
       company?: { nip: string; companySize: string | null } | null;
     };
-    return this.buildAuthResponseWithResolvedAvatarUrl({
+    const auth = await this.buildAuthResponseWithResolvedAvatarUrl({
       id: withRelations.id,
       email: withRelations.email,
       name: withRelations.name,
@@ -445,6 +453,7 @@ export class AuthService {
       acceptedTermsVersion: withRelations.acceptedTermsVersion,
       acceptedPrivacyPolicyVersion: withRelations.acceptedPrivacyPolicyVersion,
     });
+    return { ...auth, isNewUser: true };
   }
 
   async validateUser(payload: JwtPayload) {

@@ -10,7 +10,8 @@ import {
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { Request } from 'express';
-import { AuthService, AuthResponse } from './auth.service';
+import { AuthService } from './auth.service';
+import type { AuthResponse, GoogleAuthResponse } from './auth.types';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
@@ -23,7 +24,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly i18nService: I18nService,
-  ) {}
+  ) { }
 
   private getLanguage(acceptLanguage?: string): SupportedLanguage {
     return this.i18nService.parseLanguageFromHeader(acceptLanguage);
@@ -66,7 +67,7 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   async googleAuthCallback(
-    @Req() req: Request & { user?: AuthResponse },
+    @Req() req: Request & { user?: GoogleAuthResponse },
     @Res() res: Response,
   ): Promise<void> {
     const auth = req.user;
@@ -76,8 +77,8 @@ export class AuthController {
       return;
     }
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
-    res.redirect(
-      `${frontendUrl}/login/callback?token=${encodeURIComponent(auth.access_token)}`,
-    );
+    const params = new URLSearchParams({ token: auth.access_token });
+    if (auth.isNewUser) params.set('isNewUser', '1');
+    res.redirect(`${frontendUrl}/login/callback?${params.toString()}`);
   }
 }

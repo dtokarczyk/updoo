@@ -539,7 +539,7 @@
     "newJobForm": {
       "title": "Nowe ogłoszenie",
       "description": "Wypełnij szczegóły ogłoszenia. Pola rozliczenia i skille pomogą dopasować ogłoszenie do wykonawców.",
-      "titlePlaceholder": "np. Szukam developera React",
+      "titlePlaceholder": "np. Developer React",
       "descriptionPlaceholder": "Opisz szczegóły ogłoszenia...",
       "selectCategory": "Wybierz kategorię",
       "selectInterval": "Wybierz przedział",

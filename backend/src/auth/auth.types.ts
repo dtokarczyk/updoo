@@ -57,6 +57,11 @@ export interface AuthResponse {
   user: AuthResponseUser;
 }
 
+/** Auth response from Google OAuth callback; includes flag for new user (sign_up). */
+export interface GoogleAuthResponse extends AuthResponse {
+  isNewUser: boolean;
+}
+
 export interface CompanyPayload {
   id: string;
   regon: string;

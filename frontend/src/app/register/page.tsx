@@ -54,6 +54,9 @@ function RegisterForm() {
       const data = await apiRegister(email, password, confirmPassword, true);
       setAuth(data);
       refreshAuth();
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'sign_up', { method: 'email' });
+      }
       router.push('/onboarding');
       router.refresh();
     } catch (err) {

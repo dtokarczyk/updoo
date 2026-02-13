@@ -539,7 +539,7 @@
     "newJobForm": {
       "title": "New job",
       "description": "Fill in the job details. Billing fields and skills will help match the job to contractors.",
-      "titlePlaceholder": "e.g. Looking for React developer",
+      "titlePlaceholder": "e.g. React developer",
       "descriptionPlaceholder": "Describe the job details...",
       "selectCategory": "Select category",
       "selectInterval": "Select interval",

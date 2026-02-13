@@ -40,6 +40,24 @@ export function GoogleAnalytics() {
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
+          (function(){
+            try {
+              var c = localStorage.getItem('cookie-consent');
+              var analytics = 'denied', ad = 'denied';
+              if (c) {
+                var p = JSON.parse(c);
+                if (p.googleAnalytics !== false) analytics = 'granted';
+                if (p.googleAdWords !== false) ad = 'granted';
+              }
+              gtag('consent', 'default', {
+                'analytics_storage': analytics,
+                'ad_storage': ad,
+                'functionality_storage': 'granted',
+                'personalization_storage': ad,
+                'security_storage': 'granted'
+              });
+            } catch(e) {}
+          })();
           gtag('config', '${measurementId}');
         `}
       </Script>

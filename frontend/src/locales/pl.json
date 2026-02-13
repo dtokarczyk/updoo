@@ -14,6 +14,66 @@
     "themeLight": "Jasny motyw",
     "themeDark": "Ciemny motyw"
   },
+  "cookieConsent": {
+    "tabs": {
+      "consent": "Zgoda",
+      "details": "Szczegóły",
+      "about": "O nas"
+    },
+    "consent": {
+      "title": "Ta strona używa plików cookie",
+      "description": "Używamy plików cookie do personalizacji treści i reklam, dostarczania funkcji mediów społecznościowych oraz analizy naszego ruchu. Udostępniamy również informacje o korzystaniu z naszej strony naszym partnerom z mediów społecznościowych, reklamowym i analitycznym, którzy mogą łączyć je z innymi informacjami, które im przekazałeś lub które zebrali podczas korzystania z ich usług."
+    },
+    "details": {
+      "title": "Szczegóły dotyczące plików cookie",
+      "description0": "Pliki cookie to małe pliki tekstowe, które mogą być używane przez strony internetowe, aby uczynić doświadczenie użytkownika bardziej wydajnym.",
+      "description1": "Prawo stanowi, że możemy przechowywać pliki cookie na Twoim urządzeniu, jeśli są one ściśle niezbędne do działania tej strony. W przypadku wszystkich innych typów plików cookie potrzebujemy Twojej zgody.",
+      "description2": "Ta strona używa różnych typów plików cookie. Niektóre pliki cookie są umieszczane przez usługi stron trzecich, które pojawiają się na naszych stronach.",
+      "description3": "Możesz w dowolnym momencie zmienić lub wycofać swoją zgodę z Deklaracji plików cookie na naszej stronie internetowej."
+    },
+    "about": {
+      "title": "O nas",
+      "description": "Dowiedz się więcej o tym, kim jesteśmy, jak możesz się z nami skontaktować i jak przetwarzamy dane osobowe w naszej Polityce prywatności.",
+      "contact": {
+        "title": "Kontakt:",
+        "name": "Damian Tokarczyk",
+        "email": "damian.tokarczyk@kodiwo.pl",
+        "phone": "+48 505 993 362"
+      }
+    },
+    "buttons": {
+      "customize": "Dostosuj",
+      "allowAll": "Zezwól na wszystkie",
+      "back": "Wróć",
+      "savePreferences": "Zapisz preferencje"
+    },
+    "options": {
+      "googleAnalytics": {
+        "name": "Google Analytics",
+        "description": "Google Analytics zbiera informacje o tym, jak odwiedzający korzystają z naszej strony internetowej. Używamy tych informacji do tworzenia raportów, które pomagają nam ulepszać stronę. Google Analytics może zbierać informacje takie jak adres IP, typ przeglądarki, odwiedzane strony i czas spędzony na stronie."
+      },
+      "googleAdWords": {
+        "name": "Google Ads",
+        "description": "Google Ads umożliwia nam śledzenie konwersji i optymalizację reklam. Używamy tego narzędzia do mierzenia skuteczności naszych kampanii reklamowych i dostarczania bardziej odpowiednich reklam użytkownikom."
+      },
+      "hotjar": {
+        "name": "Hotjar",
+        "description": "Hotjar pomaga nam zrozumieć, jak użytkownicy wchodzą w interakcję z naszą stroną internetową, poprzez nagrywanie sesji użytkowników, mapy cieplne i ankiety. Te narzędzia pomagają nam ulepszać doświadczenie użytkownika na naszej stronie."
+      },
+      "vercelAnalytics": {
+        "name": "Vercel Analytics",
+        "description": "Vercel Analytics pomaga nam analizować wydajność i użycie naszej strony internetowej. Zbiera anonimowe dane o odwiedzinach, które pomagają nam optymalizować stronę."
+      },
+      "vercelSpeedInsights": {
+        "name": "Vercel Speed Insights",
+        "description": "Vercel Speed Insights mierzy wydajność naszej strony internetowej w czasie rzeczywistym. Pomaga nam identyfikować problemy z szybkością ładowania i optymalizować doświadczenie użytkownika."
+      },
+      "facebookAds": {
+        "name": "Facebook Ads",
+        "description": "Facebook Ads umożliwia nam śledzenie konwersji z kampanii reklamowych na Facebooku i Instagramie. Pomaga nam mierzyć skuteczność naszych reklam i dostarczać bardziej odpowiednie treści użytkownikom."
+      }
+    }
+  },
   "my": {
     "title": "Moje",
     "desc": "Twoje ogłoszenia, złożone oferty i ulubione ogłoszenia.",
@@ -584,6 +644,7 @@
   "footer": {
     "copyright": "© {year} Hoplo. Wszelkie prawa zastrzeżone.",
     "terms": "Regulamin",
-    "privacy": "Polityka prywatności"
+    "privacy": "Polityka prywatności",
+    "cookieSettings": "Ustawienia plików cookie"
   }
 }

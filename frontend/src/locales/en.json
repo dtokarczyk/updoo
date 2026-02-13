@@ -14,6 +14,66 @@
     "themeLight": "Light theme",
     "themeDark": "Dark theme"
   },
+  "cookieConsent": {
+    "tabs": {
+      "consent": "Consent",
+      "details": "Details",
+      "about": "About"
+    },
+    "consent": {
+      "title": "This site uses cookies",
+      "description": "We use cookies to personalise content and ads, to provide social media features and to analyse our traffic. We also share information about your use of our site with our social media, advertising and analytics partners, who may combine it with other information you have provided to them or that they have collected from your use of their services."
+    },
+    "details": {
+      "title": "Cookie details",
+      "description0": "Cookies are small text files that can be used by websites to make the user experience more efficient.",
+      "description1": "The law states that we may store cookies on your device if they are strictly necessary for the operation of this site. For all other types of cookies we need your consent.",
+      "description2": "This site uses different types of cookies. Some cookies are placed by third-party services that appear on our pages.",
+      "description3": "You can change or withdraw your consent from the Cookie Declaration on our website at any time."
+    },
+    "about": {
+      "title": "About us",
+      "description": "Find out more about who we are, how you can contact us and how we process personal data in our Privacy Policy.",
+      "contact": {
+        "title": "Contact:",
+        "name": "Damian Tokarczyk",
+        "email": "damian.tokarczyk@kodiwo.pl",
+        "phone": "+48 505 993 362"
+      }
+    },
+    "buttons": {
+      "customize": "Customise",
+      "allowAll": "Allow all",
+      "back": "Back",
+      "savePreferences": "Save preferences"
+    },
+    "options": {
+      "googleAnalytics": {
+        "name": "Google Analytics",
+        "description": "Google Analytics collects information about how visitors use our website. We use this information to create reports that help us improve the site. Google Analytics may collect information such as IP address, browser type, pages visited and time spent on the site."
+      },
+      "googleAdWords": {
+        "name": "Google Ads",
+        "description": "Google Ads allows us to track conversions and optimise ads. We use this tool to measure the effectiveness of our advertising campaigns and deliver more relevant ads to users."
+      },
+      "hotjar": {
+        "name": "Hotjar",
+        "description": "Hotjar helps us understand how users interact with our website through session recordings, heatmaps and surveys. These tools help us improve the user experience on our site."
+      },
+      "vercelAnalytics": {
+        "name": "Vercel Analytics",
+        "description": "Vercel Analytics helps us analyse the performance and usage of our website. It collects anonymous data about visits that help us optimise the site."
+      },
+      "vercelSpeedInsights": {
+        "name": "Vercel Speed Insights",
+        "description": "Vercel Speed Insights measures our website performance in real time. It helps us identify loading speed issues and optimise the user experience."
+      },
+      "facebookAds": {
+        "name": "Facebook Ads",
+        "description": "Facebook Ads allows us to track conversions from advertising campaigns on Facebook and Instagram. It helps us measure the effectiveness of our ads and deliver more relevant content to users."
+      }
+    }
+  },
   "my": {
     "title": "My things",
     "desc": "Your jobs, applications and favorite jobs.",
@@ -584,6 +644,7 @@
   "footer": {
     "copyright": "© {year} Hoplo. All rights reserved.",
     "terms": "Terms of service",
-    "privacy": "Privacy policy"
+    "privacy": "Privacy policy",
+    "cookieSettings": "Cookie settings"
   }
 }

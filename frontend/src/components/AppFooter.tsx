@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { LanguageToggle } from '@/components/LanguageToggle';
+import { CookieSettingsLink } from '@/components/CookieSettingsLink';
 import type { Locale } from '@/lib/i18n';
 import { t } from '@/lib/translations';
 import { PROJECT_NAME } from '@/constants';
@@ -37,6 +38,7 @@ export function AppFooter({ initialLocale }: { initialLocale: Locale }) {
             >
               {t(initialLocale, 'footer.privacy')}
             </Link>
+            <CookieSettingsLink />
           </div>
           <p className="text-xs text-muted-foreground">
             {t(initialLocale, 'footer.copyright', { year })}

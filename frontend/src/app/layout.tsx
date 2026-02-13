@@ -10,8 +10,8 @@ import { BetaBar } from '@/components/BetaBar';
 import { AppHeader } from '@/components/AppHeader';
 import { AppFooter } from '@/components/AppFooter';
 import { OnboardingRedirect } from '@/components/OnboardingRedirect';
-import { GoogleAnalytics } from '@/components/GoogleAnalytics';
-import { Hotjar } from '@/components/Hotjar';
+import { ConditionalAnalytics } from '@/components/ConditionalAnalytics';
+import { CookieConsent } from '@/components/ui/cookie-consent';
 import { getLocaleFromRequest } from '@/lib/i18n';
 import { getMetadataConfig } from '@/lib/metadata-config';
 
@@ -73,8 +73,8 @@ export default async function RootLayout({
       </head>
 
       <body className={`${geistMono.variable} antialiased`}>
-        <GoogleAnalytics />
-        <Hotjar />
+        <ConditionalAnalytics />
+        <CookieConsent />
         <ThemeScript />
         <ThemeProvider>
           <TooltipProvider delayDuration={200}>

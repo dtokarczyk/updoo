@@ -26,6 +26,30 @@ function getBlurredRatePlaceholder(
     : `${formatted} ${currency}`;
 }
 
+/** Format real rate for display (same logic as frontend formatRateValue). */
+function formatRateValue(
+  rate: string,
+  currency: string,
+  billingType: string,
+): string {
+  const r = parseFloat(rate);
+  if (Number.isNaN(r)) return '';
+  const formatted = r.toLocaleString('pl-PL', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+  return billingType === 'HOURLY'
+    ? `${formatted} ${currency}/h`
+    : `${formatted} ${currency}`;
+}
+
+function hasRate(rate: string | null | undefined): boolean {
+  if (rate == null) return false;
+  const s = String(rate).trim();
+  if (s === '') return false;
+  return !Number.isNaN(parseFloat(s));
+}
+
 const EXPERIENCE_LABELS: Record<string, string> = {
   JUNIOR: 'Junior',
   MID: 'Mid',
@@ -71,6 +95,8 @@ export interface JobOgPayload {
   billingType: string;
   currency: string;
   projectType: string;
+  /** When set and valid, displayed on OG image (matches page); otherwise blurred placeholder. */
+  rate?: string | null;
 }
 
 const OG_WIDTH = 1200;
@@ -132,11 +158,13 @@ export class OgImageService {
 
     const experienceLabel =
       EXPERIENCE_LABELS[job.experienceLevel] ?? job.experienceLevel;
-    const rateBlurred = getBlurredRatePlaceholder(
-      job.id,
-      job.billingType,
-      job.currency,
-    );
+    const rateDisplay = hasRate(job.rate)
+      ? formatRateValue(job.rate!, job.currency, job.billingType)
+      : getBlurredRatePlaceholder(
+          job.id,
+          job.billingType,
+          job.currency,
+        );
     const billingLabel = BILLING_LABELS[job.billingType] ?? job.billingType;
     const projectTypeLabel =
       PROJECT_TYPE_LABELS[job.projectType] ?? job.projectType;
@@ -159,7 +187,7 @@ export class OgImageService {
           height: OG_HEIGHT,
           display: 'flex',
           flexDirection: 'column',
-          backgroundColor: '#0f172a',
+          backgroundColor: '#121113',
           padding: 34,
           fontFamily: FONT_FAMILY,
           borderWidth: 10,
@@ -216,7 +244,7 @@ export class OgImageService {
                       cell(
                         ICON_SETTINGS,
                         'Stawka',
-                        rateBlurred,
+                        rateDisplay,
                         true,
                       ),
                     ],
@@ -355,7 +383,7 @@ function cell(
               width: iconBoxSize,
               height: iconBoxSize,
               borderRadius: 14,
-              backgroundColor: '#334155',
+              backgroundColor: '#232826',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

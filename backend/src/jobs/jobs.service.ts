@@ -761,6 +761,7 @@ export class JobsService implements OnModuleInit {
           billingType: true,
           currency: true,
           projectType: true,
+          rate: true,
           ogImageUrl: true,
         },
       });
@@ -778,6 +779,7 @@ export class JobsService implements OnModuleInit {
         billingType: job.billingType,
         currency: job.currency,
         projectType: job.projectType,
+        rate: job.rate != null ? String(job.rate) : null,
       };
       const buffer = await this.ogImageService.generateJobOgImage(payload);
       return { buffer, contentType: 'image/png' };
@@ -802,6 +804,7 @@ export class JobsService implements OnModuleInit {
           billingType: true,
           currency: true,
           projectType: true,
+          rate: true,
         },
       });
       if (!job) return null;
@@ -812,6 +815,7 @@ export class JobsService implements OnModuleInit {
         billingType: job.billingType,
         currency: job.currency,
         projectType: job.projectType,
+        rate: job.rate != null ? String(job.rate) : null,
       });
       const url = await this.storageService.uploadOgImage(buffer, job.id);
       if (url) {

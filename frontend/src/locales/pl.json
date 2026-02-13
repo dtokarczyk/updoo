@@ -560,7 +560,8 @@
     "pendingJobsTitle": "Ogłoszenia oczekujące na zatwierdzenie",
     "noPendingJobs": "Brak ogłoszeń oczekujących na zatwierdzenie",
     "failedToLoadPending": "Nie udało się załadować ogłoszeń do zatwierdzenia",
-    "approve": "Zatwierdź"
+    "approve": "Zatwierdź",
+    "approving": "Zatwierdzanie…"
   },
   "notifications": {
     "tabNotifications": "Powiadomienia",

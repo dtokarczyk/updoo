@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Pencil, Send, X } from 'lucide-react';
+import { Check, Pencil, Send, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { jobPath, jobPathEdit } from '@/lib/job-url';
 import type { Job } from '@/lib/api';
@@ -20,6 +20,9 @@ export interface JobActionsProps {
   deadlinePassed: boolean;
   canClose: boolean;
   closeSubmitting: boolean;
+  /** Admin-only: accept (publish) draft job. Shown when isAdmin && isDraft. */
+  onAccept?: () => void;
+  acceptSubmitting?: boolean;
   job: Job;
   onApplyClick: () => void;
   onClose: () => void;
@@ -39,6 +42,8 @@ export function JobActions({
   deadlinePassed,
   canClose,
   closeSubmitting,
+  onAccept,
+  acceptSubmitting = false,
   job,
   onApplyClick,
   onClose,
@@ -46,6 +51,7 @@ export function JobActions({
   layout = 'column',
 }: JobActionsProps) {
   const isOwnerOrAdmin = isOwnJob || isAdmin;
+  const canAccept = isAdmin && isDraft && onAccept;
   const isFreelancerCanSee =
     !isDraft && !isClosed && user?.accountType === 'FREELANCER';
   const isGuestApplyCta = !user && !isDraft && !isClosed;
@@ -63,6 +69,17 @@ export function JobActions({
     <div className={containerClassName}>
       {isOwnerOrAdmin ? (
         <>
+          {canAccept && (
+            <Button
+              className={buttonWidthClass}
+              size="lg"
+              onClick={onAccept}
+              disabled={acceptSubmitting}
+            >
+              <Check className="mr-2 h-4 w-4" />
+              {acceptSubmitting ? t('admin.approving') : t('admin.approve')}
+            </Button>
+          )}
           <Button className={buttonWidthClass} size="lg" asChild>
             <Link href={jobPathEdit(job)}>
               <Pencil className="mr-2 h-4 w-4" />

@@ -79,6 +79,130 @@ export function UserSidebar(_props: UserSidebarProps) {
     });
   }
 
+  function renderSectionContent() {
+    const accountType = user?.accountType;
+    if (!accountType) return null;
+
+    if (loading) {
+      return (
+        <div className="text-sm text-muted-foreground min-h-[120px] flex items-center">
+          {t('common.loading')}
+        </div>
+      );
+    }
+
+    switch (accountType) {
+      case 'FREELANCER': {
+        const hasApplications = (applications?.length ?? 0) > 0;
+        if (!hasApplications) {
+          return (
+            <div className="min-h-[180px] flex flex-col justify-center">
+              <EmptyState
+                icon={FileText}
+                message={t('jobs.noApplications')}
+                variant="compact"
+              />
+            </div>
+          );
+        }
+        return (
+          <div className="space-y-2">
+            {applications!.map((app) => (
+              <Link
+                key={app.id}
+                href={jobPath(app.job)}
+                className="block p-3 rounded-lg border border-border bg-card hover:border-primary transition-colors"
+              >
+                <h4 className="text-sm font-medium text-foreground line-clamp-2 mb-1">
+                  {app.job.title}
+                </h4>
+                <p className="text-xs text-muted-foreground">
+                  {formatPostedAgo(app.createdAt)}
+                </p>
+                {app.job.category && (
+                  <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">
+                    {app.job.category.name}
+                  </span>
+                )}
+              </Link>
+            ))}
+          </div>
+        );
+      }
+
+      case 'CLIENT': {
+        const hasJobs = (jobs?.length ?? 0) > 0;
+        if (!hasJobs) {
+          return (
+            <div className="min-h-[180px] flex flex-col justify-center">
+              <EmptyState
+                icon={Briefcase}
+                message={t('jobs.noJobsSidebar')}
+                variant="compact"
+                action={
+                  <Button asChild variant="outline" size="sm">
+                    <Link href="/job/new">{t('jobs.newJob')}</Link>
+                  </Button>
+                }
+              />
+            </div>
+          );
+        }
+        return (
+          <div className="space-y-2">
+            {jobs!.map((job) => {
+              const isClosed = job.status === 'CLOSED';
+              const isRejected = job.status === 'REJECTED';
+              return (
+                <Link
+                  key={job.id}
+                  href={jobPath(job)}
+                  className={`block p-3 rounded-lg border border-border bg-card hover:border-primary transition-colors ${isRejected ? 'border-red-500/40' : ''}`}
+                >
+                  <h4
+                    className={`text-sm font-medium line-clamp-2 mb-1 ${
+                      isClosed
+                        ? 'text-muted-foreground line-through'
+                        : isRejected
+                          ? 'text-red-700 dark:text-red-400'
+                          : 'text-foreground'
+                    }`}
+                  >
+                    {job.title}
+                  </h4>
+                  <p className="text-xs text-muted-foreground">
+                    {formatPostedAgo(job.createdAt)}
+                  </p>
+                  {job.category && (
+                    <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">
+                      {job.category.name}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        );
+      }
+
+      default:
+        return null;
+    }
+  }
+
+  function getSectionTitle(): string | null {
+    switch (user?.accountType) {
+      case 'FREELANCER':
+        return t('jobs.recentApplications');
+      case 'CLIENT':
+        return t('jobs.myJobs');
+      default:
+        return null;
+    }
+  }
+
+  const sectionTitle = getSectionTitle();
+
   return (
     <>
       {user?.accountType === 'CLIENT' && (
@@ -98,98 +222,12 @@ export function UserSidebar(_props: UserSidebarProps) {
       )}
 
       {/* Recent applications (for freelancer) or jobs (for client) */}
-      {user?.accountType && (
+      {sectionTitle !== null && (
         <div>
           <h3 className="text-sm font-semibold text-foreground mb-3">
-            {user.accountType === 'FREELANCER'
-              ? t('jobs.recentApplications')
-              : t('jobs.myJobs')}
+            {sectionTitle}
           </h3>
-          {loading ? (
-            <div className="text-sm text-muted-foreground min-h-[120px] flex items-center">
-              {t('common.loading')}
-            </div>
-          ) : user.accountType === 'FREELANCER' ? (
-            (applications?.length ?? 0) === 0 ? (
-              <div className="min-h-[180px] flex flex-col justify-center">
-                <EmptyState
-                  icon={FileText}
-                  message={t('jobs.noApplications')}
-                  variant="compact"
-                />
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {applications.map((app) => (
-                  <Link
-                    key={app.id}
-                    href={jobPath(app.job)}
-                    className="block p-3 rounded-lg border border-border bg-card hover:border-primary transition-colors"
-                  >
-                    <h4 className="text-sm font-medium text-foreground line-clamp-2 mb-1">
-                      {app.job.title}
-                    </h4>
-                    <p className="text-xs text-muted-foreground">
-                      {formatPostedAgo(app.createdAt)}
-                    </p>
-                    {app.job.category && (
-                      <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">
-                        {app.job.category.name}
-                      </span>
-                    )}
-                  </Link>
-                ))}
-              </div>
-            )
-          ) : user.accountType === 'CLIENT' ? (
-            (jobs?.length ?? 0) === 0 ? (
-              <div className="min-h-[180px] flex flex-col justify-center">
-                <EmptyState
-                  icon={Briefcase}
-                  message={t('jobs.noJobsSidebar')}
-                  variant="compact"
-                  action={
-                    <Button asChild variant="outline" size="sm">
-                      <Link href="/job/new">{t('jobs.newJob')}</Link>
-                    </Button>
-                  }
-                />
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {jobs.map((job) => {
-                  const isClosed = job.status === 'CLOSED';
-                  const isRejected = job.status === 'REJECTED';
-                  return (
-                    <Link
-                      key={job.id}
-                      href={jobPath(job)}
-                      className={`block p-3 rounded-lg border border-border bg-card hover:border-primary transition-colors ${isRejected ? 'border-red-500/40' : ''}`}
-                    >
-                      <h4
-                        className={`text-sm font-medium line-clamp-2 mb-1 ${isClosed
-                          ? 'text-muted-foreground line-through'
-                          : isRejected
-                            ? 'text-red-700 dark:text-red-400'
-                            : 'text-foreground'
-                          }`}
-                      >
-                        {job.title}
-                      </h4>
-                      <p className="text-xs text-muted-foreground">
-                        {formatPostedAgo(job.createdAt)}
-                      </p>
-                      {job.category && (
-                        <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">
-                          {job.category.name}
-                        </span>
-                      )}
-                    </Link>
-                  );
-                })}
-              </div>
-            )
-          ) : null}
+          {renderSectionContent()}
         </div>
       )}
     </>

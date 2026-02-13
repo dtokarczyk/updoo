@@ -15,6 +15,7 @@ import {
   applyToJob,
   closeJob,
   getStoredUser,
+  publishJob,
   authorDisplayName,
   type AuthUser,
   type Job,
@@ -81,6 +82,7 @@ export function JobDetailClient({
     string | null
   >(initialJob.currentUserApplicationMessage ?? null);
   const [closeSubmitting, setCloseSubmitting] = useState(false);
+  const [acceptSubmitting, setAcceptSubmitting] = useState(false);
   const user = initialUser ?? getStoredUser();
   const applyFormRef = useRef<HTMLDivElement>(null);
 
@@ -238,6 +240,19 @@ export function JobDetailClient({
     }
   }
 
+  async function handleAccept() {
+    if (!id || !isAdmin || !isDraft) return;
+    setAcceptSubmitting(true);
+    try {
+      await publishJob(id);
+      router.refresh();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Błąd zatwierdzania ogłoszenia');
+    } finally {
+      setAcceptSubmitting(false);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
       <div className="grid gap-8 lg:grid-cols-6">
@@ -383,6 +398,8 @@ export function JobDetailClient({
               deadlinePassed={deadlinePassed}
               canClose={canClose}
               closeSubmitting={closeSubmitting}
+              onAccept={handleAccept}
+              acceptSubmitting={acceptSubmitting}
               job={job}
               onApplyClick={handleApplyClick}
               onClose={handleClose}
@@ -452,6 +469,8 @@ export function JobDetailClient({
                 deadlinePassed={deadlinePassed}
                 canClose={canClose}
                 closeSubmitting={closeSubmitting}
+                onAccept={handleAccept}
+                acceptSubmitting={acceptSubmitting}
                 job={job}
                 onApplyClick={handleApplyClick}
                 onClose={handleClose}

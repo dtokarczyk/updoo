@@ -349,7 +349,7 @@ export function JobForm({
             className={cn(
               'flex w-full rounded-md border bg-transparent px-4 py-3 text-base shadow-xs transition-[color,box-shadow] outline-none',
               'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]',
-              'placeholder:text-muted-foreground disabled:opacity-50',
+              'placeholder:text-muted-foreground/50 disabled:opacity-50',
               errors.description ? 'border-destructive' : 'border-input',
             )}
             aria-invalid={!!errors.description}

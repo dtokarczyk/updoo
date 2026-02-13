@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export type BusinessProfileFormValues = {
   name: string;
+  slug: string;
   email: string;
   website: string;
   phone: string;
@@ -11,12 +12,16 @@ export type BusinessProfileFormValues = {
 
 export const defaultBusinessProfileFormValues: BusinessProfileFormValues = {
   name: '',
+  slug: '',
   email: '',
   website: '',
   phone: '',
   locationId: '',
   aboutUs: '',
 };
+
+/** Slug format: lowercase letters, numbers, hyphens only. */
+const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /** Returns Zod schema with translated validation messages. Use with useTranslations: getBusinessProfileFormSchema(t) */
 export function getBusinessProfileFormSchema(t: (key: string) => string) {
@@ -25,6 +30,12 @@ export function getBusinessProfileFormSchema(t: (key: string) => string) {
       .string()
       .min(2, t('profile.validation.profileNameMin'))
       .max(200, t('profile.validation.profileNameMax')),
+    slug: z
+      .string()
+      .min(2, t('profile.validation.slugMin'))
+      .max(100, t('profile.validation.slugMax'))
+      .regex(slugRegex, t('profile.validation.slugInvalid'))
+      .default(''),
     email: z
       .string()
       .optional()
@@ -49,8 +60,8 @@ export function getBusinessProfileFormSchema(t: (key: string) => string) {
     locationId: z.string().optional().default(''),
     aboutUs: z
       .string()
+      .min(1, t('profile.validation.aboutUsRequired'))
       .max(2000, t('profile.validation.aboutUsMax'))
-      .optional()
       .default(''),
   }) satisfies z.ZodType<BusinessProfileFormValues>;
 }

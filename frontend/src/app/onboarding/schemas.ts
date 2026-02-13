@@ -139,7 +139,10 @@ export const stepProfileFormSchema = z.object({
     .or(z.literal('')),
   profilePhone: z.string().max(30).optional(),
   profileLocationId: z.string().optional(),
-  profileAboutUs: z.string().max(2000).optional(),
+  profileAboutUs: z
+    .string()
+    .min(1, 'Opis "O nas" jest wymagany')
+    .max(2000),
 });
 
 export type StepPhoneInput = z.infer<typeof stepPhoneSchema>;

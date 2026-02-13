@@ -55,7 +55,7 @@ export function CategoryIcon({
   return (
     <span
       className={cn(
-        'inline-flex items-center justify-center rounded-md p-1.5',
+        'inline-flex items-center justify-center rounded-md p-1.5 transition-opacity',
         config.bgClass,
         className,
       )}

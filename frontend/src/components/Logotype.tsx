@@ -44,7 +44,7 @@ export function Logotype({ className, initialLocale }: LogotypeProps) {
       href="/"
       className={`flex flex-col text-xl font-semibold text-foreground focus:outline-none ${className ?? ''}`}
     >
-      <span className="font-black text-3xl tracking-tighter">Hoplo</span>
+      <span className="font-black text-3xl" style={{ letterSpacing: '-0.05em' }}>Hoplo</span>
       <span
         className="mt-0.5 text-xs text-muted-foreground md:hidden"
         suppressHydrationWarning

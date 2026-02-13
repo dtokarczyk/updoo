@@ -42,4 +42,11 @@ export class UpdateProfileDto {
   @IsString()
   @MaxLength(2000)
   coverPhotoUrl?: string;
+
+  /** URL slug for public profile page (e.g. "my-company"). Must be unique. Only lowercase letters, numbers and hyphens. */
+  @IsOptional()
+  @IsString()
+  @MinLength(2, { message: 'validation.profileSlugMinLength' })
+  @MaxLength(100, { message: 'validation.profileSlugMaxLength' })
+  slug?: string;
 }

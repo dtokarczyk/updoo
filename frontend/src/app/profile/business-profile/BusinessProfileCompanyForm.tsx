@@ -64,6 +64,7 @@ export function BusinessProfileCompanyForm({
         if (!cancelled) {
           reset({
             name: data.name ?? '',
+            slug: data.slug ?? '',
             email: data.email ?? '',
             website: data.website ?? '',
             phone: data.phone ?? '',
@@ -86,6 +87,7 @@ export function BusinessProfileCompanyForm({
     try {
       const payload = {
         name: data.name.trim(),
+        slug: data.slug?.trim() || undefined,
         email: data.email?.trim() || undefined,
         phone: data.phone?.trim() || undefined,
         website: data.website?.trim() || undefined,
@@ -97,9 +99,8 @@ export function BusinessProfileCompanyForm({
       setSuccess(true);
       router.refresh();
     } catch (err) {
-      setSubmitError(
-        err instanceof Error ? err.message : t('profile.saveFailed'),
-      );
+      const raw = err instanceof Error ? err.message : t('profile.saveFailed');
+      setSubmitError(t(raw) !== raw ? t(raw) : raw);
     }
   }
 
@@ -151,6 +152,7 @@ export function BusinessProfileCompanyForm({
             locations={locations}
             disabled={isSubmitting}
             t={t}
+            excludeProfileId={profile.id}
           />
           <CardFooter className="flex flex-col gap-2 px-0">
             <Button asChild variant="outline" className="w-full">

@@ -28,7 +28,17 @@
     "companySizeInvalid": "companySize must be FREELANCER, MICRO, SMALL, MEDIUM or LARGE",
     "nipInvalid": "NIP must be 10 digits",
     "rejectReasonMinLength": "Rejection reason must be at least 10 characters",
-    "rejectReasonMaxLength": "Rejection reason can be at most 2000 characters"
+    "rejectReasonMaxLength": "Rejection reason can be at most 2000 characters",
+    "profileSlugMinLength": "Slug must be at least 2 characters",
+    "profileSlugMaxLength": "Slug must be at most 100 characters",
+    "profileSlugInvalid": "Slug: only lowercase letters, numbers and hyphens (e.g. my-company)",
+    "profileSlugTaken": "This visiting card URL is already taken. Choose another one.",
+    "profileNameMinLength": "Profile name must be at least 2 characters",
+    "profileNameMaxLength": "Profile name must be at most 200 characters",
+    "emailInvalid": "Enter a valid email address",
+    "websiteInvalid": "Enter a valid URL",
+    "phoneMaxLength": "Phone number must be at most 30 characters",
+    "aboutUsMaxLength": "About us must be at most 2000 characters"
   },
   "errors": {
     "passwordsDoNotMatch": "Passwords do not match",

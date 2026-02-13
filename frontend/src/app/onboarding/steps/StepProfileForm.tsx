@@ -8,12 +8,15 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from '@/components/ui/card';
 import { ContractorProfileFormFields } from '@/components/contractor-profile-form-fields';
+import { CoverPhotoUpload } from '@/components/CoverPhotoUpload';
 import {
   getLocations,
   createContractorProfile,
   getDraftJob,
+  type Profile,
 } from '@/lib/api';
 import { stepProfileFormSchema } from '../schemas';
 import type { OnboardingFormValues, TranslateFn } from '../schemas';
@@ -50,6 +53,9 @@ export function StepProfileForm({
   const [locations, setLocations] = useState<
     { id: string; name: string; slug: string }[]
   >([]);
+  /** After profile is created, show cover upload step (like in edit) before finishing */
+  const [createdProfile, setCreatedProfile] = useState<Profile | null>(null);
+  const [coverCacheBuster, setCoverCacheBuster] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -84,7 +90,7 @@ export function StepProfileForm({
       return;
     }
     try {
-      await createContractorProfile({
+      const profile = await createContractorProfile({
         name: result.data.profileName.trim(),
         email: result.data.profileEmail?.trim() || undefined,
         phone: result.data.profilePhone?.trim() || undefined,
@@ -93,12 +99,7 @@ export function StepProfileForm({
         aboutUs: result.data.profileAboutUs?.trim() || undefined,
       });
       setLoading(false);
-      const draft = getDraftJob();
-      if (draft) {
-        onOpenDraftModal();
-      } else {
-        onFinishOnboarding();
-      }
+      setCreatedProfile(profile);
     } catch (err) {
       setError('root', {
         message:
@@ -110,6 +111,50 @@ export function StepProfileForm({
   }
 
   const rootError = formState.errors.root?.message;
+
+  // Step 2: after profile created – show cover photo (like in edit) then continue
+  if (createdProfile) {
+    return (
+      <>
+        <CardHeader>
+          <CardTitle>{t('onboarding.profileQuestionCreate')}</CardTitle>
+          <CardDescription>
+            {t('profile.create.createPageAddCover')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <CoverPhotoUpload
+            profileId={createdProfile.id}
+            coverPhotoUrl={createdProfile.coverPhotoUrl ?? null}
+            onCoverUpdated={(updated) => {
+              setCreatedProfile(updated);
+              setCoverCacheBuster(Date.now());
+            }}
+            disabled={false}
+            t={t}
+            coverCacheBuster={coverCacheBuster}
+          />
+        </CardContent>
+        <CardFooter className="mt-4 flex gap-2">
+          <Button
+            type="button"
+            className="flex-1 h-12 text-base"
+            size="lg"
+            onClick={() => {
+              const draft = getDraftJob();
+              if (draft) {
+                onOpenDraftModal();
+              } else {
+                onFinishOnboarding();
+              }
+            }}
+          >
+            {t('common.continue')}
+          </Button>
+        </CardFooter>
+      </>
+    );
+  }
 
   return (
     <>

@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
   UploadedFile,
   UseInterceptors,
@@ -43,6 +44,15 @@ export class ProfilesController {
   @UseGuards(JwtAuthGuard)
   getMyProfiles(@GetUser() user: JwtUser) {
     return this.profilesService.findMyProfiles(user.id);
+  }
+
+  @Get('check-slug/:slug')
+  @UseGuards(JwtAuthGuard)
+  checkSlug(
+    @Param('slug') slug: string,
+    @Query('excludeProfileId') excludeProfileId: string | undefined,
+  ) {
+    return this.profilesService.checkSlugAvailability(slug, excludeProfileId);
   }
 
   @Get('slug/:slug')

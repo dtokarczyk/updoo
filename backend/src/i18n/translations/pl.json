@@ -28,7 +28,17 @@
     "companySizeInvalid": "companySize musi być FREELANCER, MICRO, SMALL, MEDIUM lub LARGE",
     "nipInvalid": "NIP musi składać się z 10 cyfr",
     "rejectReasonMinLength": "Powód odrzucenia musi mieć co najmniej 10 znaków",
-    "rejectReasonMaxLength": "Powód odrzucenia może mieć maksymalnie 2000 znaków"
+    "rejectReasonMaxLength": "Powód odrzucenia może mieć maksymalnie 2000 znaków",
+    "profileNameMinLength": "Nazwa profilu musi mieć co najmniej 2 znaki",
+    "profileNameMaxLength": "Nazwa profilu może mieć co najwyżej 200 znaków",
+    "profileSlugMinLength": "Slug musi mieć co najmniej 2 znaki",
+    "profileSlugMaxLength": "Slug może mieć co najwyżej 100 znaków",
+    "profileSlugInvalid": "Slug: tylko małe litery, cyfry i myślniki (np. moja-firma)",
+    "profileSlugTaken": "Ten adres wizytówki jest już zajęty. Wybierz inny.",
+    "emailInvalid": "Wpisz poprawny adres e-mail",
+    "websiteInvalid": "Wpisz poprawny adres URL",
+    "phoneMaxLength": "Numer telefonu może mieć co najwyżej 30 znaków",
+    "aboutUsMaxLength": "Opis może mieć co najwyżej 2000 znaków"
   },
   "errors": {
     "passwordsDoNotMatch": "Hasła nie są takie same",

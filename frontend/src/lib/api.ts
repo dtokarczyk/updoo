@@ -667,6 +667,8 @@ export interface CreateProfilePayload {
   phone?: string;
   locationId?: string;
   aboutUs?: string;
+  /** URL slug for public profile (e.g. "my-company"). Unique, editable via update. */
+  slug?: string;
 }
 
 export interface PopularSkill extends Skill {
@@ -875,6 +877,23 @@ export async function getMyProfiles(): Promise<Profile[]> {
   }
   const res = await fetch(`${API_URL}/profiles/my`, { headers });
   if (!res.ok) throw new Error('Failed to fetch profiles');
+  return res.json();
+}
+
+/** Check if profile slug is available. Pass excludeProfileId when editing so own slug shows as available. */
+export async function checkSlugAvailability(
+  slug: string,
+  excludeProfileId?: string,
+): Promise<{ available: boolean }> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const headers: HeadersInit = { Authorization: `Bearer ${token}` };
+  const url = new URL(
+    `${API_URL}/profiles/check-slug/${encodeURIComponent(slug)}`,
+  );
+  if (excludeProfileId) url.searchParams.set('excludeProfileId', excludeProfileId);
+  const res = await fetch(url.toString(), { headers });
+  if (!res.ok) throw new Error('Failed to check slug');
   return res.json();
 }
 

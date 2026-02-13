@@ -16,7 +16,26 @@ export class ProfilesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storageService: StorageService,
-  ) {}
+  ) { }
+
+  /**
+   * Check if slug is available (no other profile uses it, or only the excluded one).
+   * Returns { available: true } if slug can be used.
+   */
+  async checkSlugAvailability(
+    slug: string,
+    excludeProfileId?: string,
+  ): Promise<{ available: boolean }> {
+    const normalized = slugFromName(slug.trim(), '');
+    if (normalized.length < 2) {
+      return { available: false };
+    }
+    const existing = await this.prisma.profile.findUnique({
+      where: { slug: normalized },
+    });
+    const available = !existing || existing.id === excludeProfileId;
+    return { available };
+  }
 
   /** Ensure unique slug: if slug exists, append -2, -3, etc. */
   private async ensureUniqueSlug(
@@ -43,7 +62,7 @@ export class ProfilesService {
       throw new ConflictException('errors.profileOnlyOne');
     }
 
-    const baseSlug = slugFromName(dto.name, 'profile');
+    const baseSlug = dto.slug?.trim().toLowerCase() || slugFromName(dto.name, 'profile');
     const slug = await this.ensureUniqueSlug(baseSlug);
 
     if (dto.locationId) {
@@ -168,7 +187,19 @@ export class ProfilesService {
 
     const name = dto.name !== undefined ? dto.name.trim() : profile.name;
     let slug = profile.slug;
-    if (dto.name !== undefined && dto.name.trim() !== profile.name) {
+    if (dto.slug !== undefined) {
+      const normalized = slugFromName(dto.slug.trim(), '');
+      if (!normalized) {
+        throw new BadRequestException('validation.profileSlugInvalid');
+      }
+      const existing = await this.prisma.profile.findUnique({
+        where: { slug: normalized },
+      });
+      if (existing && existing.id !== id) {
+        throw new ConflictException('validation.profileSlugTaken');
+      }
+      slug = normalized;
+    } else if (dto.name !== undefined && dto.name.trim() !== profile.name) {
       const baseSlug = slugFromName(dto.name, 'profile');
       slug = await this.ensureUniqueSlug(baseSlug, id);
     }

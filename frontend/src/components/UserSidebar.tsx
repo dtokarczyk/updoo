@@ -122,7 +122,7 @@ export function UserSidebar(_props: UserSidebarProps) {
                   <Link
                     key={app.id}
                     href={jobPath(app.job)}
-                    className="block p-3 rounded-lg border border-border bg-card hover:bg-muted transition-colors"
+                    className="block p-3 rounded-lg border border-border bg-card hover:border-primary transition-colors"
                   >
                     <h4 className="text-sm font-medium text-foreground line-clamp-2 mb-1">
                       {app.job.title}
@@ -155,7 +155,7 @@ export function UserSidebar(_props: UserSidebarProps) {
                     <Link
                       key={job.id}
                       href={jobPath(job)}
-                      className={`block p-3 rounded-lg border border-border bg-card hover:bg-muted transition-colors ${isRejected ? 'border-red-500/40' : ''}`}
+                      className={`block p-3 rounded-lg border border-border bg-card hover:border-primary transition-colors ${isRejected ? 'border-red-500/40' : ''}`}
                     >
                       <h4
                         className={`text-sm font-medium line-clamp-2 mb-1 ${isClosed

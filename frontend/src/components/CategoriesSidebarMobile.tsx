@@ -111,15 +111,18 @@ export function CategoriesSidebarMobile({
               href="/"
               onClick={() => setOpen(false)}
               className={cn(
-                'flex items-center gap-3 px-3 py-2.5 text-xl font-semibold transition-colors',
+                'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-xl font-semibold transition-colors',
                 !currentCategorySlug
-                  ? 'text-foreground'
+                  ? 'bg-muted/60 text-foreground'
                   : 'text-muted-foreground hover:text-foreground',
               )}
             >
               <CategoryIcon
                 categoryName={allLabel}
-                className="h-9 w-9 shrink-0"
+                className={cn(
+                  'h-9 w-9 shrink-0',
+                  currentCategorySlug && 'group-hover:opacity-70',
+                )}
               />
               {allLabel}
             </Link>
@@ -127,26 +130,32 @@ export function CategoriesSidebarMobile({
         )}
         {categories
           .filter((cat) => cat.slug !== currentCategorySlug)
-          .map((cat) => (
-            <li key={cat.id}>
-              <Link
-                href={`/jobs/${encodeURIComponent(cat.slug)}/1`}
-                onClick={() => setOpen(false)}
-                className={cn(
-                  'flex items-center gap-3 px-3 py-2.5 text-xl font-semibold transition-colors',
-                  currentCategorySlug === cat.slug
-                    ? 'text-foreground'
-                    : 'text-muted-foreground hover:text-foreground',
-                )}
-              >
-                <CategoryIcon
-                  categoryName={cat.name}
-                  className="h-9 w-9 shrink-0"
-                />
-                {cat.name}
-              </Link>
-            </li>
-          ))}
+          .map((cat) => {
+            const isActive = currentCategorySlug === cat.slug;
+            return (
+              <li key={cat.id}>
+                <Link
+                  href={`/jobs/${encodeURIComponent(cat.slug)}/1`}
+                  onClick={() => setOpen(false)}
+                  className={cn(
+                    'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-xl font-semibold transition-colors',
+                    isActive
+                      ? 'bg-muted/60 text-foreground'
+                      : 'text-muted-foreground hover:text-foreground',
+                  )}
+                >
+                  <CategoryIcon
+                    categoryName={cat.name}
+                    className={cn(
+                      'h-9 w-9 shrink-0',
+                      !isActive && 'group-hover:opacity-70',
+                    )}
+                  />
+                  {cat.name}
+                </Link>
+              </li>
+            );
+          })}
       </ul>
     </nav>
   );

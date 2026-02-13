@@ -127,7 +127,7 @@ export default function CompanyProfilePage() {
         <div className="-mx-4 mb-8 sm:-mx-6 sm:rounded-lg overflow-hidden aspect-video bg-muted relative">
           <Image
             src={profile.coverPhotoUrl}
-            alt=""
+            alt={`Cover photo for ${profile.name}`}
             fill
             className="object-cover"
             sizes="(max-width: 1024px) 100vw, 896px"

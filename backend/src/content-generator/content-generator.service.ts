@@ -5,6 +5,7 @@ import {
   AccountType,
   BillingType,
   ExperienceLevel,
+  HoursPerWeek,
   JobLanguage,
   JobStatus,
   ProjectType,
@@ -28,7 +29,7 @@ export class ContentGeneratorService {
   constructor(
     private readonly aiService: AiService,
     private readonly prisma: PrismaService,
-  ) {}
+  ) { }
 
   /**
    * Call AI to generate job metadata (billing, rate, experience, category, skills, etc.) from title + description.
@@ -40,13 +41,17 @@ export class ContentGeneratorService {
     skillNames: string[];
   }): Promise<{
     billingType: BillingType;
+    hoursPerWeek: HoursPerWeek | null;
     rate: number;
+    rateNegotiable: boolean;
     currency: string;
     experienceLevel: ExperienceLevel;
     isRemote: boolean;
     projectType: ProjectType;
     language: JobLanguage;
     offerDays: number;
+    expectedOffers: number;
+    expectedApplicantTypes: string[];
     categorySlug: string;
     skillNames: string[];
   }> {
@@ -146,9 +151,33 @@ export class ContentGeneratorService {
     const offerDays =
       ALLOWED.offerDays[Math.floor(Math.random() * ALLOWED.offerDays.length)];
 
+    const hoursPerWeek =
+      billingType === BillingType.HOURLY
+        ? ALLOWED.hoursPerWeek[
+        Math.floor(Math.random() * ALLOWED.hoursPerWeek.length)
+        ]
+        : null;
+
+    const rateNegotiable = Math.random() < 0.3;
+
+    const expectedOffers =
+      ALLOWED.expectedOffers[
+      Math.floor(Math.random() * ALLOWED.expectedOffers.length)
+      ];
+
+    const expectedApplicantTypesCount =
+      1 + Math.floor(Math.random() * ALLOWED.expectedApplicantTypes.length);
+    const shuffled = [...ALLOWED.expectedApplicantTypes].sort(
+      () => Math.random() - 0.5,
+    );
+    const expectedApplicantTypes = shuffled.slice(
+      0,
+      expectedApplicantTypesCount,
+    );
+
     const categorySlug =
       typeof parsed.categorySlug === 'string' &&
-      allowedCategorySlugs.includes(parsed.categorySlug.trim())
+        allowedCategorySlugs.includes(parsed.categorySlug.trim())
         ? parsed.categorySlug.trim()
         : allowedCategorySlugs[0];
 
@@ -171,13 +200,17 @@ export class ContentGeneratorService {
 
     return {
       billingType,
+      hoursPerWeek,
       rate,
+      rateNegotiable,
       currency: 'PLN',
       experienceLevel,
       isRemote: true,
       projectType,
       language: JobLanguage.POLISH,
       offerDays,
+      expectedOffers,
+      expectedApplicantTypes,
       categorySlug,
       skillNames,
     };
@@ -303,11 +336,11 @@ export class ContentGeneratorService {
       const skillIds =
         metadata.skillNames.length > 0
           ? (
-              await this.prisma.skill.findMany({
-                where: { name: { in: metadata.skillNames } },
-                select: { id: true },
-              })
-            ).map((s) => s.id)
+            await this.prisma.skill.findMany({
+              where: { name: { in: metadata.skillNames } },
+              select: { id: true },
+            })
+          ).map((s) => s.id)
           : [];
 
       const safeUser: GeneratedJobFormData['user'] = {
@@ -321,13 +354,18 @@ export class ContentGeneratorService {
         description,
         categoryId: category.id,
         billingType: metadata.billingType,
+        hoursPerWeek: metadata.hoursPerWeek,
         rate: metadata.rate,
+        rateNegotiable: metadata.rateNegotiable,
         currency: metadata.currency,
         experienceLevel: metadata.experienceLevel,
+        locationId: null,
         isRemote: metadata.isRemote,
         projectType: metadata.projectType,
         language: metadata.language,
         offerDays: metadata.offerDays,
+        expectedOffers: metadata.expectedOffers,
+        expectedApplicantTypes: metadata.expectedApplicantTypes,
         skillIds,
       };
 
@@ -386,15 +424,20 @@ export class ContentGeneratorService {
         status: JobStatus.DRAFT,
         language: job.language ?? JobLanguage.POLISH,
         billingType: job.billingType,
-        hoursPerWeek: null,
+        hoursPerWeek:
+          job.billingType === 'HOURLY' && job.hoursPerWeek != null
+            ? job.hoursPerWeek
+            : null,
         rate: job.rate,
-        rateNegotiable: false,
+        rateNegotiable: job.rateNegotiable ?? false,
         currency: job.currency.toUpperCase().slice(0, 3),
         experienceLevel: job.experienceLevel,
-        locationId: null,
+        locationId: job.locationId ?? null,
         isRemote: job.isRemote,
         projectType: job.projectType,
         deadline,
+        expectedOffers: job.expectedOffers ?? null,
+        expectedApplicantTypes: job.expectedApplicantTypes ?? [],
         skills:
           job.skillIds?.length > 0
             ? { create: job.skillIds.map((skillId) => ({ skillId })) }

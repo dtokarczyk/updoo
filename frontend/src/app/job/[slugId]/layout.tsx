@@ -54,9 +54,27 @@ export async function generateMetadata({
   const job = await fetchJobForMeta(id, locale, token);
 
   if (!job) {
+    const offersMeta = metaConfig.offers;
     return {
-      title: metaConfig.offers.title,
-      description: metaConfig.offers.description,
+      title: offersMeta.title,
+      description: offersMeta.description,
+      openGraph: {
+        title: offersMeta.title,
+        description: offersMeta.description,
+        images: [
+          {
+            url: '/og-fallback.png',
+            width: 1200,
+            height: 630,
+            alt: offersMeta.title,
+          },
+        ],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: offersMeta.title,
+        description: offersMeta.description,
+      },
     };
   }
 

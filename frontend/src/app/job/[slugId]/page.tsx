@@ -6,6 +6,7 @@ import { parseJobSlugId, jobPath } from '@/lib/job-url';
 import { fetchJobServer, fetchJobPrevNextServer } from '@/lib/job-server';
 import { AUTH_TOKEN_COOKIE, getProfileServer } from '@/lib/api';
 import { JobDetailClient } from './JobDetailClient';
+import { JobPostingJsonLd } from './JobPostingJsonLd';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { t as translateT } from '@/lib/translations';
@@ -60,11 +61,14 @@ export default async function JobDetailPage({
   }
 
   return (
-    <JobDetailClient
-      initialJob={job}
-      initialPrevNext={prevNext}
-      initialUser={initialUser ?? undefined}
-      slugId={slugId}
-    />
+    <>
+      <JobPostingJsonLd job={job} />
+      <JobDetailClient
+        initialJob={job}
+        initialPrevNext={prevNext}
+        initialUser={initialUser ?? undefined}
+        slugId={slugId}
+      />
+    </>
   );
 }

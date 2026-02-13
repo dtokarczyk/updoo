@@ -21,8 +21,7 @@ const geistMono = Geist_Mono({
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  // Allow zoom for accessibility (WCAG) and better mobile usability / SEO
 };
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -40,6 +39,20 @@ export async function generateMetadata(): Promise<Metadata> {
       title: meta.title,
       description: meta.description,
       type: 'website',
+      siteName: meta.title,
+      images: [
+        {
+          url: '/og-fallback.png',
+          width: 1200,
+          height: 630,
+          alt: meta.title,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: meta.title,
+      description: meta.description,
     },
   };
 }
@@ -64,7 +77,7 @@ export default async function RootLayout({
             <AuthProvider>
               <div className="flex min-h-screen flex-col font-sans w-full">
                 <BetaBar initialLocale={locale} />
-                <AppHeader initialLocale={locale} />
+                <AppHeader />
                 <main className="flex-1 w-full pb-20 lg:pb-0">
                   <OnboardingRedirect>{children}</OnboardingRedirect>
                 </main>

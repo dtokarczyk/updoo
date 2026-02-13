@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   CardContent,
   CardDescription,
@@ -10,30 +9,46 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { SelectBox } from '@/components/ui/SelectBox';
+import { getCategories, followCategory } from '@/lib/api';
 import type { Category } from '@/lib/api';
+import type { TranslateFn } from '../schemas';
 
 interface StepCategoriesProps {
-  availableCategories: Category[];
-  categoriesLoading: boolean;
-  onSubmit: (categoryIds: string[]) => void;
-  onSkip: () => void;
+  onSuccess: () => void;
   onBack: () => void;
-  loading: boolean;
-  error?: string;
-  t: (key: string) => string;
+  t: TranslateFn;
 }
 
 export function StepCategories({
-  availableCategories,
-  categoriesLoading,
-  onSubmit,
-  onSkip,
+  onSuccess,
   onBack,
-  loading,
-  error,
   t,
 }: StepCategoriesProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [availableCategories, setAvailableCategories] = useState<Category[]>(
+    [],
+  );
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getCategories()
+      .then((cats) => {
+        if (!cancelled) setAvailableCategories(cats);
+      })
+      .catch(() => {
+        if (!cancelled) setAvailableCategories([]);
+      })
+      .finally(() => {
+        if (!cancelled) setCategoriesLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const toggle = (id: string) => {
     setSelectedIds((prev) =>
@@ -41,10 +56,23 @@ export function StepCategories({
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    onSubmit(selectedIds);
-  };
+    setError(null);
+    setLoading(true);
+    try {
+      for (const id of selectedIds) {
+        await followCategory(id);
+      }
+      onSuccess();
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : t('onboarding.saveFailed'),
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <>
@@ -66,25 +94,18 @@ export function StepCategories({
               {t('onboarding.freelancerCategoriesLoading')}
             </p>
           ) : (
-            <ul className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {availableCategories.map((cat) => (
-                <li key={cat.id} className="flex items-center gap-3">
-                  <Checkbox
-                    id={`category-${cat.id}`}
-                    checked={selectedIds.includes(cat.id)}
-                    onCheckedChange={() => toggle(cat.id)}
-                    disabled={loading}
-                    aria-label={cat.name}
-                  />
-                  <label
-                    htmlFor={`category-${cat.id}`}
-                    className="text-sm font-medium leading-none cursor-pointer peer-disabled:opacity-70"
-                  >
-                    {cat.name}
-                  </label>
-                </li>
+                <SelectBox
+                  key={cat.id}
+                  value={cat.id}
+                  label={cat.name}
+                  selected={selectedIds.includes(cat.id)}
+                  onSelect={() => toggle(cat.id)}
+                  disabled={loading}
+                />
               ))}
-            </ul>
+            </div>
           )}
         </CardContent>
         <CardFooter className="mt-4 flex gap-2 flex-wrap">
@@ -99,22 +120,14 @@ export function StepCategories({
             {t('common.back')}
           </Button>
           <Button
-            type="button"
-            variant="ghost"
-            className="flex-1 min-w-[100px] h-12 text-base"
-            size="lg"
-            disabled={loading || categoriesLoading}
-            onClick={onSkip}
-          >
-            {t('onboarding.freelancerCategoriesSkip')}
-          </Button>
-          <Button
             type="submit"
             className="flex-1 min-w-[100px] h-12 text-base"
             size="lg"
             disabled={loading || categoriesLoading}
           >
-            {loading ? t('onboarding.saving') : t('onboarding.freelancerCategoriesContinue')}
+            {loading
+              ? t('onboarding.saving')
+              : t('onboarding.freelancerCategoriesContinue')}
           </Button>
         </CardFooter>
       </form>

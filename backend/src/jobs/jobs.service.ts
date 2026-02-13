@@ -699,6 +699,13 @@ export class JobsService implements OnModuleInit {
           app.freelancer.surname,
         ),
         createdAt: app.createdAt,
+        // Include message for the current user's own application so they can see what they wrote
+        ...(userId &&
+          app.freelancerId === userId &&
+          app.message != null &&
+          app.message !== ''
+          ? { message: app.message }
+          : {}),
       };
     });
     const currentUserApplied = Boolean(

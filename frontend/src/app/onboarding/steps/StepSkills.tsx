@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,33 +11,94 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { SkillsFormFields } from '@/components/skills-form-fields';
-import type { Skill } from '@/lib/api';
-import type { OnboardingFormValues } from '../schemas';
+import { getSkills, updateProfile, updateStoredUser } from '@/lib/api';
+import type { AuthUser, Skill } from '@/lib/api';
+import { stepSkillsSchema } from '../schemas';
+import type { OnboardingFormValues, TranslateFn } from '../schemas';
 
 const formId = 'onboarding-skills-form';
 
-interface StepSkillsProps {
-  availableSkills: Skill[];
-  skillsLoading: boolean;
-  skillsError: string;
-  onSubmit: () => void;
-  onBack: () => void;
-  loading: boolean;
-  error?: string;
-  t: (key: string) => string;
+function setValidationErrors(
+  setError: (name: keyof OnboardingFormValues, error: { message: string }) => void,
+  clearErrors: () => void,
+  issues: { path: unknown[]; message: string }[],
+) {
+  clearErrors();
+  issues.forEach((issue) => {
+    const path0 = issue.path[0];
+    if (typeof path0 === 'string')
+      setError(path0 as keyof OnboardingFormValues, { message: issue.message });
+  });
 }
 
-export function StepSkills({
-  availableSkills,
-  skillsLoading,
-  skillsError,
-  onSubmit,
-  onBack,
-  loading,
-  error,
-  t,
-}: StepSkillsProps) {
-  const { control } = useFormContext<OnboardingFormValues>();
+interface StepSkillsProps {
+  onSuccess: (user: AuthUser) => void;
+  onBack: () => void;
+  t: TranslateFn;
+}
+
+export function StepSkills({ onSuccess, onBack, t }: StepSkillsProps) {
+  const { getValues, setError, clearErrors, control, formState } =
+    useFormContext<OnboardingFormValues>();
+  const [loading, setLoading] = useState(false);
+  const [skillsLoading, setSkillsLoading] = useState(true);
+  const [skillsError, setSkillsError] = useState('');
+  const [availableSkills, setAvailableSkills] = useState<Skill[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setSkillsError('');
+    setSkillsLoading(true);
+    getSkills()
+      .then((skills) => {
+        if (!cancelled) setAvailableSkills(skills);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setSkillsError(
+            err instanceof Error ? err.message : t('onboarding.saveFailed'),
+          );
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setSkillsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [t]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    clearErrors();
+    setLoading(true);
+    const raw = getValues();
+    const result = stepSkillsSchema.safeParse({
+      selectedSkillIds: raw.selectedSkillIds,
+    });
+    if (!result.success) {
+      setValidationErrors(setError, clearErrors, result.error.issues);
+      setLoading(false);
+      return;
+    }
+    try {
+      const { user: updated } = await updateProfile({
+        skillIds: result.data.selectedSkillIds,
+      });
+      updateStoredUser(updated);
+      onSuccess(updated);
+    } catch (err) {
+      setError('root', {
+        message:
+          err instanceof Error ? err.message : t('onboarding.saveFailed'),
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const rootError = formState.errors.root?.message;
+  const displayError = rootError ?? skillsError;
 
   return (
     <>
@@ -46,16 +108,11 @@ export function StepSkills({
           {t('onboarding.freelancerSkillsDesc')}
         </CardDescription>
       </CardHeader>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          onSubmit();
-        }}
-      >
+      <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
-          {(error || skillsError) && (
+          {displayError && (
             <p className="text-sm text-destructive rounded-md bg-destructive/10 px-3 py-2">
-              {error ?? skillsError}
+              {displayError}
             </p>
           )}
           <SkillsFormFields<OnboardingFormValues>

@@ -21,6 +21,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { ContractorProfileFormFields } from '@/components/contractor-profile-form-fields';
+import { useTranslations } from '@/hooks/useTranslations';
 import {
   profileFormSchema,
   defaultProfileFormValues,
@@ -29,6 +30,7 @@ import {
 
 export default function CreateProfilePage() {
   const router = useRouter();
+  const { t } = useTranslations();
   const [locations, setLocations] = useState<Location[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -105,6 +107,7 @@ export default function CreateProfilePage() {
                 variant="standalone"
                 locations={locations}
                 disabled={submitting}
+                t={t}
               />
 
               <div className="flex gap-2">

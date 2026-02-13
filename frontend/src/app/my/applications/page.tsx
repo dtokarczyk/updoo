@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { getLocaleFromRequest } from '@/lib/i18n';
 import { getUserApplicationsServer, getProfileServer } from '@/lib/api';
 import { getTokenFromCookies } from '@/lib/auth-server';
+import { EmptyState } from '@/components/EmptyState';
 import { JobPost } from '@/components/JobPost';
 import { t as translateT } from '@/lib/translations';
 
@@ -24,8 +25,8 @@ export default async function MyApplicationsPage() {
         <h1 className="text-2xl font-bold text-foreground mb-6">
           {t('my.myApplications')}
         </h1>
-        <div className="py-12 text-center text-muted-foreground rounded-lg border border-dashed">
-          {t('my.noApplications')}
+        <div className="rounded-lg border border-dashed border-muted-foreground/20">
+          <EmptyState message={t('my.noApplications')} />
         </div>
       </div>
     );

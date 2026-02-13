@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import type { UseFormReturn } from 'react-hook-form';
+import { getDraftJob } from '@/lib/api';
 import type { AuthUser } from '@/lib/api';
 import type { OnboardingFormValues } from './schemas';
 import type { TranslateFn } from './schemas';
@@ -51,18 +52,14 @@ export function OnboardingForFreelancer({
   initialUser,
   initialStep,
 }: OnboardingForFreelancerProps) {
-  const { state, actions } = useOnboardingFreelancer(form, { t });
+  const { state, actions } = useOnboardingFreelancer({ t });
 
-  // Init only when user changes (e.g. first load). Do not re-run when parent re-renders
-  // with same user, so that clicking "Dalej" and advancing the step is not reset.
   useEffect(() => {
     if (initialUser) actions.init(initialUser, initialStep);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run only when user id changes
   }, [initialUser?.id]);
 
   if (state.user === null) return null;
-
-  const rootError = form.formState.errors.root?.message;
 
   return (
     <>
@@ -71,84 +68,82 @@ export function OnboardingForFreelancer({
           <Card className="w-full max-w-md">
             {state.step === FREELANCER_STEP_NAME && (
               <StepName
-                onSubmit={actions.handleNameSubmit}
-                onBack={() => {}}
-                loading={state.loading}
-                error={rootError}
+                onSuccess={(user) => {
+                  actions.setUser(user);
+                  actions.goToStep(FREELANCER_STEP_PHONE);
+                }}
+                onBack={() => { }}
                 t={t}
                 showBack={false}
               />
             )}
             {state.step === FREELANCER_STEP_PHONE && (
               <StepPhone
-                onSubmit={actions.handlePhoneSubmit}
+                onSuccess={(user) => {
+                  actions.setUser(user);
+                  actions.goToStep(FREELANCER_STEP_COMPANY);
+                }}
                 onBack={() => actions.goToStep(FREELANCER_STEP_NAME)}
-                loading={state.loading}
-                error={rootError}
                 t={t}
               />
             )}
             {state.step === FREELANCER_STEP_COMPANY && (
               <StepCompany
-                onSubmit={actions.handleCompanySubmit}
+                onSuccess={() => actions.goToStep(FREELANCER_STEP_SKILLS)}
                 onBack={() => actions.goToStep(FREELANCER_STEP_PHONE)}
-                loading={state.loading}
-                error={rootError}
                 t={t}
-                onCompanyFetched={actions.handleCompanyFetched}
+                onCompanyFetched={actions.setUser}
               />
             )}
             {state.step === FREELANCER_STEP_SKILLS && (
               <StepSkills
-                availableSkills={state.availableSkills}
-                skillsLoading={state.skillsLoading}
-                skillsError={state.skillsError}
-                onSubmit={actions.handleSkillsSubmit}
+                onSuccess={(user) => {
+                  actions.setUser(user);
+                  actions.goToStep(FREELANCER_STEP_DEFAULT_MESSAGE);
+                }}
                 onBack={() => actions.goToStep(FREELANCER_STEP_COMPANY)}
-                loading={state.loading}
-                error={rootError}
                 t={t}
               />
             )}
             {state.step === FREELANCER_STEP_DEFAULT_MESSAGE && (
               <StepDefaultMessage
-                onSubmit={actions.handleDefaultMessageSubmit}
+                onSuccess={(user) => {
+                  actions.setUser(user);
+                  actions.goToStep(FREELANCER_STEP_CATEGORIES);
+                }}
                 onBack={() => actions.goToStep(FREELANCER_STEP_SKILLS)}
-                loading={state.loading}
-                error={rootError}
                 t={t}
               />
             )}
             {state.step === FREELANCER_STEP_CATEGORIES && (
               <StepCategories
-                availableCategories={state.availableCategories}
-                categoriesLoading={state.categoriesLoading}
-                onSubmit={actions.handleCategoriesSubmit}
-                onSkip={actions.handleCategoriesSkip}
-                onBack={() => actions.goToStep(FREELANCER_STEP_DEFAULT_MESSAGE)}
-                loading={state.loading}
-                error={rootError}
+                onSuccess={() =>
+                  actions.goToStep(FREELANCER_STEP_PROFILE_QUESTION)
+                }
+                onBack={() =>
+                  actions.goToStep(FREELANCER_STEP_DEFAULT_MESSAGE)
+                }
                 t={t}
               />
             )}
             {state.step === FREELANCER_STEP_PROFILE_QUESTION && (
               <StepProfileQuestion
-                onYes={actions.handleProfileQuestionYes}
-                onNo={actions.handleProfileQuestionNo}
-                loading={state.loading}
-                error={rootError}
+                onYes={() => actions.goToStep(FREELANCER_STEP_PROFILE_FORM)}
+                onNo={() => {
+                  const draft = getDraftJob();
+                  if (draft) actions.openDraftModal();
+                  else actions.finishOnboarding();
+                }}
                 t={t}
               />
             )}
             {state.step === FREELANCER_STEP_PROFILE_FORM && (
               <StepProfileForm
-                locations={state.availableLocations}
-                onSubmit={actions.handleProfileFormSubmit}
+                onOpenDraftModal={actions.openDraftModal}
+                onFinishOnboarding={actions.finishOnboarding}
                 onBack={() =>
                   actions.goToStep(FREELANCER_STEP_PROFILE_QUESTION)
                 }
-                loading={state.loading}
-                error={rootError}
                 t={t}
               />
             )}

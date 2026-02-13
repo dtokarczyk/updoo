@@ -53,7 +53,7 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
         });
       }
     }
-    items.push({ href: '/profile/basic', icon: Settings, labelKey: 'nav.profile' });
+    items.push({ href: '/profile/basic', icon: Settings, labelKey: 'nav.settings' });
     return items;
   }, [isFreelancer, hasProfile, firstProfileSlug]);
 
@@ -103,7 +103,7 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
 
       {/* Mobile bottom navigation bar */}
       <nav
-        className="fixed inset-x-0 bottom-0 z-90 flex items-center justify-around border-t border-border bg-background/80 backdrop-blur px-2 py-2 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] safe-area-pb lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-90 flex items-center justify-around gap-4 border-t border-border bg-background/80 backdrop-blur px-2 py-2 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] safe-area-pb lg:hidden"
         aria-label="Main navigation"
       >
         {navItems.map(({ href, icon, labelKey }) => (
@@ -113,6 +113,7 @@ export function AppHeader({ initialLocale }: { initialLocale: Locale }) {
             href={href}
             icon={icon}
             label={t(labelKey)}
+            showLabel={false}
             isActive={
               pathname === href ||
               (href !== '/' && pathname.startsWith(href + '/'))

@@ -4,6 +4,7 @@ import React from 'react';
 import {
   Banknote,
   Briefcase,
+  Building2,
   Clock,
   Laptop,
   MapPin,
@@ -35,6 +36,12 @@ const EXPERIENCE_LABELS: Record<string, string> = {
 const PROJECT_TYPE_LABELS: Record<string, string> = {
   ONE_TIME: 'Jednorazowy',
   CONTINUOUS: 'Ciągły',
+};
+
+const EXPECTED_APPLICANT_TYPE_KEYS: Record<string, string> = {
+  FREELANCER_NO_B2B: 'jobs.newJobForm.expectedApplicantTypeFreelancerNoB2B',
+  FREELANCER_B2B: 'jobs.newJobForm.expectedApplicantTypeFreelancerB2B',
+  COMPANY: 'jobs.newJobForm.expectedApplicantTypeCompany',
 };
 
 function DetailRow({
@@ -106,6 +113,17 @@ export function JobSidebar({
           value={String(applicationsCount)}
         />
       )}
+
+      {job.expectedApplicantTypes != null &&
+        job.expectedApplicantTypes.length > 0 && (
+          <DetailRow
+            icon={Building2}
+            label={t('jobs.expectedApplicantType')}
+            value={job.expectedApplicantTypes
+              .map((type) => t(EXPECTED_APPLICANT_TYPE_KEYS[type] ?? type))
+              .join(', ')}
+          />
+        )}
 
       <DetailRow
         icon={Briefcase}

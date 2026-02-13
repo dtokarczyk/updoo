@@ -30,8 +30,6 @@ export function ProfileAvatar({ className }: ProfileAvatarProps) {
   const initials = getInitials(user);
   const avatarUrl = user?.avatarUrl ?? null;
 
-  console.log(avatarUrl);
-
   return (
     <Avatar className={cn('shrink-0', className)} aria-hidden>
       {avatarUrl ? (

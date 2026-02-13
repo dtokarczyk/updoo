@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import type { UseFormReturn } from 'react-hook-form';
+import { getDraftJob } from '@/lib/api';
 import type { AuthUser } from '@/lib/api';
 import type { OnboardingFormValues } from './schemas';
 import type { TranslateFn } from './schemas';
@@ -37,7 +38,7 @@ export function OnboardingForClient({
   initialUser,
   initialStep,
 }: OnboardingForClientProps) {
-  const { state, actions } = useOnboardingClient(form, { t });
+  const { state, actions } = useOnboardingClient({ t });
 
   useEffect(() => {
     actions.init(initialUser, initialStep);
@@ -46,8 +47,6 @@ export function OnboardingForClient({
 
   if (state.user === null) return null;
 
-  const rootError = form.formState.errors.root?.message;
-
   return (
     <>
       <div className="flex justify-center p-4 pt-12">
@@ -55,31 +54,35 @@ export function OnboardingForClient({
           <Card className="w-full max-w-md">
             {state.step === CLIENT_STEP_NAME && (
               <StepName
-                onSubmit={actions.handleNameSubmit}
+                onSuccess={(user) => {
+                  actions.setUser(user);
+                  actions.goToStep(CLIENT_STEP_PHONE);
+                }}
                 onBack={() => {}}
-                loading={state.loading}
-                error={rootError}
                 t={t}
                 showBack={false}
               />
             )}
             {state.step === CLIENT_STEP_PHONE && (
               <StepPhone
-                onSubmit={actions.handlePhoneSubmit}
+                onSuccess={(user) => {
+                  actions.setUser(user);
+                  actions.goToStep(CLIENT_STEP_COMPANY);
+                }}
                 onBack={() => actions.goToStep(CLIENT_STEP_NAME)}
-                loading={state.loading}
-                error={rootError}
                 t={t}
               />
             )}
             {state.step === CLIENT_STEP_COMPANY && (
               <StepCompany
-                onSubmit={actions.handleCompanySubmit}
+                onSuccess={() => {
+                  const draft = getDraftJob();
+                  if (draft) actions.openDraftModal();
+                  else actions.finishOnboarding();
+                }}
                 onBack={() => actions.goToStep(CLIENT_STEP_PHONE)}
-                loading={state.loading}
-                error={rootError}
                 t={t}
-                onCompanyFetched={actions.handleCompanyFetched}
+                onCompanyFetched={actions.setUser}
               />
             )}
           </Card>

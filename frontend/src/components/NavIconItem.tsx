@@ -11,6 +11,8 @@ type NavIconItemProps = {
   iconSize?: number;
   boxSize?: number;
   orientation?: 'vertical' | 'horizontal';
+  /** When false, only icon is shown (label still used for aria-label). */
+  showLabel?: boolean;
 };
 
 /**
@@ -25,16 +27,18 @@ export function NavIconItem({
   iconSize = 6,
   boxSize = 10,
   orientation = 'horizontal',
+  showLabel = true,
 }: NavIconItemProps) {
   return (
     <Link
       href={href}
       className={cn(
-        'flex flex-col items-center justify-center gap-0.5 rounded-lg px-1 pr-4 py-1 transition-colors',
+        'flex flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-1 transition-colors',
+        showLabel && 'pr-4',
         orientation === 'vertical' ? 'flex-col' : 'flex-row',
         className,
         isActive
-          ? 'bg-accent text-accent-foreground'
+          ? 'bg-primary text-primary-foreground'
           : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
       )}
       aria-label={label}
@@ -55,7 +59,9 @@ export function NavIconItem({
           aria-hidden
         />
       </div>
-      <span className="shrink text-sm font-medium truncate">{label}</span>
+      {showLabel && (
+        <span className="shrink text-sm font-medium truncate">{label}</span>
+      )}
     </Link>
   );
 }

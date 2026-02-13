@@ -12,34 +12,51 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { linkCompanyByNip, updateStoredUser, type AuthUser } from '@/lib/api';
-import type { OnboardingFormValues } from '../schemas';
+import {
+  linkCompanyByNip,
+  updateStoredUser,
+  updateCompany,
+  unlinkCompany,
+  type AuthUser,
+} from '@/lib/api';
+import { stepCompanySchema } from '../schemas';
+import type { OnboardingFormValues, TranslateFn } from '../schemas';
 
 const LARGER_SIZES = ['MICRO', 'SMALL', 'MEDIUM', 'LARGE'] as const;
 
+function setValidationErrors(
+  setError: (name: keyof OnboardingFormValues, error: { message: string }) => void,
+  clearErrors: () => void,
+  issues: { path: unknown[]; message: string }[],
+) {
+  clearErrors();
+  issues.forEach((issue) => {
+    const path0 = issue.path[0];
+    if (typeof path0 === 'string')
+      setError(path0 as keyof OnboardingFormValues, { message: issue.message });
+  });
+}
+
 interface StepCompanyProps {
-  onSubmit: () => void;
+  onSuccess: () => void;
   onBack: () => void;
-  loading: boolean;
-  error?: string;
-  t: (key: string) => string;
-  /** Called when company is successfully fetched from GUS (so parent can update user state). */
+  t: TranslateFn;
+  /** Called when user is updated (GUS link or unlink company) so parent can sync state. */
   onCompanyFetched?: (user: AuthUser) => void;
 }
 
 export function StepCompany({
-  onSubmit,
+  onSuccess,
   onBack,
-  loading,
-  error,
   t,
   onCompanyFetched,
 }: StepCompanyProps) {
-  const { watch, setValue, register, formState } =
+  const { watch, setValue, getValues, setError, clearErrors, register, formState } =
     useFormContext<OnboardingFormValues>();
   const hasCompany = watch('hasCompany');
   const companySize = watch('companySize');
   const nipCompany = watch('nipCompany');
+  const [loading, setLoading] = useState(false);
   const [showLargerSizePicker, setShowLargerSizePicker] = useState(false);
   const [fetchedCompany, setFetchedCompany] = useState<{ name: string } | null>(
     null,
@@ -77,6 +94,42 @@ export function StepCompany({
     }
   }
 
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    clearErrors();
+    setLoading(true);
+    const raw = getValues();
+    const result = stepCompanySchema(t).safeParse({
+      hasCompany: raw.hasCompany,
+      nipCompany: raw.nipCompany,
+      companySize: raw.companySize,
+    });
+    if (!result.success) {
+      setValidationErrors(setError, clearErrors, result.error.issues);
+      setLoading(false);
+      return;
+    }
+    try {
+      if (result.data.hasCompany && result.data.companySize) {
+        await updateCompany({
+          companySize: result.data.companySize,
+        });
+      } else if (result.data.hasCompany === false) {
+        const { user: updated } = await unlinkCompany();
+        updateStoredUser(updated);
+        onCompanyFetched?.(updated);
+      }
+      onSuccess();
+    } catch (err) {
+      setError('root', {
+        message:
+          err instanceof Error ? err.message : t('onboarding.saveFailed'),
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const isSolo = companySize === 'FREELANCER';
   const isLargerSize =
     companySize === 'MICRO' ||
@@ -94,6 +147,7 @@ export function StepCompany({
     formState.errors.hasCompany?.message ??
     formState.errors.nipCompany?.message ??
     formState.errors.companySize?.message ??
+    formState.errors.root?.message ??
     fetchError;
 
   return (
@@ -101,16 +155,11 @@ export function StepCompany({
       <CardHeader>
         <CardTitle>{t('onboarding.companyTitle')}</CardTitle>
       </CardHeader>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          onSubmit();
-        }}
-      >
+      <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
-          {(error || fieldError) && (
+          {fieldError && (
             <p className="text-sm text-destructive rounded-md bg-destructive/10 px-3 py-2">
-              {error ?? fieldError}
+              {fieldError}
             </p>
           )}
           <div className="space-y-3">
@@ -194,76 +243,76 @@ export function StepCompany({
                 </p>
               )}
               {fetchedCompany != null && (
-              <>
-              <div className="space-y-3 pt-2">
-                <p className="text-sm font-medium text-foreground">
-                  {t('onboarding.companySizeQuestion')}
-                </p>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <button
-                    type="button"
-                    disabled={loading}
-                    onClick={() => {
-                      setValue('companySize', 'FREELANCER');
-                      setShowLargerSizePicker(false);
-                    }}
-                    className={`flex items-center gap-3 rounded-lg border p-4 text-left text-sm transition-colors ${
-                      isSolo
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-primary/60'
-                    }`}
-                  >
-                    <div className="shrink-0 rounded-md bg-primary/10 p-2">
-                      <UserCircle className="h-4 w-4 text-primary" />
-                    </div>
-                    <span>{t('onboarding.companySizeSolo')}</span>
-                  </button>
-                  <button
-                    type="button"
-                    disabled={loading}
-                    onClick={() => {
-                      setValue('companySize', null);
-                      setShowLargerSizePicker(true);
-                    }}
-                    className={`flex items-center gap-3 rounded-lg border p-4 text-left text-sm transition-colors ${
-                      showLargerOptions && !isSolo
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-primary/60'
-                    }`}
-                  >
-                    <div className="shrink-0 rounded-md bg-primary/10 p-2">
-                      <Users className="h-4 w-4 text-primary" />
-                    </div>
-                    <span>{t('onboarding.companySizeLarger')}</span>
-                  </button>
-                </div>
-              </div>
-              {showLargerOptions && (
-                <div className="space-y-3 pt-2">
-                  <p className="text-sm font-medium text-foreground">
-                    {t('onboarding.companySizeLargerQuestion')}
-                  </p>
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    {LARGER_SIZES.map((size) => (
+                <>
+                  <div className="space-y-3 pt-2">
+                    <p className="text-sm font-medium text-foreground">
+                      {t('onboarding.companySizeQuestion')}
+                    </p>
+                    <div className="grid gap-3 sm:grid-cols-2">
                       <button
-                        key={size}
                         type="button"
                         disabled={loading}
-                        onClick={() => setValue('companySize', size)}
-                        className={`flex items-center rounded-lg border p-3 text-left text-sm transition-colors ${
-                          companySize === size
+                        onClick={() => {
+                          setValue('companySize', 'FREELANCER');
+                          setShowLargerSizePicker(false);
+                        }}
+                        className={`flex items-center gap-3 rounded-lg border p-4 text-left text-sm transition-colors ${
+                          isSolo
                             ? 'border-primary bg-primary/5'
                             : 'border-border hover:border-primary/60'
                         }`}
                       >
-                        <span>{t(`onboarding.companySize${size}`)}</span>
+                        <div className="shrink-0 rounded-md bg-primary/10 p-2">
+                          <UserCircle className="h-4 w-4 text-primary" />
+                        </div>
+                        <span>{t('onboarding.companySizeSolo')}</span>
                       </button>
-                    ))}
+                      <button
+                        type="button"
+                        disabled={loading}
+                        onClick={() => {
+                          setValue('companySize', null);
+                          setShowLargerSizePicker(true);
+                        }}
+                        className={`flex items-center gap-3 rounded-lg border p-4 text-left text-sm transition-colors ${
+                          showLargerOptions && !isSolo
+                            ? 'border-primary bg-primary/5'
+                            : 'border-border hover:border-primary/60'
+                        }`}
+                      >
+                        <div className="shrink-0 rounded-md bg-primary/10 p-2">
+                          <Users className="h-4 w-4 text-primary" />
+                        </div>
+                        <span>{t('onboarding.companySizeLarger')}</span>
+                      </button>
+                    </div>
                   </div>
-                </div>
+                  {showLargerOptions && (
+                    <div className="space-y-3 pt-2">
+                      <p className="text-sm font-medium text-foreground">
+                        {t('onboarding.companySizeLargerQuestion')}
+                      </p>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {LARGER_SIZES.map((size) => (
+                          <button
+                            key={size}
+                            type="button"
+                            disabled={loading}
+                            onClick={() => setValue('companySize', size)}
+                            className={`flex items-center rounded-lg border p-3 text-left text-sm transition-colors ${
+                              companySize === size
+                                ? 'border-primary bg-primary/5'
+                                : 'border-border hover:border-primary/60'
+                            }`}
+                          >
+                            <span>{t(`onboarding.companySize${size}`)}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
-            </>
-          )}
             </>
           )}
         </CardContent>

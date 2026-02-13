@@ -8,20 +8,17 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import type { TranslateFn } from '../schemas';
 
 interface StepProfileQuestionProps {
   onYes: () => void;
   onNo: () => void;
-  loading: boolean;
-  error?: string;
-  t: (key: string) => string;
+  t: TranslateFn;
 }
 
 export function StepProfileQuestion({
   onYes,
   onNo,
-  loading,
-  error,
   t,
 }: StepProfileQuestionProps) {
   return (
@@ -35,18 +32,12 @@ export function StepProfileQuestion({
         }}
       >
         <CardContent className="space-y-4">
-          {error && (
-            <p className="text-sm text-destructive rounded-md bg-destructive/10 px-3 py-2">
-              {error}
-            </p>
-          )}
           <p className="text-muted-foreground">
             {t('onboarding.profileQuestionDescription')}
           </p>
           <div className="flex flex-col gap-3 pt-2">
             <button
               type="button"
-              disabled={loading}
               onClick={onYes}
               className="flex items-center gap-4 rounded-lg border border-border hover:border-primary/60 p-5 text-left text-base transition-colors w-full"
             >
@@ -59,7 +50,6 @@ export function StepProfileQuestion({
             </button>
             <button
               type="button"
-              disabled={loading}
               onClick={onNo}
               className="flex items-center gap-4 rounded-lg border border-border hover:border-primary/60 p-5 text-left text-base transition-colors w-full"
             >
@@ -78,7 +68,6 @@ export function StepProfileQuestion({
             variant="outline"
             className="flex-1 h-12 text-base"
             size="lg"
-            disabled={loading}
             onClick={onNo}
           >
             {t('onboarding.profileQuestionSkip')}
@@ -87,7 +76,6 @@ export function StepProfileQuestion({
             type="button"
             className="flex-1 h-12 text-base"
             size="lg"
-            disabled={loading}
             onClick={onYes}
           >
             {t('onboarding.profileQuestionCreate')}

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus } from 'lucide-react';
+import { Plus, FileText, Briefcase } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { pl, enUS } from 'date-fns/locale';
 import {
@@ -14,6 +14,7 @@ import {
 import { jobPath } from '@/lib/job-url';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/hooks/useTranslations';
+import { EmptyState } from '@/components/EmptyState';
 import { UserDropdown } from '@/components/UserDropdown';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Locale } from '@/lib/i18n';
@@ -110,9 +111,11 @@ export function UserSidebar(_props: UserSidebarProps) {
             </div>
           ) : user.accountType === 'FREELANCER' ? (
             applications.length === 0 ? (
-              <div className="text-sm text-muted-foreground">
-                {t('jobs.noApplications')}
-              </div>
+              <EmptyState
+                icon={FileText}
+                message={t('jobs.noApplications')}
+                variant="compact"
+              />
             ) : (
               <div className="space-y-2">
                 {applications.map((app) => (
@@ -138,9 +141,11 @@ export function UserSidebar(_props: UserSidebarProps) {
             )
           ) : user.accountType === 'CLIENT' ? (
             jobs.length === 0 ? (
-              <div className="text-sm text-muted-foreground py-2">
-                {t('jobs.noJobs')}
-              </div>
+              <EmptyState
+                icon={Briefcase}
+                message={t('jobs.noJobs')}
+                variant="compact"
+              />
             ) : (
               <div className="space-y-2">
                 {jobs.map((job) => {

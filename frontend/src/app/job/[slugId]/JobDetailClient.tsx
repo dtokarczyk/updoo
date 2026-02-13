@@ -167,7 +167,7 @@ export function JobDetailClient({
       setApplyMessage('');
       router.refresh();
     } catch (e) {
-      setApplyError(e instanceof Error ? e.message : 'Błąd zgłoszenia');
+      setApplyError(e instanceof Error ? e.message : 'Błąd złożenia oferty');
     } finally {
       setApplySubmitting(false);
     }
@@ -324,6 +324,7 @@ export function JobDetailClient({
             lastApplicationMessage={job.currentUserApplicationMessage ?? lastApplicationMessage}
             deadlinePassed={deadlinePassed}
             slotsFull={slotsFull}
+            meetsApplicantCriteria={meetsApplicantCriteria}
             onApply={handleApply}
             applyMessage={applyMessage}
             setApplyMessage={setApplyMessage}
@@ -405,6 +406,7 @@ export function JobDetailClient({
       {(isOwnJob ||
         isAdmin ||
         canApply ||
+        criteriaNotMet ||
         (!user && !isDraft && !isClosed)) && (
           <div className="fixed inset-x-0 bottom-16 z-50 border-t border-border bg-background/95 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
             <div className="mx-auto max-w-4xl">

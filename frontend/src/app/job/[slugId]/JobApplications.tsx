@@ -1,13 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { Mail, Phone, Send, Users } from 'lucide-react';
+import { Mail, Phone, Send, Users, UserPlus } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl, enUS } from 'date-fns/locale';
 import { isApplicationFull, type Job, type JobApplication } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { EmptyState } from '@/components/EmptyState';
 import {
   Card,
   CardContent,
@@ -62,6 +63,8 @@ export interface JobApplicationsProps {
   lastApplicationMessage: string | null;
   deadlinePassed: boolean;
   slotsFull: boolean;
+  /** Whether current user (freelancer) meets job's expected applicant type. When false, form is hidden. */
+  meetsApplicantCriteria: boolean;
   onApply: (e: React.FormEvent) => void;
   applyMessage: string;
   setApplyMessage: (value: string) => void;
@@ -78,9 +81,9 @@ export function JobApplications({
   isOwnJob,
   isDraft,
   applyFormRef,
-  lastApplicationMessage,
   deadlinePassed,
   slotsFull,
+  meetsApplicantCriteria,
   onApply,
   applyMessage,
   setApplyMessage,
@@ -112,67 +115,81 @@ export function JobApplications({
 
         <ul className="space-y-3 mb-6 list-none p-0">
           {applications.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-2">
-              {t('jobs.noApplicationsYetBeFirst')}
-            </p>
+            <EmptyState
+              icon={UserPlus}
+              message={t('jobs.noApplicationsYetBeFirst')}
+              variant="compact"
+            />
           ) : (
             applications.map((app) => (
               <li key={app.id}>
-                <Card className="overflow-hidden">
-                  <CardContent className="flex flex-wrap items-center gap-3 py-4">
-                    <Avatar className="h-10 w-10 shrink-0">
-                      {isApplicationFull(app) && app.freelancer.avatarUrl ? (
-                        <AvatarImage
-                          src={app.freelancer.avatarUrl}
-                          alt=""
-                        />
-                      ) : null}
-                      <AvatarFallback className="text-sm font-medium text-muted-foreground">
-                        {applicationInitials(app)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 flex-1">
-                      <span className="font-medium text-foreground block">
-                        {applicationDisplayName(app)}
+                <Card className="overflow-hidden p-0">
+                  <CardContent className="p-3">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <Avatar className="h-10 w-10 shrink-0">
+                        {isApplicationFull(app) && app.freelancer.avatarUrl ? (
+                          <AvatarImage
+                            src={app.freelancer.avatarUrl}
+                            alt=""
+                          />
+                        ) : null}
+                        <AvatarFallback className="text-sm font-medium text-muted-foreground">
+                          {applicationInitials(app)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <span className="font-medium text-foreground block">
+                          {applicationDisplayName(app)}
+                        </span>
+                        {isApplicationFull(app) && (
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1">
+                            {app.freelancer.email && (
+                              <a
+                                href={`mailto:${app.freelancer.email}`}
+                                className="text-muted-foreground text-sm hover:text-foreground inline-flex items-center gap-1.5"
+                              >
+                                <Mail className="h-3.5 w-3.5 shrink-0" />
+                                {app.freelancer.email}
+                              </a>
+                            )}
+                            {app.freelancer.phone && (
+                              <a
+                                href={`tel:${app.freelancer.phone}`}
+                                className="text-muted-foreground text-sm hover:text-foreground inline-flex items-center gap-1.5"
+                              >
+                                <Phone className="h-3.5 w-3.5 shrink-0" />
+                                {app.freelancer.phone}
+                              </a>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-muted-foreground text-sm shrink-0 ml-auto">
+                        {formatApplicationDateTime(app.createdAt, locale)}
                       </span>
-                      {isApplicationFull(app) && (
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1">
-                          {app.freelancer.email && (
-                            <a
-                              href={`mailto:${app.freelancer.email}`}
-                              className="text-muted-foreground text-sm hover:text-foreground inline-flex items-center gap-1.5"
-                            >
-                              <Mail className="h-3.5 w-3.5 shrink-0" />
-                              {app.freelancer.email}
-                            </a>
-                          )}
-                          {app.freelancer.phone && (
-                            <a
-                              href={`tel:${app.freelancer.phone}`}
-                              className="text-muted-foreground text-sm hover:text-foreground inline-flex items-center gap-1.5"
-                            >
-                              <Phone className="h-3.5 w-3.5 shrink-0" />
-                              {app.freelancer.phone}
-                            </a>
-                          )}
-                        </div>
-                      )}
+                      {isApplicationFull(app) &&
+                        app.freelancer.profileSlug ? (
+                        <Button variant="outline" size="sm" asChild>
+                          <Link
+                            href={`/company/${app.freelancer.profileSlug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {t('jobs.viewProfile')}
+                          </Link>
+                        </Button>
+                      ) : null}
                     </div>
-                    <span className="text-muted-foreground text-sm shrink-0 ml-auto">
-                      {formatApplicationDateTime(app.createdAt, locale)}
-                    </span>
-                    {isApplicationFull(app) &&
-                      app.freelancer.profileSlug ? (
-                      <Button variant="outline" size="sm" asChild>
-                        <Link
-                          href={`/company/${app.freelancer.profileSlug}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {t('jobs.viewProfile')}
-                        </Link>
-                      </Button>
-                    ) : null}
+                    {'message' in app && app.message != null && app.message !== '' && (
+                      <div className="mt-2 pt-2">
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+                          {t('jobs.applicationMessageContent')}
+                        </p>
+                        <p className="text-sm whitespace-pre-wrap leading-relaxed text-foreground">
+                          {app.message}
+                        </p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </li>
@@ -180,30 +197,14 @@ export function JobApplications({
           )}
         </ul>
 
-        {user?.accountType === 'FREELANCER' && !isOwnJob && !isDraft && (
-          <div ref={applyFormRef}>
-            {job.currentUserApplied ? (
-              <div className="space-y-3">
-                {lastApplicationMessage && (
-                  <div className="rounded-lg border bg-muted/40 px-3 py-2">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
-                      {t('jobs.applicationMessageContent')}
-                    </p>
-                    <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                      {lastApplicationMessage}
-                    </p>
-                  </div>
-                )}
-              </div>
-            ) : deadlinePassed ? (
-              <p className="text-sm text-muted-foreground">
-                {t('jobs.deadlinePassedMessage')}
-              </p>
-            ) : slotsFull ? (
-              <p className="text-sm text-muted-foreground">
-                {t('jobs.maxOffersReachedMessage')}
-              </p>
-            ) : (
+        {user?.accountType === 'FREELANCER' &&
+          !isOwnJob &&
+          !isDraft &&
+          !job.currentUserApplied &&
+          !deadlinePassed &&
+          !slotsFull &&
+          meetsApplicantCriteria && (
+            <div ref={applyFormRef}>
               <form onSubmit={onApply} className="space-y-3">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
                   {t('jobs.applyToJob')}
@@ -235,9 +236,8 @@ export function JobApplications({
                   </Button>
                 </div>
               </form>
-            )}
-          </div>
-        )}
+            </div>
+          )}
       </div>
     </section>
   );

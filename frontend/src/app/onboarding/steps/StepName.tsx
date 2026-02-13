@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,30 +12,76 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import type { OnboardingFormValues } from '../schemas';
+import { updateProfile, updateStoredUser } from '@/lib/api';
+import type { AuthUser } from '@/lib/api';
+import { stepNameSchema } from '../schemas';
+import type { OnboardingFormValues, TranslateFn } from '../schemas';
+
+function setValidationErrors(
+  setError: (name: keyof OnboardingFormValues, error: { message: string }) => void,
+  clearErrors: () => void,
+  issues: { path: unknown[]; message: string }[],
+) {
+  clearErrors();
+  issues.forEach((issue) => {
+    const path0 = issue.path[0];
+    if (typeof path0 === 'string')
+      setError(path0 as keyof OnboardingFormValues, { message: issue.message });
+  });
+}
 
 interface StepNameProps {
-  onSubmit: () => void;
+  onSuccess: (user: AuthUser) => void;
   onBack: () => void;
-  loading: boolean;
-  error?: string;
-  t: (key: string) => string;
-  /** When false, back button is hidden (e.g. first step). Default true. */
+  t: TranslateFn;
   showBack?: boolean;
 }
 
 export function StepName({
-  onSubmit,
+  onSuccess,
   onBack,
-  loading,
-  error,
   t,
   showBack = true,
 }: StepNameProps) {
-  const { register, formState } = useFormContext<OnboardingFormValues>();
+  const { getValues, setError, clearErrors, formState, register } =
+    useFormContext<OnboardingFormValues>();
+  const [loading, setLoading] = useState(false);
+
   const nameError = formState.errors.name?.message;
   const surnameError = formState.errors.surname?.message;
-  const displayError = error ?? nameError ?? surnameError;
+  const rootError = formState.errors.root?.message;
+  const displayError = rootError ?? nameError ?? surnameError;
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    clearErrors();
+    setLoading(true);
+    const raw = getValues();
+    const result = stepNameSchema(t).safeParse({
+      name: raw.name,
+      surname: raw.surname,
+    });
+    if (!result.success) {
+      setValidationErrors(setError, clearErrors, result.error.issues);
+      setLoading(false);
+      return;
+    }
+    try {
+      const { user: updated } = await updateProfile({
+        name: result.data.name.trim(),
+        surname: result.data.surname.trim(),
+      });
+      updateStoredUser(updated);
+      onSuccess(updated);
+    } catch (err) {
+      setError('root', {
+        message:
+          err instanceof Error ? err.message : t('onboarding.saveFailed'),
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <>
@@ -42,12 +89,7 @@ export function StepName({
         <CardTitle>{t('onboarding.whatShouldWeCallYou')}</CardTitle>
         <CardDescription>{t('onboarding.enterNameSurname')}</CardDescription>
       </CardHeader>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          onSubmit();
-        }}
-      >
+      <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           {displayError && (
             <p className="text-sm text-destructive rounded-md bg-destructive/10 px-3 py-2">

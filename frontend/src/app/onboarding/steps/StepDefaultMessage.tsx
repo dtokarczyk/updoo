@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -11,25 +12,71 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import type { OnboardingFormValues } from '../schemas';
+import { updateProfile, updateStoredUser } from '@/lib/api';
+import type { AuthUser } from '@/lib/api';
+import { stepDefaultMessageSchema } from '../schemas';
+import type { OnboardingFormValues, TranslateFn } from '../schemas';
+
+function setValidationErrors(
+  setError: (name: keyof OnboardingFormValues, error: { message: string }) => void,
+  clearErrors: () => void,
+  issues: { path: unknown[]; message: string }[],
+) {
+  clearErrors();
+  issues.forEach((issue) => {
+    const path0 = issue.path[0];
+    if (typeof path0 === 'string')
+      setError(path0 as keyof OnboardingFormValues, { message: issue.message });
+  });
+}
 
 interface StepDefaultMessageProps {
-  onSubmit: () => void;
+  onSuccess: (user: AuthUser) => void;
   onBack: () => void;
-  loading: boolean;
-  error?: string;
-  t: (key: string) => string;
+  t: TranslateFn;
 }
 
 export function StepDefaultMessage({
-  onSubmit,
+  onSuccess,
   onBack,
-  loading,
-  error,
   t,
 }: StepDefaultMessageProps) {
-  const { register, formState } = useFormContext<OnboardingFormValues>();
+  const { getValues, setError, clearErrors, register, formState } =
+    useFormContext<OnboardingFormValues>();
+  const [loading, setLoading] = useState(false);
+
   const fieldError = formState.errors.defaultMessage?.message;
+  const rootError = formState.errors.root?.message;
+  const displayError = rootError ?? fieldError;
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    clearErrors();
+    setLoading(true);
+    const raw = getValues();
+    const result = stepDefaultMessageSchema.safeParse({
+      defaultMessage: raw.defaultMessage,
+    });
+    if (!result.success) {
+      setValidationErrors(setError, clearErrors, result.error.issues);
+      setLoading(false);
+      return;
+    }
+    try {
+      const { user: updated } = await updateProfile({
+        defaultMessage: (result.data.defaultMessage ?? '').trim() || undefined,
+      });
+      updateStoredUser(updated);
+      onSuccess(updated);
+    } catch (err) {
+      setError('root', {
+        message:
+          err instanceof Error ? err.message : t('onboarding.saveFailed'),
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <>
@@ -39,16 +86,11 @@ export function StepDefaultMessage({
           {t('onboarding.freelancerDefaultMessageDesc')}
         </CardDescription>
       </CardHeader>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          onSubmit();
-        }}
-      >
+      <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
-          {(error || fieldError) && (
+          {displayError && (
             <p className="text-sm text-destructive rounded-md bg-destructive/10 px-3 py-2">
-              {error ?? fieldError}
+              {displayError}
             </p>
           )}
           <div className="space-y-2">

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   Moon,
   Sun,
-  UserCircle,
+  Settings,
   ShieldCheck,
   LogOut,
 } from 'lucide-react';
@@ -108,8 +108,8 @@ export function UserDropdown({
       <DropdownMenuContent align="end" side={side} className="z-[100] min-w-40">
         <DropdownMenuItem asChild>
           <Link href="/profile" className="flex items-center gap-2">
-            <UserCircle className="h-4 w-4 shrink-0" aria-hidden />
-            {t('profile.editProfile')}
+            <Settings className="h-4 w-4 shrink-0" aria-hidden />
+            {t('nav.settings')}
           </Link>
         </DropdownMenuItem>
         {user?.accountType === 'ADMIN' && (

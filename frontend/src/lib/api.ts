@@ -544,13 +544,13 @@ export function clearDraftJob(): void {
 
 /** True if user has not completed onboarding. For freelancers, requires name, surname, account type and default message so that choosing "no company" does not end the flow and all steps (skills, default message, categories, profile) are shown. */
 export function needsOnboarding(user: AuthUser | null): boolean {
-  if (user == null) return false;
-  if (user.name == null || user.surname == null || user.accountType == null)
-    return true;
-  if (user.accountType === 'FREELANCER') {
-    const hasDefaultMessage = (user.defaultMessage?.trim() ?? '').length > 0;
-    if (!hasDefaultMessage) return true;
+  if (user == null) {
+    return false;
   }
+  if (user.name == null || user.surname == null || user.accountType == null) {
+    return true;
+  }
+
   return false;
 }
 
@@ -737,6 +737,8 @@ export interface JobApplicationDisplay {
   freelancerDisplayName?: string;
   freelancerInitials: string;
   createdAt: string;
+  /** Present only for the current user's own application when viewing as non-author. */
+  message?: string;
 }
 
 export type JobApplication = JobApplicationFull | JobApplicationDisplay;

@@ -1,5 +1,7 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import { useFormContext } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import {
   CardContent,
@@ -8,39 +10,117 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { ContractorProfileFormFields } from '@/components/contractor-profile-form-fields';
+import {
+  getLocations,
+  createContractorProfile,
+  getDraftJob,
+} from '@/lib/api';
+import { stepProfileFormSchema } from '../schemas';
+import type { OnboardingFormValues, TranslateFn } from '../schemas';
+
+function setValidationErrors(
+  setError: (name: keyof OnboardingFormValues, error: { message: string }) => void,
+  clearErrors: () => void,
+  issues: { path: unknown[]; message: string }[],
+) {
+  clearErrors();
+  issues.forEach((issue) => {
+    const path0 = issue.path[0];
+    if (typeof path0 === 'string')
+      setError(path0 as keyof OnboardingFormValues, { message: issue.message });
+  });
+}
 
 interface StepProfileFormProps {
-  locations: { id: string; name: string; slug: string }[];
-  onSubmit: () => void;
+  onOpenDraftModal: () => void;
+  onFinishOnboarding: () => void;
   onBack: () => void;
-  loading: boolean;
-  error?: string;
-  t: (key: string) => string;
+  t: TranslateFn;
 }
 
 export function StepProfileForm({
-  locations,
-  onSubmit,
+  onOpenDraftModal,
+  onFinishOnboarding,
   onBack,
-  loading,
-  error,
   t,
 }: StepProfileFormProps) {
+  const { getValues, setError, clearErrors, formState } =
+    useFormContext<OnboardingFormValues>();
+  const [loading, setLoading] = useState(false);
+  const [locations, setLocations] = useState<
+    { id: string; name: string; slug: string }[]
+  >([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    getLocations()
+      .then((locs) => {
+        if (!cancelled) setLocations(locs);
+      })
+      .catch(() => {
+        if (!cancelled) setLocations([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    clearErrors();
+    setLoading(true);
+    const raw = getValues();
+    const result = stepProfileFormSchema.safeParse({
+      profileName: raw.profileName,
+      profileEmail: raw.profileEmail,
+      profileWebsite: raw.profileWebsite,
+      profilePhone: raw.profilePhone,
+      profileLocationId: raw.profileLocationId,
+      profileAboutUs: raw.profileAboutUs,
+    });
+    if (!result.success) {
+      setValidationErrors(setError, clearErrors, result.error.issues);
+      setLoading(false);
+      return;
+    }
+    try {
+      await createContractorProfile({
+        name: result.data.profileName.trim(),
+        email: result.data.profileEmail?.trim() || undefined,
+        phone: result.data.profilePhone?.trim() || undefined,
+        website: result.data.profileWebsite?.trim() || undefined,
+        locationId: result.data.profileLocationId?.trim() || undefined,
+        aboutUs: result.data.profileAboutUs?.trim() || undefined,
+      });
+      setLoading(false);
+      const draft = getDraftJob();
+      if (draft) {
+        onOpenDraftModal();
+      } else {
+        onFinishOnboarding();
+      }
+    } catch (err) {
+      setError('root', {
+        message:
+          err instanceof Error ? err.message : t('onboarding.saveFailed'),
+      });
+      setLoading(false);
+      return;
+    }
+  }
+
+  const rootError = formState.errors.root?.message;
+
   return (
     <>
       <CardHeader>
         <CardTitle>{t('onboarding.profileQuestionCreate')}</CardTitle>
       </CardHeader>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          onSubmit();
-        }}
-      >
+      <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
-          {error && (
+          {rootError && (
             <p className="text-sm text-destructive rounded-md bg-destructive/10 px-3 py-2">
-              {error}
+              {rootError}
             </p>
           )}
 

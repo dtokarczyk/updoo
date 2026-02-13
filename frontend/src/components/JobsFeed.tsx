@@ -16,16 +16,8 @@ import {
 } from '@/lib/api';
 import { jobPathEdit } from '@/lib/job-url';
 import { JobPost } from '@/components/JobPost';
+import { RejectJobDialog } from '@/components/RejectJobDialog';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { useTranslations } from '@/hooks/useTranslations';
 
 const VISITED_JOBS_KEY = 'visitedJobs';
@@ -461,49 +453,15 @@ export function JobsFeed({
         </div>
       )}
 
-      <Dialog
+      <RejectJobDialog
         open={!!rejectDialogJob}
         onOpenChange={(open) => !open && closeRejectDialog()}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('jobs.rejectJobTitle')}</DialogTitle>
-            <DialogDescription>
-              {t('jobs.rejectJobDescription')}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="reject-reason">
-              {t('jobs.rejectReasonLabel')}
-            </label>
-            <Textarea
-              id="reject-reason"
-              placeholder={t('jobs.rejectReasonPlaceholder')}
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-              minLength={10}
-              maxLength={2000}
-              rows={4}
-              className="resize-none"
-            />
-            <p className="text-xs text-muted-foreground">
-              {t('jobs.rejectReasonHint')}
-            </p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={closeRejectDialog}>
-              {t('common.cancel')}
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleReject}
-              disabled={rejectReason.trim().length < 10 || !!rejectingId}
-            >
-              {rejectingId ? t('jobs.rejecting') : t('jobs.reject')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        reason={rejectReason}
+        onReasonChange={setRejectReason}
+        onSubmit={handleReject}
+        submitting={!!rejectingId}
+        t={t}
+      />
     </div>
   );
 }

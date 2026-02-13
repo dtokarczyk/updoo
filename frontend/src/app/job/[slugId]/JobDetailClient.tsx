@@ -16,6 +16,7 @@ import {
   closeJob,
   getStoredUser,
   publishJob,
+  rejectJob,
   authorDisplayName,
   type AuthUser,
   type Job,
@@ -31,6 +32,7 @@ import { JobMeta } from './JobMeta';
 import { JobRateValue } from './JobRateValue';
 import { JobActions } from './JobActions';
 import { JobSidebar } from './JobSidebar';
+import { RejectJobDialog } from '@/components/RejectJobDialog';
 
 
 interface JobDetailClientProps {
@@ -83,6 +85,9 @@ export function JobDetailClient({
   >(initialJob.currentUserApplicationMessage ?? null);
   const [closeSubmitting, setCloseSubmitting] = useState(false);
   const [acceptSubmitting, setAcceptSubmitting] = useState(false);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
+  const [rejectSubmitting, setRejectSubmitting] = useState(false);
   const user = initialUser ?? getStoredUser();
   const applyFormRef = useRef<HTMLDivElement>(null);
 
@@ -253,13 +258,37 @@ export function JobDetailClient({
     }
   }
 
+  function openRejectDialog() {
+    setRejectDialogOpen(true);
+    setRejectReason('');
+  }
+
+  function closeRejectDialog() {
+    setRejectDialogOpen(false);
+    setRejectReason('');
+  }
+
+  async function handleReject() {
+    if (!id || !isAdmin || !isDraft || rejectReason.trim().length < 10) return;
+    setRejectSubmitting(true);
+    try {
+      await rejectJob(id, rejectReason.trim());
+      closeRejectDialog();
+      router.refresh();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : t('jobs.failedToReject'));
+    } finally {
+      setRejectSubmitting(false);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
       <div className="grid gap-8 lg:grid-cols-6">
         <div className="lg:col-span-4 space-y-6">
           <div className="space-y-4">
             <div>
-              <h1 className="text-4xl font-black leading-tight">
+              <h1 className="text-2xl lg:text-4xl font-black leading-tight mt-2">
                 {job.title}
               </h1>
               <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
@@ -400,6 +429,8 @@ export function JobDetailClient({
               closeSubmitting={closeSubmitting}
               onAccept={handleAccept}
               acceptSubmitting={acceptSubmitting}
+              onRejectClick={openRejectDialog}
+              rejectSubmitting={rejectSubmitting}
               job={job}
               onApplyClick={handleApplyClick}
               onClose={handleClose}
@@ -471,6 +502,8 @@ export function JobDetailClient({
                 closeSubmitting={closeSubmitting}
                 onAccept={handleAccept}
                 acceptSubmitting={acceptSubmitting}
+                onRejectClick={openRejectDialog}
+                rejectSubmitting={rejectSubmitting}
                 job={job}
                 onApplyClick={handleApplyClick}
                 onClose={handleClose}
@@ -480,6 +513,16 @@ export function JobDetailClient({
             </div>
           </div>
         )}
+
+      <RejectJobDialog
+        open={rejectDialogOpen}
+        onOpenChange={(open) => !open && closeRejectDialog()}
+        reason={rejectReason}
+        onReasonChange={setRejectReason}
+        onSubmit={handleReject}
+        submitting={rejectSubmitting}
+        t={t}
+      />
     </div>
   );
 }

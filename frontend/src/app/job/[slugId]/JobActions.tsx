@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Check, Pencil, Send, X } from 'lucide-react';
+import { Check, Pencil, Send, X, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { jobPath, jobPathEdit } from '@/lib/job-url';
 import type { Job } from '@/lib/api';
@@ -23,6 +23,9 @@ export interface JobActionsProps {
   /** Admin-only: accept (publish) draft job. Shown when isAdmin && isDraft. */
   onAccept?: () => void;
   acceptSubmitting?: boolean;
+  /** Admin-only: open reject dialog. Shown when isAdmin && isDraft. */
+  onRejectClick?: () => void;
+  rejectSubmitting?: boolean;
   job: Job;
   onApplyClick: () => void;
   onClose: () => void;
@@ -44,6 +47,8 @@ export function JobActions({
   closeSubmitting,
   onAccept,
   acceptSubmitting = false,
+  onRejectClick,
+  rejectSubmitting = false,
   job,
   onApplyClick,
   onClose,
@@ -52,6 +57,7 @@ export function JobActions({
 }: JobActionsProps) {
   const isOwnerOrAdmin = isOwnJob || isAdmin;
   const canAccept = isAdmin && isDraft && onAccept;
+  const canReject = isAdmin && isDraft && onRejectClick;
   const isFreelancerCanSee =
     !isDraft && !isClosed && user?.accountType === 'FREELANCER';
   const isGuestApplyCta = !user && !isDraft && !isClosed;
@@ -80,7 +86,19 @@ export function JobActions({
               {acceptSubmitting ? t('admin.approving') : t('admin.approve')}
             </Button>
           )}
-          <Button className={buttonWidthClass} size="lg" asChild>
+          {canReject && (
+            <Button
+              className={buttonWidthClass}
+              size="lg"
+              variant="destructive"
+              onClick={onRejectClick}
+              disabled={rejectSubmitting}
+            >
+              <XCircle className="mr-2 h-4 w-4" />
+              {rejectSubmitting ? t('jobs.rejecting') : t('jobs.reject')}
+            </Button>
+          )}
+          <Button className={buttonWidthClass} size="lg" variant="secondary" asChild>
             <Link href={jobPathEdit(job)}>
               <Pencil className="mr-2 h-4 w-4" />
               {t('jobs.edit')}

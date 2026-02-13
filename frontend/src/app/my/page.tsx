@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from '@/hooks/useTranslations';
+import { useAuth } from '@/contexts/AuthContext';
 import { Sidebar } from './sidebar';
 
 const DESKTOP_BREAKPOINT = 768;
@@ -10,6 +11,7 @@ const DESKTOP_BREAKPOINT = 768;
 export default function MyPage() {
   const router = useRouter();
   const { t } = useTranslations();
+  const { user } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
 
@@ -26,9 +28,13 @@ export default function MyPage() {
   }, [mounted]);
 
   useEffect(() => {
-    if (!mounted || !isDesktop) return;
-    router.replace('/my/applications');
-  }, [mounted, isDesktop, router]);
+    if (!mounted || !isDesktop || user === undefined) return;
+    if (user?.accountType === 'CLIENT') {
+      router.replace('/my/jobs');
+    } else {
+      router.replace('/my/applications');
+    }
+  }, [mounted, isDesktop, router, user]);
 
   if (!mounted) {
     return null;

@@ -16,10 +16,13 @@
   },
   "my": {
     "title": "Moje",
-    "desc": "Twoje ostatnie aplikacje i ulubione oferty.",
+    "desc": "Twoje ogłoszenia, zgłoszenia i ulubione oferty.",
     "recentApplications": "Ostatnie aplikacje",
+    "myListings": "Moje ogłoszenia",
+    "myApplications": "Moje zgłoszenia",
     "favorites": "Ulubione",
     "noApplications": "Brak ostatnich aplikacji.",
+    "noJobs": "Brak ogłoszeń.",
     "noFavorites": "Nie masz jeszcze zapisanych ogłoszeń. Kliknij gwiazdkę przy ofercie, aby dodać ją do ulubionych.",
     "loadingApplications": "Ładowanie aplikacji…",
     "loadingFavorites": "Ładowanie ulubionych…"

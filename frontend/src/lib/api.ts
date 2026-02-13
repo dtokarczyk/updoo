@@ -1481,6 +1481,30 @@ export async function getUserJobs(): Promise<Job[]> {
   return res.json();
 }
 
+/**
+ * Server-side fetch for current user's jobs (client's listings).
+ * Returns empty array on error.
+ */
+export async function getUserJobsServer(
+  locale: string,
+  token: string,
+): Promise<Job[]> {
+  try {
+    const headers: HeadersInit = {
+      Authorization: `Bearer ${token}`,
+      'Accept-Language': locale === 'en' ? 'en' : 'pl',
+    };
+    const res = await fetch(`${API_URL}/jobs/my-jobs`, {
+      headers,
+      cache: 'no-store',
+    });
+    if (!res.ok) return [];
+    return (await res.json()) as Job[];
+  } catch {
+    return [];
+  }
+}
+
 export async function generateAiJob(): Promise<{
   ok: boolean;
   message: string;

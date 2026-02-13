@@ -4,14 +4,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Pencil, ChevronLeft, ChevronRight, XCircle } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
-import ReactCountryFlag from 'react-country-flag';
 import {
   getJobsFeed,
   publishJob,
   rejectJob,
   getStoredUser,
   type Job,
-  type JobLanguage,
   type PaginationInfo,
 } from '@/lib/api';
 import { jobPathEdit } from '@/lib/job-url';
@@ -303,16 +301,6 @@ export function JobsFeed({
                 )}
                 <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                   {job.category.name}
-                </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                  <ReactCountryFlag
-                    svg
-                    countryCode={job.language === 'ENGLISH' ? 'GB' : 'PL'}
-                    style={{ width: '1em', height: '1em' }}
-                  />
-                  {job.language === 'ENGLISH'
-                    ? t('jobs.english')
-                    : t('jobs.polish')}
                 </span>
               </div>
             }

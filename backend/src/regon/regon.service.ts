@@ -7,11 +7,15 @@ import type { RegonCompanyData, SearchResultRow } from './regon.types';
 
 export type { RegonCompanyData, SearchResultRow } from './regon.types';
 
+/** GUS BIR error code: no data found for the specified search criteria. */
+const GUS_ERROR_CODE_NO_DATA = '4';
+
 @Injectable()
 export class RegonService {
   /**
    * Fetch company data by NIP, REGON, or KRS using bir1 library (GUS REGON client).
    * Uses report BIR11OsFizycznaDzialalnoscCeidg for natural persons, BIR11OsPrawna for legal.
+   * @throws BadRequestException when GUS returns no data for the given identifier (messages.companyNotFoundInGus)
    */
   async getCompanyDataByNipRegonOrKrs(
     nip?: string,
@@ -33,7 +37,7 @@ export class RegonService {
     const normalized = String(identifier).replace(/\s/g, '');
 
     // bir1 is ESM-only; dynamic import in CJS NestJS
-    const { default: Bir } = await import('bir1');
+    const { default: Bir, BirError } = await import('bir1');
     const bir = new Bir({ key: apiKey });
 
     try {
@@ -42,14 +46,22 @@ export class RegonService {
         : regon
           ? { regon: normalized }
           : { krs: normalized };
-      const rawSearch = await bir.search(query);
+      let rawSearch: unknown;
+      try {
+        rawSearch = await bir.search(query);
+      } catch (err) {
+        if (err instanceof BirError && err.response?.ErrorCode === GUS_ERROR_CODE_NO_DATA) {
+          throw new BadRequestException('messages.companyNotFoundInGus');
+        }
+        throw err;
+      }
 
       const searchResult: SearchResultRow[] = rawSearch
         ? [normalizeSearchRow(rawSearch as Record<string, unknown>)]
         : [];
 
       if (searchResult.length === 0) {
-        return { searchResult: [], reports: {} };
+        throw new BadRequestException('messages.companyNotFoundInGus');
       }
 
       const typ = searchResult[0].Typ;

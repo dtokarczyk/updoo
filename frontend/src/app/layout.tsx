@@ -10,6 +10,7 @@ import { BetaBar } from '@/components/BetaBar';
 import { AppHeader } from '@/components/AppHeader';
 import { AppFooter } from '@/components/AppFooter';
 import { OnboardingRedirect } from '@/components/OnboardingRedirect';
+import { GoogleAnalytics } from '@/components/GoogleAnalytics';
 import { getLocaleFromRequest } from '@/lib/i18n';
 import { getMetadataConfig } from '@/lib/metadata-config';
 
@@ -71,6 +72,7 @@ export default async function RootLayout({
       </head>
 
       <body className={`${geistMono.variable} antialiased`}>
+        <GoogleAnalytics />
         <ThemeScript />
         <ThemeProvider>
           <TooltipProvider delayDuration={200}>

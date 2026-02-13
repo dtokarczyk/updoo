@@ -1554,6 +1554,27 @@ export async function generateAiJob(): Promise<{
   return res.json();
 }
 
+/** Improve job description with AI (grammar, clarity, structure). */
+export async function improveJobDescription(text: string): Promise<string> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const res = await fetch(`${API_URL}/ai/improve-job-description`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ text: text?.trim() ?? '' }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to improve description');
+  }
+  const data = (await res.json()) as { improvedText: string };
+  return data.improvedText ?? '';
+}
+
 // ─── Notification preferences ────────────────────────────────────────
 
 export type NotificationType =

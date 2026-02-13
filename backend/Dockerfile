@@ -53,6 +53,9 @@ RUN test -f /app/dist/src/main.js || (echo "main.js not found!" && ls -la /app/d
 # Copy translation files (needed at runtime)
 COPY --from=builder /app/src/i18n/translations ./src/i18n/translations
 
+# Copy assets (Satoshi fonts + Hoplo logo for OG image generation)
+COPY backend/assets ./assets
+
 # Set default port for production (port 80)
 ENV PORT=80
 

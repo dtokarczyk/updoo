@@ -19,6 +19,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -106,6 +107,13 @@ export function UserDropdown({
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" side={side} className="z-[100] min-w-40">
+        <DropdownMenuLabel className="font-normal text-foreground pb-0">
+          {user ? displayName(user, t) : t('profile.editProfile')}
+        </DropdownMenuLabel>
+        <DropdownMenuLabel className="font-normal text-muted-foreground text-xs pt-0.5 pb-1.5">
+          {user ? accountTypeLabel(user.accountType, t) : ''}
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href="/profile" className="flex items-center gap-2">
             <Settings className="h-4 w-4 shrink-0" aria-hidden />

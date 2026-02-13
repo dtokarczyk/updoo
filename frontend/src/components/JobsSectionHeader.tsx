@@ -110,7 +110,7 @@ export function JobsSectionHeader({
       aria-label={sectionTitle}
     >
       <div className="flex flex-col gap-5">
-        <div className="flex flex-row gap-1 items-center">
+        <div className="flex flex-row gap-1">
 
           {count !== null && (
             <h2 className="text-2xl font-semibold tracking-tight text-foreground w-3/5">

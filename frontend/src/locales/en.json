@@ -16,14 +16,14 @@
   },
   "my": {
     "title": "My things",
-    "desc": "Your listings, applications and favorite offers.",
+    "desc": "Your jobs, applications and favorite jobs.",
     "recentApplications": "Recent applications",
-    "myListings": "My listings",
+    "myListings": "My jobs",
     "myApplications": "My applications",
     "favorites": "Favorites",
     "noApplications": "No recent applications.",
-    "noJobs": "No listings.",
-    "noFavorites": "You don't have any saved listings yet. Click the star on an offer to add it to favorites.",
+    "noJobs": "No jobs.",
+    "noFavorites": "You don't have any saved jobs yet. Click the star next to a job to add it to favorites.",
     "loadingApplications": "Loading applications…",
     "loadingFavorites": "Loading favorites…"
   },
@@ -198,7 +198,7 @@
     "newPasswordConfirm": "Repeat new password",
     "defaultMessage": "Default welcome message",
     "defaultMessageDesc": "Welcome message with portfolio links. You can personalize it during each submission.",
-    "defaultMessagePlaceholder": "Hello! I'm interested in this offer. Here are links to my portfolio:\n\n- Portfolio: https://example.com\n- GitHub: https://github.com/username\n\nI'm happy to answer any questions!",
+    "defaultMessagePlaceholder": "Hello! I'm interested in this job. Here are links to my portfolio:\n\n- Portfolio: https://example.com\n- GitHub: https://github.com/username\n\nI'm happy to answer any questions!",
     "create": {
       "nameLabel": "Profile name *",
       "slugLabel": "Visiting card URL (slug)",
@@ -249,12 +249,12 @@
   },
   "onboarding": {
     "phoneTitle": "Enter your phone number",
-    "phoneDesc": "We will use it only to send important information about application status (e.g. offer accepted, status updates).",
+    "phoneDesc": "We will use it only to send important information about application status (e.g. application accepted, status updates).",
     "phoneSettingsNote": "You can change notification options later in settings.",
     "phonePlaceholder": "e.g. +48 123 456 789",
     "whatShouldWeCallYou": "Enter your name and surname.",
     "nameSurnameRequired": "Name and surname are required.",
-    "enterNameSurname": "Your data will not be publicly visible. Under the application only your first name and the first letter of your surname will be visible. Your data will be seen by the person you choose as the contractor for your offer.",
+    "enterNameSurname": "Your data will not be publicly visible. Under your application only your first name and the first letter of your surname will be visible. Your data will be seen by the person you choose as the contractor for your job.",
     "chooseAccountType": "Choose account type",
     "chooseAccountTypeDesc": "Choose whether you are a client looking for a freelancer or a freelancer looking for work.",
     "accountTypeRequired": "Please choose an account type.",
@@ -293,7 +293,7 @@
     "freelancerSkillsNoResults": "No skills match your search.",
     "freelancerDefaultMessageTitle": "Add default welcome message",
     "freelancerDefaultMessageDesc": "Create a welcome message with portfolio links. You can personalize it during each submission.",
-    "freelancerDefaultMessagePlaceholder": "Hello! I'm interested in this offer. Here are links to my portfolio:\n\n- Portfolio: https://example.com\n- GitHub: https://github.com/username\n\nI'm happy to answer any questions!",
+    "freelancerDefaultMessagePlaceholder": "Hello! I'm interested in this job. Here are links to my portfolio:\n\n- Portfolio: https://example.com\n- GitHub: https://github.com/username\n\nI'm happy to answer any questions!",
     "freelancerDefaultMessageHint": "You can change this message later in profile settings.",
     "freelancerCategoriesTitle": "Follow job categories",
     "freelancerCategoriesDesc": "Select categories that interest you. You will receive a daily newsletter with new jobs from these categories. You can change this anytime on each category page.",
@@ -357,7 +357,7 @@
     "backToAllJobs": "Jobs",
     "loadingJobs": "Loading jobs...",
     "failedToLoad": "Failed to load jobs",
-    "noJobs": "No jobs. Add the first job!",
+    "noJobs": "No jobs",
     "published": "Published",
     "experienceLevel": "Experience level",
     "hourlyRate": "Hourly rate",
@@ -473,13 +473,12 @@
     "noApplicationsYetBeFirst": "No applications yet, be the first!",
     "applicationsContactDataHint": "You see applicants' contact details only because you are the author of this job posting.",
     "viewProfile": "View business card",
-    "maxOffersReachedMessage": "Maximum number of offers for this job has been reached.",
+    "maxOffersReachedMessage": "Maximum number of applications for this job has been reached.",
     "myJobs": "My jobs",
-    "noJobs": "No jobs",
-    "noJobsSidebar": "You don't have any job listings yet. Add your first listing to find a freelancer.",
+    "noJobsSidebar": "You don't have any jobs yet. Add your first job to find a freelancer.",
     "newJobForm": {
       "title": "New job",
-      "description": "Fill in the job details. Billing fields and skills will help match the offer.",
+      "description": "Fill in the job details. Billing fields and skills will help match the job to contractors.",
       "titlePlaceholder": "e.g. Looking for React developer",
       "descriptionPlaceholder": "Describe the job details...",
       "selectCategory": "Select category",
@@ -527,15 +526,15 @@
     }
   },
   "branding": {
-    "logotypeTagline": "Publish and search offers for freelancers",
-    "logotypeTaglineShort": "Offers for freelancers"
+    "logotypeTagline": "Publish and search jobs for freelancers",
+    "logotypeTaglineShort": "Jobs for freelancers"
   },
   "beta": {
     "bar": "🥳 We're glad you're with us from the start. We're testing the beta. If you spot a bug - let us know."
   },
   "homepage": {
     "heroText": "The easiest way to connect businesses and top freelancers",
-    "heroBenefit1": "Always free listings",
+    "heroBenefit1": "Always free jobs",
     "heroBenefit2": "No commission on gigs",
     "heroBenefit3": "Rating of contractor and client",
     "welcomeTitle": "The easiest way to connect companies and the best freelancers",

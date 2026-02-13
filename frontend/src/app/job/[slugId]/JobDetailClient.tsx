@@ -7,28 +7,11 @@ import ReactCountryFlag from 'react-country-flag';
 import {
   ArrowLeft,
   ArrowRight,
-  Banknote,
-  Briefcase,
   Calendar,
-  Clock,
   FileText,
-  MapPin,
-  Pencil,
-  Send,
   Tag,
   User,
-  UserCheck,
-  Users,
-  Wrench,
-  Laptop,
-  BarChart3,
-  X,
 } from 'lucide-react';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 import {
   getJob,
   applyToJob,
@@ -38,264 +21,17 @@ import {
   isApplicationFull,
   type Job,
   type JobPrevNext,
-  type JobApplication,
 } from '@/lib/api';
 import { jobPath, jobPathEdit } from '@/lib/job-url';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { useTranslations } from '@/hooks/useTranslations';
-import { format } from 'date-fns';
-import { pl, enUS } from 'date-fns/locale';
-import {
-  getDeadlineMsLeft,
-  formatDeadlineRemaining,
-  isDeadlineSoon,
-} from '@/lib/deadline-utils';
-import { getRateDisplay } from '@/lib/rate-helpers';
+import { getDeadlineMsLeft, isDeadlineSoon } from '@/lib/deadline-utils';
+import { formatDate } from '@/lib/format-date';
+import { JobApplications } from './JobApplications';
+import { JobMeta } from './JobMeta';
+import { JobRateValue } from './JobRateValue';
+import { JobActions } from './JobActions';
+import { JobSidebar } from './JobSidebar';
 
-const BILLING_LABELS: Record<string, string> = {
-  FIXED: 'Ryczałt',
-  HOURLY: 'Godzinowo',
-};
-
-const HOURS_LABELS: Record<string, string> = {
-  LESS_THAN_10: '< 10 h/tydz.',
-  FROM_11_TO_20: '11–20 h/tydz.',
-  FROM_21_TO_30: '21–30 h/tydz.',
-  MORE_THAN_30: '> 30 h/tydz.',
-};
-
-const EXPERIENCE_LABELS: Record<string, string> = {
-  JUNIOR: 'Junior',
-  MID: 'Mid',
-  SENIOR: 'Senior',
-};
-
-const PROJECT_TYPE_LABELS: Record<string, string> = {
-  ONE_TIME: 'Jednorazowy',
-  CONTINUOUS: 'Ciągły',
-};
-
-const EXPECTED_APPLICANT_TYPE_LABEL_KEYS: Record<
-  string,
-  string
-> = {
-  FREELANCER_NO_B2B: 'jobs.newJobForm.expectedApplicantTypeFreelancerNoB2B',
-  FREELANCER_B2B: 'jobs.newJobForm.expectedApplicantTypeFreelancerB2B',
-  COMPANY: 'jobs.newJobForm.expectedApplicantTypeCompany',
-};
-
-function formatDate(iso: string, locale: 'pl' | 'en'): string {
-  const dateFnsLocale = locale === 'en' ? enUS : pl;
-  const date = new Date(iso);
-  const dateFormat =
-    locale === 'en' ? "d MMMM yyyy 'at' HH:mm" : "d MMMM yyyy 'o' HH:mm";
-  return format(date, dateFormat, { locale: dateFnsLocale });
-}
-
-function formatApplicationDateTime(iso: string, locale: 'pl' | 'en'): string {
-  const dateFnsLocale = locale === 'en' ? enUS : pl;
-  const date = new Date(iso);
-  const dateTimeFormat =
-    locale === 'en' ? 'd MMM yyyy, HH:mm' : 'd MMM yyyy, HH:mm';
-  return format(date, dateTimeFormat, { locale: dateFnsLocale });
-}
-
-function applicationDisplayName(app: JobApplication): string {
-  if (isApplicationFull(app)) {
-    const { name, surname } = app.freelancer;
-    if (name && surname) return `${name} ${surname.charAt(0)}.`;
-    if (name) return name;
-    if (surname) return `${surname.charAt(0)}.`;
-    return app.freelancer.email ?? '?';
-  }
-  return 'freelancerDisplayName' in app && app.freelancerDisplayName
-    ? app.freelancerDisplayName
-    : 'freelancerInitials' in app
-      ? (app.freelancerInitials ?? '?')
-      : '?';
-}
-
-function DetailRow({
-  icon: Icon,
-  label,
-  value,
-  valueClassName,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: React.ReactNode;
-  valueClassName?: string;
-}) {
-  if (value == null || value === '') return null;
-  return (
-    <div className="flex gap-3 items-start">
-      <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-        <Icon className="h-4 w-4" />
-      </div>
-      <div className="min-w-0 flex-1 space-y-0.5">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          {label}
-        </p>
-        <p className={cn('text-sm font-medium', valueClassName)}>{value}</p>
-      </div>
-    </div>
-  );
-}
-
-function JobRateValue({
-  user,
-  job,
-  t,
-}: {
-  user: ReturnType<typeof getStoredUser>;
-  job: Job;
-  t: (key: string) => string;
-}) {
-  const rd = getRateDisplay(!!user, job);
-  if (rd.type === 'negotiable') {
-    return (
-      <span className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
-        {t('jobs.negotiable')}
-      </span>
-    );
-  }
-  if (rd.type === 'blur') {
-    const loginUrl = `/login?returnUrl=${encodeURIComponent(jobPath(job))}`;
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Link
-            href={loginUrl}
-            className="cursor-pointer blur-sm select-none text-emerald-600 dark:text-emerald-400 hover:underline"
-          >
-            {rd.placeholder}
-          </Link>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>{t('jobs.loginToSeeRate')}</p>
-        </TooltipContent>
-      </Tooltip>
-    );
-  }
-  return (
-    <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-      {rd.formatted}
-    </span>
-  );
-}
-
-function JobActions({
-  isOwnJob,
-  isAdmin,
-  isDraft,
-  isClosed,
-  user,
-  canApply,
-  criteriaNotMet,
-  currentUserApplied,
-  deadlinePassed,
-  canClose,
-  closeSubmitting,
-  job,
-  onApplyClick,
-  onClose,
-  t,
-  layout = 'column',
-}: {
-  isOwnJob: boolean;
-  isAdmin: boolean;
-  isDraft: boolean;
-  isClosed: boolean;
-  user: ReturnType<typeof getStoredUser>;
-  canApply: boolean;
-  /** True when freelancer would apply but does not meet job's expected applicant type. */
-  criteriaNotMet: boolean;
-  currentUserApplied: boolean | undefined;
-  deadlinePassed: boolean;
-  canClose: boolean;
-  closeSubmitting: boolean;
-  job: Job;
-  onApplyClick: () => void;
-  onClose: () => void;
-  t: (key: string, params?: Record<string, string | number>) => string;
-  layout?: 'column' | 'row';
-}) {
-  const isOwnerOrAdmin = isOwnJob || isAdmin;
-  const isFreelancerCanSee =
-    !isDraft && !isClosed && user?.accountType === 'FREELANCER';
-  const isGuestApplyCta = !user && !isDraft && !isClosed;
-
-  if (!isOwnerOrAdmin && !isFreelancerCanSee && !isGuestApplyCta) {
-    return null;
-  }
-
-  const containerClassName = layout === 'row' ? 'flex gap-2' : 'space-y-2';
-  const loginUrl = `/login?returnUrl=${encodeURIComponent(jobPath(job))}`;
-
-  return (
-    <div className={containerClassName}>
-      {isOwnerOrAdmin ? (
-        <>
-          <Button className="w-full" size="lg" asChild>
-            <Link href={jobPathEdit(job)}>
-              <Pencil className="mr-2 h-4 w-4" />
-              {t('jobs.edit')}
-            </Link>
-          </Button>
-          {canClose && (
-            <Button
-              className="w-full"
-              size="lg"
-              variant="destructive"
-              onClick={onClose}
-              disabled={closeSubmitting}
-            >
-              <X className="mr-2 h-4 w-4" />
-              {closeSubmitting ? t('jobs.closing') : t('jobs.close')}
-            </Button>
-          )}
-        </>
-      ) : isGuestApplyCta ? (
-        <Button className="w-full" size="lg" asChild>
-          <Link href={loginUrl}>
-            <Send className="mr-2 h-4 w-4" />
-            {t('jobs.apply')}
-          </Link>
-        </Button>
-      ) : canApply ? (
-        <Button onClick={onApplyClick} className="w-full" size="lg">
-          <Send className="mr-2 h-4 w-4" />
-          {t('jobs.apply')}
-        </Button>
-      ) : currentUserApplied === true ? (
-        <Button disabled className="w-full" size="lg" variant="outline">
-          {t('jobs.appliedShort')}
-        </Button>
-      ) : criteriaNotMet ? (
-        <div className="space-y-1.5 w-full">
-          <Button disabled className="w-full" size="lg" variant="outline">
-            <Send className="mr-2 h-4 w-4" />
-            {t('jobs.apply')}
-          </Button>
-          <p className="text-sm text-muted-foreground px-1">
-            {t('jobs.applyCriteriaNotMet')}
-          </p>
-        </div>
-      ) : deadlinePassed ? (
-        <Button disabled className="w-full" size="lg" variant="outline">
-          {t('jobs.deadlinePassed')}
-        </Button>
-      ) : (
-        <Button onClick={onApplyClick} className="w-full" size="lg">
-          <Send className="mr-2 h-4 w-4" />
-          {t('jobs.apply')}
-        </Button>
-      )}
-    </div>
-  );
-}
 
 interface JobDetailClientProps {
   initialJob: Job;
@@ -560,109 +296,14 @@ export function JobDetailClient({
             )}
           </div>
 
-          <section className="block lg:hidden space-y-6 border-t pt-6">
-            <DetailRow
-              icon={Banknote}
-              label={t('jobs.rate')}
-              value={<JobRateValue user={user} job={job} t={t} />}
-            />
-            {job.expectedOffers != null ? (
-              <>
-                <DetailRow
-                  icon={Users}
-                  label={t('jobs.expectedOffers')}
-                  value={String(job.expectedOffers)}
-                />
-                <DetailRow
-                  icon={Users}
-                  label={t('jobs.submittedApplications')}
-                  value={String(applications.length)}
-                />
-              </>
-            ) : (
-              <DetailRow
-                icon={Users}
-                label={t('jobs.applications')}
-                value={String(applications.length)}
-              />
-            )}
-
-            <DetailRow
-              icon={Briefcase}
-              label={t('jobs.billingType')}
-              value={BILLING_LABELS[job.billingType] ?? job.billingType}
-            />
-            {job.billingType === 'HOURLY' && job.hoursPerWeek && (
-              <DetailRow
-                icon={Clock}
-                label={t('jobs.hoursPerWeek')}
-                value={HOURS_LABELS[job.hoursPerWeek] ?? job.hoursPerWeek}
-              />
-            )}
-            <DetailRow
-              icon={BarChart3}
-              label={t('jobs.experienceLevel')}
-              value={
-                EXPERIENCE_LABELS[job.experienceLevel] ?? job.experienceLevel
-              }
-            />
-            <DetailRow
-              icon={Briefcase}
-              label={t('jobs.projectType')}
-              value={PROJECT_TYPE_LABELS[job.projectType] ?? job.projectType}
-            />
-            {job.deadline && (
-              <DetailRow
-                icon={Clock}
-                label={t('jobs.deadline')}
-                value={formatDeadlineRemaining(job.deadline, t) ?? undefined}
-                valueClassName={
-                  deadlineSoon
-                    ? 'font-bold text-red-600 dark:text-red-400'
-                    : undefined
-                }
-              />
-            )}
-            {job.location && (
-              <DetailRow
-                icon={MapPin}
-                label={t('jobs.location')}
-                value={job.location.name}
-              />
-            )}
-            {job.isRemote && (
-              <DetailRow
-                icon={Laptop}
-                label={t('jobs.remoteWork')}
-                value={t('common.yes')}
-              />
-            )}
-          </section>
-
-          {skills.length > 0 && (
-            <section>
-              <div className="flex gap-3 items-start">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                  <Wrench className="h-4 w-4" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                    {t('jobs.skills')}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {skills.map((name) => (
-                      <span
-                        key={name}
-                        className="rounded-full bg-muted px-3 py-1 text-sm text-foreground"
-                      >
-                        {name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </section>
-          )}
+          <JobMeta
+            job={job}
+            applicationsCount={applications.length}
+            deadlineSoon={deadlineSoon}
+            rateValue={<JobRateValue user={user} job={job} t={t} />}
+            skills={skills}
+            t={t}
+          />
 
           <section>
             <div className="flex gap-3 items-start mb-3">
@@ -680,212 +321,53 @@ export function JobDetailClient({
             </div>
           </section>
 
-          <section className="border-t pt-6 space-y-4 flex gap-3 items-start">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-              <Users className="h-4 w-4" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
-                {job.expectedOffers != null
-                  ? t('jobs.applicationsCountLimit', {
-                    submitted: applications.length,
-                    expected: job.expectedOffers,
-                  })
-                  : t('jobs.applicationsCount', { count: applications.length })}
-              </p>
-              <ul className="space-y-2 mb-6">
-                {applications.length === 0 ? (
-                  <p className="text-sm text-muted-foreground py-2">
-                    {t('jobs.noApplicationsYetBeFirst')}
-                  </p>
-                ) : (
-                  applications.map((app) => (
-                    <li
-                      key={app.id}
-                      className="flex items-center justify-between gap-3 py-2 border-b border-border last:border-0 text-sm"
-                    >
-                      <span className="font-medium text-foreground">
-                        {applicationDisplayName(app)}
-                      </span>
-                      <span className="text-muted-foreground tabular-nums">
-                        {formatApplicationDateTime(app.createdAt, locale)}
-                      </span>
-                    </li>
-                  ))
-                )}
-              </ul>
-
-              {user?.accountType === 'FREELANCER' && !isOwnJob && !isDraft && (
-                <div ref={applyFormRef}>
-                  {job.currentUserApplied ? (
-                    <div className="space-y-3">
-                      {lastApplicationMessage && (
-                        <div className="rounded-lg border bg-muted/40 px-3 py-2">
-                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
-                            {t('jobs.applicationMessageContent')}
-                          </p>
-                          <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                            {lastApplicationMessage}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  ) : deadlinePassed ? (
-                    <p className="text-sm text-muted-foreground">
-                      {t('jobs.deadlinePassedMessage')}
-                    </p>
-                  ) : slotsFull ? (
-                    <p className="text-sm text-muted-foreground">
-                      {t('jobs.maxOffersReachedMessage')}
-                    </p>
-                  ) : (
-                    <form onSubmit={handleApply} className="space-y-3">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
-                        {t('jobs.applyToJob')}
-                      </p>
-                      <Textarea
-                        placeholder={t('jobs.applyMessagePlaceholder')}
-                        value={applyMessage}
-                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                          setApplyMessage(e.target.value)
-                        }
-                        maxLength={2000}
-                        rows={3}
-                        className="resize-none"
-                        disabled={applySubmitting}
-                      />
-                      {applyError && (
-                        <p className="text-sm text-destructive">{applyError}</p>
-                      )}
-                      <div className="flex justify-end">
-                        <Button type="submit" disabled={applySubmitting}>
-                          {applySubmitting ? (
-                            t('jobs.applying')
-                          ) : (
-                            <>
-                              <Send className="mr-1.5 h-3.5 w-3.5" />
-                              {t('common.submit')}
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                    </form>
-                  )}
-                </div>
-              )}
-            </div>
-          </section>
+          <JobApplications
+            job={job}
+            applications={applications}
+            user={user}
+            isOwnJob={isOwnJob}
+            isDraft={isDraft}
+            applyFormRef={applyFormRef}
+            lastApplicationMessage={lastApplicationMessage}
+            deadlinePassed={deadlinePassed}
+            slotsFull={slotsFull}
+            onApply={handleApply}
+            applyMessage={applyMessage}
+            setApplyMessage={setApplyMessage}
+            applySubmitting={applySubmitting}
+            applyError={applyError}
+            locale={locale}
+            t={t}
+          />
         </div>
 
-        <aside className="hidden lg:block lg:col-span-2 lg:self-start lg:sticky lg:top-8">
-          <div className="space-y-6">
-            <div className="hidden lg:block">
-              <JobActions
-                isOwnJob={isOwnJob}
-                isAdmin={isAdmin}
-                isDraft={isDraft}
-                isClosed={isClosed}
-                user={user}
-                canApply={canApply}
-                criteriaNotMet={criteriaNotMet}
-                currentUserApplied={job.currentUserApplied}
-                deadlinePassed={deadlinePassed}
-                canClose={canClose}
-                closeSubmitting={closeSubmitting}
-                job={job}
-                onApplyClick={handleApplyClick}
-                onClose={handleClose}
-                t={t}
-                layout="column"
-              />
-            </div>
-
-            <DetailRow
-              icon={Banknote}
-              label={t('jobs.rate')}
-              value={<JobRateValue user={user} job={job} t={t} />}
+        <JobSidebar
+          job={job}
+          applicationsCount={applications.length}
+          deadlineSoon={deadlineSoon}
+          t={t}
+          actions={
+            <JobActions
+              isOwnJob={isOwnJob}
+              isAdmin={isAdmin}
+              isDraft={isDraft}
+              isClosed={isClosed}
+              user={user}
+              canApply={canApply}
+              criteriaNotMet={criteriaNotMet}
+              currentUserApplied={job.currentUserApplied}
+              deadlinePassed={deadlinePassed}
+              canClose={canClose}
+              closeSubmitting={closeSubmitting}
+              job={job}
+              onApplyClick={handleApplyClick}
+              onClose={handleClose}
+              t={t}
+              layout="column"
             />
-            {job.expectedOffers != null ? (
-              <>
-                <DetailRow
-                  icon={Users}
-                  label={t('jobs.expectedOffers')}
-                  value={String(job.expectedOffers)}
-                />
-                <DetailRow
-                  icon={Users}
-                  label={t('jobs.submittedApplications')}
-                  value={String(applications.length)}
-                />
-              </>
-            ) : (
-              <DetailRow
-                icon={Users}
-                label={t('jobs.applications')}
-                value={String(applications.length)}
-              />
-            )}
-            {job.expectedApplicantTypes?.length ? (
-              <DetailRow
-                icon={UserCheck}
-                label={t('jobs.expectedApplicantType')}
-                value={job.expectedApplicantTypes
-                  .map((type) => t(EXPECTED_APPLICANT_TYPE_LABEL_KEYS[type] ?? type))
-                  .join(', ')}
-              />
-            ) : null}
-            <DetailRow
-              icon={Briefcase}
-              label={t('jobs.billingType')}
-              value={BILLING_LABELS[job.billingType] ?? job.billingType}
-            />
-            {job.billingType === 'HOURLY' && job.hoursPerWeek && (
-              <DetailRow
-                icon={Clock}
-                label={t('jobs.hoursPerWeek')}
-                value={HOURS_LABELS[job.hoursPerWeek] ?? job.hoursPerWeek}
-              />
-            )}
-            <DetailRow
-              icon={BarChart3}
-              label={t('jobs.experienceLevel')}
-              value={
-                EXPERIENCE_LABELS[job.experienceLevel] ?? job.experienceLevel
-              }
-            />
-            <DetailRow
-              icon={Briefcase}
-              label={t('jobs.projectType')}
-              value={PROJECT_TYPE_LABELS[job.projectType] ?? job.projectType}
-            />
-            {job.deadline && (
-              <DetailRow
-                icon={Clock}
-                label={t('jobs.deadline')}
-                value={formatDeadlineRemaining(job.deadline, t) ?? undefined}
-                valueClassName={
-                  deadlineSoon
-                    ? 'font-bold text-red-600 dark:text-red-400'
-                    : undefined
-                }
-              />
-            )}
-            {job.location && (
-              <DetailRow
-                icon={MapPin}
-                label={t('jobs.location')}
-                value={job.location.name}
-              />
-            )}
-            {job.isRemote && (
-              <DetailRow
-                icon={Laptop}
-                label={t('jobs.remoteWork')}
-                value={t('common.yes')}
-              />
-            )}
-          </div>
-        </aside>
+          }
+          rateValue={<JobRateValue user={user} job={job} t={t} />}
+        />
       </div>
 
       {(prevNext?.prev || prevNext?.next) && (

@@ -46,9 +46,9 @@ const metadataByLocale: Record<
         'Publikuj i szukaj ofert dla freelancerów. Połącz firmy z najlepszymi wykonawcami.',
     },
     home: {
-      title: `${PROJECT_NAME} - Oferty dla freelancerów | Znajdź zlecenia lub zatrudnij najlepszych`,
+      title: 'Praca Online i zlecenia dla freelancerów',
       description:
-        'Platforma łącząca firmy z freelancerami. Przeglądaj ogłoszenia, publikuj oferty i znajdź idealne zlecenie lub wykonawcę. Szybko, prosto, bez pośredników.',
+        'Zlecenia dla firm i freelancerów w jednym miejscu. Publikuj projekty, zbieraj oferty i współpracuj ze sprawdzonymi specjalistami.',
     },
     login: {
       title: 'Logowanie',

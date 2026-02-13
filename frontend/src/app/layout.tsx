@@ -80,7 +80,7 @@ export default async function RootLayout({
           <TooltipProvider delayDuration={200}>
             <AuthProvider>
               <div className="flex min-h-screen flex-col font-sans w-full">
-                <BetaBar initialLocale={locale} />
+                {/* <BetaBar initialLocale={locale} /> */}
                 <AppHeader />
                 <main className="flex-1 w-full pb-20 lg:pb-0">
                   <OnboardingRedirect>{children}</OnboardingRedirect>

@@ -11,6 +11,7 @@ import { AppHeader } from '@/components/AppHeader';
 import { AppFooter } from '@/components/AppFooter';
 import { OnboardingRedirect } from '@/components/OnboardingRedirect';
 import { GoogleAnalytics } from '@/components/GoogleAnalytics';
+import { Hotjar } from '@/components/Hotjar';
 import { getLocaleFromRequest } from '@/lib/i18n';
 import { getMetadataConfig } from '@/lib/metadata-config';
 
@@ -73,6 +74,7 @@ export default async function RootLayout({
 
       <body className={`${geistMono.variable} antialiased`}>
         <GoogleAnalytics />
+        <Hotjar />
         <ThemeScript />
         <ThemeProvider>
           <TooltipProvider delayDuration={200}>

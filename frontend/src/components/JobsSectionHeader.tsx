@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { JobsFeed } from '@/components/JobsFeed';
+import { FollowCategoryButton } from '@/components/FollowCategoryButton';
 import type { PopularSkill } from '@/lib/api';
 import { getPopularSkillsForCategory } from '@/lib/api';
 import { useTranslations } from '@/hooks/useTranslations';
@@ -108,17 +109,28 @@ export function JobsSectionHeader({
       className="flex-1 min-w-0 space-y-6 lg:min-h-[60vh]"
       aria-label={sectionTitle}
     >
-      <div className="flex flex-col gap-3">
-        {count !== null && (
-          <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-            {categoryName
-              ? t('jobs.headerSampleWithCategory', {
-                category: categoryName,
-                count,
-              })
-              : t('jobs.headerSampleWithoutCategory', { count })}
-          </h2>
-        )}
+      <div className="flex flex-col gap-5">
+        <div className="flex flex-row gap-1 items-center">
+
+          {count !== null && (
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground w-3/5">
+              {categoryName
+                ? t('jobs.headerSampleWithCategory', {
+                  category: categoryName,
+                  count,
+                })
+                : t('jobs.headerSampleWithoutCategory', { count })}
+            </h2>
+          )}
+          <div className="w-2/5 flex justify-end">
+            {categoryId && categoryName && (
+              <FollowCategoryButton
+                categoryId={categoryId}
+                title={categoryName}
+              />
+            )}
+          </div>
+        </div>
 
         {popularSkills.length > 0 && (
           <div className="flex flex-wrap gap-2">

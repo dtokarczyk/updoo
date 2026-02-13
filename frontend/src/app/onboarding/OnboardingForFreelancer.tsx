@@ -22,6 +22,7 @@ import {
   StepCompany,
   StepSkills,
   StepDefaultMessage,
+  StepCategories,
   StepProfileQuestion,
   StepProfileForm,
 } from './steps';
@@ -32,6 +33,7 @@ import {
   FREELANCER_STEP_COMPANY,
   FREELANCER_STEP_SKILLS,
   FREELANCER_STEP_DEFAULT_MESSAGE,
+  FREELANCER_STEP_CATEGORIES,
   FREELANCER_STEP_PROFILE_QUESTION,
   FREELANCER_STEP_PROFILE_FORM,
 } from './useOnboardingFreelancer';
@@ -51,10 +53,12 @@ export function OnboardingForFreelancer({
 }: OnboardingForFreelancerProps) {
   const { state, actions } = useOnboardingFreelancer(form, { t });
 
+  // Init only when user changes (e.g. first load). Do not re-run when parent re-renders
+  // with same user, so that clicking "Dalej" and advancing the step is not reset.
   useEffect(() => {
-    actions.init(initialUser, initialStep);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once when initialUser/initialStep are set
-  }, [initialUser?.id, initialStep]);
+    if (initialUser) actions.init(initialUser, initialStep);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run only when user id changes
+  }, [initialUser?.id]);
 
   if (state.user === null) return null;
 
@@ -110,6 +114,18 @@ export function OnboardingForFreelancer({
               <StepDefaultMessage
                 onSubmit={actions.handleDefaultMessageSubmit}
                 onBack={() => actions.goToStep(FREELANCER_STEP_SKILLS)}
+                loading={state.loading}
+                error={rootError}
+                t={t}
+              />
+            )}
+            {state.step === FREELANCER_STEP_CATEGORIES && (
+              <StepCategories
+                availableCategories={state.availableCategories}
+                categoriesLoading={state.categoriesLoading}
+                onSubmit={actions.handleCategoriesSubmit}
+                onSkip={actions.handleCategoriesSkip}
+                onBack={() => actions.goToStep(FREELANCER_STEP_DEFAULT_MESSAGE)}
                 loading={state.loading}
                 error={rootError}
                 t={t}

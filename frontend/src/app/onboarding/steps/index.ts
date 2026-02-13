@@ -4,5 +4,6 @@ export { StepAccountType } from './StepAccountType';
 export { StepCompany } from './StepCompany';
 export { StepSkills } from './StepSkills';
 export { StepDefaultMessage } from './StepDefaultMessage';
+export { StepCategories } from './StepCategories';
 export { StepProfileQuestion } from './StepProfileQuestion';
 export { StepProfileForm } from './StepProfileForm';

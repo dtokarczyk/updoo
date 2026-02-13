@@ -7,12 +7,14 @@ import {
   updateProfile,
   updateStoredUser,
   getSkills,
+  getCategories,
   getDraftJob,
   createContractorProfile,
   getLocations,
-  unlinkCompany,
   updateCompany,
+  followCategory,
   type Skill,
+  type Category,
   type AuthUser,
 } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
@@ -32,8 +34,9 @@ export const FREELANCER_STEP_PHONE = 1;
 export const FREELANCER_STEP_COMPANY = 2;
 export const FREELANCER_STEP_SKILLS = 3;
 export const FREELANCER_STEP_DEFAULT_MESSAGE = 4;
-export const FREELANCER_STEP_PROFILE_QUESTION = 5;
-export const FREELANCER_STEP_PROFILE_FORM = 6;
+export const FREELANCER_STEP_CATEGORIES = 5;
+export const FREELANCER_STEP_PROFILE_QUESTION = 6;
+export const FREELANCER_STEP_PROFILE_FORM = 7;
 
 export interface FreelancerOnboardingState {
   user: AuthUser | null;
@@ -44,6 +47,8 @@ export interface FreelancerOnboardingState {
   availableSkills: Skill[];
   showDraftModal: boolean;
   availableLocations: { id: string; name: string; slug: string }[];
+  availableCategories: Category[];
+  categoriesLoading: boolean;
 }
 
 type FreelancerOnboardingAction =
@@ -58,7 +63,8 @@ type FreelancerOnboardingAction =
   | {
       type: 'SET_AVAILABLE_LOCATIONS';
       payload: { id: string; name: string; slug: string }[];
-    };
+    }
+  | { type: 'SET_AVAILABLE_CATEGORIES'; payload: Category[] };
 
 function freelancerOnboardingReducer(
   state: FreelancerOnboardingState,
@@ -87,6 +93,8 @@ function freelancerOnboardingReducer(
       return { ...state, user: action.payload };
     case 'SET_AVAILABLE_LOCATIONS':
       return { ...state, availableLocations: action.payload };
+    case 'SET_AVAILABLE_CATEGORIES':
+      return { ...state, availableCategories: action.payload };
     default:
       return state;
   }
@@ -101,6 +109,8 @@ const initialState: FreelancerOnboardingState = {
   availableSkills: [],
   showDraftModal: false,
   availableLocations: [],
+  availableCategories: [],
+  categoriesLoading: false,
 };
 
 export interface UseOnboardingFreelancerOptions {
@@ -171,6 +181,26 @@ export function useOnboardingFreelancer(
       cancelled = true;
     };
   }, [state.step, state.availableLocations.length]);
+
+  useEffect(() => {
+    if (state.step !== FREELANCER_STEP_CATEGORIES) return;
+    if (state.availableCategories.length > 0) return;
+    let cancelled = false;
+    async function loadCategories() {
+      try {
+        const cats = await getCategories();
+        if (!cancelled)
+          dispatch({ type: 'SET_AVAILABLE_CATEGORIES', payload: cats });
+      } catch {
+        if (!cancelled)
+          dispatch({ type: 'SET_AVAILABLE_CATEGORIES', payload: [] });
+      }
+    }
+    void loadCategories();
+    return () => {
+      cancelled = true;
+    };
+  }, [state.step, state.availableCategories.length]);
 
   const init = useCallback((user: AuthUser, step: number) => {
     dispatch({ type: 'INIT', payload: { user, step } });
@@ -297,11 +327,9 @@ export function useOnboardingFreelancer(
         await updateCompany({
           companySize: result.data.companySize,
         });
-      } else if (!result.data.hasCompany) {
-        const { user: updated } = await unlinkCompany();
-        updateStoredUser(updated);
-        dispatch({ type: 'SET_USER', payload: updated });
       }
+      // When user chose "No company" we simply advance without an API call.
+      // The company can be unlinked later via the profile page if needed.
       dispatch({ type: 'SET_STEP', payload: FREELANCER_STEP_SKILLS });
     } catch (err) {
       setError('root', {
@@ -360,7 +388,7 @@ export function useOnboardingFreelancer(
       });
       updateStoredUser(updated);
       dispatch({ type: 'SET_LOADING', payload: false });
-      dispatch({ type: 'SET_STEP', payload: FREELANCER_STEP_PROFILE_QUESTION });
+      dispatch({ type: 'SET_STEP', payload: FREELANCER_STEP_CATEGORIES });
     } catch (err) {
       setError('root', {
         message:
@@ -370,6 +398,31 @@ export function useOnboardingFreelancer(
       dispatch({ type: 'SET_LOADING', payload: false });
     }
   }, [clearErrors, getValues, setError, setValidationErrors, t]);
+
+  const handleCategoriesSubmit = useCallback(
+    async (categoryIds: string[]) => {
+      clearErrors();
+      dispatch({ type: 'SET_LOADING', payload: true });
+      try {
+        for (const id of categoryIds) {
+          await followCategory(id);
+        }
+        dispatch({ type: 'SET_STEP', payload: FREELANCER_STEP_PROFILE_QUESTION });
+      } catch (err) {
+        setError('root', {
+          message:
+            err instanceof Error ? err.message : t('onboarding.saveFailed'),
+        });
+      } finally {
+        dispatch({ type: 'SET_LOADING', payload: false });
+      }
+    },
+    [clearErrors, setError, t],
+  );
+
+  const handleCategoriesSkip = useCallback(() => {
+    dispatch({ type: 'SET_STEP', payload: FREELANCER_STEP_PROFILE_QUESTION });
+  }, []);
 
   const handleProfileQuestionNo = useCallback(() => {
     const draft = getDraftJob();
@@ -439,6 +492,8 @@ export function useOnboardingFreelancer(
       handleCompanySubmit,
       handleSkillsSubmit,
       handleDefaultMessageSubmit,
+      handleCategoriesSubmit,
+      handleCategoriesSkip,
       handleProfileQuestionNo,
       handleProfileQuestionYes,
       handleProfileFormSubmit,

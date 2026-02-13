@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
@@ -358,5 +358,177 @@ export class NotificationsService {
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
+  }
+
+  // ──────────────────────────── Category follow (newsletter) ────────────────────────────
+
+  /** Subscribe user to category newsletter. Returns list of followed category IDs. */
+  async addCategoryFollow(userId: string, categoryId: string): Promise<string[]> {
+    const category = await this.prisma.category.findUnique({
+      where: { id: categoryId },
+    });
+    if (!category) throw new NotFoundException('Category not found');
+
+    await this.prisma.categoryFollow.upsert({
+      where: {
+        userId_categoryId: { userId, categoryId },
+      },
+      create: { userId, categoryId },
+      update: {},
+    });
+    return this.getFollowedCategoryIds(userId);
+  }
+
+  /** Unsubscribe user from category newsletter. */
+  async removeCategoryFollow(
+    userId: string,
+    categoryId: string,
+  ): Promise<string[]> {
+    await this.prisma.categoryFollow.deleteMany({
+      where: { userId, categoryId },
+    });
+    return this.getFollowedCategoryIds(userId);
+  }
+
+  /** Get list of category IDs the user is following. */
+  async getFollowedCategoryIds(userId: string): Promise<string[]> {
+    const follows = await this.prisma.categoryFollow.findMany({
+      where: { userId },
+      select: { categoryId: true },
+    });
+    return follows.map((f) => f.categoryId);
+  }
+
+  /** Runs daily at 06:00 UTC. Sends category newsletter: new jobs from followed categories (last 24h). */
+  @Cron('0 6 * * *')
+  async sendCategoryNewsletter(): Promise<void> {
+    this.logger.log('Running category newsletter cron…');
+
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    const follows = await this.prisma.categoryFollow.findMany({
+      where: {},
+      include: {
+        user: true,
+        category: {
+          include: { translations: true },
+        },
+      },
+    });
+
+    if (follows.length === 0) {
+      this.logger.log('Category newsletter: no subscribers.');
+      return;
+    }
+
+    // Group by user
+    const byUser = new Map<
+      string,
+      {
+        user: (typeof follows)[0]['user'];
+        categoryIds: string[];
+      }
+    >();
+    for (const f of follows) {
+      const entry = byUser.get(f.userId) ?? {
+        user: f.user,
+        categoryIds: [],
+      };
+      if (!entry.categoryIds.includes(f.categoryId)) {
+        entry.categoryIds.push(f.categoryId);
+      }
+      byUser.set(f.userId, entry);
+    }
+
+    let sent = 0;
+    for (const [, { user, categoryIds }] of byUser) {
+      const jobs = await this.prisma.job.findMany({
+        where: {
+          status: JobStatus.PUBLISHED,
+          categoryId: { in: categoryIds },
+          createdAt: { gte: since },
+        },
+        include: {
+          skills: { include: { skill: true } },
+          category: { include: { translations: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      if (jobs.length === 0) continue;
+
+      await this.sendCategoryNewsletterEmail(user, jobs);
+      sent++;
+    }
+
+    this.logger.log(
+      `Category newsletter sent to ${sent} user(s), ${byUser.size} total with follows.`,
+    );
+  }
+
+  private async sendCategoryNewsletterEmail(
+    user: { email: string; name: string | null; language: string },
+    jobs: {
+      id: string;
+      title: string;
+      skills: { skill: { name: string } }[];
+      category: { translations: { language: string; name: string }[] } | null;
+    }[],
+  ): Promise<void> {
+    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
+    const userName = user.name ?? '';
+    const isPolish = user.language === 'POLISH';
+
+    const subject = isPolish
+      ? `Newsletter kategorii – ${jobs.length} nowych ogłoszeń`
+      : `Category newsletter – ${jobs.length} new job(s)`;
+
+    const greeting = userName
+      ? isPolish
+        ? `Cześć ${userName}!`
+        : `Hi ${userName}!`
+      : isPolish
+        ? 'Cześć!'
+        : 'Hi!';
+
+    const jobsList = jobs
+      .map((job) => {
+        const url = `${frontendUrl}/job/${job.id}`;
+        const skills = job.skills.map((s) => s.skill.name).join(', ');
+        const categoryName =
+          job.category?.translations.find((t) => t.language === user.language)
+            ?.name ?? job.category?.translations[0]?.name ?? '';
+        return `
+          <li style="margin-bottom:12px;">
+            <a href="${url}" style="color:#2563eb;text-decoration:none;font-weight:bold;">${this.escapeHtml(job.title)}</a>
+            ${categoryName ? `<br/><span style="color:#666;">${isPolish ? 'Kategoria' : 'Category'}: ${this.escapeHtml(categoryName)}</span>` : ''}
+            ${skills ? `<br/><span style="color:#666;">${isPolish ? 'Umiejętności' : 'Skills'}: ${this.escapeHtml(skills)}</span>` : ''}
+          </li>
+        `;
+      })
+      .join('');
+
+    const html = `
+      <p>${greeting}</p>
+      <p>${isPolish ? 'Oto nowe ogłoszenia z obserwowanych kategorii z ostatnich 24 godzin:' : 'Here are new jobs from your followed categories from the last 24 hours:'}</p>
+      <ul style="padding-left:20px;">${jobsList}</ul>
+      <p style="color:#888;font-size:12px;">${isPolish ? 'Możesz zarządzać obserwowanymi kategoriami na stronie danej kategorii.' : 'You can manage followed categories on each category page.'}</p>
+      <p>Hoplo</p>
+    `;
+
+    try {
+      if (this.emailService.isConfigured()) {
+        await this.emailService.sendHtml(user.email, subject, html);
+      } else {
+        this.logger.warn(
+          `Email not configured – skipping category newsletter to ${user.email}`,
+        );
+      }
+    } catch (error) {
+      this.logger.error(
+        `Failed to send category newsletter to ${user.email}`,
+        error,
+      );
+    }
   }
 }

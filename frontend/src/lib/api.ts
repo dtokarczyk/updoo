@@ -542,11 +542,15 @@ export function clearDraftJob(): void {
   localStorage.removeItem(DRAFT_JOB_KEY);
 }
 
-/** True if user has not completed basic onboarding (name, surname, account type). Rest is validated inside onboarding flow. */
+/** True if user has not completed onboarding. For freelancers, requires name, surname, account type and default message so that choosing "no company" does not end the flow and all steps (skills, default message, categories, profile) are shown. */
 export function needsOnboarding(user: AuthUser | null): boolean {
   if (user == null) return false;
   if (user.name == null || user.surname == null || user.accountType == null)
     return true;
+  if (user.accountType === 'FREELANCER') {
+    const hasDefaultMessage = (user.defaultMessage?.trim() ?? '').length > 0;
+    if (!hasDefaultMessage) return true;
+  }
   return false;
 }
 
@@ -1574,6 +1578,62 @@ export async function updateNotificationPreference(
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
     throw new Error(msg ?? 'Failed to update notification preference');
+  }
+  return res.json();
+}
+
+// ─── Category follow (newsletter) ────────────────────────────────────────
+
+/** Get list of category IDs the user is following (for daily newsletter). */
+export async function getFollowedCategories(): Promise<string[]> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const headers: HeadersInit = { Authorization: `Bearer ${token}` };
+  const res = await fetch(`${API_URL}/notifications/category-follow`, {
+    headers,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to fetch followed categories');
+  }
+  return res.json();
+}
+
+/** Subscribe to category newsletter. Returns updated list of followed category IDs. */
+export async function followCategory(categoryId: string): Promise<string[]> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  };
+  const res = await fetch(`${API_URL}/notifications/category-follow`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ categoryId }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to follow category');
+  }
+  return res.json();
+}
+
+/** Unsubscribe from category newsletter. Returns updated list of followed category IDs. */
+export async function unfollowCategory(categoryId: string): Promise<string[]> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const headers: HeadersInit = { Authorization: `Bearer ${token}` };
+  const res = await fetch(
+    `${API_URL}/notifications/category-follow/${encodeURIComponent(categoryId)}`,
+    { method: 'DELETE', headers },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to unfollow category');
   }
   return res.json();
 }

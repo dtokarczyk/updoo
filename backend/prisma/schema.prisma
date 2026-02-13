@@ -122,6 +122,7 @@ model User {
   profiles      Profile[]
   notificationPreferences NotificationPreference[]
   notificationLogs        NotificationLog[]
+  categoryFollows         CategoryFollow[]
 
   @@index([companyId])
 }
@@ -139,12 +140,30 @@ model PasswordResetToken {
 }
 
 model Category {
-  id           String               @id @default(cuid())
-  slug         String               @unique
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
-  jobs         Job[]
-  translations CategoryTranslation[]
+  id             String         @id @default(cuid())
+  slug           String         @unique
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  jobs           Job[]
+  translations   CategoryTranslation[]
+  followedByUsers CategoryFollow[]
+
+  @@index([slug])
+}
+
+/// User follows a category to receive daily newsletter with new job listings.
+model CategoryFollow {
+  id         String   @id @default(cuid())
+  userId     String
+  categoryId String
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, categoryId])
+  @@index([userId])
+  @@index([categoryId])
+  @@map("CategoryWatch")
 }
 
 model CategoryTranslation {

@@ -26,7 +26,7 @@ import {
   FREELANCER_STEP_COMPANY,
   FREELANCER_STEP_SKILLS,
   FREELANCER_STEP_DEFAULT_MESSAGE,
-  FREELANCER_STEP_PROFILE_QUESTION,
+  FREELANCER_STEP_CATEGORIES,
 } from './useOnboardingFreelancer';
 
 function getClientInitialStep(stored: AuthUser): number {
@@ -42,16 +42,20 @@ function getFreelancerInitialStep(stored: AuthUser): number {
   const hasName =
     (stored.name ?? '').trim() !== '' && (stored.surname ?? '').trim() !== '';
   const hasPhone = (stored.phone ?? '').trim() !== '';
-  const companyDone = stored.nipCompany != null;
   const hasSkills = (stored.skills?.length ?? 0) > 0;
   const hasDefaultMessage =
     (stored.defaultMessage?.trim() ?? '').length > 0;
+  // Company step done: user has a company (NIP/companyId) OR has already passed it (has skills)
+  const companyDone =
+    stored.companyId != null ||
+    (stored.nipCompany != null && (stored.nipCompany ?? '').trim() !== '') ||
+    hasSkills;
   if (!hasName) return FREELANCER_STEP_NAME;
   if (!hasPhone) return FREELANCER_STEP_PHONE;
   if (!companyDone) return FREELANCER_STEP_COMPANY;
   if (!hasSkills) return FREELANCER_STEP_SKILLS;
   if (!hasDefaultMessage) return FREELANCER_STEP_DEFAULT_MESSAGE;
-  return FREELANCER_STEP_PROFILE_QUESTION;
+  return FREELANCER_STEP_CATEGORIES;
 }
 
 function OnboardingContent() {
@@ -72,6 +76,9 @@ function OnboardingContent() {
     mode: 'onSubmit',
   });
 
+  // Run init exactly once. Using [] deps so that router reference changes
+  // (which can happen in Next.js App Router) don't re-trigger this effect
+  // and accidentally redirect away from the onboarding flow.
   useEffect(() => {
     const stored = getStoredUser();
     if (stored === null) {
@@ -121,7 +128,7 @@ function OnboardingContent() {
       profileAboutUs: '',
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router, force]);
+  }, []);
 
   async function handleAccountTypeSubmit() {
     setAccountTypeError('');

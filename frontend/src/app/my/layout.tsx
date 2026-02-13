@@ -29,7 +29,6 @@ export default async function MyLayout({
   return (
     <SettingsLayout
       sidebar={<Sidebar variant="sidebar" />}
-      mobileList={<Sidebar variant="list" />}
     >
       {children}
     </SettingsLayout>

@@ -518,7 +518,16 @@ export class JobsService implements OnModuleInit {
         applications: {
           include: {
             freelancer: {
-              select: { id: true, email: true, name: true, surname: true },
+              select: {
+                id: true,
+                email: true,
+                name: true,
+                surname: true,
+                avatarUrl: true,
+              },
+              include: {
+                profiles: { take: 1, select: { slug: true } },
+              },
             },
           },
         },
@@ -538,13 +547,19 @@ export class JobsService implements OnModuleInit {
     // Author/admin: full application data; others: only freelancer initials
     const applicationsForResponse = job.applications.map((app) => {
       if (isAuthorOrAdmin) {
+        const freelancer = app.freelancer as typeof app.freelancer & {
+          avatarUrl?: string | null;
+          profiles?: { slug: string }[];
+        };
         return {
           id: app.id,
           freelancer: {
-            id: app.freelancer.id,
-            email: app.freelancer.email,
-            name: app.freelancer.name,
-            surname: app.freelancer.surname,
+            id: freelancer.id,
+            email: freelancer.email,
+            name: freelancer.name,
+            surname: freelancer.surname,
+            avatarUrl: freelancer.avatarUrl ?? undefined,
+            profileSlug: freelancer.profiles?.[0]?.slug ?? undefined,
           },
           message: app.message ?? undefined,
           createdAt: app.createdAt,

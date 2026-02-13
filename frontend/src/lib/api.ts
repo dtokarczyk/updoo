@@ -681,6 +681,10 @@ export interface JobApplicationFreelancer {
   email: string;
   name: string | null;
   surname: string | null;
+  /** Avatar image URL (optional, from freelancer profile). */
+  avatarUrl?: string | null;
+  /** Public profile slug for link to /company/[slug] (when freelancer has a profile). */
+  profileSlug?: string | null;
 }
 
 /** Application as seen by job author: full data. */

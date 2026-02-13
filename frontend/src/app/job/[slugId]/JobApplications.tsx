@@ -1,11 +1,17 @@
 'use client';
 
+import Link from 'next/link';
 import { Send, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl, enUS } from 'date-fns/locale';
 import { isApplicationFull, type Job, type JobApplication } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  Card,
+  CardContent,
+} from '@/components/ui/card';
 import type { getStoredUser } from '@/lib/api';
 
 function formatApplicationDateTime(iso: string, locale: 'pl' | 'en'): string {
@@ -29,6 +35,21 @@ function applicationDisplayName(app: JobApplication): string {
     : 'freelancerInitials' in app
       ? (app.freelancerInitials ?? '?')
       : '?';
+}
+
+function applicationInitials(app: JobApplication): string {
+  if (isApplicationFull(app)) {
+    const { name, surname } = app.freelancer;
+    const n = (name?.trim() ?? '').charAt(0).toUpperCase();
+    const s = (surname?.trim() ?? '').charAt(0).toUpperCase();
+    if (n && s) return `${n}${s}`;
+    if (n) return n;
+    if (s) return s;
+    return (app.freelancer.email ?? '?').charAt(0).toUpperCase();
+  }
+  return 'freelancerInitials' in app && app.freelancerInitials
+    ? String(app.freelancerInitials).slice(0, 2).toUpperCase()
+    : '?';
 }
 
 export interface JobApplicationsProps {
@@ -77,28 +98,55 @@ export function JobApplications({
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
           {job.expectedOffers != null
             ? t('jobs.applicationsCountLimit', {
-                submitted: applications.length,
-                expected: job.expectedOffers,
-              })
+              submitted: applications.length,
+              expected: job.expectedOffers,
+            })
             : t('jobs.applicationsCount', { count: applications.length })}
         </p>
-        <ul className="space-y-2 mb-6">
+
+        <ul className="space-y-3 mb-6 list-none p-0">
           {applications.length === 0 ? (
             <p className="text-sm text-muted-foreground py-2">
               {t('jobs.noApplicationsYetBeFirst')}
             </p>
           ) : (
             applications.map((app) => (
-              <li
-                key={app.id}
-                className="flex items-center justify-between gap-3 py-2 border-b border-border last:border-0 text-sm"
-              >
-                <span className="font-medium text-foreground">
-                  {applicationDisplayName(app)}
-                </span>
-                <span className="text-muted-foreground tabular-nums">
-                  {formatApplicationDateTime(app.createdAt, locale)}
-                </span>
+              <li key={app.id}>
+                <Card className="overflow-hidden">
+                  <CardContent className="flex flex-wrap items-center gap-3 py-4">
+                    <Avatar className="h-10 w-10 shrink-0">
+                      {isApplicationFull(app) && app.freelancer.avatarUrl ? (
+                        <AvatarImage
+                          src={app.freelancer.avatarUrl}
+                          alt=""
+                        />
+                      ) : null}
+                      <AvatarFallback className="text-sm font-medium text-muted-foreground">
+                        {applicationInitials(app)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <span className="font-medium text-foreground block">
+                        {applicationDisplayName(app)}
+                      </span>
+                      <span className="text-muted-foreground text-sm">
+                        {formatApplicationDateTime(app.createdAt, locale)}
+                      </span>
+                    </div>
+                    {isApplicationFull(app) &&
+                      app.freelancer.profileSlug ? (
+                      <Button variant="outline" size="sm" asChild>
+                        <Link
+                          href={`/company/${app.freelancer.profileSlug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {t('jobs.viewProfile')}
+                        </Link>
+                      </Button>
+                    ) : null}
+                  </CardContent>
+                </Card>
               </li>
             ))
           )}

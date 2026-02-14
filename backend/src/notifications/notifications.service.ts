@@ -7,6 +7,7 @@ import {
   NotificationFrequency,
   JobStatus,
 } from '@prisma/client';
+import { FAKE_PASSWORD } from '../mailer/constants';
 import { DEFAULT_ENABLED, DEFAULT_FREQUENCY } from './constants';
 
 @Injectable()
@@ -17,6 +18,18 @@ export class NotificationsService {
     private readonly prisma: PrismaService,
     private readonly emailService: EmailService,
   ) {}
+
+  /**
+   * Returns true if the job should be excluded from notification emails (newsletter, digest, instant).
+   * Central place for all rules – add new conditions here.
+   */
+  private shouldExcludeJobFromNotificationEmails(job: {
+    author?: { password: string | null } | null;
+  }): boolean {
+    // Exclude jobs from auto-generated (fake) accounts
+    if (job.author?.password === FAKE_PASSWORD) return true;
+    return false;
+  }
 
   // ──────────────────────────── Preferences CRUD ────────────────────────────
 
@@ -77,6 +90,7 @@ export class NotificationsService {
     const job = await this.prisma.job.findUnique({
       where: { id: jobId },
       include: {
+        author: { select: { password: true } },
         skills: { include: { skill: true } },
         category: {
           include: { translations: true },
@@ -85,6 +99,7 @@ export class NotificationsService {
     });
     // Only process published jobs – never send instant notifications for drafts or when creating
     if (!job || job.status !== JobStatus.PUBLISHED) return;
+    if (this.shouldExcludeJobFromNotificationEmails(job)) return;
 
     const jobSkillIds = job.skills.map((js) => js.skillId);
     if (jobSkillIds.length === 0) return; // no skills – no matching
@@ -249,6 +264,7 @@ export class NotificationsService {
         user: true,
         job: {
           include: {
+            author: { select: { password: true } },
             skills: { include: { skill: true } },
             category: { include: { translations: true } },
           },
@@ -282,6 +298,10 @@ export class NotificationsService {
       if (log.job.status !== JobStatus.PUBLISHED) {
         skipLogIds.push(log.id);
         continue; // only send digest for published jobs
+      }
+      if (this.shouldExcludeJobFromNotificationEmails(log.job)) {
+        skipLogIds.push(log.id);
+        continue;
       }
       const entry = byUser.get(log.userId) ?? {
         user: log.user,
@@ -535,19 +555,23 @@ export class NotificationsService {
 
     let sent = 0;
     for (const [, { user, categoryIds }] of byUser) {
-      const jobs = await this.prisma.job.findMany({
+      const allJobs = await this.prisma.job.findMany({
         where: {
           status: JobStatus.PUBLISHED,
           categoryId: { in: categoryIds },
           createdAt: { gte: since },
         },
         include: {
+          author: { select: { password: true } },
           skills: { include: { skill: true } },
           category: { include: { translations: true } },
         },
         orderBy: { createdAt: 'desc' },
       });
 
+      const jobs = allJobs.filter(
+        (j) => !this.shouldExcludeJobFromNotificationEmails(j),
+      );
       if (jobs.length === 0) continue;
 
       await this.sendCategoryNewsletterEmail(user, jobs);

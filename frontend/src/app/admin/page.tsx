@@ -2,7 +2,14 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { getStoredUser, generateAiJob, sendTestEmail, type AuthUser } from '@/lib/api';
+import {
+  getStoredUser,
+  generateAiJob,
+  sendTestEmail,
+  getAdminStats,
+  type AuthUser,
+  type AdminStats,
+} from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -18,6 +25,7 @@ export default function AdminPage() {
   useTranslations();
   const [, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<AdminStats | null>(null);
   const [generating, setGenerating] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -36,6 +44,13 @@ export default function AdminPage() {
     setUser(storedUser);
     setLoading(false);
   }, [router]);
+
+  useEffect(() => {
+    if (loading) return;
+    getAdminStats()
+      .then(setStats)
+      .catch(() => setStats(null));
+  }, [loading]);
 
   const handleGenerateJob = async () => {
     setGenerating(true);
@@ -87,7 +102,28 @@ export default function AdminPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-2xl mx-auto space-y-4">
+        {stats !== null && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Statystyki</CardTitle>
+              <CardDescription>Podsumowanie z ostatnich 7 dni</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <dl className="grid gap-2">
+                <div className="flex justify-between items-center py-2 border-b">
+                  <dt className="text-sm text-muted-foreground">
+                    Zarejestrowani użytkownicy (ostatnie 7 dni)
+                  </dt>
+                  <dd className="text-lg font-semibold tabular-nums">
+                    {stats.registeredUsersLast7Days}
+                  </dd>
+                </div>
+              </dl>
+            </CardContent>
+          </Card>
+        )}
+
         <Card>
           <CardHeader>
             <CardTitle>Panel administracyjny</CardTitle>

@@ -1554,6 +1554,29 @@ export async function generateAiJob(): Promise<{
   return res.json();
 }
 
+/** Admin dashboard stats (admin only). */
+export interface AdminStats {
+  registeredUsersLast7Days: number;
+}
+
+/** Fetch admin dashboard stats (admin only). */
+export async function getAdminStats(): Promise<AdminStats> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const res = await fetch(`${API_URL}/admin/stats`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to fetch admin stats');
+  }
+  return res.json();
+}
+
 /** Send a test email to the current admin's email (admin only). */
 export async function sendTestEmail(): Promise<{
   ok: boolean;

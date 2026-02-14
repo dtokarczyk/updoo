@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { PrismaClient, BillingType, HoursPerWeek, ExperienceLevel, ProjectType, JobStatus, JobLanguage, AccountType } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
+import { FAKE_PASSWORD } from 'src/mailer/constants';
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -127,7 +128,7 @@ async function main() {
         prisma.user.create({
           data: {
             email: u.email,
-            password: 'FAKE',
+            password: FAKE_PASSWORD,
             name: u.name,
             surname: u.surname,
             accountType: AccountType.CLIENT,

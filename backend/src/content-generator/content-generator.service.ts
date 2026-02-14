@@ -16,6 +16,7 @@ import type {
   GeneratedJobFormData,
   SupportedLanguage,
 } from './content-generator.types';
+import { FAKE_PASSWORD } from 'src/mailer/constants';
 
 export type {
   GeneratedJobFormData,
@@ -401,7 +402,7 @@ export class ContentGeneratorService {
     const newUser = await this.prisma.user.create({
       data: {
         email: safeUser.email.toLowerCase(),
-        password: 'FAKE',
+        password: FAKE_PASSWORD,
         name: safeUser.name,
         surname: safeUser.surname,
         accountType: AccountType.CLIENT,

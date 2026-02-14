@@ -1,8 +1,5 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import {
-  BIR11_REPORT_LEGAL,
-  BIR11_REPORT_NATURAL_CEIDG,
-} from './regon.constants';
+import { GUS_REPORT_NAMES } from './regon.constants';
 import type { RegonCompanyData, SearchResultRow } from './regon.types';
 
 export type { RegonCompanyData, SearchResultRow } from './regon.types';
@@ -14,7 +11,7 @@ const GUS_ERROR_CODE_NO_DATA = '4';
 export class RegonService {
   /**
    * Fetch company data by NIP, REGON, or KRS using bir1 library (GUS REGON client).
-   * Uses report BIR11OsFizycznaDzialalnoscCeidg for natural persons, BIR11OsPrawna for legal.
+   * Fetches all GUS reports (GUS_REPORT_NAMES) for the main REGON; reports that don't apply are skipped.
    * @throws BadRequestException when GUS returns no data for the given identifier (messages.companyNotFoundInGus)
    */
   async getCompanyDataByNipRegonOrKrs(
@@ -64,26 +61,27 @@ export class RegonService {
         throw new BadRequestException('messages.companyNotFoundInGus');
       }
 
-      const typ = searchResult[0].Typ;
       const mainRegon = searchResult[0].Regon;
-      const reportName =
-        typ === 'P' ? BIR11_REPORT_LEGAL : BIR11_REPORT_NATURAL_CEIDG;
-
-      const reportData = await bir.report({
-        regon: mainRegon,
-        report: reportName,
-      });
-
-      const reportObj: Record<string, unknown> | undefined =
-        reportData != null && typeof reportData === 'object'
-          ? Array.isArray(reportData)
-            ? (reportData[0] as Record<string, unknown>)
-            : (reportData as Record<string, unknown>)
-          : undefined;
 
       const reports: Record<string, Record<string, unknown>> = {};
-      if (reportObj) {
-        reports[reportName] = reportObj;
+      for (const reportName of GUS_REPORT_NAMES) {
+        try {
+          const reportData = await bir.report({
+            regon: mainRegon,
+            report: reportName,
+          });
+          const reportObj: Record<string, unknown> | undefined =
+            reportData != null && typeof reportData === 'object'
+              ? Array.isArray(reportData)
+                ? (reportData[0] as Record<string, unknown>)
+                : (reportData as Record<string, unknown>)
+              : undefined;
+          if (reportObj) {
+            reports[reportName] = reportObj;
+          }
+        } catch {
+          // Report not applicable for this entity (e.g. wrong type) or no data – skip
+        }
       }
 
       return { searchResult, reports };

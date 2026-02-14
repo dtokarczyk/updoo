@@ -1578,6 +1578,7 @@ export async function improveJobDescription(text: string): Promise<string> {
 // ─── Notification preferences ────────────────────────────────────────
 
 export type NotificationType =
+  | 'NEW_JOBS_IN_FOLLOWED_CATEGORIES'
   | 'NEW_JOB_MATCHING_SKILLS'
   | 'NEW_APPLICATION_TO_MY_JOB';
 export type NotificationFrequency = 'INSTANT' | 'DAILY_DIGEST';

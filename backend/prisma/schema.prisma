@@ -353,6 +353,9 @@ model MailerLog {
 // ─── Notification system ─────────────────────────────────────────────
 
 enum NotificationType {
+  /** New jobs in categories the user follows (category newsletter). */
+  NEW_JOBS_IN_FOLLOWED_CATEGORIES
+  /** New jobs matching the user's skills. */
   NEW_JOB_MATCHING_SKILLS
   /** Notify job author when someone applies to their published job. */
   NEW_APPLICATION_TO_MY_JOB

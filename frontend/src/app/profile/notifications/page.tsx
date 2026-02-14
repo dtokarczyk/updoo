@@ -146,6 +146,10 @@ function NotificationItem({
 }) {
   // Map notification type to translation keys
   const typeLabels: Record<string, { title: string; description: string }> = {
+    NEW_JOBS_IN_FOLLOWED_CATEGORIES: {
+      title: t('notifications.newJobsInFollowedCategories'),
+      description: t('notifications.newJobsInFollowedCategoriesDesc'),
+    },
     NEW_JOB_MATCHING_SKILLS: {
       title: t('notifications.newJobMatchingSkills'),
       description: t('notifications.newJobMatchingSkillsDesc'),
@@ -190,14 +194,22 @@ function NotificationItem({
             <FrequencyOption
               value="INSTANT"
               label={t('notifications.instant')}
-              description={t('notifications.instantDesc')}
+              description={
+                pref.type === 'NEW_APPLICATION_TO_MY_JOB'
+                  ? t('notifications.instantDescApplications')
+                  : t('notifications.instantDesc')
+              }
               selected={pref.frequency === 'INSTANT'}
               onSelect={() => onFrequencyChange(pref, 'INSTANT')}
             />
             <FrequencyOption
               value="DAILY_DIGEST"
               label={t('notifications.dailyDigest')}
-              description={t('notifications.dailyDigestDesc')}
+              description={
+                pref.type === 'NEW_APPLICATION_TO_MY_JOB'
+                  ? t('notifications.dailyDigestDescApplications')
+                  : t('notifications.dailyDigestDesc')
+              }
               selected={pref.frequency === 'DAILY_DIGEST'}
               onSelect={() => onFrequencyChange(pref, 'DAILY_DIGEST')}
             />

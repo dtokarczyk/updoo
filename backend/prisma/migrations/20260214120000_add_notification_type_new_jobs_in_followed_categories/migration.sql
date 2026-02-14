@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "NotificationType" ADD VALUE 'NEW_JOBS_IN_FOLLOWED_CATEGORIES';

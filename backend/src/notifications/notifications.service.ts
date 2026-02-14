@@ -17,7 +17,7 @@ export class NotificationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly emailService: EmailService,
-  ) {}
+  ) { }
 
   /**
    * Returns true if the job should be excluded from notification emails (newsletter, digest, instant).
@@ -553,8 +553,26 @@ export class NotificationsService {
       byUser.set(f.userId, entry);
     }
 
+    // Only send to users who have category newsletter enabled
+    const userIds = [...byUser.keys()];
+    const categoryPrefs = await this.prisma.notificationPreference.findMany({
+      where: {
+        userId: { in: userIds },
+        type: NotificationType.NEW_JOBS_IN_FOLLOWED_CATEGORIES,
+      },
+      select: { userId: true, enabled: true },
+    });
+    const disabledUserIds = new Set(
+      categoryPrefs.filter((p) => !p.enabled).map((p) => p.userId),
+    );
+    // Default for missing preference is enabled
+    const usersToEmail = userIds.filter((id) => !disabledUserIds.has(id));
+
     let sent = 0;
-    for (const [, { user, categoryIds }] of byUser) {
+    for (const userId of usersToEmail) {
+      const entry = byUser.get(userId);
+      if (!entry) continue;
+      const { user, categoryIds } = entry;
       const allJobs = await this.prisma.job.findMany({
         where: {
           status: JobStatus.PUBLISHED,
@@ -579,7 +597,7 @@ export class NotificationsService {
     }
 
     this.logger.log(
-      `Category newsletter sent to ${sent} user(s), ${byUser.size} total with follows.`,
+      `Category newsletter sent to ${sent} user(s), ${usersToEmail.length}/${byUser.size} with follows and preference enabled.`,
     );
   }
 

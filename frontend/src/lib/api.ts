@@ -1554,6 +1554,27 @@ export async function generateAiJob(): Promise<{
   return res.json();
 }
 
+/** Send a test email to the current admin's email (admin only). */
+export async function sendTestEmail(): Promise<{
+  ok: boolean;
+  messageId?: string;
+}> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const res = await fetch(`${API_URL}/admin/send-test-email`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to send test email');
+  }
+  return res.json();
+}
+
 /** Improve job description with AI (grammar, clarity, structure). */
 export async function improveJobDescription(text: string): Promise<string> {
   const token = getToken();

@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { getStoredUser, generateAiJob, type AuthUser } from '@/lib/api';
+import { getStoredUser, generateAiJob, sendTestEmail, type AuthUser } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -19,6 +19,7 @@ export default function AdminPage() {
   const [, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,6 +51,27 @@ export default function AdminPage() {
       );
     } finally {
       setGenerating(false);
+    }
+  };
+
+  const handleSendTestEmail = async () => {
+    setSendingEmail(true);
+    setMessage(null);
+    setError(null);
+
+    try {
+      const result = await sendTestEmail();
+      setMessage(
+        result.ok
+          ? `E-mail testowy został wysłany na Twój adres.${result.messageId ? ` (ID: ${result.messageId})` : ''}`
+          : 'Wysłano żądanie.',
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Nie udało się wysłać e-maila testowego',
+      );
+    } finally {
+      setSendingEmail(false);
     }
   };
 
@@ -86,6 +108,21 @@ export default function AdminPage() {
                 className="w-full"
               >
                 {generating ? 'Generowanie...' : 'Wygeneruj ofertę z AI'}
+              </Button>
+            </div>
+
+            <div className="border-t pt-4 mt-4">
+              <p className="text-sm text-muted-foreground mb-4">
+                Wyślij e-mail testowy na swój adres, aby sprawdzić konfigurację
+                poczty (MailerSend).
+              </p>
+              <Button
+                onClick={handleSendTestEmail}
+                disabled={sendingEmail}
+                variant="outline"
+                className="w-full"
+              >
+                {sendingEmail ? 'Wysyłanie...' : 'Wyślij e-mail testowy'}
               </Button>
             </div>
 

@@ -1,6 +1,7 @@
 import {
   Injectable,
   Logger,
+  BadRequestException,
   InternalServerErrorException,
 } from '@nestjs/common';
 import { MailerSend, Recipient, EmailParams, Sender } from 'mailersend';
@@ -124,6 +125,14 @@ export class MailerService {
         status: MailerLogStatus.FAILED,
         errorMessage: errMessage,
       });
+      const apiMessage = getMailerSendApiMessage(error);
+      if (apiMessage) {
+        const status = (error as { statusCode?: number }).statusCode ?? (error as { response?: { status?: number } }).response?.status;
+        if (status === 422) {
+          throw new BadRequestException(apiMessage);
+        }
+        throw new InternalServerErrorException(apiMessage);
+      }
       throw new InternalServerErrorException(
         'Failed to send email via MailerSend.',
       );
@@ -226,14 +235,30 @@ function escapeHtml(s: string): string {
     .replace(/"/g, '&quot;');
 }
 
+/** Extracts MailerSend API error message for returning to the client. */
+function getMailerSendApiMessage(error: unknown): string | null {
+  const err = error as {
+    body?: { message?: string };
+    response?: { body?: { message?: string } };
+  };
+  const msg =
+    err?.body?.message ??
+    (typeof err?.response?.body === 'object' && err?.response?.body !== null && 'message' in err.response.body
+      ? (err.response.body as { message?: string }).message
+      : null);
+  return typeof msg === 'string' && msg.length > 0 ? msg : null;
+}
+
 function buildErrorMessage(error: unknown): string {
   const base = error instanceof Error ? error.message : String(error);
   const stack = error instanceof Error && error.stack ? `\n${error.stack}` : '';
   const errAny = error as {
     response?: { status?: number; body?: unknown; text?: string };
+    body?: unknown;
+    statusCode?: number;
   };
-  const status = errAny?.response?.status;
-  const body = errAny?.response?.body ?? errAny?.response?.text;
+  const status = errAny?.response?.status ?? errAny?.statusCode;
+  const body = errAny?.response?.body ?? errAny?.body ?? errAny?.response?.text;
   const extra =
     status !== undefined || body !== undefined
       ? `\nResponse: status=${status}, body=${typeof body === 'string' ? body : JSON.stringify(body)}`

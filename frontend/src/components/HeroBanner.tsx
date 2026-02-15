@@ -48,30 +48,54 @@ export function HeroBanner({
         playsInline
         aria-hidden
       />
-      <div className="relative bg-black/40 flex flex-col justify-between p-5 pb-5 md:min-h-[70vh]">
-        <div>
-          <h1 className="text-3xl lg:text-4xl font-black pr-7 pl-4 pt-4 text-white text-left mb-4">
+      <div className="relative bg-background/80 lg:bg-background/70 flex flex-col justify-between p-5 pb-5 md:min-h-[70vh] ">
+        <div className="mb-4">
+          <h1 className="text-3xl lg:text-4xl font-black pr-7 pl-4 pt-4 text-white text-left mb-1">
             {t('homepage.heroText')}
           </h1>
+          <p className="text-lg lg:text-xl text-white/90 font-medium pr-7 pl-4 mb-4">
+            {t('homepage.heroSubtitle')}
+          </p>
 
-          <ul className="flex flex-col gap-2 pr-7 pl-4 mb-4 text-white/90 text-base lg:text-lg font-medium list-none">
-            <li className="flex items-center gap-3">
+          <ul className="flex flex-col gap-4 pr-7 pl-4 mb-4 text-white/90 list-none">
+            <li className="flex items-start gap-3">
               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20 text-sm font-bold">
                 1
               </span>
-              {t('homepage.heroBenefit1')}
+              <div>
+                <p className="text-lg lg:text-xl font-medium text-white">
+                  {t('homepage.heroBenefit1')}
+                </p>
+                <p className="text-base text-white/80 leading-relaxed mt-0.5">
+                  {t('homepage.heroBenefit1Desc')}
+                </p>
+              </div>
             </li>
-            <li className="flex items-center gap-3">
+            <li className="flex items-start gap-3">
               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20 text-sm font-bold">
                 2
               </span>
-              {t('homepage.heroBenefit2')}
+              <div>
+                <p className="text-lg lg:text-xl font-medium text-white">
+                  {t('homepage.heroBenefit2')}
+                </p>
+                <p className="text-base text-white/80 leading-relaxed mt-0.5">
+                  {t('homepage.heroBenefit2Desc')}
+                </p>
+              </div>
             </li>
-            <li className="flex items-center gap-3">
+            <li className="flex items-start gap-3">
               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20 text-sm font-bold">
                 3
               </span>
-              {t('homepage.heroBenefit3')}
+              <div>
+                <p className="text-lg lg:text-xl font-medium text-white">
+                  {t('homepage.heroBenefit3')}
+                </p>
+                <p className="text-base text-white/80 leading-relaxed mt-0.5">
+                  {t('homepage.heroBenefit3Desc')}
+                </p>
+              </div>
             </li>
           </ul>
         </div>
@@ -81,22 +105,20 @@ export function HeroBanner({
             <button
               type="button"
               onClick={() => setHeroTab('hiring')}
-              className={`w-full rounded-t-lg cursor-pointer text-lg font-bold leading-none transition-colors p-3 ${
-                heroTab === 'hiring'
-                  ? 'bg-white text-black'
-                  : 'bg-white/10 backdrop-blur-md border-t border-x border-white/20 text-white/90 hover:bg-white/15'
-              }`}
+              className={`w-full rounded-t-lg cursor-pointer text-lg font-bold leading-none transition-colors p-3 ${heroTab === 'hiring'
+                ? 'bg-white text-black'
+                : 'bg-white/10 backdrop-blur-md border-t border-x border-white/20 text-white/90 hover:bg-white/15'
+                }`}
             >
               {t('homepage.forHiring')}
             </button>
             <button
               type="button"
               onClick={() => setHeroTab('finding')}
-              className={`w-full rounded-t-lg cursor-pointer text-lg font-bold leading-none transition-colors p-3 ${
-                heroTab === 'finding'
-                  ? 'bg-white text-black'
-                  : 'bg-white/10 backdrop-blur-md border-t border-x border-white/20 text-white/90 hover:bg-white/15'
-              }`}
+              className={`w-full rounded-t-lg cursor-pointer text-lg font-bold leading-none transition-colors p-3 ${heroTab === 'finding'
+                ? 'bg-white text-black'
+                : 'bg-white/10 backdrop-blur-md border-t border-x border-white/20 text-white/90 hover:bg-white/15'
+                }`}
             >
               {t('homepage.forFindingJobs')}
             </button>
@@ -113,23 +135,23 @@ export function HeroBanner({
               const labels =
                 heroTab === 'hiring'
                   ? [
-                      t('homepage.heroFeature1'),
-                      t('homepage.heroFeature2'),
-                      t('homepage.heroFeature3'),
-                    ]
+                    t('homepage.heroFeature1'),
+                    t('homepage.heroFeature2'),
+                    t('homepage.heroFeature3'),
+                  ]
                   : [
-                      t('homepage.heroFeature1FindingJobs'),
-                      t('homepage.heroFeature2FindingJobs'),
-                      t('homepage.heroFeature3FindingJobs'),
-                    ];
+                    t('homepage.heroFeature1FindingJobs'),
+                    t('homepage.heroFeature2FindingJobs'),
+                    t('homepage.heroFeature3FindingJobs'),
+                  ];
               return (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                <div className="flex flex-col gap-5 mb-4">
                   {icons.map((Icon, i) => (
-                    <div key={i} className="flex items-center gap-3">
+                    <div key={i} className="flex items-center gap-3 text-left">
                       <div className="flex shrink-0 items-center justify-center w-11 h-11 rounded-full bg-white/20 text-white">
                         <Icon className="w-5 h-5" aria-hidden />
                       </div>
-                      <p className="text-sm font-medium text-white/95 leading-none">
+                      <p className="text-base lg:text-lg font-medium text-white/95 leading-relaxed">
                         {labels[i]}
                       </p>
                     </div>

@@ -303,6 +303,10 @@ model Profile {
   email         String?
   phone         String?
   isVerified    Boolean     @default(false)
+  /** When admin rejected the profile (owner sees this and can fix). */
+  rejectedAt      DateTime?
+  /** Admin's reason for rejection (what to fix). */
+  rejectedReason  String?   @db.Text
   aboutUs       String?     @db.Text
   /** Cover photo URL (16:9, stored in S3-compatible storage). */
   coverPhotoUrl String?

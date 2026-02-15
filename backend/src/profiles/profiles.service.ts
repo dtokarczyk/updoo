@@ -5,9 +5,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
 import { slugFromName } from '../common/slug.helper';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
+import { EmailService } from '../email/email.service';
+import { I18nService } from '../i18n/i18n.service';
+import type { SupportedLanguage } from '../i18n/i18n.service';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 
@@ -16,7 +20,9 @@ export class ProfilesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storageService: StorageService,
-  ) { }
+    private readonly emailService: EmailService,
+    private readonly i18nService: I18nService,
+  ) {}
 
   /**
    * Check if slug is available (no other profile uses it, or only the excluded one).
@@ -109,14 +115,20 @@ export class ProfilesService {
 
   /**
    * Public list of verified profiles (visiting cards) with pagination.
+   * When isAdmin is true, returns all profiles (including unverified) with rejectedAt and rejectedReason for UI.
    */
-  async findAllVerified(page = 1, limit = 24) {
+  async findAllVerified(
+    page = 1,
+    limit = 24,
+    isAdmin = false,
+  ) {
     const skip = (Math.max(1, page) - 1) * Math.min(50, Math.max(1, limit));
     const take = Math.min(50, Math.max(1, limit));
+    const where = isAdmin ? {} : { isVerified: true };
 
     const [items, total] = await Promise.all([
       this.prisma.profile.findMany({
-        where: { isVerified: true },
+        where,
         include: {
           location: true,
           owner: {
@@ -131,13 +143,22 @@ export class ProfilesService {
         skip,
         take,
       }),
-      this.prisma.profile.count({ where: { isVerified: true } }),
+      this.prisma.profile.count({ where }),
     ]);
 
     const itemsWithCover = await Promise.all(
       items.map((p) => this.withResolvedCoverUrl(p)),
     );
     return { items: itemsWithCover, total };
+  }
+
+  /** Count profiles that are not yet verified (for admin banner). Admin only. */
+  async countPendingForAdmin(isAdmin: boolean): Promise<{ count: number }> {
+    if (!isAdmin) return { count: 0 };
+    const count = await this.prisma.profile.count({
+      where: { isVerified: false },
+    });
+    return { count };
   }
 
   async findMyProfiles(ownerId: string) {
@@ -237,26 +258,32 @@ export class ProfilesService {
       slug = await this.ensureUniqueSlug(baseSlug, id);
     }
 
+    const data: Prisma.ProfileUpdateInput = {
+      ...(dto.name !== undefined && { name }),
+      slug,
+      ...(dto.website !== undefined && {
+        website: dto.website?.trim() || null,
+      }),
+      ...(dto.email !== undefined && { email: dto.email?.trim() || null }),
+      ...(dto.phone !== undefined && { phone: dto.phone?.trim() || null }),
+      ...(dto.aboutUs !== undefined && {
+        aboutUs: dto.aboutUs?.trim() || null,
+      }),
+      ...(dto.locationId !== undefined && {
+        locationId: dto.locationId || null,
+      }),
+      ...(dto.coverPhotoUrl !== undefined && {
+        coverPhotoUrl: dto.coverPhotoUrl?.trim() || null,
+      }),
+    };
+    // When owner edits after rejection, clear rejection so profile goes back to pending
+    if (profile.rejectedAt != null || profile.rejectedReason != null) {
+      data.rejectedAt = null;
+      data.rejectedReason = null;
+    }
     const updated = await this.prisma.profile.update({
       where: { id },
-      data: {
-        ...(dto.name !== undefined && { name }),
-        slug,
-        ...(dto.website !== undefined && {
-          website: dto.website?.trim() || null,
-        }),
-        ...(dto.email !== undefined && { email: dto.email?.trim() || null }),
-        ...(dto.phone !== undefined && { phone: dto.phone?.trim() || null }),
-        ...(dto.aboutUs !== undefined && {
-          aboutUs: dto.aboutUs?.trim() || null,
-        }),
-        ...(dto.locationId !== undefined && {
-          locationId: dto.locationId || null,
-        }),
-        ...(dto.coverPhotoUrl !== undefined && {
-          coverPhotoUrl: dto.coverPhotoUrl?.trim() || null,
-        }),
-      },
+      data,
       include: {
         location: true,
         owner: {
@@ -338,11 +365,29 @@ export class ProfilesService {
 
   async verify(id: string, isAdmin: boolean) {
     if (!isAdmin) throw new ForbiddenException('errors.profileVerifyAdminOnly');
-    const profile = await this.prisma.profile.findUnique({ where: { id } });
+    const profile = await this.prisma.profile.findUnique({
+      where: { id },
+      include: {
+        location: true,
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            surname: true,
+            email: true,
+            language: true,
+          },
+        },
+      },
+    });
     if (!profile) throw new NotFoundException('errors.profileNotFound');
     const updated = await this.prisma.profile.update({
       where: { id },
-      data: { isVerified: true },
+      data: {
+        isVerified: true,
+        rejectedAt: null,
+        rejectedReason: null,
+      },
       include: {
         location: true,
         owner: {
@@ -354,6 +399,124 @@ export class ProfilesService {
         },
       },
     });
+
+    // Send acceptance email to owner
+    const owner = profile.owner as { email: string; language?: string } | null;
+    if (owner?.email && this.emailService.isConfigured()) {
+      const lang: SupportedLanguage =
+        owner.language === 'ENGLISH' ? 'en' : 'pl';
+      const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
+      const profileUrl = `${frontendUrl}/company/${profile.slug}`;
+      const subject = this.i18nService.translate(
+        'messages.profileAcceptedEmailSubject',
+        lang,
+      );
+      const intro = this.i18nService.translate(
+        'messages.profileAcceptedEmailIntro',
+        lang,
+        { name: profile.name },
+      );
+      const cta = this.i18nService.translate(
+        'messages.profileAcceptedEmailCta',
+        lang,
+      );
+      const html = `
+        <p>${intro}</p>
+        <p><a href="${profileUrl}" style="display:inline-block;padding:10px 20px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px;">${cta}</a></p>
+        <p>Hoplo</p>
+      `;
+      const text = `${subject}\n\n${intro}\n\n${cta}: ${profileUrl}`;
+      await this.emailService.sendHtml(owner.email, subject, html, { text });
+    }
+
+    return this.withResolvedCoverUrl(updated);
+  }
+
+  /** Reject a profile (admin only). Sends email to owner with reason. */
+  async reject(id: string, isAdmin: boolean, reason: string) {
+    if (!isAdmin) throw new ForbiddenException('errors.profileVerifyAdminOnly');
+    const profile = await this.prisma.profile.findUnique({
+      where: { id },
+      include: {
+        location: true,
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            surname: true,
+            email: true,
+            language: true,
+          },
+        },
+      },
+    });
+    if (!profile) throw new NotFoundException('errors.profileNotFound');
+    const now = new Date();
+    const updated = await this.prisma.profile.update({
+      where: { id },
+      data: {
+        isVerified: false,
+        rejectedAt: now,
+        rejectedReason: reason.trim(),
+      },
+      include: {
+        location: true,
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            surname: true,
+          },
+        },
+      },
+    });
+
+    // Send rejection email to owner
+    const owner = profile.owner as { email: string; language?: string } | null;
+    if (owner?.email && this.emailService.isConfigured()) {
+      const lang: SupportedLanguage =
+        owner.language === 'ENGLISH' ? 'en' : 'pl';
+      const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
+      const editUrl = `${frontendUrl}/profile/business-profile`;
+      const subject = this.i18nService.translate(
+        'messages.profileRejectedEmailSubject',
+        lang,
+      );
+      const intro = this.i18nService.translate(
+        'messages.profileRejectedEmailIntro',
+        lang,
+        { name: profile.name },
+      );
+      const reasonLabel = this.i18nService.translate(
+        'messages.profileRejectedEmailReason',
+        lang,
+      );
+      const cta = this.i18nService.translate(
+        'messages.profileRejectedEmailCta',
+        lang,
+      );
+      const outro = this.i18nService.translate(
+        'messages.profileRejectedEmailOutro',
+        lang,
+      );
+      const escapedReason = reason
+        .trim()
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+      const html = `
+        <p>${intro}</p>
+        <p><strong>${reasonLabel}:</strong></p>
+        <p>${escapedReason}</p>
+        <p><a href="${editUrl}" style="display:inline-block;padding:10px 20px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px;">${cta}</a></p>
+        <p>${outro}</p>
+        <p>Hoplo</p>
+      `;
+      const text = `${subject}\n\n${intro}\n\n${reasonLabel}: ${reason.trim()}\n\n${cta}: ${editUrl}\n\n${outro}`;
+      await this.emailService.sendHtml(owner.email, subject, html, { text });
+    }
+
     return this.withResolvedCoverUrl(updated);
   }
 }

@@ -77,6 +77,14 @@
     "jobRejectedEmailReason": "Rejection reason",
     "jobRejectedEmailCta": "Fix the job and submit again",
     "jobRejectedEmailOutro": "After making corrections, your job will be reviewed again by an administrator.",
-    "applyApplicantTypeMismatch": "You do not meet the criteria for this job (required applicant type)."
+    "applyApplicantTypeMismatch": "You do not meet the criteria for this job (required applicant type).",
+    "profileAcceptedEmailSubject": "Hoplo – Your visiting card has been accepted",
+    "profileAcceptedEmailIntro": "Your visiting card \"{name}\" has been accepted by an administrator and is now visible to the public.",
+    "profileAcceptedEmailCta": "View visiting card",
+    "profileRejectedEmailSubject": "Hoplo – Your visiting card has been rejected",
+    "profileRejectedEmailIntro": "Your visiting card \"{name}\" has been rejected by an administrator.",
+    "profileRejectedEmailReason": "Rejection reason",
+    "profileRejectedEmailCta": "Fix the visiting card and submit again",
+    "profileRejectedEmailOutro": "After making corrections, your visiting card will be reviewed again by an administrator."
   }
 }

@@ -48,7 +48,7 @@ export function HeroBanner({
         playsInline
         aria-hidden
       />
-      <div className="relative bg-background/80 lg:bg-background/70 flex flex-col justify-between p-5 pb-5 md:min-h-[70vh] ">
+      <div className="relative bg-neutral-800/80 lg:bg-neutral-800/70 flex flex-col justify-between p-5 pb-5 md:min-h-[70vh] ">
         <div className="mb-4">
           <h1 className="text-3xl lg:text-4xl font-black pr-7 pl-4 pt-4 text-white text-left mb-1">
             {t('homepage.heroText')}

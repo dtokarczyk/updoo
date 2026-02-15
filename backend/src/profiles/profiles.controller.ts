@@ -22,6 +22,7 @@ import type { JwtUser } from '../auth/get-user.decorator';
 import { ProfilesService } from './profiles.service';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { RejectProfileDto } from './dto/reject-profile.dto';
 
 @Controller('profiles')
 export class ProfilesController {
@@ -40,17 +41,32 @@ export class ProfilesController {
     return this.profilesService.create(user.id, dto);
   }
 
-  /** Public list of verified visiting cards (profiles) with pagination. */
+  /** Public list of verified visiting cards (profiles) with pagination. When admin is logged in, returns all profiles with verification fields. */
   @Get()
+  @UseGuards(OptionalJwtAuthGuard)
   list(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
+    @GetUser() user?: JwtUser,
   ) {
     const pageNum = page ? Math.max(1, parseInt(page, 10) || 1) : 1;
     const limitNum = limit
       ? Math.min(50, Math.max(1, parseInt(limit, 10) || 24))
       : 24;
-    return this.profilesService.findAllVerified(pageNum, limitNum);
+    return this.profilesService.findAllVerified(
+      pageNum,
+      limitNum,
+      user?.accountType === 'ADMIN',
+    );
+  }
+
+  /** Admin only: count of profiles not yet verified (for homepage banner). */
+  @Get('pending-count')
+  @UseGuards(JwtAuthGuard)
+  getPendingCount(@GetUser() user: JwtUser) {
+    return this.profilesService.countPendingForAdmin(
+      user.accountType === 'ADMIN',
+    );
   }
 
   @Get('my')
@@ -157,5 +173,19 @@ export class ProfilesController {
   @UseGuards(JwtAuthGuard)
   verify(@Param('id') id: string, @GetUser() user: JwtUser) {
     return this.profilesService.verify(id, user.accountType === 'ADMIN');
+  }
+
+  @Patch(':id/reject')
+  @UseGuards(JwtAuthGuard)
+  reject(
+    @Param('id') id: string,
+    @GetUser() user: JwtUser,
+    @Body() dto: RejectProfileDto,
+  ) {
+    return this.profilesService.reject(
+      id,
+      user.accountType === 'ADMIN',
+      dto.reason,
+    );
   }
 }

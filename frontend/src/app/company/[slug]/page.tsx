@@ -1,10 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { getProfileBySlug, getStoredUser, type Profile } from '@/lib/api';
+import {
+  getProfileBySlug,
+  getStoredUser,
+  verifyContractorProfile,
+  rejectContractorProfile,
+  type Profile,
+} from '@/lib/api';
 import { useTranslations } from '@/hooks/useTranslations';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,8 +21,11 @@ import {
   Phone,
   User,
   Building2,
+  Check,
+  XCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { RejectProfileDialog } from '@/components/RejectProfileDialog';
 
 function DetailRow({
   icon: Icon,
@@ -58,11 +67,16 @@ function ownerDisplayName(profile: Profile): string {
 
 export default function CompanyProfilePage() {
   const params = useParams();
+  const router = useRouter();
   const { t } = useTranslations();
   const slug = typeof params?.slug === 'string' ? params.slug : '';
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [acceptSubmitting, setAcceptSubmitting] = useState(false);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
+  const [rejectSubmitting, setRejectSubmitting] = useState(false);
 
   useEffect(() => {
     if (!slug) {
@@ -116,9 +130,52 @@ export default function CompanyProfilePage() {
   const isOwner = user?.id === profile.ownerId;
   const isAdmin = user?.accountType === 'ADMIN';
   const showUnverifiedBanner = !profile.isVerified && (isOwner || isAdmin);
+  const canAcceptOrReject = isAdmin && !profile.isVerified;
+  const isRejected = !!profile.rejectedReason;
   const contactName = ownerDisplayName(profile);
 
   const loginUrl = `/login?returnUrl=${encodeURIComponent(`/company/${slug}`)}`;
+
+  async function handleAccept() {
+    if (!profile?.id || !isAdmin || acceptSubmitting) return;
+    setAcceptSubmitting(true);
+    try {
+      await verifyContractorProfile(profile.id);
+      setProfile((prev) =>
+        prev ? { ...prev, isVerified: true, rejectedAt: null, rejectedReason: null } : null,
+      );
+      router.refresh();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : t('company.profileNotFound'));
+    } finally {
+      setAcceptSubmitting(false);
+    }
+  }
+
+  function openRejectDialog() {
+    setRejectDialogOpen(true);
+    setRejectReason('');
+  }
+
+  function closeRejectDialog() {
+    setRejectDialogOpen(false);
+    setRejectReason('');
+  }
+
+  async function handleReject() {
+    if (!profile?.id || !isAdmin || rejectReason.trim().length < 10) return;
+    setRejectSubmitting(true);
+    try {
+      const updated = await rejectContractorProfile(profile.id, rejectReason.trim());
+      setProfile(updated);
+      closeRejectDialog();
+      router.refresh();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : t('jobs.failedToReject'));
+    } finally {
+      setRejectSubmitting(false);
+    }
+  }
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
@@ -157,9 +214,41 @@ export default function CompanyProfilePage() {
             )}
           </div>
 
-          {showUnverifiedBanner && (
+          {showUnverifiedBanner && !isRejected && (
             <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">
               {t('company.pendingVerification')}
+            </div>
+          )}
+
+          {isRejected && (isOwner || isAdmin) && (
+            <div className="rounded-lg border border-red-500/50 bg-red-500/10 px-4 py-3 text-sm space-y-2 text-red-800 dark:text-red-200">
+              <p className="font-medium">{t('company.rejected')}</p>
+              {profile.rejectedReason && (
+                <p className="whitespace-pre-wrap">{profile.rejectedReason}</p>
+              )}
+              <p className="text-xs">{t('company.rejectedEditHint')}</p>
+            </div>
+          )}
+
+          {canAcceptOrReject && (
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="lg"
+                onClick={handleAccept}
+                disabled={acceptSubmitting}
+              >
+                <Check className="mr-2 h-4 w-4" />
+                {acceptSubmitting ? t('admin.approving') : t('admin.approve')}
+              </Button>
+              <Button
+                size="lg"
+                variant="destructive"
+                onClick={openRejectDialog}
+                disabled={rejectSubmitting}
+              >
+                <XCircle className="mr-2 h-4 w-4" />
+                {rejectSubmitting ? t('jobs.rejecting') : t('jobs.reject')}
+              </Button>
             </div>
           )}
 
@@ -293,6 +382,15 @@ export default function CompanyProfilePage() {
           </div>
         </aside>
       </div>
+      <RejectProfileDialog
+        open={rejectDialogOpen}
+        onOpenChange={(open) => !open && closeRejectDialog()}
+        reason={rejectReason}
+        onReasonChange={setRejectReason}
+        onSubmit={handleReject}
+        submitting={rejectSubmitting}
+        t={t}
+      />
     </div>
   );
 }

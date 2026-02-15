@@ -1,6 +1,7 @@
 import { CategoriesSidebarMobile } from '@/components/CategoriesSidebarMobile';
 import { JobsSectionHeader } from '@/components/JobsSectionHeader';
 import { HeroBannerForGuests } from '@/components/HeroBannerForGuests';
+import { AdminPendingProfilesBanner } from '@/components/AdminPendingProfilesBanner';
 import { t } from '@/lib/translations';
 import type { Category } from '@/lib/api';
 import type { Locale } from '@/lib/i18n';
@@ -50,6 +51,7 @@ export function OffersPageLayout({
         isHomePage={isHomePage}
         initialLocale={initialLocale}
       />
+      {isHomePage && <AdminPendingProfilesBanner />}
       <div className="mb-4 lg:hidden">
         <CategoriesSidebarMobile
           categories={categories}

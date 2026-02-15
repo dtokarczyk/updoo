@@ -77,6 +77,14 @@
     "jobRejectedEmailReason": "Powód odrzucenia",
     "jobRejectedEmailCta": "Popraw ofertę i wyślij ponownie",
     "jobRejectedEmailOutro": "Po wprowadzeniu poprawek Twoja oferta zostanie ponownie sprawdzona przez administratora.",
-    "applyApplicantTypeMismatch": "Nie spełniasz kryteriów tej oferty (wymagany typ wykonawcy)."
+    "applyApplicantTypeMismatch": "Nie spełniasz kryteriów tej oferty (wymagany typ wykonawcy).",
+    "profileAcceptedEmailSubject": "Hoplo – Twoja wizytówka została zaakceptowana",
+    "profileAcceptedEmailIntro": "Twoja wizytówka „{name}” została zaakceptowana przez administratora i jest teraz widoczna publicznie.",
+    "profileAcceptedEmailCta": "Zobacz wizytówkę",
+    "profileRejectedEmailSubject": "Hoplo – Twoja wizytówka została odrzucona",
+    "profileRejectedEmailIntro": "Twoja wizytówka „{name}” została odrzucona przez administratora.",
+    "profileRejectedEmailReason": "Powód odrzucenia",
+    "profileRejectedEmailCta": "Popraw wizytówkę i wyślij ponownie",
+    "profileRejectedEmailOutro": "Po wprowadzeniu poprawek wizytówka zostanie ponownie sprawdzona przez administratora."
   }
 }

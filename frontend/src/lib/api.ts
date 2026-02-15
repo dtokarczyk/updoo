@@ -658,6 +658,9 @@ export interface Profile {
   owner?: ContractorProfileOwner;
   createdAt: string;
   updatedAt: string;
+  /** Set when admin rejected the profile (owner sees what to fix). */
+  rejectedAt?: string | null;
+  rejectedReason?: string | null;
 }
 
 export interface CreateProfilePayload {
@@ -922,15 +925,18 @@ export interface ProfilesListResponse {
   total: number;
 }
 
-/** Public list of verified profiles (visiting cards) from backend profiles module. */
+/** Public list of verified profiles (visiting cards). When token is provided (e.g. admin), backend returns all profiles with verification fields. */
 export async function getProfilesList(
   page = 1,
   limit = 24,
+  token?: string | null,
 ): Promise<ProfilesListResponse> {
   const params = new URLSearchParams();
   params.set('page', String(page));
   params.set('limit', String(limit));
   const headers: HeadersInit = {};
+  const authToken = token ?? (typeof window !== 'undefined' ? getToken() : null);
+  if (authToken) headers.Authorization = `Bearer ${authToken}`;
   if (typeof window !== 'undefined') {
     const { getUserLocale } = await import('./i18n');
     const locale = getUserLocale();
@@ -1006,6 +1012,57 @@ export async function deleteContractorProfile(id: string): Promise<void> {
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
     throw new Error(msg ?? 'Failed to delete profile');
   }
+}
+
+/** Admin only: count of profiles pending verification. */
+export async function getProfilePendingCount(): Promise<{ count: number }> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const headers: HeadersInit = { Authorization: `Bearer ${token}` };
+  const res = await fetch(`${API_URL}/profiles/pending-count`, { headers });
+  if (!res.ok) throw new Error('Failed to fetch pending count');
+  return res.json();
+}
+
+/** Admin only: accept (verify) a profile. Sends email to owner. */
+export async function verifyContractorProfile(id: string): Promise<Profile> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const headers: HeadersInit = { Authorization: `Bearer ${token}` };
+  const res = await fetch(`${API_URL}/profiles/${id}/verify`, {
+    method: 'PATCH',
+    headers,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to verify profile');
+  }
+  return res.json();
+}
+
+/** Admin only: reject a profile with reason. Sends email to owner. */
+export async function rejectContractorProfile(
+  id: string,
+  reason: string,
+): Promise<Profile> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  };
+  const res = await fetch(`${API_URL}/profiles/${id}/reject`, {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify({ reason }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to reject profile');
+  }
+  return res.json();
 }
 
 /** Upload cover photo for profile (16:9 crop applied on client). Returns updated profile. */

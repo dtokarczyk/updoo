@@ -107,6 +107,39 @@ export class ProfilesService {
     return { ...profile, coverPhotoUrl: resolved };
   }
 
+  /**
+   * Public list of verified profiles (visiting cards) with pagination.
+   */
+  async findAllVerified(page = 1, limit = 24) {
+    const skip = (Math.max(1, page) - 1) * Math.min(50, Math.max(1, limit));
+    const take = Math.min(50, Math.max(1, limit));
+
+    const [items, total] = await Promise.all([
+      this.prisma.profile.findMany({
+        where: { isVerified: true },
+        include: {
+          location: true,
+          owner: {
+            select: {
+              id: true,
+              name: true,
+              surname: true,
+            },
+          },
+        },
+        orderBy: { name: 'asc' },
+        skip,
+        take,
+      }),
+      this.prisma.profile.count({ where: { isVerified: true } }),
+    ]);
+
+    const itemsWithCover = await Promise.all(
+      items.map((p) => this.withResolvedCoverUrl(p)),
+    );
+    return { items: itemsWithCover, total };
+  }
+
   async findMyProfiles(ownerId: string) {
     const list = await this.prisma.profile.findMany({
       where: { ownerId },

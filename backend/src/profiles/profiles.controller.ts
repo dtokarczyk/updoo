@@ -40,6 +40,19 @@ export class ProfilesController {
     return this.profilesService.create(user.id, dto);
   }
 
+  /** Public list of verified visiting cards (profiles) with pagination. */
+  @Get()
+  list(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const pageNum = page ? Math.max(1, parseInt(page, 10) || 1) : 1;
+    const limitNum = limit
+      ? Math.min(50, Math.max(1, parseInt(limit, 10) || 24))
+      : 24;
+    return this.profilesService.findAllVerified(pageNum, limitNum);
+  }
+
   @Get('my')
   @UseGuards(JwtAuthGuard)
   getMyProfiles(@GetUser() user: JwtUser) {

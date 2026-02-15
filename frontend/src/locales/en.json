@@ -7,6 +7,7 @@
     "contacts": "Contacts",
     "businessCard": "Business card",
     "createBusinessCard": "Create business card",
+    "visitingCardsList": "Visiting cards list",
     "profile": "Profile",
     "settings": "Settings",
     "account": "Account",
@@ -381,6 +382,11 @@
     "mustAcceptBoth": "Check both boxes to continue."
   },
   "company": {
+    "listTitle": "Visiting cards in the service",
+    "listDescription": "List of verified visiting cards of contractors and companies.",
+    "emptyList": "No visiting cards to display.",
+    "totalCount": "{count} visiting cards in total",
+    "viewProfile": "View visiting card",
     "loadingProfile": "Loading profile…",
     "profileNotFound": "Profile not found",
     "profileNotFoundDesc": "This profile does not exist or is not yet verified.",

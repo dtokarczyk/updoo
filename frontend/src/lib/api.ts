@@ -916,6 +916,33 @@ export async function getContractorProfile(id: string): Promise<Profile> {
   return res.json();
 }
 
+/** Response from GET /profiles (list of verified visiting cards). */
+export interface ProfilesListResponse {
+  items: Profile[];
+  total: number;
+}
+
+/** Public list of verified profiles (visiting cards) from backend profiles module. */
+export async function getProfilesList(
+  page = 1,
+  limit = 24,
+): Promise<ProfilesListResponse> {
+  const params = new URLSearchParams();
+  params.set('page', String(page));
+  params.set('limit', String(limit));
+  const headers: HeadersInit = {};
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
+    const locale = getUserLocale();
+    headers['Accept-Language'] = locale;
+  }
+  const res = await fetch(`${API_URL}/profiles?${params.toString()}`, {
+    headers,
+  });
+  if (!res.ok) throw new Error('Failed to fetch profiles list');
+  return res.json();
+}
+
 export async function getProfileBySlug(slug: string): Promise<Profile> {
   const headers: HeadersInit = {};
   const token = getToken();

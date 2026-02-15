@@ -36,6 +36,7 @@ const metadataByLocale: Record<
     offers: PageMeta;
     jobDetail: (title: string) => PageMeta;
     offersCategory: (categoryName: string, page: number) => PageMeta;
+    companyList: PageMeta;
   }
 > = {
   pl: {
@@ -114,6 +115,10 @@ const metadataByLocale: Record<
           : `Ogłoszenia: ${categoryName}`,
       description: `Przeglądaj oferty w kategorii ${categoryName} w ${PROJECT_NAME}. Strona ${page}.`,
     }),
+    companyList: {
+      title: 'Wizytówki',
+      description: `Lista zweryfikowanych wizytówek wykonawców i firm w ${PROJECT_NAME}.`,
+    },
   },
   en: {
     default: {
@@ -191,6 +196,10 @@ const metadataByLocale: Record<
           : `Jobs: ${categoryName}`,
       description: `Browse job offers in ${categoryName} on ${PROJECT_NAME}. Page ${page}.`,
     }),
+    companyList: {
+      title: 'Visiting cards',
+      description: `List of verified visiting cards of contractors and companies on ${PROJECT_NAME}.`,
+    },
   },
 };
 

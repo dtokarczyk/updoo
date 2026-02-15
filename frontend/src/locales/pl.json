@@ -7,6 +7,7 @@
     "contacts": "Kontakty",
     "businessCard": "Wizytówka",
     "createBusinessCard": "Załóż wizytówkę",
+    "visitingCardsList": "Lista wizytówek",
     "profile": "Profil",
     "settings": "Ustawienia",
     "account": "Konto",
@@ -381,6 +382,11 @@
     "mustAcceptBoth": "Zaznacz oba pola, aby kontynuować."
   },
   "company": {
+    "listTitle": "Wizytówki w serwisie",
+    "listDescription": "Lista zweryfikowanych wizytówek wykonawców i firm.",
+    "emptyList": "Brak wizytówek do wyświetlenia.",
+    "totalCount": "Łącznie {count} wizytówek",
+    "viewProfile": "Zobacz wizytówkę",
     "loadingProfile": "Ładowanie profilu…",
     "profileNotFound": "Profil nie został znaleziony",
     "profileNotFoundDesc": "Ten profil nie istnieje lub nie jest jeszcze zweryfikowany.",

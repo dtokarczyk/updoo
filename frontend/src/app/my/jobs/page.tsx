@@ -13,7 +13,8 @@ export default async function MyJobsPage() {
 
   const locale = await getLocaleFromRequest();
   const user = await getProfileServer(token, locale);
-  if (user?.accountType !== 'CLIENT') {
+  // Only freelancers see applications; clients and admins stay on jobs
+  if (user?.accountType === 'FREELANCER') {
     redirect('/my/applications');
   }
 

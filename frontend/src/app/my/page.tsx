@@ -29,10 +29,11 @@ export default function MyPage() {
 
   useEffect(() => {
     if (!mounted || !isDesktop || user === undefined) return;
-    if (user?.accountType === 'CLIENT') {
-      router.replace('/my/jobs');
-    } else {
+    // CLIENT and ADMIN go to jobs; only FREELANCER goes to applications
+    if (user?.accountType === 'FREELANCER') {
       router.replace('/my/applications');
+    } else {
+      router.replace('/my/jobs');
     }
   }, [mounted, isDesktop, router, user]);
 

@@ -4,28 +4,6 @@ import * as fs from 'fs/promises';
 import satori from 'satori';
 import { Resvg } from '@resvg/resvg-js';
 
-/** Same deterministic blurred rate placeholder as frontend (rate-helpers.ts). */
-function getBlurredRatePlaceholder(
-  jobId: string,
-  billingType: string,
-  currency: string,
-): string {
-  let hash = 0;
-  for (let i = 0; i < jobId.length; i++)
-    hash = (hash * 31 + jobId.charCodeAt(i)) >>> 0;
-  const isHourly = billingType === 'HOURLY';
-  const min = isHourly ? 50 : 1000;
-  const max = isHourly ? 250 : 12000;
-  const value = min + (hash % (max - min + 1));
-  const formatted = value.toLocaleString('pl-PL', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  });
-  return billingType === 'HOURLY'
-    ? `${formatted} ${currency}/h`
-    : `${formatted} ${currency}`;
-}
-
 /** Format real rate for display (same logic as frontend formatRateValue). */
 function formatRateValue(
   rate: string,
@@ -195,7 +173,7 @@ export class OgImageService {
       EXPERIENCE_LABELS[job.experienceLevel] ?? job.experienceLevel;
     const rateDisplay = hasRate(job.rate)
       ? formatRateValue(job.rate!, job.currency, job.billingType)
-      : getBlurredRatePlaceholder(job.id, job.billingType, job.currency);
+      : 'Do negocjacji';
     const billingLabel = BILLING_LABELS[job.billingType] ?? job.billingType;
     const projectTypeLabel =
       PROJECT_TYPE_LABELS[job.projectType] ?? job.projectType;

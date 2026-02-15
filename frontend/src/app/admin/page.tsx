@@ -5,6 +5,7 @@ import {
   generateAiJob,
   sendTestEmail,
   getAdminStats,
+  regenerateJobOgImage,
   type AdminStats,
 } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -16,12 +17,17 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { useTranslations } from '@/hooks/useTranslations';
+import { Input } from '@/components/ui/input';
 
 export default function AdminPage() {
-  useTranslations();
+  const { t } = useTranslations();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [generating, setGenerating] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [regeneratingOg, setRegeneratingOg] = useState(false);
+  const [jobIdForOg, setJobIdForOg] = useState('');
+  const [ogMessage, setOgMessage] = useState<string | null>(null);
+  const [ogError, setOgError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -68,6 +74,33 @@ export default function AdminPage() {
       );
     } finally {
       setSendingEmail(false);
+    }
+  };
+
+  const handleRegenerateOgImage = async () => {
+    const id = jobIdForOg.trim();
+    if (!id) {
+      setOgError(t('admin.regenerateOgImageEnterId'));
+      return;
+    }
+    setRegeneratingOg(true);
+    setOgMessage(null);
+    setOgError(null);
+
+    try {
+      const result = await regenerateJobOgImage(id);
+      if (result.ok) {
+        setOgMessage(t('admin.regenerateOgImageSuccess'));
+        setJobIdForOg('');
+      } else {
+        setOgError(result.error ?? t('admin.regenerateOgImageError'));
+      }
+    } catch (err) {
+      setOgError(
+        err instanceof Error ? err.message : t('admin.regenerateOgImageError'),
+      );
+    } finally {
+      setRegeneratingOg(false);
     }
   };
 
@@ -167,6 +200,57 @@ export default function AdminPage() {
           {error && (
             <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
               <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('admin.regenerateOgImage')}</CardTitle>
+          <CardDescription>
+            {t('admin.regenerateOgImageDescription')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleRegenerateOgImage();
+            }}
+            className="flex flex-col sm:flex-row gap-2"
+          >
+            <Input
+              type="text"
+              placeholder={t('admin.regenerateOgImagePlaceholder')}
+              value={jobIdForOg}
+              onChange={(e) => setJobIdForOg(e.target.value)}
+              className="flex-1 font-mono text-sm"
+              aria-label={t('admin.regenerateOgImagePlaceholder')}
+            />
+            <Button
+              type="submit"
+              disabled={regeneratingOg || !jobIdForOg.trim()}
+              variant="outline"
+              className="shrink-0"
+            >
+              {regeneratingOg
+                ? t('admin.regenerateOgImageRegenerating')
+                : t('admin.regenerateOgImageButton')}
+            </Button>
+          </form>
+          {ogMessage && (
+            <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
+              <p className="text-sm text-green-800 dark:text-green-200">
+                {ogMessage}
+              </p>
+            </div>
+          )}
+          {ogError && (
+            <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+              <p className="text-sm text-red-800 dark:text-red-200">
+                {ogError}
+              </p>
             </div>
           )}
         </CardContent>

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { EmailService } from '../email/email.service';
+import { JobsService } from '../jobs/jobs.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { FAKE_PASSWORD } from '../mailer/constants';
 import type { JwtUser } from '../auth/auth.types';
@@ -35,6 +36,7 @@ export interface AdminMailerLogItemDto {
 export class AdminService {
   constructor(
     private readonly emailService: EmailService,
+    private readonly jobsService: JobsService,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -164,5 +166,14 @@ export class AdminService {
 
     const result = await this.emailService.sendText(to, subject, text);
     return { ok: true, messageId: result.id };
+  }
+
+  /**
+   * Regenerate OG image for a job. Delegates to JobsService.
+   */
+  async regenerateJobOgImage(
+    jobId: string,
+  ): Promise<{ ok: boolean; url?: string; error?: string }> {
+    return this.jobsService.regenerateJobOgImage(jobId);
   }
 }

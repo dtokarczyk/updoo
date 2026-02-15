@@ -1,4 +1,4 @@
-import { Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AdminGuard } from './admin.guard';
 import { GetUser } from '../auth/get-user.decorator';
@@ -28,5 +28,11 @@ export class AdminController {
   @Post('send-test-email')
   async sendTestEmail(@GetUser() user: JwtUser) {
     return this.adminService.sendTestEmail(user);
+  }
+
+  /** Regenerate OG image for a job (upload to storage and update job.ogImageUrl). */
+  @Post('jobs/:id/regenerate-og-image')
+  async regenerateJobOgImage(@Param('id') jobId: string) {
+    return this.adminService.regenerateJobOgImage(jobId);
   }
 }

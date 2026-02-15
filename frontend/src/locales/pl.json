@@ -643,7 +643,15 @@
     "noPendingJobs": "Brak ogłoszeń oczekujących na zatwierdzenie",
     "failedToLoadPending": "Nie udało się załadować ogłoszeń do zatwierdzenia",
     "approve": "Zatwierdź",
-    "approving": "Zatwierdzanie…"
+    "approving": "Zatwierdzanie…",
+    "regenerateOgImage": "Regeneruj obraz OG",
+    "regenerateOgImageDescription": "Wygeneruj ponownie obraz OG (Open Graph) dla oferty. Podaj ID oferty (UUID). Przydatne po zmianie treści oferty lub gdy stawka to „Do negocjacji”.",
+    "regenerateOgImagePlaceholder": "ID oferty (UUID)",
+    "regenerateOgImageButton": "Regeneruj OG image",
+    "regenerateOgImageRegenerating": "Regenerowanie…",
+    "regenerateOgImageSuccess": "Obraz OG został zregenerowany.",
+    "regenerateOgImageError": "Nie udało się zregenerować obrazu OG.",
+    "regenerateOgImageEnterId": "Podaj ID oferty."
   },
   "notifications": {
     "tabNotifications": "Powiadomienia",

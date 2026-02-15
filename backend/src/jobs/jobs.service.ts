@@ -818,6 +818,30 @@ export class JobsService implements OnModuleInit {
   }
 
   /**
+   * Regenerate OG image for a job (admin only). Generates new image, uploads to storage,
+   * updates job.ogImageUrl. Returns result with url on success or error message on failure.
+   */
+  async regenerateJobOgImage(
+    jobId: string,
+  ): Promise<{ ok: boolean; url?: string; error?: string }> {
+    const job = await this.prisma.job.findUnique({
+      where: { id: jobId },
+      select: { id: true },
+    });
+    if (!job) {
+      return { ok: false, error: 'Job not found' };
+    }
+    const url = await this.ensureJobOgImage(jobId);
+    if (url) {
+      return { ok: true, url };
+    }
+    return {
+      ok: false,
+      error: 'Failed to generate or upload OG image',
+    };
+  }
+
+  /**
    * Generate OG image for job, upload to storage, and update job.ogImageUrl.
    * Called on create, update, and publish. Returns the stored URL or null on failure.
    */

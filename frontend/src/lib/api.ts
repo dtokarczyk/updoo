@@ -1752,6 +1752,31 @@ export async function sendTestEmail(): Promise<{
   return res.json();
 }
 
+/** Regenerate OG image for a job (admin only). Returns ok and url on success. */
+export async function regenerateJobOgImage(jobId: string): Promise<{
+  ok: boolean;
+  url?: string;
+  error?: string;
+}> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const res = await fetch(
+    `${API_URL}/admin/jobs/${encodeURIComponent(jobId)}/regenerate-og-image`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to regenerate OG image');
+  }
+  return res.json();
+}
+
 /** Improve job description with AI (grammar, clarity, structure). */
 export async function improveJobDescription(text: string): Promise<string> {
   const token = getToken();

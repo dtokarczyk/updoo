@@ -57,6 +57,9 @@ function RegisterForm() {
       if (typeof window !== 'undefined' && window.gtag) {
         window.gtag('event', 'sign_up', { method: 'email' });
       }
+      if (typeof window !== 'undefined' && typeof (window as unknown as { fbq?: (a: string, b: string) => void }).fbq === 'function') {
+        (window as unknown as { fbq: (a: string, b: string) => void }).fbq('track', 'CompleteRegistration');
+      }
       router.push('/onboarding');
       router.refresh();
     } catch (err) {

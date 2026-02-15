@@ -634,6 +634,9 @@
     "admin": "Admin"
   },
   "admin": {
+    "sidebarLabel": "Panel administracyjny",
+    "tabDashboard": "Strona główna",
+    "tabUsers": "Użytkownicy",
     "pendingJobs": "Ogłoszenia do zatwierdzenia",
     "pendingJobsTitle": "Ogłoszenia oczekujące na zatwierdzenie",
     "noPendingJobs": "Brak ogłoszeń oczekujących na zatwierdzenie",

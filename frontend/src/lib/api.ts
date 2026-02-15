@@ -1640,7 +1640,10 @@ export async function generateAiJob(): Promise<{
 
 /** Admin dashboard stats (admin only). */
 export interface AdminStats {
+  totalUsers: number;
   registeredUsersLast7Days: number;
+  registeredUsersToday: number;
+  jobsCreatedByRealUsers: number;
 }
 
 /** Fetch admin dashboard stats (admin only). */
@@ -1657,6 +1660,34 @@ export async function getAdminStats(): Promise<AdminStats> {
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
     throw new Error(msg ?? 'Failed to fetch admin stats');
+  }
+  return res.json();
+}
+
+/** Admin user list item (real users only, from GET /admin/users). */
+export interface AdminUserListItem {
+  id: string;
+  email: string;
+  name: string | null;
+  surname: string | null;
+  accountType: AccountType | null;
+  createdAt: string;
+}
+
+/** Fetch real users for admin panel (admin only). Excludes FAKE auto-generated. Sorted by newest first. */
+export async function getAdminUsers(): Promise<AdminUserListItem[]> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const res = await fetch(`${API_URL}/admin/users`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to fetch admin users');
   }
   return res.json();
 }

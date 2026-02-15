@@ -634,6 +634,9 @@
     "admin": "Admin"
   },
   "admin": {
+    "sidebarLabel": "Admin panel",
+    "tabDashboard": "Dashboard",
+    "tabUsers": "Users",
     "pendingJobs": "Pending jobs",
     "pendingJobsTitle": "Jobs awaiting approval",
     "noPendingJobs": "No jobs awaiting approval",

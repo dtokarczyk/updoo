@@ -3,9 +3,22 @@ import { EmailService } from '../email/email.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { FAKE_PASSWORD } from '../mailer/constants';
 import type { JwtUser } from '../auth/auth.types';
+import type { AccountType } from '@prisma/client';
 
 export interface AdminStatsDto {
+  totalUsers: number;
   registeredUsersLast7Days: number;
+  registeredUsersToday: number;
+  jobsCreatedByRealUsers: number;
+}
+
+export interface AdminUserListItemDto {
+  id: string;
+  email: string;
+  name: string | null;
+  surname: string | null;
+  accountType: AccountType | null;
+  createdAt: string;
 }
 
 @Injectable()
@@ -13,23 +26,84 @@ export class AdminService {
   constructor(
     private readonly emailService: EmailService,
     private readonly prisma: PrismaService,
-  ) {}
+  ) { }
 
   /**
-   * Returns dashboard stats for the admin panel (e.g. real users registered in last 7 days).
+   * Returns real users only (excludes FAKE auto-generated: password !== FAKE_PASSWORD or null).
+   * Sorted by createdAt desc (newest first). For admin panel display only – no editing.
    */
-  async getStats(): Promise<AdminStatsDto> {
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-    const registeredUsersLast7Days = await this.prisma.user.count({
+  async getRealUsers(): Promise<AdminUserListItemDto[]> {
+    const users = await this.prisma.user.findMany({
       where: {
-        createdAt: { gte: sevenDaysAgo },
         OR: [{ password: null }, { password: { not: FAKE_PASSWORD } }],
       },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        surname: true,
+        accountType: true,
+        createdAt: true,
+      },
     });
+    return users.map((u) => ({
+      id: u.id,
+      email: u.email,
+      name: u.name,
+      surname: u.surname,
+      accountType: u.accountType,
+      createdAt: u.createdAt.toISOString(),
+    }));
+  }
 
-    return { registeredUsersLast7Days };
+  private realUserWhere() {
+    return {
+      OR: [{ password: null }, { password: { not: FAKE_PASSWORD } }],
+    };
+  }
+
+  /**
+   * Returns dashboard stats for the admin panel (real users only, no FAKE).
+   */
+  async getStats(): Promise<AdminStatsDto> {
+    const now = new Date();
+    const sevenDaysAgo = new Date(now);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const startOfToday = new Date(now);
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const [totalUsers, registeredUsersLast7Days, registeredUsersToday, jobsCreatedByRealUsers] =
+      await Promise.all([
+        this.prisma.user.count({
+          where: this.realUserWhere(),
+        }),
+        this.prisma.user.count({
+          where: {
+            createdAt: { gte: sevenDaysAgo },
+            ...this.realUserWhere(),
+          },
+        }),
+        this.prisma.user.count({
+          where: {
+            createdAt: { gte: startOfToday },
+            ...this.realUserWhere(),
+          },
+        }),
+        this.prisma.job.count({
+          where: {
+            author: this.realUserWhere(),
+          },
+        }),
+      ]);
+
+    return {
+      totalUsers,
+      registeredUsersLast7Days,
+      registeredUsersToday,
+      jobsCreatedByRealUsers,
+    };
   }
 
   /**

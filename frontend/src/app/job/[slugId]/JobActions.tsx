@@ -98,7 +98,12 @@ export function JobActions({
               {rejectSubmitting ? t('jobs.rejecting') : t('jobs.reject')}
             </Button>
           )}
-          <Button className={buttonWidthClass} size="lg" variant="secondary" asChild>
+          <Button
+            className={buttonWidthClass}
+            size="lg"
+            variant="secondary"
+            asChild
+          >
             <Link href={jobPathEdit(job)}>
               <Pencil className="mr-2 h-4 w-4" />
               {t('jobs.edit')}

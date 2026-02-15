@@ -60,7 +60,7 @@ export default function CreateProfilePage() {
       .then((profiles) => {
         if (profiles.length > 0) router.replace('/profile');
       })
-      .catch(() => { });
+      .catch(() => {});
   }, [router]);
 
   const onSubmit = async (data: ProfileFormValues) => {
@@ -165,10 +165,7 @@ export default function CreateProfilePage() {
         </CardHeader>
         <CardContent className="space-y-6">
           <FormProvider {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-6"
-            >
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {error && (
                 <p className="text-sm text-red-600 dark:text-red-400">
                   {error}
@@ -182,11 +179,7 @@ export default function CreateProfilePage() {
                 t={t}
               />
 
-              <Button
-                type="submit"
-                disabled={submitting}
-                className="w-full"
-              >
+              <Button type="submit" disabled={submitting} className="w-full">
                 {submitting
                   ? t('common.saving')
                   : t('profile.create.createPageSubmit')}

@@ -9,10 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { EmptyState } from '@/components/EmptyState';
-import {
-  Card,
-  CardContent,
-} from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import type { getStoredUser } from '@/lib/api';
 
 function formatApplicationDateTime(iso: string, locale: 'pl' | 'en'): string {
@@ -101,9 +98,9 @@ export function JobApplications({
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
           {job.expectedOffers != null
             ? t('jobs.applicationsCountLimit', {
-              submitted: applications.length,
-              expected: job.expectedOffers,
-            })
+                submitted: applications.length,
+                expected: job.expectedOffers,
+              })
             : t('jobs.applicationsCount', { count: applications.length })}
         </p>
 
@@ -128,10 +125,7 @@ export function JobApplications({
                     <div className="flex flex-wrap items-center gap-3">
                       <Avatar className="h-10 w-10 shrink-0">
                         {isApplicationFull(app) && app.freelancer.avatarUrl ? (
-                          <AvatarImage
-                            src={app.freelancer.avatarUrl}
-                            alt=""
-                          />
+                          <AvatarImage src={app.freelancer.avatarUrl} alt="" />
                         ) : null}
                         <AvatarFallback className="text-sm font-medium text-muted-foreground">
                           {applicationInitials(app)}
@@ -167,8 +161,7 @@ export function JobApplications({
                       <span className="text-muted-foreground text-sm shrink-0 ml-auto">
                         {formatApplicationDateTime(app.createdAt, locale)}
                       </span>
-                      {isApplicationFull(app) &&
-                        app.freelancer.profileSlug ? (
+                      {isApplicationFull(app) && app.freelancer.profileSlug ? (
                         <Button variant="outline" size="sm" asChild>
                           <Link
                             href={`/company/${app.freelancer.profileSlug}`}
@@ -180,13 +173,15 @@ export function JobApplications({
                         </Button>
                       ) : null}
                     </div>
-                    {'message' in app && app.message != null && app.message !== '' && (
-                      <div className="mt-2 pt-2">
-                        <p className="text-sm whitespace-pre-wrap leading-relaxed text-foreground">
-                          {app.message}
-                        </p>
-                      </div>
-                    )}
+                    {'message' in app &&
+                      app.message != null &&
+                      app.message !== '' && (
+                        <div className="mt-2 pt-2">
+                          <p className="text-sm whitespace-pre-wrap leading-relaxed text-foreground">
+                            {app.message}
+                          </p>
+                        </div>
+                      )}
                   </CardContent>
                 </Card>
               </li>

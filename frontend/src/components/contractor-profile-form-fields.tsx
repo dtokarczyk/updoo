@@ -86,7 +86,9 @@ export function ContractorProfileFormFields({
   const watchedSlug = watch(slugKey as keyof FormValues) as string;
 
   const [slugStatus, setSlugStatus] = useState<SlugStatus>('idle');
-  const slugCheckTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const slugCheckTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   const slugCheckSlugRef = useRef<string | null>(null);
 
   // Run slug availability check (standalone only). Uses normalized slug.
@@ -104,7 +106,9 @@ export function ContractorProfileFormFields({
           } else {
             setError(slugKey as keyof FormValues, {
               type: 'manual',
-              message: t('profile.validation.slugTaken') || 'Ten adres wizytówki jest zajęty. Wybierz inny.',
+              message:
+                t('profile.validation.slugTaken') ||
+                'Ten adres wizytówki jest zajęty. Wybierz inny.',
             });
           }
         }
@@ -132,7 +136,8 @@ export function ContractorProfileFormFields({
   const handleSlugBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     register(slugKey as keyof FormValues).onBlur?.(e);
     if (variant !== 'standalone') return;
-    const raw = (getValues(slugKey as keyof FormValues) as string)?.trim?.() ?? '';
+    const raw =
+      (getValues(slugKey as keyof FormValues) as string)?.trim?.() ?? '';
     const normalized = slugFromName(raw, '');
     if (normalized.length < 2 || !SLUG_REGEX.test(normalized)) {
       setSlugStatus('idle');
@@ -145,7 +150,9 @@ export function ContractorProfileFormFields({
   // Debounced slug availability check on slug value change (standalone only)
   useEffect(() => {
     if (variant !== 'standalone') return;
-    const raw = (typeof watchedSlug === 'string' ? watchedSlug : '').trim().toLowerCase();
+    const raw = (typeof watchedSlug === 'string' ? watchedSlug : '')
+      .trim()
+      .toLowerCase();
     const normalized = slugFromName(raw, '');
     const isValid = normalized.length >= 2 && SLUG_REGEX.test(normalized);
 
@@ -211,21 +218,32 @@ export function ContractorProfileFormFields({
               maxLength={100}
               disabled={disabled || slugStatus === 'checking'}
               aria-busy={slugStatus === 'checking'}
-              aria-describedby={slugStatus === 'checking' ? `${slugKey}-checking` : undefined}
+              aria-describedby={
+                slugStatus === 'checking' ? `${slugKey}-checking` : undefined
+              }
               className={inputClass}
             />
             {slugStatus === 'checking' && (
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden>
+              <span
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                aria-hidden
+              >
                 <Loader2 className="size-4 animate-spin" />
               </span>
             )}
             {slugStatus === 'available' && (
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-green-600 dark:text-green-500" aria-hidden>
+              <span
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-green-600 dark:text-green-500"
+                aria-hidden
+              >
                 <Check className="size-4" />
               </span>
             )}
             {slugStatus === 'taken' && (
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-destructive" aria-hidden>
+              <span
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-destructive"
+                aria-hidden
+              >
                 <XCircle className="size-4" />
               </span>
             )}
@@ -235,7 +253,10 @@ export function ContractorProfileFormFields({
               'Tylko małe litery, cyfry i myślniki. Adres: /company/[slug]'}
           </p>
           {slugStatus === 'checking' && (
-            <p id={`${slugKey}-checking`} className="text-sm text-muted-foreground">
+            <p
+              id={`${slugKey}-checking`}
+              className="text-sm text-muted-foreground"
+            >
               {t('profile.create.slugChecking') || 'Sprawdzam dostępność...'}
             </p>
           )}
@@ -246,7 +267,8 @@ export function ContractorProfileFormFields({
           )}
           {slugStatus === 'taken' && (
             <p className="text-sm text-destructive">
-              {t('profile.validation.slugTaken') || 'Ten adres wizytówki jest zajęty. Wybierz inny.'}
+              {t('profile.validation.slugTaken') ||
+                'Ten adres wizytówki jest zajęty. Wybierz inny.'}
             </p>
           )}
           {errors[slugKey as keyof FormValues]?.message && (

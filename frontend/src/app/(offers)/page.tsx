@@ -21,16 +21,16 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-function parseSearchParams(searchParams: {
-  skills?: string;
-}): { initialSkillIds: string[] } {
+function parseSearchParams(searchParams: { skills?: string }): {
+  initialSkillIds: string[];
+} {
   const rawSkills = searchParams.skills;
 
   const initialSkillIds = rawSkills
     ? rawSkills
-      .split(',')
-      .map((id) => id.trim())
-      .filter(Boolean)
+        .split(',')
+        .map((id) => id.trim())
+        .filter(Boolean)
     : [];
 
   return { initialSkillIds };

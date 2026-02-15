@@ -53,7 +53,9 @@ export const jobFormSchema = z
       z.literal(14),
       z.literal(''),
     ]),
-    expectedApplicantTypes: z.array(expectedApplicantTypeEnum).min(1, msg('jobs.newJobForm.selectExpectedApplicantType')),
+    expectedApplicantTypes: z
+      .array(expectedApplicantTypeEnum)
+      .min(1, msg('jobs.newJobForm.selectExpectedApplicantType')),
     selectedSkills: z.array(selectedSkillSchema).max(5),
   })
   .superRefine((data, ctx) => {
@@ -86,17 +88,17 @@ export const jobFormSchema = z
       });
     }
     const rateNum = parseFloat(data.rate.replace(',', '.'));
-    if (
-      data.rate.trim() !== '' &&
-      (Number.isNaN(rateNum) || rateNum < 0)
-    ) {
+    if (data.rate.trim() !== '' && (Number.isNaN(rateNum) || rateNum < 0)) {
       ctx.addIssue({
         path: ['rate'],
         message: msg('jobs.invalidRate'),
         code: z.ZodIssueCode.custom,
       });
     }
-    if (data.offerDays === '' || ![7, 14, 21, 30].includes(Number(data.offerDays))) {
+    if (
+      data.offerDays === '' ||
+      ![7, 14, 21, 30].includes(Number(data.offerDays))
+    ) {
       ctx.addIssue({
         path: ['offerDays'],
         message: msg('jobs.invalidOfferDays'),

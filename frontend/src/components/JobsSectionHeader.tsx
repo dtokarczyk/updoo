@@ -56,10 +56,7 @@ export function JobsSectionHeader({
     initialSkillIds ?? [],
   );
 
-  const buildUrl = (opts?: {
-    page?: number;
-    skillIds?: string[];
-  }) => {
+  const buildUrl = (opts?: { page?: number; skillIds?: string[] }) => {
     const nextPage = opts?.page ?? 1;
     const nextSkillIds = opts?.skillIds ?? selectedSkillIds;
 
@@ -111,14 +108,13 @@ export function JobsSectionHeader({
     >
       <div className="flex flex-col gap-5">
         <div className="flex flex-row gap-1">
-
           {count !== null && (
             <h2 className="text-2xl font-semibold tracking-tight text-foreground w-3/5">
               {categoryName
                 ? t('jobs.headerSampleWithCategory', {
-                  category: categoryName,
-                  count,
-                })
+                    category: categoryName,
+                    count,
+                  })
                 : t('jobs.headerSampleWithoutCategory', { count })}
             </h2>
           )}

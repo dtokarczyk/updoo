@@ -104,8 +104,16 @@ function LoginCallbackContent() {
         if (isNewUser && typeof window !== 'undefined' && window.gtag) {
           window.gtag('event', 'sign_up', { method: 'google' });
         }
-        if (isNewUser && typeof window !== 'undefined' && typeof (window as unknown as { fbq?: (a: string, b: string) => void }).fbq === 'function') {
-          (window as unknown as { fbq: (a: string, b: string) => void }).fbq('track', 'CompleteRegistration');
+        if (
+          isNewUser &&
+          typeof window !== 'undefined' &&
+          typeof (window as unknown as { fbq?: (a: string, b: string) => void })
+            .fbq === 'function'
+        ) {
+          (window as unknown as { fbq: (a: string, b: string) => void }).fbq(
+            'track',
+            'CompleteRegistration',
+          );
         }
         const target =
           returnUrl ||

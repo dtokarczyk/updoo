@@ -17,7 +17,7 @@ export class NotificationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly emailService: EmailService,
-  ) { }
+  ) {}
 
   /**
    * Returns true if the job should be excluded from notification emails (newsletter, digest, instant).
@@ -186,7 +186,10 @@ export class NotificationsService {
 
     const pref = await this.prisma.notificationPreference.findUnique({
       where: {
-        userId_type: { userId: authorId, type: NotificationType.NEW_APPLICATION_TO_MY_JOB },
+        userId_type: {
+          userId: authorId,
+          type: NotificationType.NEW_APPLICATION_TO_MY_JOB,
+        },
       },
     });
     const enabled = pref?.enabled ?? DEFAULT_ENABLED;
@@ -199,7 +202,7 @@ export class NotificationsService {
     const applicantName =
       freelancer?.name && freelancer?.surname
         ? `${freelancer.name} ${freelancer.surname.charAt(0)}.`
-        : freelancer?.name ?? (isPolish ? 'Ktoś' : 'Someone');
+        : (freelancer?.name ?? (isPolish ? 'Ktoś' : 'Someone'));
 
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
     const jobUrl = `${frontendUrl}/job/${job.id}`;
@@ -476,7 +479,10 @@ export class NotificationsService {
   // ──────────────────────────── Category follow (newsletter) ────────────────────────────
 
   /** Subscribe user to category newsletter. Returns list of followed category IDs. */
-  async addCategoryFollow(userId: string, categoryId: string): Promise<string[]> {
+  async addCategoryFollow(
+    userId: string,
+    categoryId: string,
+  ): Promise<string[]> {
     const category = await this.prisma.category.findUnique({
       where: { id: categoryId },
     });
@@ -632,7 +638,9 @@ export class NotificationsService {
         const skills = job.skills.map((s) => s.skill.name).join(', ');
         const categoryName =
           job.category?.translations.find((t) => t.language === user.language)
-            ?.name ?? job.category?.translations[0]?.name ?? '';
+            ?.name ??
+          job.category?.translations[0]?.name ??
+          '';
         return `
           <li style="margin-bottom:12px;">
             <a href="${url}" style="color:#2563eb;text-decoration:none;font-weight:bold;">${this.escapeHtml(job.title)}</a>

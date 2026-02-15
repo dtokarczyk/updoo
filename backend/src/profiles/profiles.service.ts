@@ -68,7 +68,8 @@ export class ProfilesService {
       throw new ConflictException('errors.profileOnlyOne');
     }
 
-    const baseSlug = dto.slug?.trim().toLowerCase() || slugFromName(dto.name, 'profile');
+    const baseSlug =
+      dto.slug?.trim().toLowerCase() || slugFromName(dto.name, 'profile');
     const slug = await this.ensureUniqueSlug(baseSlug);
 
     if (dto.locationId) {
@@ -108,8 +109,9 @@ export class ProfilesService {
   private async withResolvedCoverUrl<
     T extends { coverPhotoUrl: string | null },
   >(profile: T): Promise<T> {
-    const resolved =
-      await this.storageService.getImageUrlForResponse(profile.coverPhotoUrl);
+    const resolved = await this.storageService.getImageUrlForResponse(
+      profile.coverPhotoUrl,
+    );
     return { ...profile, coverPhotoUrl: resolved };
   }
 
@@ -117,11 +119,7 @@ export class ProfilesService {
    * Public list of verified profiles (visiting cards) with pagination.
    * When isAdmin is true, returns all profiles (including unverified) with rejectedAt and rejectedReason for UI.
    */
-  async findAllVerified(
-    page = 1,
-    limit = 24,
-    isAdmin = false,
-  ) {
+  async findAllVerified(page = 1, limit = 24, isAdmin = false) {
     const skip = (Math.max(1, page) - 1) * Math.min(50, Math.max(1, limit));
     const take = Math.min(50, Math.max(1, limit));
     const where = isAdmin ? {} : { isVerified: true };

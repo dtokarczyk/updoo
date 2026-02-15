@@ -4,11 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getStoredUser, getProfilePendingCount } from '@/lib/api';
 import { useTranslations } from '@/hooks/useTranslations';
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { FileText } from 'lucide-react';
 
 /**

@@ -127,7 +127,10 @@ function CompanyDetails({ company }: { company: Company }) {
   );
 }
 
-function companySizeToLabelKey(size: CompanySizeValue, t: (key: string) => string): string {
+function companySizeToLabelKey(
+  size: CompanySizeValue,
+  t: (key: string) => string,
+): string {
   if (size === 'FREELANCER') return t('onboarding.companySizeSolo');
   return t(`onboarding.companySize${size}`);
 }
@@ -273,9 +276,14 @@ export default function ProfileCompanyPage() {
                   updateCompanyMutation.mutate(
                     { companySize: val },
                     {
-                      onSuccess: () => setSuccess(t('profile.companySizeSaved')),
+                      onSuccess: () =>
+                        setSuccess(t('profile.companySizeSaved')),
                       onError: (err) =>
-                        setError(err instanceof Error ? err.message : t('common.error')),
+                        setError(
+                          err instanceof Error
+                            ? err.message
+                            : t('common.error'),
+                        ),
                     },
                   );
                 }}

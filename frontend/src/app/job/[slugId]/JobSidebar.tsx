@@ -90,14 +90,9 @@ export function JobSidebar({
 }: JobSidebarProps) {
   return (
     <aside className="hidden lg:block lg:col-span-2 space-y-6">
-
       {actions}
 
-      <DetailRow
-        icon={Banknote}
-        label={t('jobs.rate')}
-        value={rateValue}
-      />
+      <DetailRow icon={Banknote} label={t('jobs.rate')} value={rateValue} />
       {job.expectedOffers != null ? (
         <>
           <DetailRow
@@ -140,9 +135,7 @@ export function JobSidebar({
       <DetailRow
         icon={BarChart3}
         label={t('jobs.experienceLevel')}
-        value={
-          EXPERIENCE_LABELS[job.experienceLevel] ?? job.experienceLevel
-        }
+        value={EXPERIENCE_LABELS[job.experienceLevel] ?? job.experienceLevel}
       />
       <DetailRow
         icon={Briefcase}
@@ -175,7 +168,6 @@ export function JobSidebar({
           value={t('common.yes')}
         />
       )}
-
     </aside>
   );
 }

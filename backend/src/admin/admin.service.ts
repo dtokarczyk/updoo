@@ -21,12 +21,22 @@ export interface AdminUserListItemDto {
   createdAt: string;
 }
 
+export interface AdminMailerLogItemDto {
+  id: string;
+  recipientEmail: string;
+  subject: string;
+  content: string;
+  status: string;
+  sentAt: string | null;
+  createdAt: string;
+}
+
 @Injectable()
 export class AdminService {
   constructor(
     private readonly emailService: EmailService,
     private readonly prisma: PrismaService,
-  ) { }
+  ) {}
 
   /**
    * Returns real users only (excludes FAKE auto-generated: password !== FAKE_PASSWORD or null).
@@ -74,29 +84,33 @@ export class AdminService {
     const startOfToday = new Date(now);
     startOfToday.setHours(0, 0, 0, 0);
 
-    const [totalUsers, registeredUsersLast7Days, registeredUsersToday, jobsCreatedByRealUsers] =
-      await Promise.all([
-        this.prisma.user.count({
-          where: this.realUserWhere(),
-        }),
-        this.prisma.user.count({
-          where: {
-            createdAt: { gte: sevenDaysAgo },
-            ...this.realUserWhere(),
-          },
-        }),
-        this.prisma.user.count({
-          where: {
-            createdAt: { gte: startOfToday },
-            ...this.realUserWhere(),
-          },
-        }),
-        this.prisma.job.count({
-          where: {
-            author: this.realUserWhere(),
-          },
-        }),
-      ]);
+    const [
+      totalUsers,
+      registeredUsersLast7Days,
+      registeredUsersToday,
+      jobsCreatedByRealUsers,
+    ] = await Promise.all([
+      this.prisma.user.count({
+        where: this.realUserWhere(),
+      }),
+      this.prisma.user.count({
+        where: {
+          createdAt: { gte: sevenDaysAgo },
+          ...this.realUserWhere(),
+        },
+      }),
+      this.prisma.user.count({
+        where: {
+          createdAt: { gte: startOfToday },
+          ...this.realUserWhere(),
+        },
+      }),
+      this.prisma.job.count({
+        where: {
+          author: this.realUserWhere(),
+        },
+      }),
+    ]);
 
     return {
       totalUsers,
@@ -107,9 +121,39 @@ export class AdminService {
   }
 
   /**
+   * Returns mailer logs for admin panel. Sorted by createdAt desc (newest first).
+   */
+  async getMailerLogs(limit = 500): Promise<AdminMailerLogItemDto[]> {
+    const logs = await this.prisma.mailerLog.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: Math.min(Math.max(1, limit), 500),
+      select: {
+        id: true,
+        recipientEmail: true,
+        subject: true,
+        content: true,
+        status: true,
+        sentAt: true,
+        createdAt: true,
+      },
+    });
+    return logs.map((l) => ({
+      id: l.id,
+      recipientEmail: l.recipientEmail,
+      subject: l.subject,
+      content: l.content,
+      status: l.status,
+      sentAt: l.sentAt?.toISOString() ?? null,
+      createdAt: l.createdAt.toISOString(),
+    }));
+  }
+
+  /**
    * Sends a test email to the given admin's email address.
    */
-  async sendTestEmail(user: JwtUser): Promise<{ ok: boolean; messageId?: string }> {
+  async sendTestEmail(
+    user: JwtUser,
+  ): Promise<{ ok: boolean; messageId?: string }> {
     const to = user.email;
     const subject = '[Updoo Admin] Test email';
     const text =

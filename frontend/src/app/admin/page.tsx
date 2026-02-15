@@ -62,7 +62,9 @@ export default function AdminPage() {
       );
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Nie udało się wysłać e-maila testowego',
+        err instanceof Error
+          ? err.message
+          : 'Nie udało się wysłać e-maila testowego',
       );
     } finally {
       setSendingEmail(false);
@@ -164,9 +166,7 @@ export default function AdminPage() {
 
           {error && (
             <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-              <p className="text-sm text-red-800 dark:text-red-200">
-                {error}
-              </p>
+              <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
             </div>
           )}
         </CardContent>

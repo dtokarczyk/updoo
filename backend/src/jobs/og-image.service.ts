@@ -107,16 +107,36 @@ const FONT_DOMAIN = 'Satoshi Black'; // Used for "Więcej ogłoszeń na Hoplo.pl
 @Injectable()
 export class OgImageService {
   private logoSvgDataUri: string | null = null;
-  private fonts: { name: string; data: Buffer; weight: number; style: string }[] =
-    [];
+  private fonts: {
+    name: string;
+    data: Buffer;
+    weight: number;
+    style: string;
+  }[] = [];
 
   private async loadFonts(): Promise<
     { name: string; data: Buffer; weight: number; style: string }[]
   > {
     if (this.fonts.length > 0) return this.fonts;
     const candidates = [
-      path.join(process.cwd(), 'assets', 'Satoshi_Complete', 'Fonts', 'WEB', 'fonts'),
-      path.join(__dirname, '..', '..', 'assets', 'Satoshi_Complete', 'Fonts', 'WEB', 'fonts'),
+      path.join(
+        process.cwd(),
+        'assets',
+        'Satoshi_Complete',
+        'Fonts',
+        'WEB',
+        'fonts',
+      ),
+      path.join(
+        __dirname,
+        '..',
+        '..',
+        'assets',
+        'Satoshi_Complete',
+        'Fonts',
+        'WEB',
+        'fonts',
+      ),
     ];
     for (const assetsDir of candidates) {
       try {
@@ -126,9 +146,24 @@ export class OgImageService {
           fs.readFile(path.join(assetsDir, 'Satoshi-Black.woff')),
         ]);
         this.fonts = [
-          { name: FONT_FAMILY, data: regular, weight: 400 as const, style: 'normal' as const },
-          { name: FONT_FAMILY, data: bold, weight: 700 as const, style: 'normal' as const },
-          { name: FONT_DOMAIN, data: black, weight: 900 as const, style: 'normal' as const },
+          {
+            name: FONT_FAMILY,
+            data: regular,
+            weight: 400 as const,
+            style: 'normal' as const,
+          },
+          {
+            name: FONT_FAMILY,
+            data: bold,
+            weight: 700 as const,
+            style: 'normal' as const,
+          },
+          {
+            name: FONT_DOMAIN,
+            data: black,
+            weight: 900 as const,
+            style: 'normal' as const,
+          },
         ];
         return this.fonts;
       } catch {
@@ -160,11 +195,7 @@ export class OgImageService {
       EXPERIENCE_LABELS[job.experienceLevel] ?? job.experienceLevel;
     const rateDisplay = hasRate(job.rate)
       ? formatRateValue(job.rate!, job.currency, job.billingType)
-      : getBlurredRatePlaceholder(
-          job.id,
-          job.billingType,
-          job.currency,
-        );
+      : getBlurredRatePlaceholder(job.id, job.billingType, job.currency);
     const billingLabel = BILLING_LABELS[job.billingType] ?? job.billingType;
     const projectTypeLabel =
       PROJECT_TYPE_LABELS[job.projectType] ?? job.projectType;
@@ -241,12 +272,7 @@ export class OgImageService {
                         experienceLabel,
                         false,
                       ),
-                      cell(
-                        ICON_SETTINGS,
-                        'Stawka',
-                        rateDisplay,
-                        true,
-                      ),
+                      cell(ICON_SETTINGS, 'Stawka', rateDisplay, true),
                     ],
                   },
                 },
@@ -343,7 +369,12 @@ export class OgImageService {
     const svg = await satori(tree as never, {
       width: OG_WIDTH,
       height: OG_HEIGHT,
-      fonts: fonts as { name: string; data: Buffer; weight: 400 | 700 | 900; style: 'normal' }[],
+      fonts: fonts as {
+        name: string;
+        data: Buffer;
+        weight: 400 | 700 | 900;
+        style: 'normal';
+      }[],
     });
 
     const resvg = new Resvg(svg);
@@ -360,8 +391,8 @@ function cell(
   value: string,
   isRate: boolean,
 ): { type: string; props: Record<string, unknown> } {
-  const iconBoxSize = 82;   // 96×0.85
-  const iconImgSize = 48;   // 56×0.85
+  const iconBoxSize = 82; // 96×0.85
+  const iconImgSize = 48; // 56×0.85
   const labelFontSize = 29; // 32×0.9
   const valueFontSize = 40; // 44×0.9
   return {
@@ -403,7 +434,13 @@ function cell(
         {
           type: 'div',
           props: {
-            style: { display: 'flex', flexDirection: 'column', gap: 8, flex: 1, minWidth: 0 },
+            style: {
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+              flex: 1,
+              minWidth: 0,
+            },
             children: [
               {
                 type: 'div',

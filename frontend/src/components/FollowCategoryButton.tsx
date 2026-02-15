@@ -63,7 +63,9 @@ export function FollowCategoryButton({
   if (!user) return null;
   if (followedIds === null) return null; // still loading initial state
 
-  const label = isFollowing ? t('jobs.unfollowCategory') : t('jobs.followCategory');
+  const label = isFollowing
+    ? t('jobs.unfollowCategory')
+    : t('jobs.followCategory');
   const loadingLabel = isFollowing
     ? t('jobs.unfollowingCategory')
     : t('jobs.followingCategory');

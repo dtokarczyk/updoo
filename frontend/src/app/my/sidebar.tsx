@@ -27,7 +27,11 @@ export function Sidebar({
         FAVORITES_ITEM,
       ]
     : [
-        { href: '/my/applications', labelKey: 'my.myApplications', icon: FileText },
+        {
+          href: '/my/applications',
+          labelKey: 'my.myApplications',
+          icon: FileText,
+        },
         FAVORITES_ITEM,
       ];
 

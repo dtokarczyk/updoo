@@ -107,7 +107,7 @@ export function CoverPhotoUpload({
     if (!allowed.includes(file.type)) {
       setError(
         t('profile.coverUploadFailed') ||
-        'Nieprawidłowy format. Użyj JPEG, PNG, WebP lub GIF.',
+          'Nieprawidłowy format. Użyj JPEG, PNG, WebP lub GIF.',
       );
       e.target.value = '';
       return;

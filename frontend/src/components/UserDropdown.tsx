@@ -2,13 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import {
-  Moon,
-  Sun,
-  Settings,
-  ShieldCheck,
-  LogOut,
-} from 'lucide-react';
+import { Moon, Sun, Settings, ShieldCheck, LogOut } from 'lucide-react';
 import { type AccountType, type AuthUser } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -38,10 +32,7 @@ function accountTypeLabel(
 }
 
 /** Full display name: "Name Surname" or fallback to email / "Profil". */
-function displayName(
-  user: AuthUser,
-  t: (key: string) => string,
-): string {
+function displayName(user: AuthUser, t: (key: string) => string): string {
   const n = user.name?.trim();
   const s = user.surname?.trim();
   if (n && s) return `${n} ${s}`;
@@ -128,7 +119,10 @@ export function UserDropdown({
             </Link>
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem onClick={toggleTheme} className="flex items-center gap-2">
+        <DropdownMenuItem
+          onClick={toggleTheme}
+          className="flex items-center gap-2"
+        >
           {theme === 'light' ? (
             <Moon className="h-4 w-4 shrink-0" aria-hidden />
           ) : (

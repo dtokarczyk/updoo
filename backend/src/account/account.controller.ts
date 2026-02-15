@@ -31,7 +31,7 @@ export class AccountController {
     private readonly authService: AuthService,
     private readonly agreementsService: AgreementsService,
     private readonly storageService: StorageService,
-  ) { }
+  ) {}
 
   @Get('profile')
   @UseGuards(JwtAuthGuard)

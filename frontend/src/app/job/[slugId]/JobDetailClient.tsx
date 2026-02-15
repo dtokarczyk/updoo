@@ -4,13 +4,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState, useRef } from 'react';
 import ReactCountryFlag from 'react-country-flag';
-import {
-  ArrowLeft,
-  ArrowRight,
-  Calendar,
-  FileText,
-  Tag,
-} from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, FileText, Tag } from 'lucide-react';
 import {
   applyToJob,
   closeJob,
@@ -33,7 +27,6 @@ import { JobRateValue } from './JobRateValue';
 import { JobActions } from './JobActions';
 import { JobSidebar } from './JobSidebar';
 import { RejectJobDialog } from '@/components/RejectJobDialog';
-
 
 interface JobDetailClientProps {
   initialJob: Job;
@@ -161,7 +154,12 @@ export function JobDetailClient({
     if (!hasCompany) userType = 'FREELANCER_NO_B2B';
     else if (companySize === 'FREELANCER') userType = 'FREELANCER_B2B';
     else if (isCompanySize) userType = 'COMPANY';
-    return userType != null && allowedTypes.includes(userType as ('FREELANCER_NO_B2B' | 'FREELANCER_B2B' | 'COMPANY'));
+    return (
+      userType != null &&
+      allowedTypes.includes(
+        userType as 'FREELANCER_NO_B2B' | 'FREELANCER_B2B' | 'COMPANY',
+      )
+    );
   })();
 
   const canApply =
@@ -299,9 +297,15 @@ export function JobDetailClient({
                     ) : null}
                     <AvatarFallback className="text-[10px]">
                       {(() => {
-                        const n = (job.author.name?.trim() ?? '').charAt(0).toUpperCase();
-                        const s = (job.author.surname?.trim() ?? '').charAt(0).toUpperCase();
-                        const e = (job.author.email ?? '?').charAt(0).toUpperCase();
+                        const n = (job.author.name?.trim() ?? '')
+                          .charAt(0)
+                          .toUpperCase();
+                        const s = (job.author.surname?.trim() ?? '')
+                          .charAt(0)
+                          .toUpperCase();
+                        const e = (job.author.email ?? '?')
+                          .charAt(0)
+                          .toUpperCase();
                         return n && s ? `${n}${s}` : n || s || e;
                       })()}
                     </AvatarFallback>
@@ -395,7 +399,9 @@ export function JobDetailClient({
             isOwnJob={isOwnJob}
             isDraft={isDraft}
             applyFormRef={applyFormRef}
-            lastApplicationMessage={job.currentUserApplicationMessage ?? lastApplicationMessage}
+            lastApplicationMessage={
+              job.currentUserApplicationMessage ?? lastApplicationMessage
+            }
             deadlinePassed={deadlinePassed}
             slotsFull={slotsFull}
             meetsApplicantCriteria={meetsApplicantCriteria}
@@ -486,33 +492,33 @@ export function JobDetailClient({
         canApply ||
         criteriaNotMet ||
         (!user && !isDraft && !isClosed)) && (
-          <div className="fixed inset-x-0 bottom-16 z-50 border-t border-border bg-background/95 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
-            <div className="mx-auto max-w-4xl">
-              <JobActions
-                isOwnJob={isOwnJob}
-                isAdmin={isAdmin}
-                isDraft={isDraft}
-                isClosed={isClosed}
-                user={user}
-                canApply={canApply}
-                criteriaNotMet={criteriaNotMet}
-                currentUserApplied={job.currentUserApplied}
-                deadlinePassed={deadlinePassed}
-                canClose={canClose}
-                closeSubmitting={closeSubmitting}
-                onAccept={handleAccept}
-                acceptSubmitting={acceptSubmitting}
-                onRejectClick={openRejectDialog}
-                rejectSubmitting={rejectSubmitting}
-                job={job}
-                onApplyClick={handleApplyClick}
-                onClose={handleClose}
-                t={t}
-                layout="row"
-              />
-            </div>
+        <div className="fixed inset-x-0 bottom-16 z-50 border-t border-border bg-background/95 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
+          <div className="mx-auto max-w-4xl">
+            <JobActions
+              isOwnJob={isOwnJob}
+              isAdmin={isAdmin}
+              isDraft={isDraft}
+              isClosed={isClosed}
+              user={user}
+              canApply={canApply}
+              criteriaNotMet={criteriaNotMet}
+              currentUserApplied={job.currentUserApplied}
+              deadlinePassed={deadlinePassed}
+              canClose={canClose}
+              closeSubmitting={closeSubmitting}
+              onAccept={handleAccept}
+              acceptSubmitting={acceptSubmitting}
+              onRejectClick={openRejectDialog}
+              rejectSubmitting={rejectSubmitting}
+              job={job}
+              onApplyClick={handleApplyClick}
+              onClose={handleClose}
+              t={t}
+              layout="row"
+            />
           </div>
-        )}
+        </div>
+      )}
 
       <RejectJobDialog
         open={rejectDialogOpen}

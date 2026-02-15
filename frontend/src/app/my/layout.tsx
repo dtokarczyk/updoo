@@ -27,9 +27,7 @@ export default async function MyLayout({
   await requireAuth();
 
   return (
-    <SettingsLayout
-      sidebar={<Sidebar variant="sidebar" />}
-    >
+    <SettingsLayout sidebar={<Sidebar variant="sidebar" />}>
       {children}
     </SettingsLayout>
   );

@@ -37,7 +37,8 @@ export default function AdminUsersPage() {
       <CardHeader>
         <CardTitle>Użytkownicy</CardTitle>
         <CardDescription>
-          Lista prawdziwych użytkowników (bez kont wygenerowanych), od najnowszych
+          Lista prawdziwych użytkowników (bez kont wygenerowanych), od
+          najnowszych
         </CardDescription>
       </CardHeader>
       <CardContent>

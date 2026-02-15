@@ -4,13 +4,15 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm, FormProvider } from 'react-hook-form';
 import { Card } from '@/components/ui/card';
-import { getStoredUser, updateProfile, updateStoredUser, needsOnboarding } from '@/lib/api';
+import {
+  getStoredUser,
+  updateProfile,
+  updateStoredUser,
+  needsOnboarding,
+} from '@/lib/api';
 import type { AuthUser } from '@/lib/api';
 import { useTranslations } from '@/hooks/useTranslations';
-import {
-  defaultOnboardingValues,
-  type OnboardingFormValues,
-} from './schemas';
+import { defaultOnboardingValues, type OnboardingFormValues } from './schemas';
 import { stepAccountTypeSchema } from './schemas';
 import { StepAccountType } from './steps';
 import { OnboardingForClient } from './OnboardingForClient';
@@ -43,8 +45,7 @@ function getFreelancerInitialStep(stored: AuthUser): number {
     (stored.name ?? '').trim() !== '' && (stored.surname ?? '').trim() !== '';
   const hasPhone = (stored.phone ?? '').trim() !== '';
   const hasSkills = (stored.skills?.length ?? 0) > 0;
-  const hasDefaultMessage =
-    (stored.defaultMessage?.trim() ?? '').length > 0;
+  const hasDefaultMessage = (stored.defaultMessage?.trim() ?? '').length > 0;
   // Company step done: user has a company (NIP/companyId) OR has already passed it (has skills)
   const companyDone =
     stored.companyId != null ||
@@ -65,9 +66,9 @@ function OnboardingContent() {
   const { t } = useTranslations();
 
   const [storedUser, setStoredUser] = useState<AuthUser | null>(null);
-  const [accountType, setAccountType] = useState<'CLIENT' | 'FREELANCER' | null>(
-    null,
-  );
+  const [accountType, setAccountType] = useState<
+    'CLIENT' | 'FREELANCER' | null
+  >(null);
   const [accountTypeLoading, setAccountTypeLoading] = useState(false);
   const [accountTypeError, setAccountTypeError] = useState('');
 
@@ -139,7 +140,9 @@ function OnboardingContent() {
     });
     if (!result.success) {
       form.setError('accountType', {
-        message: result.error.issues[0]?.message ?? t('onboarding.accountTypeRequired'),
+        message:
+          result.error.issues[0]?.message ??
+          t('onboarding.accountTypeRequired'),
       });
       setAccountTypeLoading(false);
       return;
@@ -187,7 +190,9 @@ function OnboardingContent() {
   if (storedUser === null) return null;
 
   if (accountType === 'CLIENT') {
-    const initialStep = force ? CLIENT_STEP_NAME : getClientInitialStep(storedUser);
+    const initialStep = force
+      ? CLIENT_STEP_NAME
+      : getClientInitialStep(storedUser);
     return (
       <OnboardingForClient
         form={form}

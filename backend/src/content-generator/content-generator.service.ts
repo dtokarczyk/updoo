@@ -30,7 +30,7 @@ export class ContentGeneratorService {
   constructor(
     private readonly aiService: AiService,
     private readonly prisma: PrismaService,
-  ) { }
+  ) {}
 
   /**
    * Call AI to generate job metadata (billing, rate, experience, category, skills, etc.) from title + description.
@@ -155,15 +155,15 @@ export class ContentGeneratorService {
     const hoursPerWeek =
       billingType === BillingType.HOURLY
         ? ALLOWED.hoursPerWeek[
-        Math.floor(Math.random() * ALLOWED.hoursPerWeek.length)
-        ]
+            Math.floor(Math.random() * ALLOWED.hoursPerWeek.length)
+          ]
         : null;
 
     const rateNegotiable = Math.random() < 0.3;
 
     const expectedOffers =
       ALLOWED.expectedOffers[
-      Math.floor(Math.random() * ALLOWED.expectedOffers.length)
+        Math.floor(Math.random() * ALLOWED.expectedOffers.length)
       ];
 
     const expectedApplicantTypesCount =
@@ -178,7 +178,7 @@ export class ContentGeneratorService {
 
     const categorySlug =
       typeof parsed.categorySlug === 'string' &&
-        allowedCategorySlugs.includes(parsed.categorySlug.trim())
+      allowedCategorySlugs.includes(parsed.categorySlug.trim())
         ? parsed.categorySlug.trim()
         : allowedCategorySlugs[0];
 
@@ -337,11 +337,11 @@ export class ContentGeneratorService {
       const skillIds =
         metadata.skillNames.length > 0
           ? (
-            await this.prisma.skill.findMany({
-              where: { name: { in: metadata.skillNames } },
-              select: { id: true },
-            })
-          ).map((s) => s.id)
+              await this.prisma.skill.findMany({
+                where: { name: { in: metadata.skillNames } },
+                select: { id: true },
+              })
+            ).map((s) => s.id)
           : [];
 
       const safeUser: GeneratedJobFormData['user'] = {

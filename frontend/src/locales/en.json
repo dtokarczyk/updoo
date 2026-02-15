@@ -637,6 +637,7 @@
     "sidebarLabel": "Admin panel",
     "tabDashboard": "Dashboard",
     "tabUsers": "Users",
+    "tabMailerLog": "Mailer log",
     "pendingJobs": "Pending jobs",
     "pendingJobsTitle": "Jobs awaiting approval",
     "noPendingJobs": "No jobs awaiting approval",

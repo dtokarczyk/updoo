@@ -72,7 +72,7 @@ export function OnboardingForFreelancer({
                   actions.setUser(user);
                   actions.goToStep(FREELANCER_STEP_PHONE);
                 }}
-                onBack={() => { }}
+                onBack={() => {}}
                 t={t}
                 showBack={false}
               />
@@ -120,9 +120,7 @@ export function OnboardingForFreelancer({
                 onSuccess={() =>
                   actions.goToStep(FREELANCER_STEP_PROFILE_QUESTION)
                 }
-                onBack={() =>
-                  actions.goToStep(FREELANCER_STEP_DEFAULT_MESSAGE)
-                }
+                onBack={() => actions.goToStep(FREELANCER_STEP_DEFAULT_MESSAGE)}
                 t={t}
               />
             )}
@@ -170,10 +168,7 @@ export function OnboardingForFreelancer({
             >
               {t('common.cancel')}
             </Button>
-            <Button
-              onClick={actions.goToNewJob}
-              className="w-full sm:w-auto"
-            >
+            <Button onClick={actions.goToNewJob} className="w-full sm:w-auto">
               {t('jobs.draftModal.continueEditing')}
             </Button>
           </DialogFooter>

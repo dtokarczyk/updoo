@@ -41,8 +41,9 @@ export class AccountService {
     const userCompany = user as {
       company?: { nip: string; companySize: string | null } | null;
     };
-    const resolvedAvatarUrl =
-      await this.storageService.getImageUrlForResponse(user.avatarUrl ?? null);
+    const resolvedAvatarUrl = await this.storageService.getImageUrlForResponse(
+      user.avatarUrl ?? null,
+    );
     return {
       id: user.id,
       email: user.email,

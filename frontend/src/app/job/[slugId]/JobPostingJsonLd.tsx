@@ -1,8 +1,7 @@
 import { jobPath } from '@/lib/job-url';
 import { authorDisplayName, type Job } from '@/lib/api';
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_APP_URL ?? 'https://hoplo.pl';
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://hoplo.pl';
 
 export interface JobPostingJsonLdProps {
   job: Job;
@@ -19,9 +18,8 @@ export function JobPostingJsonLd({ job }: JobPostingJsonLdProps) {
   const orgName = authorDisplayName(job.author) || 'Hoplo';
 
   // jobLocation is required: Place with address (at least addressCountry or addressLocality)
-  const jobLocation =
-    job.isRemote
-      ? {
+  const jobLocation = job.isRemote
+    ? {
         '@type': 'Place' as const,
         address: {
           '@type': 'PostalAddress' as const,
@@ -29,8 +27,8 @@ export function JobPostingJsonLd({ job }: JobPostingJsonLdProps) {
           addressLocality: 'Remote',
         },
       }
-      : job.location
-        ? {
+    : job.location
+      ? {
           '@type': 'Place' as const,
           address: {
             '@type': 'PostalAddress' as const,
@@ -38,7 +36,7 @@ export function JobPostingJsonLd({ job }: JobPostingJsonLdProps) {
             addressCountry: job.language === 'POLISH' ? 'PL' : 'US',
           },
         }
-        : {
+      : {
           '@type': 'Place' as const,
           address: {
             '@type': 'PostalAddress' as const,

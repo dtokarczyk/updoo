@@ -152,18 +152,19 @@ export function JobForm({
       const offerDays =
         initialData.deadline && initialData.createdAt
           ? (() => {
-            const ms =
-              new Date(initialData.deadline).getTime() -
-              new Date(initialData.createdAt).getTime();
-            const days = Math.round(ms / (24 * 60 * 60 * 1000));
-            const allowed = [7, 14, 21, 30];
-            return allowed.reduce((prev, curr) =>
-              Math.abs(curr - days) < Math.abs(prev - days) ? curr : prev,
-            );
-          })()
+              const ms =
+                new Date(initialData.deadline).getTime() -
+                new Date(initialData.createdAt).getTime();
+              const days = Math.round(ms / (24 * 60 * 60 * 1000));
+              const allowed = [7, 14, 21, 30];
+              return allowed.reduce((prev, curr) =>
+                Math.abs(curr - days) < Math.abs(prev - days) ? curr : prev,
+              );
+            })()
           : 14;
       const expectedOffers =
-        initialData.expectedOffers != null && [6, 10, 14].includes(initialData.expectedOffers)
+        initialData.expectedOffers != null &&
+        [6, 10, 14].includes(initialData.expectedOffers)
           ? initialData.expectedOffers
           : 10;
       reset({
@@ -172,10 +173,13 @@ export function JobForm({
         categoryId: initialData.categoryId,
         language: initialData.language ?? 'POLISH',
         billingType: initialData.billingType,
-        hoursPerWeek: (initialData.hoursPerWeek ?? '') as JobFormValues['hoursPerWeek'],
+        hoursPerWeek: (initialData.hoursPerWeek ??
+          '') as JobFormValues['hoursPerWeek'],
         rate:
           initialData.rateNegotiable &&
-            (initialData.rate === '0' || initialData.rate === '' || !initialData.rate)
+          (initialData.rate === '0' ||
+            initialData.rate === '' ||
+            !initialData.rate)
             ? ''
             : (initialData.rate ?? '1000'),
         rateNegotiable: initialData.rateNegotiable ?? false,
@@ -188,7 +192,10 @@ export function JobForm({
         expectedOffers: expectedOffers as JobFormValues['expectedOffers'],
         expectedApplicantTypes: initialData.expectedApplicantTypes ?? [],
         selectedSkills:
-          initialData.skills?.map((r) => ({ skillId: r.skill.id, name: r.skill.name })) ?? [],
+          initialData.skills?.map((r) => ({
+            skillId: r.skill.id,
+            name: r.skill.name,
+          })) ?? [],
       });
     }
   }, [initialData, mode, reset]);
@@ -204,7 +211,8 @@ export function JobForm({
           categoryId: draft.categoryId,
           language: draft.language ?? 'POLISH',
           billingType: draft.billingType,
-          hoursPerWeek: (draft.hoursPerWeek ?? '') as JobFormValues['hoursPerWeek'],
+          hoursPerWeek: (draft.hoursPerWeek ??
+            '') as JobFormValues['hoursPerWeek'],
           rate:
             draft.rateNegotiable && (draft.rate === 0 || draft.rate == null)
               ? ''
@@ -216,7 +224,8 @@ export function JobForm({
           isRemote: draft.isRemote,
           projectType: draft.projectType,
           offerDays: (draft.offerDays ?? 14) as JobFormValues['offerDays'],
-          expectedOffers: (draft.expectedOffers != null && [6, 10, 14].includes(draft.expectedOffers)
+          expectedOffers: (draft.expectedOffers != null &&
+          [6, 10, 14].includes(draft.expectedOffers)
             ? draft.expectedOffers
             : 10) as JobFormValues['expectedOffers'],
           expectedApplicantTypes: draft.expectedApplicantTypes ?? [],
@@ -254,7 +263,14 @@ export function JobForm({
       watchedExperienceLevel as ExperienceLevel,
     );
     setValue('rate', String(suggested));
-  }, [mode, watchedCategoryId, watchedExperienceLevel, watchedBillingType, categories, setValue]);
+  }, [
+    mode,
+    watchedCategoryId,
+    watchedExperienceLevel,
+    watchedBillingType,
+    categories,
+    setValue,
+  ]);
 
   const onFormSubmit = async (data: JobFormValues) => {
     setSubmitError(null);
@@ -309,9 +325,7 @@ export function JobForm({
   return (
     <form onSubmit={rhfHandleSubmit(onFormSubmit)} className="space-y-8">
       {submitError && (
-        <p className="text-sm text-red-600 dark:text-red-400">
-          {submitError}
-        </p>
+        <p className="text-sm text-red-600 dark:text-red-400">{submitError}</p>
       )}
 
       {/* Step 1: Title, Description, Category (language always POLISH, set on backend) */}
@@ -421,7 +435,9 @@ export function JobForm({
                       onSelect={() => field.onChange(level)}
                       disabled={isSubmitting}
                       className={
-                        errors.experienceLevel ? 'border-destructive' : undefined
+                        errors.experienceLevel
+                          ? 'border-destructive'
+                          : undefined
                       }
                     />
                   ),
@@ -445,7 +461,9 @@ export function JobForm({
                 <Checkbox
                   id="isRemote"
                   checked={field.value}
-                  onCheckedChange={(checked) => field.onChange(checked === true)}
+                  onCheckedChange={(checked) =>
+                    field.onChange(checked === true)
+                  }
                   disabled={isSubmitting}
                 />
                 <Label
@@ -471,7 +489,9 @@ export function JobForm({
                     disabled={isSubmitting || locations.length === 0}
                   >
                     <SelectTrigger className="h-11 text-base">
-                      <SelectValue placeholder={t('jobs.newJobForm.notSelected')} />
+                      <SelectValue
+                        placeholder={t('jobs.newJobForm.notSelected')}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {locations.map((loc) => (
@@ -501,20 +521,22 @@ export function JobForm({
             control={control}
             render={({ field }) => (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {(Object.keys(PROJECT_TYPE_LABELS) as ProjectType[]).map((type) => (
-                  <SelectBox
-                    key={type}
-                    value={type}
-                    label={PROJECT_TYPE_LABELS[type]}
-                    description={PROJECT_TYPE_DESCRIPTIONS[type]}
-                    selected={field.value === type}
-                    onSelect={() => field.onChange(type)}
-                    disabled={isSubmitting}
-                    className={
-                      errors.projectType ? 'border-destructive' : undefined
-                    }
-                  />
-                ))}
+                {(Object.keys(PROJECT_TYPE_LABELS) as ProjectType[]).map(
+                  (type) => (
+                    <SelectBox
+                      key={type}
+                      value={type}
+                      label={PROJECT_TYPE_LABELS[type]}
+                      description={PROJECT_TYPE_DESCRIPTIONS[type]}
+                      selected={field.value === type}
+                      onSelect={() => field.onChange(type)}
+                      disabled={isSubmitting}
+                      className={
+                        errors.projectType ? 'border-destructive' : undefined
+                      }
+                    />
+                  ),
+                )}
               </div>
             )}
           />
@@ -563,19 +585,23 @@ export function JobForm({
                 <div className="space-y-3 mt-4">
                   <Label>{t('jobs.hoursPerWeek')}</Label>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {(Object.keys(HOURS_LABELS) as HoursPerWeek[]).map((hours) => (
-                      <SelectBox
-                        key={hours}
-                        value={hours}
-                        label={HOURS_LABELS[hours]}
-                        selected={field.value === hours}
-                        onSelect={() => field.onChange(hours)}
-                        disabled={isSubmitting}
-                        className={
-                          errors.hoursPerWeek ? 'border-destructive' : undefined
-                        }
-                      />
-                    ))}
+                    {(Object.keys(HOURS_LABELS) as HoursPerWeek[]).map(
+                      (hours) => (
+                        <SelectBox
+                          key={hours}
+                          value={hours}
+                          label={HOURS_LABELS[hours]}
+                          selected={field.value === hours}
+                          onSelect={() => field.onChange(hours)}
+                          disabled={isSubmitting}
+                          className={
+                            errors.hoursPerWeek
+                              ? 'border-destructive'
+                              : undefined
+                          }
+                        />
+                      ),
+                    )}
                   </div>
                   {errors.hoursPerWeek?.message && (
                     <p className="text-sm text-red-600 dark:text-red-400">
@@ -690,7 +716,9 @@ export function JobForm({
                     selected={field.value === days}
                     onSelect={() => field.onChange(days)}
                     disabled={isSubmitting}
-                    className={errors.offerDays ? 'border-destructive' : undefined}
+                    className={
+                      errors.offerDays ? 'border-destructive' : undefined
+                    }
                   />
                 ))}
               </div>
@@ -721,7 +749,9 @@ export function JobForm({
                     selected={field.value === num}
                     onSelect={() => field.onChange(num)}
                     disabled={isSubmitting}
-                    className={errors.expectedOffers ? 'border-destructive' : undefined}
+                    className={
+                      errors.expectedOffers ? 'border-destructive' : undefined
+                    }
                   />
                 ))}
               </div>
@@ -746,9 +776,20 @@ export function JobForm({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {(
                   [
-                    { value: 'FREELANCER_NO_B2B', labelKey: 'jobs.newJobForm.expectedApplicantTypeFreelancerNoB2B' },
-                    { value: 'FREELANCER_B2B', labelKey: 'jobs.newJobForm.expectedApplicantTypeFreelancerB2B' },
-                    { value: 'COMPANY', labelKey: 'jobs.newJobForm.expectedApplicantTypeCompany' },
+                    {
+                      value: 'FREELANCER_NO_B2B',
+                      labelKey:
+                        'jobs.newJobForm.expectedApplicantTypeFreelancerNoB2B',
+                    },
+                    {
+                      value: 'FREELANCER_B2B',
+                      labelKey:
+                        'jobs.newJobForm.expectedApplicantTypeFreelancerB2B',
+                    },
+                    {
+                      value: 'COMPANY',
+                      labelKey: 'jobs.newJobForm.expectedApplicantTypeCompany',
+                    },
                   ] as const
                 ).map(({ value, labelKey }) => (
                   <SelectBox
@@ -763,7 +804,11 @@ export function JobForm({
                       field.onChange(next);
                     }}
                     disabled={isSubmitting}
-                    className={errors.expectedApplicantTypes ? 'border-destructive' : undefined}
+                    className={
+                      errors.expectedApplicantTypes
+                        ? 'border-destructive'
+                        : undefined
+                    }
                   />
                 ))}
               </div>
@@ -777,7 +822,12 @@ export function JobForm({
         </div>
       </div>
 
-      <Button type="submit" disabled={isSubmitting} size="lg" className="w-full">
+      <Button
+        type="submit"
+        disabled={isSubmitting}
+        size="lg"
+        className="w-full"
+      >
         {isSubmitting
           ? t('jobs.newJobForm.submitting')
           : mode === 'create'

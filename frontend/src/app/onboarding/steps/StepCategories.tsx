@@ -20,11 +20,7 @@ interface StepCategoriesProps {
   t: TranslateFn;
 }
 
-export function StepCategories({
-  onSuccess,
-  onBack,
-  t,
-}: StepCategoriesProps) {
+export function StepCategories({ onSuccess, onBack, t }: StepCategoriesProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
@@ -66,9 +62,7 @@ export function StepCategories({
       }
       onSuccess();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : t('onboarding.saveFailed'),
-      );
+      setError(err instanceof Error ? err.message : t('onboarding.saveFailed'));
     } finally {
       setLoading(false);
     }

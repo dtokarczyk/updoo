@@ -5,7 +5,7 @@ import { maskAuthorSurname } from './author-helpers';
 
 @Injectable()
 export class FavoritesService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   /** Add job to user's favorites. Idempotent. */
   async addFavorite(userId: string, jobId: string): Promise<{ ok: boolean }> {
@@ -64,7 +64,13 @@ export class FavoritesService {
               },
             },
             author: {
-              select: { id: true, email: true, name: true, surname: true, avatarUrl: true },
+              select: {
+                id: true,
+                email: true,
+                name: true,
+                surname: true,
+                avatarUrl: true,
+              },
             },
             location: true,
             skills: { include: { skill: true } },

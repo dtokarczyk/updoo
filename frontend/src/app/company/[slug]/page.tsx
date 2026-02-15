@@ -142,7 +142,14 @@ export default function CompanyProfilePage() {
     try {
       await verifyContractorProfile(profile.id);
       setProfile((prev) =>
-        prev ? { ...prev, isVerified: true, rejectedAt: null, rejectedReason: null } : null,
+        prev
+          ? {
+              ...prev,
+              isVerified: true,
+              rejectedAt: null,
+              rejectedReason: null,
+            }
+          : null,
       );
       router.refresh();
     } catch (e) {
@@ -166,7 +173,10 @@ export default function CompanyProfilePage() {
     if (!profile?.id || !isAdmin || rejectReason.trim().length < 10) return;
     setRejectSubmitting(true);
     try {
-      const updated = await rejectContractorProfile(profile.id, rejectReason.trim());
+      const updated = await rejectContractorProfile(
+        profile.id,
+        rejectReason.trim(),
+      );
       setProfile(updated);
       closeRejectDialog();
       router.refresh();

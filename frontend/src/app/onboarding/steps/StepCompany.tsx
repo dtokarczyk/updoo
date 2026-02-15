@@ -25,7 +25,10 @@ import type { OnboardingFormValues, TranslateFn } from '../schemas';
 const LARGER_SIZES = ['MICRO', 'SMALL', 'MEDIUM', 'LARGE'] as const;
 
 function setValidationErrors(
-  setError: (name: keyof OnboardingFormValues, error: { message: string }) => void,
+  setError: (
+    name: keyof OnboardingFormValues,
+    error: { message: string },
+  ) => void,
   clearErrors: () => void,
   issues: { path: unknown[]; message: string }[],
 ) {
@@ -51,8 +54,15 @@ export function StepCompany({
   t,
   onCompanyFetched,
 }: StepCompanyProps) {
-  const { watch, setValue, getValues, setError, clearErrors, register, formState } =
-    useFormContext<OnboardingFormValues>();
+  const {
+    watch,
+    setValue,
+    getValues,
+    setError,
+    clearErrors,
+    register,
+    formState,
+  } = useFormContext<OnboardingFormValues>();
   const hasCompany = watch('hasCompany');
   const companySize = watch('companySize');
   const nipCompany = watch('nipCompany');

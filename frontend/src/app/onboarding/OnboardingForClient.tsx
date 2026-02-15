@@ -108,10 +108,7 @@ export function OnboardingForClient({
             >
               {t('common.cancel')}
             </Button>
-            <Button
-              onClick={actions.goToNewJob}
-              className="w-full sm:w-auto"
-            >
+            <Button onClick={actions.goToNewJob} className="w-full sm:w-auto">
               {t('jobs.draftModal.continueEditing')}
             </Button>
           </DialogFooter>

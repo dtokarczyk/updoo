@@ -315,7 +315,13 @@ export class JobsService implements OnModuleInit {
           },
         },
         author: {
-          select: { id: true, email: true, name: true, surname: true, avatarUrl: true },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            surname: true,
+            avatarUrl: true,
+          },
         },
         location: true,
         skills: { include: { skill: true } },
@@ -346,7 +352,13 @@ export class JobsService implements OnModuleInit {
           },
         },
         author: {
-          select: { id: true, email: true, name: true, surname: true, avatarUrl: true },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            surname: true,
+            avatarUrl: true,
+          },
         },
         location: true,
         skills: { include: { skill: true } },
@@ -371,7 +383,10 @@ export class JobsService implements OnModuleInit {
     description: string,
   ): Promise<string[]> {
     const allSkillNames = (
-      await this.prisma.skill.findMany({ select: { name: true }, orderBy: { name: 'asc' } })
+      await this.prisma.skill.findMany({
+        select: { name: true },
+        orderBy: { name: 'asc' },
+      })
     ).map((s) => s.name);
     const allowed = allSkillNames.slice(0, 500);
     const prompt = [
@@ -417,7 +432,9 @@ export class JobsService implements OnModuleInit {
       const arr = Array.isArray(parsed.skillNames) ? parsed.skillNames : [];
       const allowedSet = new Set(allowed.map((n) => n.trim().toLowerCase()));
       return arr
-        .filter((n): n is string => typeof n === 'string' && n.trim().length > 0)
+        .filter(
+          (n): n is string => typeof n === 'string' && n.trim().length > 0,
+        )
         .map((n) => n.trim())
         .filter((n) => allowed.length === 0 || allowedSet.has(n.toLowerCase()))
         .slice(0, 5);
@@ -555,7 +572,13 @@ export class JobsService implements OnModuleInit {
           },
         },
         author: {
-          select: { id: true, email: true, name: true, surname: true, avatarUrl: true },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            surname: true,
+            avatarUrl: true,
+          },
         },
         location: true,
         skills: { include: { skill: true } },
@@ -574,18 +597,18 @@ export class JobsService implements OnModuleInit {
     const appliedIds =
       userId && jobs.length
         ? new Set(
-          (
-            await this.prisma.jobApplication.findMany({
-              where: {
-                freelancerId: userId,
-                jobId: {
-                  in: jobs.map((j) => j.id),
+            (
+              await this.prisma.jobApplication.findMany({
+                where: {
+                  freelancerId: userId,
+                  jobId: {
+                    in: jobs.map((j) => j.id),
+                  },
                 },
-              },
-              select: { jobId: true },
-            })
-          ).map((a) => a.jobId),
-        )
+                select: { jobId: true },
+              })
+            ).map((a) => a.jobId),
+          )
         : new Set<string>();
 
     const items = jobs.map((item) => {
@@ -639,7 +662,13 @@ export class JobsService implements OnModuleInit {
           },
         },
         author: {
-          select: { id: true, email: true, name: true, surname: true, avatarUrl: true },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            surname: true,
+            avatarUrl: true,
+          },
         },
         location: true,
         skills: { include: { skill: true } },
@@ -707,9 +736,9 @@ export class JobsService implements OnModuleInit {
         createdAt: app.createdAt,
         // Include message for the current user's own application so they can see what they wrote
         ...(userId &&
-          app.freelancerId === userId &&
-          app.message != null &&
-          app.message !== ''
+        app.freelancerId === userId &&
+        app.message != null &&
+        app.message !== ''
           ? { message: app.message }
           : {}),
       };
@@ -826,7 +855,10 @@ export class JobsService implements OnModuleInit {
         return url;
       }
     } catch (err) {
-      this.logger.warn(`OG image generation/upload failed for job ${jobId}`, err);
+      this.logger.warn(
+        `OG image generation/upload failed for job ${jobId}`,
+        err,
+      );
     }
     return null;
   }
@@ -1155,7 +1187,13 @@ export class JobsService implements OnModuleInit {
               },
             },
             author: {
-              select: { id: true, email: true, name: true, surname: true, avatarUrl: true },
+              select: {
+                id: true,
+                email: true,
+                name: true,
+                surname: true,
+                avatarUrl: true,
+              },
             },
             location: true,
             skills: { include: { skill: true } },
@@ -1198,7 +1236,13 @@ export class JobsService implements OnModuleInit {
           },
         },
         author: {
-          select: { id: true, email: true, name: true, surname: true, avatarUrl: true },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            surname: true,
+            avatarUrl: true,
+          },
         },
         location: true,
         skills: { include: { skill: true } },
@@ -1301,8 +1345,8 @@ export class JobsService implements OnModuleInit {
     const newDeadline =
       dto.offerDays != null && allowedDays.includes(dto.offerDays)
         ? new Date(
-          job.createdAt.getTime() + dto.offerDays * 24 * 60 * 60 * 1000,
-        )
+            job.createdAt.getTime() + dto.offerDays * 24 * 60 * 60 * 1000,
+          )
         : undefined;
     // Job announcements are always in Polish
     const language = JobLanguage.POLISH;
@@ -1348,7 +1392,13 @@ export class JobsService implements OnModuleInit {
           },
         },
         author: {
-          select: { id: true, email: true, name: true, surname: true, avatarUrl: true },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            surname: true,
+            avatarUrl: true,
+          },
         },
         location: true,
         skills: { include: { skill: true } },
@@ -1373,7 +1423,13 @@ export class JobsService implements OnModuleInit {
           },
         },
         author: {
-          select: { id: true, email: true, name: true, surname: true, avatarUrl: true },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            surname: true,
+            avatarUrl: true,
+          },
         },
         location: true,
         skills: { include: { skill: true } },
@@ -1418,7 +1474,13 @@ export class JobsService implements OnModuleInit {
           },
         },
         author: {
-          select: { id: true, email: true, name: true, surname: true, avatarUrl: true },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            surname: true,
+            avatarUrl: true,
+          },
         },
         location: true,
         skills: { include: { skill: true } },
@@ -1492,7 +1554,13 @@ export class JobsService implements OnModuleInit {
           },
         },
         author: {
-          select: { id: true, email: true, name: true, surname: true, avatarUrl: true },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            surname: true,
+            avatarUrl: true,
+          },
         },
         location: true,
         skills: { include: { skill: true } },
@@ -1590,7 +1658,13 @@ export class JobsService implements OnModuleInit {
           },
         },
         author: {
-          select: { id: true, email: true, name: true, surname: true, avatarUrl: true },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            surname: true,
+            avatarUrl: true,
+          },
         },
         location: true,
         skills: { include: { skill: true } },
@@ -1659,7 +1733,13 @@ export class JobsService implements OnModuleInit {
           },
         },
         author: {
-          select: { id: true, email: true, name: true, surname: true, avatarUrl: true },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            surname: true,
+            avatarUrl: true,
+          },
         },
         location: true,
         skills: { include: { skill: true } },

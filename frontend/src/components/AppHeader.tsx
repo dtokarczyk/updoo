@@ -34,9 +34,9 @@ export function AppHeader() {
       icon: typeof LayoutDashboard;
       labelKey: string;
     }> = [
-        { href: '/', icon: LayoutDashboard, labelKey: 'nav.board' },
-        { href: '/my', icon: FolderOpen, labelKey: 'nav.myThings' },
-      ];
+      { href: '/', icon: LayoutDashboard, labelKey: 'nav.board' },
+      { href: '/my', icon: FolderOpen, labelKey: 'nav.myThings' },
+    ];
     if (isFreelancer) {
       if (hasProfile && firstProfileSlug) {
         items.push({
@@ -52,7 +52,11 @@ export function AppHeader() {
         });
       }
     }
-    items.push({ href: '/profile/basic', icon: Settings, labelKey: 'nav.settings' });
+    items.push({
+      href: '/profile/basic',
+      icon: Settings,
+      labelKey: 'nav.settings',
+    });
     return items;
   }, [isFreelancer, hasProfile, firstProfileSlug]);
 
@@ -65,7 +69,10 @@ export function AppHeader() {
           className={` mx-auto flex flex-row items-center justify-between gap-3 sm:gap-4 px-4 py-2 w-full max-w-7xl`}
         >
           <div className="flex items-center gap-2 lg:w-1/5">
-            <Logotype className="shrink-0" tagline={t('branding.logotypeTagline')} />
+            <Logotype
+              className="shrink-0"
+              tagline={t('branding.logotypeTagline')}
+            />
           </div>
 
           <div className="flex items-center gap-2 lg:w-3/5 justify-center">

@@ -58,7 +58,7 @@ export function ConditionalAnalytics() {
         <img
           height="1"
           width="1"
-          style={{ display: "none" }}
+          style={{ display: 'none' }}
           alt="facebook pixel no script image"
           src="https://www.facebook.com/tr?id=1002246091049642&ev=PageView&noscript=1"
         />

@@ -127,7 +127,9 @@ export class MailerService {
       });
       const apiMessage = getMailerSendApiMessage(error);
       if (apiMessage) {
-        const status = (error as { statusCode?: number }).statusCode ?? (error as { response?: { status?: number } }).response?.status;
+        const status =
+          (error as { statusCode?: number }).statusCode ??
+          (error as { response?: { status?: number } }).response?.status;
         if (status === 422) {
           throw new BadRequestException(apiMessage);
         }
@@ -243,7 +245,9 @@ function getMailerSendApiMessage(error: unknown): string | null {
   };
   const msg =
     err?.body?.message ??
-    (typeof err?.response?.body === 'object' && err?.response?.body !== null && 'message' in err.response.body
+    (typeof err?.response?.body === 'object' &&
+    err?.response?.body !== null &&
+    'message' in err.response.body
       ? (err.response.body as { message?: string }).message
       : null);
   return typeof msg === 'string' && msg.length > 0 ? msg : null;

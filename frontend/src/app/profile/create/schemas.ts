@@ -11,17 +11,26 @@ export const profileFormSchema = z.object({
     .string()
     .min(2, 'Adres wizytówki musi mieć co najmniej 2 znaki')
     .max(100, 'Adres wizytówki może mieć co najwyżej 100 znaków')
-    .regex(slugRegex, 'Adres: tylko małe litery, cyfry i myślniki (np. moja-firma)'),
+    .regex(
+      slugRegex,
+      'Adres: tylko małe litery, cyfry i myślniki (np. moja-firma)',
+    ),
   email: z
     .string()
     .min(1, 'Adres e-mail jest wymagany')
     .email('Wpisz poprawny adres e-mail'),
   website: z
     .string()
-    .refine((val) => !val || val === '' || z.string().url().safeParse(val).success, {
-      message: 'Nieprawidłowy adres URL',
-    }),
-  phone: z.string().max(30, 'Numer telefonu może mieć co najwyżej 30 znaków').optional(),
+    .refine(
+      (val) => !val || val === '' || z.string().url().safeParse(val).success,
+      {
+        message: 'Nieprawidłowy adres URL',
+      },
+    ),
+  phone: z
+    .string()
+    .max(30, 'Numer telefonu może mieć co najwyżej 30 znaków')
+    .optional(),
   locationId: z.string().optional(),
   aboutUs: z
     .string()

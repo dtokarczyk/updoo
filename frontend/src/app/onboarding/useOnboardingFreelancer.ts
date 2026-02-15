@@ -59,7 +59,9 @@ export interface UseOnboardingFreelancerOptions {
   t: TranslateFn;
 }
 
-export function useOnboardingFreelancer(options: UseOnboardingFreelancerOptions) {
+export function useOnboardingFreelancer(
+  options: UseOnboardingFreelancerOptions,
+) {
   const { t: _t } = options;
   const router = useRouter();
   const { refreshAuth } = useAuth();

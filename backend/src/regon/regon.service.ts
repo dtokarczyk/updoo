@@ -47,7 +47,10 @@ export class RegonService {
       try {
         rawSearch = await bir.search(query);
       } catch (err) {
-        if (err instanceof BirError && err.response?.ErrorCode === GUS_ERROR_CODE_NO_DATA) {
+        if (
+          err instanceof BirError &&
+          err.response?.ErrorCode === GUS_ERROR_CODE_NO_DATA
+        ) {
           throw new BadRequestException('messages.companyNotFoundInGus');
         }
         throw err;

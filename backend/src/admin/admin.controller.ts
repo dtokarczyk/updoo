@@ -8,7 +8,7 @@ import { AdminService } from './admin.service';
 @Controller('admin')
 @UseGuards(JwtAuthGuard, AdminGuard)
 export class AdminController {
-  constructor(private readonly adminService: AdminService) { }
+  constructor(private readonly adminService: AdminService) {}
 
   @Get('stats')
   async getStats() {
@@ -18,6 +18,11 @@ export class AdminController {
   @Get('users')
   async getUsers() {
     return this.adminService.getRealUsers();
+  }
+
+  @Get('mailer-log')
+  async getMailerLog() {
+    return this.adminService.getMailerLogs();
   }
 
   @Post('send-test-email')

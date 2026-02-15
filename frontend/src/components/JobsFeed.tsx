@@ -139,7 +139,7 @@ export function JobsFeed({
       restored &&
       (restored.categoryId ?? undefined) === (categoryId ?? undefined) &&
       JSON.stringify(restored.skillIds ?? []) ===
-      JSON.stringify(skillIds ?? []) &&
+        JSON.stringify(skillIds ?? []) &&
       restored.page === page;
 
     if (restored && matchesFilters) {

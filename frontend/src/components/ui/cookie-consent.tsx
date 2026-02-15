@@ -220,10 +220,7 @@ export function CookieConsent({ isOpen, onClose }: CookieConsentProps = {}) {
         <div className="flex-1 overflow-y-auto p-6">
           {activeTab === 'consent' && (
             <div>
-              <h2
-                id="cookie-consent-title"
-                className="mb-4 text-xl font-bold"
-              >
+              <h2 id="cookie-consent-title" className="mb-4 text-xl font-bold">
                 {t('cookieConsent.consent.title')}
               </h2>
               <p className="mb-6 text-sm leading-relaxed">
@@ -257,9 +254,7 @@ export function CookieConsent({ isOpen, onClose }: CookieConsentProps = {}) {
                         </div>
                         <Switch
                           checked={option.enabled}
-                          onCheckedChange={() =>
-                            toggleConsentOption(option.id)
-                          }
+                          onCheckedChange={() => toggleConsentOption(option.id)}
                         />
                       </div>
                       <p className="text-sm text-muted-foreground">

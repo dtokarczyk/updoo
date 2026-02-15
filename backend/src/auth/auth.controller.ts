@@ -24,7 +24,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly i18nService: I18nService,
-  ) { }
+  ) {}
 
   private getLanguage(acceptLanguage?: string): SupportedLanguage {
     return this.i18nService.parseLanguageFromHeader(acceptLanguage);

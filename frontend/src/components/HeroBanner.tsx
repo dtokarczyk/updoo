@@ -105,20 +105,22 @@ export function HeroBanner({
             <button
               type="button"
               onClick={() => setHeroTab('hiring')}
-              className={`w-full rounded-t-lg cursor-pointer text-lg font-bold leading-none transition-colors p-3 ${heroTab === 'hiring'
-                ? 'bg-white text-black'
-                : 'bg-white/10 backdrop-blur-md border-t border-x border-white/20 text-white/90 hover:bg-white/15'
-                }`}
+              className={`w-full rounded-t-lg cursor-pointer text-lg font-bold leading-none transition-colors p-3 ${
+                heroTab === 'hiring'
+                  ? 'bg-white text-black'
+                  : 'bg-white/10 backdrop-blur-md border-t border-x border-white/20 text-white/90 hover:bg-white/15'
+              }`}
             >
               {t('homepage.forHiring')}
             </button>
             <button
               type="button"
               onClick={() => setHeroTab('finding')}
-              className={`w-full rounded-t-lg cursor-pointer text-lg font-bold leading-none transition-colors p-3 ${heroTab === 'finding'
-                ? 'bg-white text-black'
-                : 'bg-white/10 backdrop-blur-md border-t border-x border-white/20 text-white/90 hover:bg-white/15'
-                }`}
+              className={`w-full rounded-t-lg cursor-pointer text-lg font-bold leading-none transition-colors p-3 ${
+                heroTab === 'finding'
+                  ? 'bg-white text-black'
+                  : 'bg-white/10 backdrop-blur-md border-t border-x border-white/20 text-white/90 hover:bg-white/15'
+              }`}
             >
               {t('homepage.forFindingJobs')}
             </button>
@@ -135,15 +137,15 @@ export function HeroBanner({
               const labels =
                 heroTab === 'hiring'
                   ? [
-                    t('homepage.heroFeature1'),
-                    t('homepage.heroFeature2'),
-                    t('homepage.heroFeature3'),
-                  ]
+                      t('homepage.heroFeature1'),
+                      t('homepage.heroFeature2'),
+                      t('homepage.heroFeature3'),
+                    ]
                   : [
-                    t('homepage.heroFeature1FindingJobs'),
-                    t('homepage.heroFeature2FindingJobs'),
-                    t('homepage.heroFeature3FindingJobs'),
-                  ];
+                      t('homepage.heroFeature1FindingJobs'),
+                      t('homepage.heroFeature2FindingJobs'),
+                      t('homepage.heroFeature3FindingJobs'),
+                    ];
               return (
                 <div className="flex flex-col gap-5 mb-4">
                   {icons.map((Icon, i) => (

@@ -790,7 +790,11 @@ export interface Job {
   /** Max number of offers (6, 10 or 14). When null, no limit. */
   expectedOffers?: number | null;
   /** Restrict who can apply: one or more of freelancer without B2B, freelancer with B2B, companies. Empty = no restriction. */
-  expectedApplicantTypes?: ('FREELANCER_NO_B2B' | 'FREELANCER_B2B' | 'COMPANY')[];
+  expectedApplicantTypes?: (
+    | 'FREELANCER_NO_B2B'
+    | 'FREELANCER_B2B'
+    | 'COMPANY'
+  )[];
   /** OG image URL (stored in S3, generated on save). Used for social sharing. */
   ogImageUrl?: string | null;
 }
@@ -896,7 +900,8 @@ export async function checkSlugAvailability(
   const url = new URL(
     `${API_URL}/profiles/check-slug/${encodeURIComponent(slug)}`,
   );
-  if (excludeProfileId) url.searchParams.set('excludeProfileId', excludeProfileId);
+  if (excludeProfileId)
+    url.searchParams.set('excludeProfileId', excludeProfileId);
   const res = await fetch(url.toString(), { headers });
   if (!res.ok) throw new Error('Failed to check slug');
   return res.json();
@@ -935,7 +940,8 @@ export async function getProfilesList(
   params.set('page', String(page));
   params.set('limit', String(limit));
   const headers: HeadersInit = {};
-  const authToken = token ?? (typeof window !== 'undefined' ? getToken() : null);
+  const authToken =
+    token ?? (typeof window !== 'undefined' ? getToken() : null);
   if (authToken) headers.Authorization = `Bearer ${authToken}`;
   if (typeof window !== 'undefined') {
     const { getUserLocale } = await import('./i18n');
@@ -1322,7 +1328,11 @@ export interface CreateJobPayload {
   /** Expected number of offers (6, 10 or 14). */
   expectedOffers?: number;
   /** Restrict who can apply: one or more of freelancer without B2B, freelancer with B2B, companies. */
-  expectedApplicantTypes?: ('FREELANCER_NO_B2B' | 'FREELANCER_B2B' | 'COMPANY')[];
+  expectedApplicantTypes?: (
+    | 'FREELANCER_NO_B2B'
+    | 'FREELANCER_B2B'
+    | 'COMPANY'
+  )[];
   skillIds?: string[];
   newSkillNames?: string[];
 }
@@ -1688,6 +1698,35 @@ export async function getAdminUsers(): Promise<AdminUserListItem[]> {
     const err = await res.json().catch(() => ({}));
     const msg = Array.isArray(err.message) ? err.message[0] : err.message;
     throw new Error(msg ?? 'Failed to fetch admin users');
+  }
+  return res.json();
+}
+
+/** Admin mailer log item (from GET /admin/mailer-log). */
+export interface AdminMailerLogItem {
+  id: string;
+  recipientEmail: string;
+  subject: string;
+  content: string;
+  status: string;
+  sentAt: string | null;
+  createdAt: string;
+}
+
+/** Fetch mailer logs for admin panel (admin only). Sorted by newest first. */
+export async function getAdminMailerLogs(): Promise<AdminMailerLogItem[]> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const res = await fetch(`${API_URL}/admin/mailer-log`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to fetch mailer logs');
   }
   return res.json();
 }

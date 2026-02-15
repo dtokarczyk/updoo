@@ -19,7 +19,10 @@ import type { OnboardingFormValues, TranslateFn } from '../schemas';
 const formId = 'onboarding-skills-form';
 
 function setValidationErrors(
-  setError: (name: keyof OnboardingFormValues, error: { message: string }) => void,
+  setError: (
+    name: keyof OnboardingFormValues,
+    error: { message: string },
+  ) => void,
   clearErrors: () => void,
   issues: { path: unknown[]; message: string }[],
 ) {

@@ -91,11 +91,7 @@ export function JobMeta({
   return (
     <>
       <section className="block lg:hidden space-y-6 border-t pt-6">
-        <DetailRow
-          icon={Banknote}
-          label={t('jobs.rate')}
-          value={rateValue}
-        />
+        <DetailRow icon={Banknote} label={t('jobs.rate')} value={rateValue} />
         {job.expectedOffers != null ? (
           <>
             <DetailRow
@@ -143,9 +139,7 @@ export function JobMeta({
         <DetailRow
           icon={BarChart3}
           label={t('jobs.experienceLevel')}
-          value={
-            EXPERIENCE_LABELS[job.experienceLevel] ?? job.experienceLevel
-          }
+          value={EXPERIENCE_LABELS[job.experienceLevel] ?? job.experienceLevel}
         />
         <DetailRow
           icon={Briefcase}

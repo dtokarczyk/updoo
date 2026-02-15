@@ -15,7 +15,7 @@ export class CompanyService {
     private readonly prisma: PrismaService,
     private readonly regonService: RegonService,
     private readonly accountService: AccountService,
-  ) { }
+  ) {}
 
   getCompanyPayload(company: {
     id: string;

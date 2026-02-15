@@ -38,7 +38,7 @@ export class AuthService {
     private readonly agreementsService: AgreementsService,
     private readonly i18nService: I18nService,
     private readonly storageService: StorageService,
-  ) { }
+  ) {}
 
   /**
    * Request password reset: find user by email (must have password), generate token,
@@ -475,8 +475,9 @@ export class AuthService {
     const userCompany = user as {
       company?: { nip: string; companySize: string | null } | null;
     };
-    const resolvedAvatarUrl =
-      await this.storageService.getImageUrlForResponse(user.avatarUrl ?? null);
+    const resolvedAvatarUrl = await this.storageService.getImageUrlForResponse(
+      user.avatarUrl ?? null,
+    );
     return {
       id: user.id,
       email: user.email,
@@ -530,8 +531,9 @@ export class AuthService {
   private async buildAuthResponseWithResolvedAvatarUrl(
     user: AuthResponseUser,
   ): Promise<AuthResponse> {
-    const resolvedAvatarUrl =
-      await this.storageService.getImageUrlForResponse(user.avatarUrl ?? null);
+    const resolvedAvatarUrl = await this.storageService.getImageUrlForResponse(
+      user.avatarUrl ?? null,
+    );
 
     return this.buildAuthResponse({
       ...user,

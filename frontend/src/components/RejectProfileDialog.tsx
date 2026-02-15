@@ -50,7 +50,10 @@ export function RejectProfileDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-2">
-          <label className="text-sm font-medium" htmlFor="reject-profile-reason">
+          <label
+            className="text-sm font-medium"
+            htmlFor="reject-profile-reason"
+          >
             {t('jobs.rejectReasonLabel')}
           </label>
           <Textarea

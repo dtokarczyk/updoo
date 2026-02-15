@@ -17,6 +17,7 @@ import { RegonModule } from './regon/regon.module';
 import { ProfilesModule } from './profiles/profiles.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AdminModule } from './admin/admin.module';
+import { EmailTemplatesModule } from './email-templates/email-templates.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { AdminModule } from './admin/admin.module';
     RegonModule,
     NotificationsModule,
     AdminModule,
+    EmailTemplatesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

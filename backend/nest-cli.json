@@ -6,7 +6,8 @@
     "deleteOutDir": true,
     "assets": [
       {"include": "i18n/translations/**/*", "watchAssets": true},
-      {"include": "agreements/**/*.md", "watchAssets": true}
+      {"include": "agreements/**/*.md", "watchAssets": true},
+      {"include": "email-templates/templates/**/*", "watchAssets": true}
     ]
   }
 }

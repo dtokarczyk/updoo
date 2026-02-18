@@ -40,6 +40,8 @@ enum ProjectType {
 
 enum JobStatus {
   DRAFT
+  /** Draft created via invitation offer; awaiting invitee accept/reject. Not shown in job feed or "my jobs". */
+  INVITATION_PENDING
   PUBLISHED
   CLOSED
   REJECTED

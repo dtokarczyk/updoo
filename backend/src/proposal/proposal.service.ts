@@ -35,7 +35,7 @@ export class ProposalService {
     private readonly emailTemplates: EmailTemplatesService,
     private readonly agreementsService: AgreementsService,
     private readonly jobsService: JobsService,
-  ) {}
+  ) { }
 
   async create(
     dto: CreateProposalDto,
@@ -127,7 +127,10 @@ export class ProposalService {
       throw new BadRequestException('Invalid proposal state');
     }
     const job = proposal.job;
-    if (job.status !== JobStatus.DRAFT) {
+    if (
+      job.status !== JobStatus.DRAFT &&
+      job.status !== JobStatus.INVITATION_PENDING
+    ) {
       throw new BadRequestException(
         'This invitation has already been accepted',
       );

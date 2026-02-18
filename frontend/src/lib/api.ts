@@ -679,7 +679,12 @@ export interface PopularSkill extends Skill {
   count: number;
 }
 
-export type JobStatus = 'DRAFT' | 'PUBLISHED' | 'CLOSED' | 'REJECTED';
+export type JobStatus =
+  | 'DRAFT'
+  | 'INVITATION_PENDING'
+  | 'PUBLISHED'
+  | 'CLOSED'
+  | 'REJECTED';
 export type JobLanguage = 'ENGLISH' | 'POLISH';
 export type BillingType = 'FIXED' | 'HOURLY';
 export type HoursPerWeek =

@@ -49,7 +49,7 @@ export class JobsService implements OnModuleInit {
     private readonly storageService: StorageService,
     @Inject(forwardRef(() => NotificationsService))
     private readonly notificationsService: NotificationsService,
-  ) {}
+  ) { }
 
   async onModuleInit() {
     await this.ensureCategories();
@@ -452,7 +452,7 @@ export class JobsService implements OnModuleInit {
         description: dto.description.trim(),
         categoryId: dto.categoryId,
         authorId,
-        status: JobStatus.DRAFT,
+        status: JobStatus.INVITATION_PENDING,
         language,
         previewHash,
         billingType: dto.billingType as BillingType,
@@ -629,9 +629,10 @@ export class JobsService implements OnModuleInit {
     skillIds?: string[],
     userLanguage: JobLanguage = JobLanguage.POLISH,
   ) {
+    // INVITATION_PENDING (drafts from invitation flow) are never shown in feed
     let statusWhere: Record<string, unknown>;
     if (isAdmin) {
-      // Admin sees all jobs (published + closed + drafts + rejected)
+      // Admin sees all jobs except invitation-pending (those are only in Proposals tab)
       statusWhere = {
         OR: [
           { status: JobStatus.PUBLISHED },
@@ -656,9 +657,16 @@ export class JobsService implements OnModuleInit {
         OR: [{ status: JobStatus.PUBLISHED }, { status: JobStatus.CLOSED }],
       };
     }
+    // Never show INVITATION_PENDING in job listing (invitation drafts only in Proposals tab)
+    const feedStatusFilter = {
+      AND: [
+        statusWhere,
+        { status: { not: JobStatus.INVITATION_PENDING } },
+      ],
+    };
     let where: Record<string, unknown> = categoryId
-      ? { ...statusWhere, categoryId }
-      : statusWhere;
+      ? { ...feedStatusFilter, categoryId }
+      : feedStatusFilter;
     if (skillIds && skillIds.length > 0) {
       // At least one of the selected skills must be attached to the job.
       where = {
@@ -721,18 +729,18 @@ export class JobsService implements OnModuleInit {
     const appliedIds =
       userId && jobs.length
         ? new Set(
-            (
-              await this.prisma.jobApplication.findMany({
-                where: {
-                  freelancerId: userId,
-                  jobId: {
-                    in: jobs.map((j) => j.id),
-                  },
+          (
+            await this.prisma.jobApplication.findMany({
+              where: {
+                freelancerId: userId,
+                jobId: {
+                  in: jobs.map((j) => j.id),
                 },
-                select: { jobId: true },
-              })
-            ).map((a) => a.jobId),
-          )
+              },
+              select: { jobId: true },
+            })
+          ).map((a) => a.jobId),
+        )
         : new Set<string>();
 
     const items = jobs.map((item) => {
@@ -820,11 +828,14 @@ export class JobsService implements OnModuleInit {
     }
     const isAuthor = userId && job.authorId === userId;
     const isDraftOrRejected =
-      job.status === JobStatus.DRAFT || job.status === JobStatus.REJECTED;
+      job.status === JobStatus.DRAFT ||
+      job.status === JobStatus.REJECTED ||
+      job.status === JobStatus.INVITATION_PENDING;
     const allowedByPreview =
       previewHash &&
       job.previewHash === previewHash &&
-      job.status === JobStatus.DRAFT;
+      (job.status === JobStatus.DRAFT ||
+        job.status === JobStatus.INVITATION_PENDING);
     if (isDraftOrRejected && !isAuthor && !isAdmin && !allowedByPreview) {
       throw new NotFoundException('Job not found');
     }
@@ -866,9 +877,9 @@ export class JobsService implements OnModuleInit {
         createdAt: app.createdAt,
         // Include message for the current user's own application so they can see what they wrote
         ...(userId &&
-        app.freelancerId === userId &&
-        app.message != null &&
-        app.message !== ''
+          app.freelancerId === userId &&
+          app.message != null &&
+          app.message !== ''
           ? { message: app.message }
           : {}),
       };
@@ -887,7 +898,7 @@ export class JobsService implements OnModuleInit {
     const { applications: _app, proposal: _proposal, ...rest } = job;
     const invitationToken =
       job.proposal?.status === 'PENDING' &&
-      (isAuthorOrAdmin || allowedByPreview)
+        (isAuthorOrAdmin || allowedByPreview)
         ? job.proposal.token
         : undefined;
     const result = {
@@ -1070,12 +1081,13 @@ export class JobsService implements OnModuleInit {
     const isAuthor = userId && currentJob.authorId === userId;
     const isDraftOrRejected =
       currentJob.status === JobStatus.DRAFT ||
-      currentJob.status === JobStatus.REJECTED;
+      currentJob.status === JobStatus.REJECTED ||
+      currentJob.status === JobStatus.INVITATION_PENDING;
     if (isDraftOrRejected && !isAuthor && !isAdmin) {
       throw new NotFoundException('Job not found');
     }
 
-    // Build status filter - same logic as getFeed
+    // Build status filter - same logic as getFeed (INVITATION_PENDING excluded from feed)
     let statusWhere: Record<string, unknown>;
     if (isAdmin) {
       statusWhere = {
@@ -1115,11 +1127,12 @@ export class JobsService implements OnModuleInit {
     let nextJob = null;
 
     const draftOrRejectedStatus = {
-      in: [JobStatus.DRAFT, JobStatus.REJECTED],
+      in: [JobStatus.DRAFT, JobStatus.REJECTED, JobStatus.INVITATION_PENDING],
     };
     if (
       currentJob.status === JobStatus.DRAFT ||
-      currentJob.status === JobStatus.REJECTED
+      currentJob.status === JobStatus.REJECTED ||
+      currentJob.status === JobStatus.INVITATION_PENDING
     ) {
       // For DRAFT/REJECTED: prev is newer DRAFT/REJECTED, next is older or newest PUBLISHED
       prevJob = await this.prisma.job.findFirst({
@@ -1224,7 +1237,11 @@ export class JobsService implements OnModuleInit {
     if (!job) {
       throw new NotFoundException('Job not found');
     }
-    if (job.status === JobStatus.DRAFT || job.status === JobStatus.REJECTED) {
+    if (
+      job.status === JobStatus.DRAFT ||
+      job.status === JobStatus.REJECTED ||
+      job.status === JobStatus.INVITATION_PENDING
+    ) {
       throw new NotFoundException('Job not found');
     }
     if (job.status === JobStatus.CLOSED) {
@@ -1377,14 +1394,17 @@ export class JobsService implements OnModuleInit {
     }));
   }
 
-  /** Get user's recent jobs (last 5) created by client. */
+  /** Get user's recent jobs (last 5) created by client. Excludes INVITATION_PENDING (invitation drafts). */
   async getUserJobs(
     clientId: string,
     userLanguage: JobLanguage = JobLanguage.POLISH,
     limit = 5,
   ) {
     const jobs = await this.prisma.job.findMany({
-      where: { authorId: clientId },
+      where: {
+        authorId: clientId,
+        status: { not: JobStatus.INVITATION_PENDING },
+      },
       orderBy: { createdAt: 'desc' },
       take: limit,
       include: {
@@ -1505,8 +1525,8 @@ export class JobsService implements OnModuleInit {
     const newDeadline =
       dto.offerDays != null && allowedDays.includes(dto.offerDays)
         ? new Date(
-            job.createdAt.getTime() + dto.offerDays * 24 * 60 * 60 * 1000,
-          )
+          job.createdAt.getTime() + dto.offerDays * 24 * 60 * 60 * 1000,
+        )
         : undefined;
     // Job announcements are always in Polish
     const language = JobLanguage.POLISH;

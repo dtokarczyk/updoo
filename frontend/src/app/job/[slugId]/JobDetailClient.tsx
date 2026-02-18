@@ -7,6 +7,8 @@ import ReactCountryFlag from 'react-country-flag';
 import { ArrowLeft, ArrowRight, Calendar, FileText, Tag } from 'lucide-react';
 import {
   applyToJob,
+  acceptProposal,
+  rejectProposal,
   closeJob,
   getStoredUser,
   publishJob,
@@ -21,6 +23,14 @@ import { jobPath, jobPathEdit } from '@/lib/job-url';
 import { useTranslations } from '@/hooks/useTranslations';
 import { getDeadlineMsLeft, isDeadlineSoon } from '@/lib/deadline-utils';
 import { formatDate } from '@/lib/format-date';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { JobApplications } from './JobApplications';
 import { JobMeta } from './JobMeta';
 import { JobRateValue } from './JobRateValue';
@@ -81,6 +91,11 @@ export function JobDetailClient({
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [rejectSubmitting, setRejectSubmitting] = useState(false);
+  const [invitationAccepting, setInvitationAccepting] = useState(false);
+  const [invitationRejecting, setInvitationRejecting] = useState(false);
+  const [invitationResult, setInvitationResult] = useState<
+    { type: 'accepted' | 'rejected'; message: string } | null
+  >(null);
   const user = initialUser ?? getStoredUser();
   const applyFormRef = useRef<HTMLDivElement>(null);
 
@@ -280,8 +295,88 @@ export function JobDetailClient({
     }
   }
 
+  async function handleInvitationAccept() {
+    const token = job.invitationToken;
+    if (!token) return;
+    setInvitationAccepting(true);
+    setInvitationResult(null);
+    try {
+      const res = await acceptProposal(token);
+      setInvitationResult({ type: 'accepted', message: res.message });
+      router.refresh();
+    } catch (e) {
+      setInvitationResult({
+        type: 'accepted',
+        message: e instanceof Error ? e.message : t('invitation.invalidLink'),
+      });
+    } finally {
+      setInvitationAccepting(false);
+    }
+  }
+
+  async function handleInvitationReject() {
+    const token = job.invitationToken;
+    if (!token) return;
+    setInvitationRejecting(true);
+    setInvitationResult(null);
+    try {
+      const res = await rejectProposal(token);
+      setInvitationResult({ type: 'rejected', message: res.message });
+      router.refresh();
+    } catch (e) {
+      setInvitationResult({
+        type: 'rejected',
+        message: e instanceof Error ? e.message : t('invitation.invalidLink'),
+      });
+    } finally {
+      setInvitationRejecting(false);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+      {job.invitationToken && (
+        <Card className="mb-6 w-full">
+          <CardHeader>
+            <CardTitle>{t('invitation.title')}</CardTitle>
+            <CardDescription>
+              {t('invitation.introFbGroup', { title: job.title })}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {invitationResult ? (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  {invitationResult.message}
+                </p>
+                <Button asChild>
+                  <Link href="/login">{t('invitation.goToLogin')}</Link>
+                </Button>
+              </>
+            ) : (
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleInvitationAccept}
+                  disabled={invitationAccepting || invitationRejecting}
+                >
+                  {invitationAccepting
+                    ? t('common.submitting')
+                    : t('invitation.agree')}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleInvitationReject}
+                  disabled={invitationAccepting || invitationRejecting}
+                >
+                  {invitationRejecting
+                    ? t('common.submitting')
+                    : t('invitation.reject')}
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
       <div className="grid gap-8 lg:grid-cols-6">
         <div className="lg:col-span-4 space-y-6">
           <div className="space-y-4">

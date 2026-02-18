@@ -13,16 +13,18 @@ export interface RenderedEmail {
 const SUPPORTED_LANGS: EmailTemplateLang[] = ['pl', 'en'];
 
 /**
- * Replaces {{key}} placeholders and escapes variable values for safe HTML output.
+ * Replaces {{key}} placeholders. When escapeHtml is true and key is not in rawKeys, values are HTML-escaped.
  */
 function substituteVariables(
   content: string,
   variables: Record<string, string>,
   escapeHtml: boolean,
+  rawKeys: Set<string> = new Set(),
 ): string {
   let result = content;
   for (const [key, value] of Object.entries(variables)) {
-    const safeValue = escapeHtml ? escapeHtmlForEmail(value) : value;
+    const safeValue =
+      escapeHtml && !rawKeys.has(key) ? escapeHtmlForEmail(value) : value;
     const regex = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'g');
     result = result.replace(regex, safeValue);
   }
@@ -53,11 +55,13 @@ export class EmailTemplatesService {
   /**
    * Renders an email template with the given language and variables.
    * Variables are substituted as {{key}} in both subject and body; values are HTML-escaped in body.
+   * Pass rawKeys to insert pre-rendered HTML for listed variable names without escaping.
    */
   render(
     templateName: string,
     lang: EmailTemplateLang,
     variables: Record<string, string>,
+    rawKeys: string[] = [],
   ): RenderedEmail {
     if (!SUPPORTED_LANGS.includes(lang)) {
       throw new Error(`Unsupported template lang: ${lang}`);
@@ -70,8 +74,9 @@ export class EmailTemplatesService {
       this.cache.set(cacheKey, raw);
     }
 
+    const rawSet = new Set(rawKeys);
     const subject = substituteVariables(raw.subject, variables, true);
-    const html = substituteVariables(raw.html, variables, true);
+    const html = substituteVariables(raw.html, variables, true, rawSet);
     const text = raw.text
       ? substituteVariables(raw.text, variables, false)
       : undefined;
@@ -105,6 +110,11 @@ export class EmailTemplatesService {
     } catch {
       throw new Error(`Email template html not found: ${htmlPath}`);
     }
+    const headerHtml = this.loadPartialHtml('header', lang);
+    const footerHtml = this.loadPartialHtml('footer', lang);
+    if (headerHtml || footerHtml) {
+      html = headerHtml + html.trim() + footerHtml;
+    }
     try {
       text = fs.readFileSync(txtPath, 'utf-8').trim();
     } catch {
@@ -112,5 +122,22 @@ export class EmailTemplatesService {
     }
 
     return { subject, html, text };
+  }
+
+  /**
+   * Loads a partial HTML fragment (e.g. header, footer) by name and lang.
+   * Returns empty string if file does not exist.
+   */
+  private loadPartialHtml(
+    partialName: string,
+    lang: EmailTemplateLang,
+  ): string {
+    const safeName = partialName.replace(/[^a-z0-9-]/gi, '');
+    const htmlPath = path.join(this.templatesDir, `${safeName}.${lang}.html`);
+    try {
+      return fs.readFileSync(htmlPath, 'utf-8');
+    } catch {
+      return '';
+    }
   }
 }

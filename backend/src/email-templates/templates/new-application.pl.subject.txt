@@ -1,1 +1,1 @@
-Nowe zgłoszenie do Twojej oferty: {{jobTitle}}
+Hoplo - Nowe zgłoszenie do Twojej oferty: {{jobTitle}}

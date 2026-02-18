@@ -18,7 +18,9 @@ export interface JobRateValueProps {
 }
 
 export function JobRateValue({ user, job, t }: JobRateValueProps) {
-  const rd = getRateDisplay(!!user, job);
+  // Show rate when logged in or when viewing via invitation preview (draft link with hash)
+  const canSeeRate = !!user || !!job.invitationToken;
+  const rd = getRateDisplay(canSeeRate, job);
   if (rd.type === 'negotiable') {
     return (
       <span className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">

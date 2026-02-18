@@ -11,17 +11,21 @@ import { EmailService } from '../email/email.service';
 import { EmailTemplatesService } from '../email-templates/email-templates.service';
 import { AgreementsService } from '../agreements/agreements.service';
 import { JobsService } from '../jobs/jobs.service';
+import { slugFromName } from '../common/slug.helper';
 import { CreateProposalDto } from './dto/create-proposal.dto';
 import {
   ProposalReason,
   ProposalStatus,
   AccountType,
   JobLanguage,
+  JobStatus,
 } from '@prisma/client';
 import type { CreateJobDto } from '../jobs/dto/create-job.dto';
 
 const TOKEN_BYTES = 32;
 const SALT_ROUNDS = 10;
+const PASSWORD_LENGTH = 8;
+const ALPHANUM = 'abcdefghijklmnopqrstuvwxyz0123456789';
 
 @Injectable()
 export class ProposalService {
@@ -31,15 +35,22 @@ export class ProposalService {
     private readonly emailTemplates: EmailTemplatesService,
     private readonly agreementsService: AgreementsService,
     private readonly jobsService: JobsService,
-  ) {}
+  ) { }
 
   async create(
     dto: CreateProposalDto,
     lang: 'pl' | 'en' = 'pl',
+    adminUserId: string,
   ): Promise<{ id: string; token: string }> {
     const { email, reason, ...jobData } = dto;
     const emailLower = email.trim().toLowerCase();
     const token = randomBytes(TOKEN_BYTES).toString('hex');
+
+    const job = await this.jobsService.createJobForProposal(
+      adminUserId,
+      jobData as CreateJobDto,
+      JobLanguage.POLISH,
+    );
 
     const proposal = await this.prisma.proposal.create({
       data: {
@@ -48,18 +59,19 @@ export class ProposalService {
         reason: reason as ProposalReason,
         token,
         status: ProposalStatus.PENDING,
+        jobId: job.id,
       },
     });
 
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
-    const acceptUrl = `${frontendUrl}/invitation?token=${encodeURIComponent(token)}`;
-    const rejectUrl = `${frontendUrl}/invitation?token=${encodeURIComponent(token)}&reject=1`;
+    const slug = slugFromName(job.title, 'oferta');
+    const draftUrl = `${frontendUrl}/job/${slug}-${job.id}?preview=${encodeURIComponent(job.previewHash)}`;
     const offerTitle = (dto.title ?? '').trim() || (lang === 'pl' ? 'Oferta' : 'Job');
 
     const { subject, html } = this.emailTemplates.render(
       'proposal-invitation',
       lang,
-      { acceptUrl, rejectUrl, offerTitle },
+      { draftUrl, offerTitle },
     );
 
     if (this.emailService.isConfigured()) {
@@ -93,6 +105,7 @@ export class ProposalService {
   async accept(token: string, lang: 'pl' | 'en' = 'pl'): Promise<{ message: string }> {
     const proposal = await this.prisma.proposal.findUnique({
       where: { token },
+      include: { job: true },
     });
     if (!proposal) {
       throw new NotFoundException('Invalid or expired link');
@@ -100,11 +113,19 @@ export class ProposalService {
     if (proposal.status !== ProposalStatus.PENDING) {
       throw new BadRequestException('This link has already been used');
     }
+    if (!proposal.jobId || !proposal.job) {
+      throw new BadRequestException('Invalid proposal state');
+    }
+    const job = proposal.job;
+    if (job.status !== JobStatus.DRAFT) {
+      throw new BadRequestException('This invitation has already been accepted');
+    }
 
     const emailLower = proposal.email.trim().toLowerCase();
     let user = await this.prisma.user.findUnique({
       where: { email: emailLower },
     });
+    let isNewUser = false;
 
     if (user) {
       if (user.accountType !== AccountType.CLIENT) {
@@ -113,10 +134,14 @@ export class ProposalService {
         );
       }
     } else {
-      const plainPassword = randomBytes(16).toString('hex');
+      const bytes = randomBytes(PASSWORD_LENGTH);
+      const plainPassword = Array.from(bytes)
+        .map((b) => ALPHANUM[b % ALPHANUM.length])
+        .join('');
       const { termsVersion, privacyPolicyVersion } =
         this.agreementsService.getCurrentVersions();
       const hashedPassword = await bcrypt.hash(plainPassword, SALT_ROUNDS);
+      isNewUser = true;
       user = await this.prisma.user.create({
         data: {
           email: emailLower,
@@ -160,30 +185,30 @@ export class ProposalService {
       }
     }
 
-    const jobData = proposal.jobData as unknown as CreateJobDto;
-    const job = await this.jobsService.createJob(
-      user.id,
-      'CLIENT',
-      jobData,
-      JobLanguage.POLISH,
-    );
-    if (!job) {
-      throw new BadRequestException('Failed to create job from proposal');
-    }
+    await this.prisma.job.update({
+      where: { id: job.id },
+      data: {
+        authorId: user.id,
+        status: JobStatus.PUBLISHED,
+        previewHash: null,
+      },
+    });
 
     await this.prisma.proposal.update({
       where: { id: proposal.id },
       data: {
         status: ProposalStatus.ACCEPTED,
         respondedAt: new Date(),
-        jobId: job.id,
       },
     });
 
-    const message =
-      lang === 'pl'
+    const message = isNewUser
+      ? (lang === 'pl'
         ? 'Konto utworzone. Wysłaliśmy na Twój adres e-mail dane logowania – zaloguj się i zmień hasło.'
-        : 'Account created. We have sent login details to your email – log in and change your password.';
+        : 'Account created. We have sent login details to your email – log in and change your password.')
+      : (lang === 'pl'
+        ? 'Oferta została opublikowana. Zaloguj się, aby zarządzać ofertą.'
+        : 'The offer has been published. Log in to manage your listing.');
     return { message };
   }
 

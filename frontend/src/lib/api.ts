@@ -797,6 +797,8 @@ export interface Job {
   )[];
   /** OG image URL (stored in S3, generated on save). Used for social sharing. */
   ogImageUrl?: string | null;
+  /** Present when job is viewed via invitation draft preview (hash); use for accept/reject. */
+  invitationToken?: string;
 }
 
 export interface PaginationInfo {
@@ -1155,7 +1157,10 @@ export async function getJobsFeed(
   return res.json();
 }
 
-export async function getJob(id: string): Promise<Job> {
+export async function getJob(
+  id: string,
+  options?: { preview?: string },
+): Promise<Job> {
   const headers: HeadersInit = {};
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
@@ -1167,7 +1172,11 @@ export async function getJob(id: string): Promise<Job> {
     headers['Accept-Language'] = locale;
   }
 
-  const res = await fetch(`${API_URL}/jobs/${id}`, { headers });
+  const url =
+    options?.preview != null
+      ? `${API_URL}/jobs/${id}?preview=${encodeURIComponent(options.preview)}`
+      : `${API_URL}/jobs/${id}`;
+  const res = await fetch(url, { headers });
   if (!res.ok) {
     if (res.status === 404) throw new Error('Oferta nie istnieje');
     throw new Error('Failed to fetch job');
@@ -1201,20 +1210,25 @@ export async function getJobPrevNext(id: string): Promise<JobPrevNext> {
 }
 
 /**
- * Server-side job fetch. Accepts locale and optional token (no localStorage).
+ * Server-side job fetch. Accepts locale, optional token, and optional preview hash (for invitation draft).
  * Returns null on 404 or error so server can show not-found.
  */
 export async function getJobServer(
   id: string,
   locale: string,
   token?: string | null,
+  preview?: string | null,
 ): Promise<Job | null> {
   try {
     const headers: HeadersInit = {
       'Accept-Language': locale === 'en' ? 'en' : 'pl',
     };
     if (token) headers.Authorization = `Bearer ${token}`;
-    const res = await fetch(`${API_URL}/jobs/${id}`, {
+    const url =
+      preview != null && preview !== ''
+        ? `${API_URL}/jobs/${id}?preview=${encodeURIComponent(preview)}`
+        : `${API_URL}/jobs/${id}`;
+    const res = await fetch(url, {
       headers,
       cache: 'no-store',
     });

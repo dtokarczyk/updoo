@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
+import { EmailTemplatesService } from '../email-templates/email-templates.service';
 import {
   NotificationType,
   NotificationFrequency,
@@ -17,7 +18,8 @@ export class NotificationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly emailService: EmailService,
-  ) {}
+    private readonly emailTemplates: EmailTemplatesService,
+  ) { }
 
   /**
    * Returns true if the job should be excluded from notification emails (newsletter, digest, instant).
@@ -198,41 +200,33 @@ export class NotificationsService {
     const author = job.author;
     const application = job.applications[0];
     const freelancer = application?.freelancer;
-    const isPolish = author.language === 'POLISH';
+    const lang = author.language === 'POLISH' ? 'pl' : 'en';
     const applicantName =
       freelancer?.name && freelancer?.surname
         ? `${freelancer.name} ${freelancer.surname.charAt(0)}.`
-        : (freelancer?.name ?? (isPolish ? 'Ktoś' : 'Someone'));
+        : (freelancer?.name ?? (lang === 'pl' ? 'Ktoś' : 'Someone'));
 
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
     const jobUrl = `${frontendUrl}/job/${job.id}`;
     const userName = author.name ?? '';
-
-    const subject = isPolish
-      ? `Nowe zgłoszenie do Twojej oferty: ${job.title}`
-      : `New application to your job: ${job.title}`;
-
     const greeting = userName
-      ? isPolish
+      ? lang === 'pl'
         ? `Cześć ${userName}!`
         : `Hi ${userName}!`
-      : isPolish
+      : lang === 'pl'
         ? 'Cześć!'
         : 'Hi!';
 
-    const html = `
-      <p>${greeting}</p>
-      <p>${isPolish ? 'Otrzymałeś nowe zgłoszenie do swojej oferty:' : 'You received a new application to your job:'}</p>
-      <h2 style="margin:16px 0 8px;"><a href="${jobUrl}" style="color:#2563eb;text-decoration:none;">${this.escapeHtml(job.title)}</a></h2>
-      <p><strong>${isPolish ? 'Zgłosił się' : 'Applicant'}:</strong> ${this.escapeHtml(applicantName)}</p>
-      <p>
-        <a href="${jobUrl}" style="display:inline-block;padding:10px 20px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px;">
-          ${isPolish ? 'Zobacz zgłoszenia' : 'View applications'}
-        </a>
-      </p>
-      <p style="color:#888;font-size:12px;">${isPolish ? 'Możesz wyłączyć te powiadomienia w ustawieniach profilu.' : 'You can disable these notifications in your profile settings.'}</p>
-      <p>Hoplo</p>
-    `;
+    const { subject, html } = this.emailTemplates.render(
+      'new-application',
+      lang,
+      {
+        greeting,
+        jobTitle: job.title,
+        jobUrl,
+        applicantName,
+      },
+    );
 
     try {
       if (this.emailService.isConfigured()) {
@@ -354,41 +348,32 @@ export class NotificationsService {
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
     const jobUrl = `${frontendUrl}/job/${job.id}`;
     const userName = user.name ?? '';
+    const lang = user.language === 'POLISH' ? 'pl' : 'en';
     const skillNames = job.skills.map((s) => s.skill.name).join(', ');
-    const isPolish = user.language === 'POLISH';
-
     const categoryName =
       job.category?.translations.find((t) => t.language === user.language)
         ?.name ??
       job.category?.translations[0]?.name ??
       '';
-
-    const subject = isPolish
-      ? `Nowa oferta pasująca do Twoich umiejętności: ${job.title}`
-      : `New job matching your skills: ${job.title}`;
-
     const greeting = userName
-      ? isPolish
+      ? lang === 'pl'
         ? `Cześć ${userName}!`
         : `Hi ${userName}!`
-      : isPolish
+      : lang === 'pl'
         ? 'Cześć!'
         : 'Hi!';
 
-    const html = `
-      <p>${greeting}</p>
-      <p>${isPolish ? 'Pojawiła się nowa oferta pasująca do Twoich umiejętności:' : 'A new job matching your skills has been posted:'}</p>
-      <h2 style="margin:16px 0 8px;"><a href="${jobUrl}" style="color:#2563eb;text-decoration:none;">${this.escapeHtml(job.title)}</a></h2>
-      ${categoryName ? `<p><strong>${isPolish ? 'Kategoria' : 'Category'}:</strong> ${this.escapeHtml(categoryName)}</p>` : ''}
-      <p><strong>${isPolish ? 'Pasujące umiejętności' : 'Matching skills'}:</strong> ${this.escapeHtml(skillNames)}</p>
-      <p>
-        <a href="${jobUrl}" style="display:inline-block;padding:10px 20px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px;">
-          ${isPolish ? 'Zobacz ofertę' : 'View job'}
-        </a>
-      </p>
-      <p style="color:#888;font-size:12px;">${isPolish ? 'Możesz zmienić ustawienia powiadomień w swoim profilu.' : 'You can change notification settings in your profile.'}</p>
-      <p>Hoplo</p>
-    `;
+    const { subject, html } = this.emailTemplates.render(
+      'new-job-matching',
+      lang,
+      {
+        greeting,
+        jobUrl,
+        jobTitle: job.title,
+        categoryName,
+        skillNames,
+      },
+    );
 
     try {
       if (this.emailService.isConfigured()) {
@@ -417,40 +402,34 @@ export class NotificationsService {
   ): Promise<void> {
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
     const userName = user.name ?? '';
-    const isPolish = user.language === 'POLISH';
-
-    const subject = isPolish
-      ? `Podsumowanie nowych ofert – ${jobs.length} ofert(y) pasujących do Twoich umiejętności`
-      : `Daily job digest – ${jobs.length} job(s) matching your skills`;
-
+    const lang = user.language === 'POLISH' ? 'pl' : 'en';
     const greeting = userName
-      ? isPolish
+      ? lang === 'pl'
         ? `Cześć ${userName}!`
         : `Hi ${userName}!`
-      : isPolish
+      : lang === 'pl'
         ? 'Cześć!'
         : 'Hi!';
 
-    const jobsList = jobs
+    const jobsListHtml = jobs
       .map((job) => {
         const url = `${frontendUrl}/job/${job.id}`;
         const skills = job.skills.map((s) => s.skill.name).join(', ');
-        return `
-          <li style="margin-bottom:12px;">
-            <a href="${url}" style="color:#2563eb;text-decoration:none;font-weight:bold;">${this.escapeHtml(job.title)}</a>
-            ${skills ? `<br/><span style="color:#666;">${isPolish ? 'Umiejętności' : 'Skills'}: ${this.escapeHtml(skills)}</span>` : ''}
-          </li>
-        `;
+        const skillsLabel = lang === 'pl' ? 'Umiejętności' : 'Skills';
+        return `<li style="margin-bottom:12px;"><a href="${url}" style="color:#4e8668;text-decoration:none;font-weight:bold;">${this.escapeHtml(job.title)}</a>${skills ? `<br/><span style="color:#666;">${skillsLabel}: ${this.escapeHtml(skills)}</span>` : ''}</li>`;
       })
       .join('');
 
-    const html = `
-      <p>${greeting}</p>
-      <p>${isPolish ? 'Oto nowe oferty pasujące do Twoich umiejętności z ostatnich 24 godzin:' : 'Here are new jobs matching your skills from the last 24 hours:'}</p>
-      <ul style="padding-left:20px;">${jobsList}</ul>
-      <p style="color:#888;font-size:12px;">${isPolish ? 'Możesz zmienić ustawienia powiadomień w swoim profilu.' : 'You can change notification settings in your profile.'}</p>
-      <p>Hoplo</p>
-    `;
+    const { subject, html } = this.emailTemplates.render(
+      'daily-digest',
+      lang,
+      {
+        greeting,
+        count: String(jobs.length),
+        jobsListHtml,
+      },
+      ['jobsListHtml'],
+    );
 
     try {
       if (this.emailService.isConfigured()) {
@@ -618,21 +597,18 @@ export class NotificationsService {
   ): Promise<void> {
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
     const userName = user.name ?? '';
-    const isPolish = user.language === 'POLISH';
-
-    const subject = isPolish
-      ? `Newsletter kategorii – ${jobs.length} nowych ogłoszeń`
-      : `Category newsletter – ${jobs.length} new job(s)`;
-
+    const lang = user.language === 'POLISH' ? 'pl' : 'en';
     const greeting = userName
-      ? isPolish
+      ? lang === 'pl'
         ? `Cześć ${userName}!`
         : `Hi ${userName}!`
-      : isPolish
+      : lang === 'pl'
         ? 'Cześć!'
         : 'Hi!';
 
-    const jobsList = jobs
+    const categoryLabel = lang === 'pl' ? 'Kategoria' : 'Category';
+    const skillsLabel = lang === 'pl' ? 'Umiejętności' : 'Skills';
+    const jobsListHtml = jobs
       .map((job) => {
         const url = `${frontendUrl}/job/${job.id}`;
         const skills = job.skills.map((s) => s.skill.name).join(', ');
@@ -641,23 +617,23 @@ export class NotificationsService {
             ?.name ??
           job.category?.translations[0]?.name ??
           '';
-        return `
-          <li style="margin-bottom:12px;">
-            <a href="${url}" style="color:#2563eb;text-decoration:none;font-weight:bold;">${this.escapeHtml(job.title)}</a>
-            ${categoryName ? `<br/><span style="color:#666;">${isPolish ? 'Kategoria' : 'Category'}: ${this.escapeHtml(categoryName)}</span>` : ''}
-            ${skills ? `<br/><span style="color:#666;">${isPolish ? 'Umiejętności' : 'Skills'}: ${this.escapeHtml(skills)}</span>` : ''}
-          </li>
-        `;
+        const parts = [`<a href="${url}" style="color:#4e8668;text-decoration:none;font-weight:bold;">${this.escapeHtml(job.title)}</a>`];
+        if (categoryName) parts.push(`<br/><span style="color:#666;">${categoryLabel}: ${this.escapeHtml(categoryName)}</span>`);
+        if (skills) parts.push(`<br/><span style="color:#666;">${skillsLabel}: ${this.escapeHtml(skills)}</span>`);
+        return `<li style="margin-bottom:12px;">${parts.join('')}</li>`;
       })
       .join('');
 
-    const html = `
-      <p>${greeting}</p>
-      <p>${isPolish ? 'Oto nowe ogłoszenia z obserwowanych kategorii z ostatnich 24 godzin:' : 'Here are new jobs from your followed categories from the last 24 hours:'}</p>
-      <ul style="padding-left:20px;">${jobsList}</ul>
-      <p style="color:#888;font-size:12px;">${isPolish ? 'Możesz zarządzać obserwowanymi kategoriami na stronie danej kategorii.' : 'You can manage followed categories on each category page.'}</p>
-      <p>Hoplo</p>
-    `;
+    const { subject, html } = this.emailTemplates.render(
+      'category-newsletter',
+      lang,
+      {
+        greeting,
+        count: String(jobs.length),
+        jobsListHtml,
+      },
+      ['jobsListHtml'],
+    );
 
     try {
       if (this.emailService.isConfigured()) {

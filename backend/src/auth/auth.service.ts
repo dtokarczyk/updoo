@@ -24,7 +24,6 @@ import type {
   GoogleAuthResponse,
 } from './auth.types';
 import { PASSWORD_RESET_EXPIRY_HOURS } from './auth.constants';
-import escapeHtml = require('escape-html');
 
 export type { JwtPayload, AuthResponseUser, AuthResponse, GoogleAuthResponse };
 
@@ -40,7 +39,7 @@ export class AuthService {
     private readonly agreementsService: AgreementsService,
     private readonly i18nService: I18nService,
     private readonly storageService: StorageService,
-  ) {}
+  ) { }
 
   /**
    * Request password reset: find user by email (must have password), generate token,
@@ -77,38 +76,20 @@ export class AuthService {
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
     const resetUrl = `${frontendUrl}/login/reset-password?token=${encodeURIComponent(token)}`;
 
-    const subject = this.i18nService.translate(
-      'messages.forgotPasswordEmailSubject',
-      lang,
-    );
-    const intro = this.i18nService.translate(
-      'messages.forgotPasswordEmailIntro',
+    const { subject, html, text } = this.emailTemplates.render(
+      'forgot-password',
       lang,
       {
-        email: escapeHtml(email),
-      },
-    );
-    const cta = this.i18nService.translate(
-      'messages.forgotPasswordEmailCta',
-      lang,
-    );
-    const expiry = this.i18nService.translate(
-      'messages.forgotPasswordEmailExpiry',
-      lang,
-      {
+        email,
+        resetUrl,
         hours: String(PASSWORD_RESET_EXPIRY_HOURS),
       },
     );
-    const html = `
-      <p>${intro}</p>
-      <p><a href="${resetUrl}" style="display:inline-block;padding:10px 20px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px;">${cta}</a></p>
-      <p>${expiry}</p>
-      <p>Hoplo</p>
-    `;
-    const text = `${subject}: ${resetUrl}\n\n${expiry}`;
 
     if (this.emailService.isConfigured()) {
-      await this.emailService.sendHtml(user.email, subject, html, { text });
+      await this.emailService.sendHtml(user.email, subject, html, {
+        ...(text && { text }),
+      });
     }
 
     return { message: successMessage };

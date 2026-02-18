@@ -208,6 +208,7 @@ export class JobsController {
   @UseGuards(OptionalJwtAuthGuard, AgreementsAcceptedGuard)
   async getJob(
     @Param('id') id: string,
+    @Query('preview') preview: string | undefined,
     @Headers('accept-language') acceptLanguage?: string,
     @GetUser() user?: JwtUser,
   ) {
@@ -222,9 +223,10 @@ export class JobsController {
       user?.id,
       user?.accountType === 'ADMIN',
       finalLanguage,
+      preview?.trim() || undefined,
     );
-    // Ensure rate is never sent to unauthenticated clients (controller-level guard)
-    if (!user) {
+    // Hide rate for unauthenticated clients, except when viewing via invitation preview (invitationToken present)
+    if (!user && !('invitationToken' in result && result.invitationToken)) {
       const { rate: _r, ...rest } = result;
       return { ...rest, rate: null };
     }

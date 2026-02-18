@@ -31,7 +31,7 @@ export function ProfileAvatar({ className }: ProfileAvatarProps) {
   const avatarUrl = user?.avatarUrl ?? null;
 
   return (
-    <Avatar className={cn('shrink-0', className)} aria-hidden>
+    <Avatar className={cn('shrink-0', 'border', className)} aria-hidden>
       {avatarUrl ? (
         <AvatarImage key={`${avatarUrl}-${userKey}`} src={avatarUrl} alt="" />
       ) : (

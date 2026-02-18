@@ -238,6 +238,8 @@ model Job {
   rejectedReason  String?       @db.Text  // admin's reason for rejection (for author to fix)
   /** OG image URL for social sharing (generated on save, stored in S3). */
   ogImageUrl       String?
+  /** Hash for previewing invitation draft (proposal flow); null for regular jobs. */
+  previewHash      String?       @unique
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   category        Category       @relation(fields: [categoryId], references: [id], onDelete: Restrict)

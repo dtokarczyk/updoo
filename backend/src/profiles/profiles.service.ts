@@ -22,7 +22,7 @@ export class ProfilesService {
     private readonly storageService: StorageService,
     private readonly emailService: EmailService,
     private readonly i18nService: I18nService,
-  ) {}
+  ) { }
 
   /**
    * Check if slug is available (no other profile uses it, or only the excluded one).
@@ -420,7 +420,7 @@ export class ProfilesService {
       );
       const html = `
         <p>${intro}</p>
-        <p><a href="${profileUrl}" style="display:inline-block;padding:10px 20px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px;">${cta}</a></p>
+        <p><a href="${profileUrl}" style="display:inline-block;padding:10px 20px;background:#4e8668;color:#fff;text-decoration:none;border-radius:6px;">${cta}</a></p>
         <p>Hoplo</p>
       `;
       const text = `${subject}\n\n${intro}\n\n${cta}: ${profileUrl}`;
@@ -507,7 +507,7 @@ export class ProfilesService {
         <p>${intro}</p>
         <p><strong>${reasonLabel}:</strong></p>
         <p>${escapedReason}</p>
-        <p><a href="${editUrl}" style="display:inline-block;padding:10px 20px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px;">${cta}</a></p>
+        <p><a href="${editUrl}" style="display:inline-block;padding:10px 20px;background:#4e8668;color:#fff;text-decoration:none;border-radius:6px;">${cta}</a></p>
         <p>${outro}</p>
         <p>Hoplo</p>
       `;

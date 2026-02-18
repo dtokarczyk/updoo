@@ -25,8 +25,10 @@ import {
 import { AiService } from '../ai/ai.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { EmailService } from '../email/email.service';
+import { EmailTemplatesService } from '../email-templates/email-templates.service';
 import { I18nService } from '../i18n/i18n.service';
 import type { SupportedLanguage } from '../i18n/i18n.service';
+import { randomBytes } from 'crypto';
 import { slugFromName } from '../common/slug.helper';
 import { DEFAULT_CATEGORIES, ALLOWED_CATEGORY_SLUGS } from './jobs.constants';
 import { OgImageService } from './og-image.service';
@@ -41,12 +43,13 @@ export class JobsService implements OnModuleInit {
     private readonly favoritesService: FavoritesService,
     private readonly aiService: AiService,
     private readonly emailService: EmailService,
+    private readonly emailTemplates: EmailTemplatesService,
     private readonly i18nService: I18nService,
     private readonly ogImageService: OgImageService,
     private readonly storageService: StorageService,
     @Inject(forwardRef(() => NotificationsService))
     private readonly notificationsService: NotificationsService,
-  ) {}
+  ) { }
 
   async onModuleInit() {
     await this.ensureCategories();
@@ -375,6 +378,127 @@ export class JobsService implements OnModuleInit {
   }
 
   /**
+   * Create a DRAFT job for proposal invitation flow (admin creates on behalf of invitee).
+   * No accountType check. Sets previewHash for draft preview link.
+   */
+  async createJobForProposal(
+    authorId: string,
+    dto: CreateJobDto,
+    userLanguage: JobLanguage = JobLanguage.POLISH,
+  ): Promise<{ id: string; title: string; previewHash: string }> {
+    const category = await this.prisma.category.findUnique({
+      where: { id: dto.categoryId },
+      include: {
+        translations: {
+          where: { language: userLanguage },
+        },
+      },
+    });
+    if (!category) {
+      throw new NotFoundException('Category not found');
+    }
+    if (dto.locationId) {
+      const location = await this.prisma.location.findUnique({
+        where: { id: dto.locationId },
+      });
+      if (!location) {
+        throw new NotFoundException('Location not found');
+      }
+    }
+    const skillIdsToLink = new Set<string>(dto.skillIds ?? []);
+    if (dto.newSkillNames?.length) {
+      for (const name of dto.newSkillNames) {
+        const trimmed = name.trim();
+        if (!trimmed) continue;
+        const existing = await this.prisma.skill.findUnique({
+          where: { name: trimmed },
+        });
+        if (existing) {
+          skillIdsToLink.add(existing.id);
+        } else {
+          const created = await this.prisma.skill.create({
+            data: { name: trimmed },
+          });
+          skillIdsToLink.add(created.id);
+        }
+      }
+    }
+    if (skillIdsToLink.size > 5) {
+      throw new BadRequestException('validation.skillsMaxCount');
+    }
+    if (skillIdsToLink.size > 0) {
+      const skillsExist = await this.prisma.skill.findMany({
+        where: { id: { in: [...skillIdsToLink] } },
+        select: { id: true },
+      });
+      const foundIds = new Set(skillsExist.map((s) => s.id));
+      for (const id of skillIdsToLink) {
+        if (!foundIds.has(id)) {
+          throw new NotFoundException(`Skill not found: ${id}`);
+        }
+      }
+    }
+    const now = new Date();
+    const allowedDays = [7, 14, 21, 30];
+    const deadline =
+      dto.offerDays != null && allowedDays.includes(dto.offerDays)
+        ? new Date(now.getTime() + dto.offerDays * 24 * 60 * 60 * 1000)
+        : null;
+    const language = JobLanguage.POLISH;
+    const previewHash = randomBytes(16).toString('hex');
+    const job = await this.prisma.job.create({
+      data: {
+        title: dto.title.trim(),
+        description: dto.description.trim(),
+        categoryId: dto.categoryId,
+        authorId,
+        status: JobStatus.DRAFT,
+        language,
+        previewHash,
+        billingType: dto.billingType as BillingType,
+        hoursPerWeek:
+          dto.billingType === 'HOURLY' && dto.hoursPerWeek
+            ? (dto.hoursPerWeek as HoursPerWeek)
+            : null,
+        rate: dto.rate ?? null,
+        rateNegotiable: dto.rateNegotiable ?? false,
+        currency: dto.currency.toUpperCase().slice(0, 3),
+        experienceLevel: dto.experienceLevel as ExperienceLevel,
+        locationId: dto.locationId || null,
+        isRemote: dto.isRemote,
+        projectType: dto.projectType as ProjectType,
+        deadline,
+        expectedOffers:
+          dto.expectedOffers != null && [6, 10, 14].includes(dto.expectedOffers)
+            ? dto.expectedOffers
+            : null,
+        expectedApplicantTypes: dto.expectedApplicantTypes ?? [],
+      },
+      include: {
+        category: true,
+        author: true,
+        location: true,
+        skills: { include: { skill: true } },
+      },
+    });
+    if (skillIdsToLink.size > 0) {
+      await this.prisma.jobSkill.createMany({
+        data: [...skillIdsToLink].map((skillId) => ({
+          jobId: job.id,
+          skillId,
+        })),
+      });
+    } else {
+      void this.attachSkillsFromContentAsync(
+        job.id,
+        dto.title.trim(),
+        dto.description.trim(),
+      );
+    }
+    return { id: job.id, title: job.title, previewHash };
+  }
+
+  /**
    * Extract 1–5 expected skill names from job title and description via AI.
    * Runs in background; errors are logged and not thrown.
    */
@@ -597,18 +721,18 @@ export class JobsService implements OnModuleInit {
     const appliedIds =
       userId && jobs.length
         ? new Set(
-            (
-              await this.prisma.jobApplication.findMany({
-                where: {
-                  freelancerId: userId,
-                  jobId: {
-                    in: jobs.map((j) => j.id),
-                  },
+          (
+            await this.prisma.jobApplication.findMany({
+              where: {
+                freelancerId: userId,
+                jobId: {
+                  in: jobs.map((j) => j.id),
                 },
-                select: { jobId: true },
-              })
-            ).map((a) => a.jobId),
-          )
+              },
+              select: { jobId: true },
+            })
+          ).map((a) => a.jobId),
+        )
         : new Set<string>();
 
     const items = jobs.map((item) => {
@@ -644,12 +768,13 @@ export class JobsService implements OnModuleInit {
     };
   }
 
-  /** Get single job by id. Author or ADMIN can read own/draft; others only published. */
+  /** Get single job by id. Author or ADMIN can read own/draft; others only published. With valid previewHash, draft is viewable and invitationToken returned when proposal is PENDING. */
   async getJob(
     jobId: string,
     userId?: string,
     isAdmin?: boolean,
     userLanguage: JobLanguage = JobLanguage.POLISH,
+    previewHash?: string,
   ) {
     const job = await this.prisma.job.findUnique({
       where: { id: jobId },
@@ -687,6 +812,7 @@ export class JobsService implements OnModuleInit {
             },
           },
         },
+        proposal: true,
       },
     });
     if (!job) {
@@ -695,7 +821,11 @@ export class JobsService implements OnModuleInit {
     const isAuthor = userId && job.authorId === userId;
     const isDraftOrRejected =
       job.status === JobStatus.DRAFT || job.status === JobStatus.REJECTED;
-    if (isDraftOrRejected && !isAuthor && !isAdmin) {
+    const allowedByPreview =
+      previewHash &&
+      job.previewHash === previewHash &&
+      job.status === JobStatus.DRAFT;
+    if (isDraftOrRejected && !isAuthor && !isAdmin && !allowedByPreview) {
       throw new NotFoundException('Job not found');
     }
     // CLOSED jobs are visible to everyone (like PUBLISHED)
@@ -736,9 +866,9 @@ export class JobsService implements OnModuleInit {
         createdAt: app.createdAt,
         // Include message for the current user's own application so they can see what they wrote
         ...(userId &&
-        app.freelancerId === userId &&
-        app.message != null &&
-        app.message !== ''
+          app.freelancerId === userId &&
+          app.message != null &&
+          app.message !== ''
           ? { message: app.message }
           : {}),
       };
@@ -754,7 +884,12 @@ export class JobsService implements OnModuleInit {
     const isFavorite = userId
       ? (await this.favoritesService.getFavoriteJobIds(userId)).has(job.id)
       : false;
-    const { applications: _app, ...rest } = job;
+    const { applications: _app, proposal: _proposal, ...rest } = job;
+    const invitationToken =
+      job.proposal?.status === 'PENDING' &&
+        (isAuthorOrAdmin || allowedByPreview)
+        ? job.proposal.token
+        : undefined;
     const result = {
       ...rest,
       author: maskAuthorSurname(job.author),
@@ -763,9 +898,10 @@ export class JobsService implements OnModuleInit {
       currentUserApplied,
       currentUserApplicationMessage,
       isFavorite,
+      ...(invitationToken != null && { invitationToken }),
     };
-    // Hide rate for unauthenticated users (billing type stays visible)
-    if (!userId) {
+    // Hide rate for unauthenticated users (billing type stays visible), except when viewing via invitation preview
+    if (!userId && !allowedByPreview) {
       const { rate: _rate, ...withoutRate } = result;
       return { ...withoutRate, rate: null };
     }
@@ -1369,8 +1505,8 @@ export class JobsService implements OnModuleInit {
     const newDeadline =
       dto.offerDays != null && allowedDays.includes(dto.offerDays)
         ? new Date(
-            job.createdAt.getTime() + dto.offerDays * 24 * 60 * 60 * 1000,
-          )
+          job.createdAt.getTime() + dto.offerDays * 24 * 60 * 60 * 1000,
+        )
         : undefined;
     // Job announcements are always in Polish
     const language = JobLanguage.POLISH;
@@ -1597,45 +1733,20 @@ export class JobsService implements OnModuleInit {
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
     const slug = slugFromName(job.title, 'oferta');
     const editUrl = `${frontendUrl}/job/${slug}-${job.id}/edit`;
-    const subject = this.i18nService.translate(
-      'messages.jobRejectedEmailSubject',
+
+    const { subject, html, text } = this.emailTemplates.render(
+      'job-rejected',
       authorLang,
+      {
+        title: job.title,
+        reason: reason.trim(),
+        editUrl,
+      },
     );
-    const intro = this.i18nService.translate(
-      'messages.jobRejectedEmailIntro',
-      authorLang,
-      { title: job.title },
-    );
-    const reasonLabel = this.i18nService.translate(
-      'messages.jobRejectedEmailReason',
-      authorLang,
-    );
-    const cta = this.i18nService.translate(
-      'messages.jobRejectedEmailCta',
-      authorLang,
-    );
-    const outro = this.i18nService.translate(
-      'messages.jobRejectedEmailOutro',
-      authorLang,
-    );
-    const escapedReason = reason
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-    const html = `
-      <p>${intro}</p>
-      <p><strong>${reasonLabel}:</strong></p>
-      <p>${escapedReason}</p>
-      <p><a href="${editUrl}" style="display:inline-block;padding:10px 20px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px;">${cta}</a></p>
-      <p>${outro}</p>
-      <p>Hoplo</p>
-    `;
-    const text = `${subject}\n\n${intro}\n\n${reasonLabel}: ${reason}\n\n${cta}: ${editUrl}\n\n${outro}`;
 
     if (this.emailService.isConfigured()) {
       await this.emailService.sendHtml(job.author.email, subject, html, {
-        text,
+        ...(text && { text }),
       });
     }
 

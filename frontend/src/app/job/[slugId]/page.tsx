@@ -30,10 +30,14 @@ async function JobNotFound(_props: { slugId: string }) {
 
 export default async function JobDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slugId: string }>;
+  searchParams?: Promise<{ preview?: string }>;
 }) {
   const { slugId } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const preview = resolvedSearchParams.preview ?? undefined;
   const id = parseJobSlugId(slugId);
 
   if (!id) {
@@ -46,7 +50,7 @@ export default async function JobDetailPage({
   const token = tokenRaw ? decodeURIComponent(tokenRaw) : null;
 
   const [job, prevNext, initialUser] = await Promise.all([
-    fetchJobServer(id, locale, token),
+    fetchJobServer(id, locale, token, preview),
     fetchJobPrevNextServer(id, locale, token),
     getProfileServer(token, locale),
   ]);

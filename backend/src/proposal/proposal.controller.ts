@@ -8,6 +8,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { GetUser } from '../auth/get-user.decorator';
+import type { JwtUser } from '../auth/get-user.decorator';
 import { AdminGuard } from '../admin/admin.guard';
 import { I18nService } from '../i18n/i18n.service';
 import type { SupportedLanguage } from '../i18n/i18n.service';
@@ -31,9 +33,10 @@ export class ProposalController {
   async create(
     @Body() dto: CreateProposalDto,
     @Headers('accept-language') acceptLanguage?: string,
+    @GetUser() user?: JwtUser,
   ) {
     const lang = this.getLanguage(acceptLanguage) as 'pl' | 'en';
-    return this.proposalService.create(dto, lang);
+    return this.proposalService.create(dto, lang, user!.id);
   }
 
   @Get()

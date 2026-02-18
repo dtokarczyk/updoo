@@ -9,6 +9,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { AiModule } from '../ai/ai.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { EmailModule } from '../email/email.module';
+import { EmailTemplatesModule } from '../email-templates/email-templates.module';
 import { I18nModule } from '../i18n/i18n.module';
 import { StorageModule } from '../storage/storage.module';
 
@@ -19,6 +20,7 @@ import { StorageModule } from '../storage/storage.module';
     PrismaModule,
     AiModule,
     EmailModule,
+    EmailTemplatesModule,
     I18nModule,
     StorageModule,
     forwardRef(() => NotificationsModule),

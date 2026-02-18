@@ -1,1 +1,1 @@
-New application to your job: {{jobTitle}}
+Hoplo - New application to your job: {{jobTitle}}

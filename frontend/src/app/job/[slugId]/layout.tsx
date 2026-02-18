@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { getLocaleFromRequest } from '@/lib/i18n';
-import { getMetadataConfig } from '@/lib/metadata-config';
+import { getMetadataConfig, getDefaultOpenGraph } from '@/lib/metadata-config';
 import { parseJobSlugId } from '@/lib/job-url';
 import { AUTH_TOKEN_COOKIE } from '@/lib/api';
 
@@ -53,12 +53,14 @@ export async function generateMetadata({
   const metaConfig = getMetadataConfig(locale);
   const job = await fetchJobForMeta(id, locale, token);
 
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://hoplo.pl';
   if (!job) {
     const offersMeta = metaConfig.offers;
     return {
       title: offersMeta.title,
       description: offersMeta.description,
       openGraph: {
+        ...getDefaultOpenGraph(baseUrl, '/'),
         title: offersMeta.title,
         description: offersMeta.description,
         images: [
@@ -88,10 +90,12 @@ export async function generateMetadata({
   const fullTitle = `${job.title} | ${siteName}`;
   const ogImageUrl = `${API_URL}/jobs/${job.id}/og-image`;
 
+  const jobPath = `/job/${slugId}`;
   return {
     title: { absolute: fullTitle },
     description,
     openGraph: {
+      ...getDefaultOpenGraph(baseUrl, jobPath),
       title: fullTitle,
       description,
       images: [

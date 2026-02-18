@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getLocaleFromRequest } from '@/lib/i18n';
 import {
   getMetadataConfig,
+  getDefaultOpenGraph,
   allCategoriesLabelByLocale,
 } from '@/lib/metadata-config';
 import { getCategoriesServer } from '@/lib/categories-server';
@@ -49,10 +50,13 @@ export async function generateMetadata({
     page,
   );
 
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://hoplo.pl';
+  const path = `/jobs/${categorySlug}/${pageParam}`;
   return {
     title: meta.title,
     description: meta.description,
     openGraph: {
+      ...getDefaultOpenGraph(baseUrl, path),
       title: meta.title,
       description: meta.description,
     },

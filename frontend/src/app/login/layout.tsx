@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { getLocaleFromRequest } from '@/lib/i18n';
-import { getMetadataConfig } from '@/lib/metadata-config';
+import { getMetadataConfig, getDefaultOpenGraph } from '@/lib/metadata-config';
+
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://hoplo.pl';
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocaleFromRequest();
@@ -9,6 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: meta.title,
     description: meta.description,
     openGraph: {
+      ...getDefaultOpenGraph(baseUrl, '/login'),
       title: meta.title,
       description: meta.description,
     },

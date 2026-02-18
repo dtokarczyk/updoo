@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getProfilesList, type Profile } from '@/lib/api';
 import { getLocaleFromRequest } from '@/lib/i18n';
-import { getMetadataConfig } from '@/lib/metadata-config';
+import { getMetadataConfig, getDefaultOpenGraph } from '@/lib/metadata-config';
 import { t } from '@/lib/translations';
 import { getTokenFromCookies } from '@/lib/auth-server';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -65,10 +65,12 @@ export const revalidate = 300;
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocaleFromRequest();
   const meta = getMetadataConfig(locale).companyList;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://hoplo.pl';
   return {
     title: meta.title,
     description: meta.description,
     openGraph: {
+      ...getDefaultOpenGraph(baseUrl, '/profiles'),
       title: meta.title,
       description: meta.description,
     },

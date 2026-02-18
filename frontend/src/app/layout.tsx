@@ -30,6 +30,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocaleFromRequest();
   const meta = getMetadataConfig(locale).default;
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://hoplo.pl';
+  const fbAppId = process.env.NEXT_PUBLIC_FB_APP_ID;
   return {
     metadataBase: new URL(baseUrl),
     title: {
@@ -38,9 +39,10 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: meta.description,
     openGraph: {
+      url: baseUrl.replace(/\/$/, '') || baseUrl,
+      type: 'website',
       title: meta.title,
       description: meta.description,
-      type: 'website',
       siteName: meta.title,
       images: [
         {
@@ -51,6 +53,7 @@ export async function generateMetadata(): Promise<Metadata> {
         },
       ],
     },
+    ...(fbAppId ? { facebook: { appId: fbAppId } } : {}),
     twitter: {
       card: 'summary_large_image',
       title: meta.title,

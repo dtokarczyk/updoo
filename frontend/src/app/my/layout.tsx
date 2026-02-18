@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { SettingsLayout } from '@/layouts/SettingsLayout';
 import { getLocaleFromRequest } from '@/lib/i18n';
-import { getMetadataConfig } from '@/lib/metadata-config';
+import { getMetadataConfig, getDefaultOpenGraph } from '@/lib/metadata-config';
 import { requireAuth } from '@/lib/auth-server';
 import { Sidebar } from './sidebar';
 
@@ -13,6 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description: meta.description,
     robots: 'noindex, nofollow',
     openGraph: {
+      ...getDefaultOpenGraph(process.env.NEXT_PUBLIC_APP_URL ?? 'https://hoplo.pl', '/my'),
       title: meta.title,
       description: meta.description,
     },

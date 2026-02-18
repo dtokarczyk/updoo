@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getLocaleFromRequest } from '@/lib/i18n';
-import { getMetadataConfig } from '@/lib/metadata-config';
+import { getMetadataConfig, getDefaultOpenGraph } from '@/lib/metadata-config';
 import { getCategoriesServer } from '@/lib/categories-server';
 import { OffersPageLayout } from '@/components/OffersPageLayout';
 export const revalidate = 300;
@@ -14,9 +14,9 @@ export async function generateMetadata(): Promise<Metadata> {
     title: meta.title,
     description: meta.description,
     openGraph: {
+      ...getDefaultOpenGraph(baseUrl, '/'),
       title: meta.title,
       description: meta.description,
-      type: 'website',
     },
   };
 }

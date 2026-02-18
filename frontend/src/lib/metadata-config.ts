@@ -206,3 +206,16 @@ const metadataByLocale: Record<
 export function getMetadataConfig(locale: Locale) {
   return metadataByLocale[locale];
 }
+
+/** Base Open Graph fields required by validators (og:url, og:type). Use in generateMetadata openGraph to avoid missing required props when overriding. */
+export function getDefaultOpenGraph(
+  baseUrl: string,
+  path = '/',
+): { url: string; type: 'website' } {
+  const base = baseUrl.replace(/\/$/, '');
+  const pathNorm = path.startsWith('/') ? path : `/${path}`;
+  return {
+    url: pathNorm === '/' ? base : `${base}${pathNorm}`,
+    type: 'website',
+  };
+}

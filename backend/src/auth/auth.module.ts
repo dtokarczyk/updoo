@@ -4,6 +4,7 @@ import { PassportModule } from '@nestjs/passport';
 import { AgreementsModule } from '../agreements/agreements.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { EmailModule } from '../email/email.module';
+import { EmailTemplatesModule } from '../email-templates/email-templates.module';
 import { I18nModule } from '../i18n/i18n.module';
 import { StorageModule } from '../storage/storage.module';
 import { AuthController } from './auth.controller';
@@ -17,6 +18,7 @@ import { JwtStrategy } from './jwt.strategy';
     AgreementsModule,
     PrismaModule,
     EmailModule,
+    EmailTemplatesModule,
     I18nModule,
     StorageModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),

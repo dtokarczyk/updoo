@@ -18,6 +18,7 @@ import { ProfilesModule } from './profiles/profiles.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AdminModule } from './admin/admin.module';
 import { EmailTemplatesModule } from './email-templates/email-templates.module';
+import { ProposalModule } from './proposal/proposal.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { EmailTemplatesModule } from './email-templates/email-templates.module';
     NotificationsModule,
     AdminModule,
     EmailTemplatesModule,
+    ProposalModule,
   ],
   controllers: [AppController],
   providers: [AppService],

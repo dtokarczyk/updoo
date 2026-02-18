@@ -1674,6 +1674,160 @@ export async function getAdminStats(): Promise<AdminStats> {
   return res.json();
 }
 
+/** Proposal reason (invitation source). */
+export type ProposalReason = 'FB_GROUP';
+
+/** Payload to create an invitation proposal: job data + email + reason. */
+export interface CreateProposalPayload extends CreateJobPayload {
+  email: string;
+  reason: ProposalReason;
+}
+
+/** Single proposal in admin list (from GET /proposals). */
+export interface ProposalListItem {
+  id: string;
+  email: string;
+  reason: string;
+  status: string;
+  title: string;
+  jobId: string | null;
+  respondedAt: string | null;
+  createdAt: string;
+}
+
+/** Paginated proposals list (GET /proposals). */
+export interface ProposalsListResponse {
+  items: ProposalListItem[];
+  total: number;
+}
+
+/** Proposal stats (GET /proposals/stats). */
+export interface ProposalsStatsResponse {
+  pending: number;
+  accepted: number;
+  rejected: number;
+}
+
+/** Proposal by token for invitation page (GET /proposals/by-token). */
+export interface ProposalByTokenResponse {
+  email: string;
+  reason: string;
+  status: string;
+  title: string;
+}
+
+export async function getProposals(
+  page = 1,
+  pageSize = 20,
+): Promise<ProposalsListResponse> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const params = new URLSearchParams({
+    page: String(page),
+    pageSize: String(Math.min(50, Math.max(1, pageSize))),
+  });
+  const res = await fetch(`${API_URL}/proposals?${params}`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to fetch proposals');
+  }
+  return res.json();
+}
+
+export async function getProposalsStats(): Promise<ProposalsStatsResponse> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const res = await fetch(`${API_URL}/proposals/stats`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to fetch proposal stats');
+  }
+  return res.json();
+}
+
+export async function createProposal(
+  payload: CreateProposalPayload,
+): Promise<{ id: string; token: string }> {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  };
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
+    headers['Accept-Language'] = getUserLocale();
+  }
+  const res = await fetch(`${API_URL}/proposals`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to create proposal');
+  }
+  return res.json();
+}
+
+export async function getProposalByToken(
+  token: string,
+): Promise<ProposalByTokenResponse | null> {
+  if (!token?.trim()) return null;
+  const params = new URLSearchParams({ token: token.trim() });
+  const res = await fetch(`${API_URL}/proposals/by-token?${params}`);
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data as ProposalByTokenResponse;
+}
+
+export async function acceptProposal(token: string): Promise<{ message: string }> {
+  const headers: HeadersInit = { 'Content-Type': 'application/json' };
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
+    headers['Accept-Language'] = getUserLocale();
+  }
+  const res = await fetch(`${API_URL}/proposals/accept`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ token }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to accept proposal');
+  }
+  return res.json();
+}
+
+export async function rejectProposal(token: string): Promise<{ message: string }> {
+  const headers: HeadersInit = { 'Content-Type': 'application/json' };
+  if (typeof window !== 'undefined') {
+    const { getUserLocale } = await import('./i18n');
+    headers['Accept-Language'] = getUserLocale();
+  }
+  const res = await fetch(`${API_URL}/proposals/reject`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ token }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = Array.isArray(err.message) ? err.message[0] : err.message;
+    throw new Error(msg ?? 'Failed to reject proposal');
+  }
+  return res.json();
+}
+
 /** Admin user list item (real users only, from GET /admin/users). */
 export interface AdminUserListItem {
   id: string;

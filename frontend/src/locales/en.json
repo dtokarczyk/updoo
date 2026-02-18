@@ -638,6 +638,7 @@
     "tabDashboard": "Dashboard",
     "tabUsers": "Users",
     "tabMailerLog": "Mailer log",
+    "tabProposals": "Invitation offers",
     "pendingJobs": "Pending jobs",
     "pendingJobsTitle": "Jobs awaiting approval",
     "noPendingJobs": "No jobs awaiting approval",
@@ -651,7 +652,36 @@
     "regenerateOgImageRegenerating": "Regenerating…",
     "regenerateOgImageSuccess": "OG image has been regenerated.",
     "regenerateOgImageError": "Failed to regenerate OG image.",
-    "regenerateOgImageEnterId": "Enter job ID."
+    "regenerateOgImageEnterId": "Enter job ID.",
+    "proposals": {
+      "title": "Invitation offers",
+      "description": "Invitations to publish a job – send a link; the recipient can accept and will receive an account with login details.",
+      "addProposal": "Add proposal",
+      "statsPending": "Pending",
+      "statsAccepted": "Accepted",
+      "statsRejected": "Rejected",
+      "listTitle": "Proposals list",
+      "listDescription": "All sent job invitations.",
+      "noProposals": "No proposals.",
+      "tableTitle": "Job title",
+      "tableEmail": "Email",
+      "tableReason": "Reason",
+      "tableStatus": "Status",
+      "tableCreated": "Date",
+      "pageInfo": "Items {from}–{to} of {total}",
+      "newStep1Title": "Step 1 – Job content",
+      "newStep1Description": "Fill in the job form. On the next step you will enter the recipient's email and invitation reason.",
+      "newStep2Title": "Step 2 – Invitation",
+      "newStep2Description": "Enter the recipient's email. We will send them an acceptance link; after acceptance we will create their account and send login details.",
+      "reasonLabel": "Invitation reason",
+      "reasonFbGroup": "Facebook group",
+      "newTitle": "Add proposal",
+      "newDescription": "Fill in the job form, enter the recipient's email and send the invitation.",
+      "emailLabel": "Recipient email address",
+      "sendInvitation": "Send invitation",
+      "createFailed": "Failed to create proposal.",
+      "loading": "Loading proposals…"
+    }
   },
   "notifications": {
     "tabNotifications": "Notifications",
@@ -674,6 +704,16 @@
     "dailyDigestDescApplications": "A daily summary email at 6:00 AM with applications from the previous day.",
     "saveFailed": "Failed to save notification settings",
     "saved": "Notification settings saved."
+  },
+  "invitation": {
+    "title": "Job invitation",
+    "invalidLink": "This link is invalid or has already been used.",
+    "introFbGroup": "We saw your offer and would like to invite you to publish it on our platform. Job: \"{title}\".",
+    "agree": "I agree",
+    "reject": "No",
+    "acceptSuccess": "Account created. We have sent login details to your email – log in and change your password.",
+    "rejectSuccess": "Thank you for your response.",
+    "goToLogin": "Go to login"
   },
   "footer": {
     "copyright": "© {year} Hoplo. All rights reserved.",

@@ -50,6 +50,16 @@ enum JobLanguage {
   POLISH
 }
 
+enum ProposalReason {
+  FB_GROUP
+}
+
+enum ProposalStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
 /** Company size: freelancer (1), micro (≤10), small (≤50), medium (≤250), large (>250). */
 enum CompanySize {
   FREELANCER
@@ -111,6 +121,8 @@ model User {
   acceptedPrivacyPolicyVersion String?
   /** When the user last accepted the privacy policy. */
   acceptedPrivacyPolicyAt    DateTime?
+  /** When the welcome email was sent (once per user, after first login). */
+  welcomeEmailSentAt         DateTime?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   company       Company?        @relation(fields: [companyId], references: [id], onDelete: SetNull)
@@ -235,6 +247,7 @@ model Job {
   applications    JobApplication[]
   favoritedBy     Favorite[]
   notificationLogs NotificationLog[]
+  proposal        Proposal?
 
   @@index([categoryId])
   @@index([authorId])
@@ -242,6 +255,25 @@ model Job {
   @@index([language])
   @@index([createdAt])
   @@index([locationId])
+}
+
+model Proposal {
+  id          String         @id @default(cuid())
+  /** Full job form data (CreateJobDto) until acceptance; then Job is created from this. */
+  jobData     Json
+  email       String
+  reason      ProposalReason
+  token       String         @unique
+  status      ProposalStatus @default(PENDING)
+  respondedAt DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  jobId       String?        @unique // set after accept when Job is created
+  job         Job?           @relation(fields: [jobId], references: [id], onDelete: SetNull)
+
+  @@index([email])
+  @@index([status])
+  @@index([token])
 }
 
 model JobApplication {

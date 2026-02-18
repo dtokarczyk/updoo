@@ -9,6 +9,7 @@ import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
+import { EmailTemplatesService } from '../email-templates/email-templates.service';
 import { AgreementsService } from '../agreements/agreements.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -35,6 +36,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly emailService: EmailService,
+    private readonly emailTemplates: EmailTemplatesService,
     private readonly agreementsService: AgreementsService,
     private readonly i18nService: I18nService,
     private readonly storageService: StorageService,
@@ -249,6 +251,12 @@ export class AuthService {
     if (!isMatch) {
       throw new UnauthorizedException('Invalid email or password');
     }
+    this.scheduleWelcomeEmailIfNeeded(
+      user.id,
+      user.email,
+      user.welcomeEmailSentAt,
+      user.language,
+    );
     const skillsFromUser =
       (
         user as unknown as {
@@ -307,6 +315,12 @@ export class AuthService {
       },
     });
     if (user) {
+      this.scheduleWelcomeEmailIfNeeded(
+        user.id,
+        user.email,
+        user.welcomeEmailSentAt,
+        user.language,
+      );
       const skillsFromUser =
         (
           user as unknown as {
@@ -353,6 +367,12 @@ export class AuthService {
         where: { id: user.id },
         data: { googleId },
       });
+      this.scheduleWelcomeEmailIfNeeded(
+        user.id,
+        user.email,
+        user.welcomeEmailSentAt,
+        user.language,
+      );
       const skillsFromUser =
         (
           user as unknown as {
@@ -403,6 +423,12 @@ export class AuthService {
       },
     });
     if (!withRelations) {
+      this.scheduleWelcomeEmailIfNeeded(
+        newUser.id,
+        newUser.email,
+        newUser.welcomeEmailSentAt,
+        newUser.language,
+      );
       const auth = await this.buildAuthResponseWithResolvedAvatarUrl({
         id: newUser.id,
         email: newUser.email,
@@ -423,6 +449,12 @@ export class AuthService {
       });
       return { ...auth, isNewUser: true };
     }
+    this.scheduleWelcomeEmailIfNeeded(
+      withRelations.id,
+      withRelations.email,
+      withRelations.welcomeEmailSentAt,
+      withRelations.language,
+    );
     const skillsFromUser =
       (
         withRelations as unknown as {
@@ -454,6 +486,46 @@ export class AuthService {
       acceptedPrivacyPolicyVersion: withRelations.acceptedPrivacyPolicyVersion,
     });
     return { ...auth, isNewUser: true };
+  }
+
+  /**
+   * Sends welcome email once per user (after first login). Runs in background.
+   */
+  private scheduleWelcomeEmailIfNeeded(
+    userId: string,
+    email: string,
+    welcomeEmailSentAt: Date | null,
+    language: string,
+  ): void {
+    if (welcomeEmailSentAt != null || !this.emailService.isConfigured()) {
+      return;
+    }
+    const lang = language === 'ENGLISH' ? 'en' : 'pl';
+    const greeting = lang === 'pl' ? 'Witaj!' : 'Welcome!';
+    const loginUrl = `${process.env.FRONTEND_URL ?? 'http://localhost:3000'}/login`;
+    void this.sendWelcomeEmailAndMark(userId, email, lang, greeting, loginUrl);
+  }
+
+  private async sendWelcomeEmailAndMark(
+    userId: string,
+    email: string,
+    lang: 'pl' | 'en',
+    greeting: string,
+    loginUrl: string,
+  ): Promise<void> {
+    try {
+      const { subject, html } = this.emailTemplates.render('welcome', lang, {
+        greeting,
+        loginUrl,
+      });
+      await this.emailService.sendHtml(email, subject, html);
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { welcomeEmailSentAt: new Date() },
+      });
+    } catch {
+      // Non-blocking; log in production if needed
+    }
   }
 
   async validateUser(payload: JwtPayload) {

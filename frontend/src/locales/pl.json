@@ -638,6 +638,7 @@
     "tabDashboard": "Strona główna",
     "tabUsers": "Użytkownicy",
     "tabMailerLog": "Mailer log",
+    "tabProposals": "Oferty zaproszeniowe",
     "pendingJobs": "Ogłoszenia do zatwierdzenia",
     "pendingJobsTitle": "Ogłoszenia oczekujące na zatwierdzenie",
     "noPendingJobs": "Brak ogłoszeń oczekujących na zatwierdzenie",
@@ -651,7 +652,36 @@
     "regenerateOgImageRegenerating": "Regenerowanie…",
     "regenerateOgImageSuccess": "Obraz OG został zregenerowany.",
     "regenerateOgImageError": "Nie udało się zregenerować obrazu OG.",
-    "regenerateOgImageEnterId": "Podaj ID oferty."
+    "regenerateOgImageEnterId": "Podaj ID oferty.",
+    "proposals": {
+      "title": "Oferty zaproszeniowe",
+      "description": "Zaproszenia do ofert – wyślij link, odbiorca może zaakceptować i otrzyma konto z danymi logowania.",
+      "addProposal": "Dodaj propozycję",
+      "statsPending": "Oczekujące",
+      "statsAccepted": "Zaakceptowane",
+      "statsRejected": "Odrzucone",
+      "listTitle": "Lista propozycji",
+      "listDescription": "Wszystkie wysłane zaproszenia do ofert.",
+      "noProposals": "Brak propozycji.",
+      "tableTitle": "Tytuł oferty",
+      "tableEmail": "E-mail",
+      "tableReason": "Powód",
+      "tableStatus": "Status",
+      "tableCreated": "Data",
+      "pageInfo": "Pozycje {from}–{to} z {total}",
+      "newStep1Title": "Krok 1 – Treść oferty",
+      "newStep1Description": "Wypełnij formularz oferty. Na następnym kroku podasz e-mail odbiorcy i powód zaproszenia.",
+      "newStep2Title": "Krok 2 – Zaproszenie",
+      "newStep2Description": "Podaj adres e-mail odbiorcy. Wyślemy mu link do akceptacji; po akceptacji założymy konto i wyślemy dane logowania.",
+      "reasonLabel": "Powód zaproszenia",
+      "reasonFbGroup": "Grupa na Facebooku",
+      "newTitle": "Dodaj propozycję",
+      "newDescription": "Wypełnij formularz oferty, podaj e-mail odbiorcy i wyślij zaproszenie.",
+      "emailLabel": "Adres e-mail odbiorcy",
+      "sendInvitation": "Wyślij zaproszenie",
+      "createFailed": "Nie udało się utworzyć propozycji.",
+      "loading": "Ładowanie propozycji…"
+    }
   },
   "notifications": {
     "tabNotifications": "Powiadomienia",
@@ -674,6 +704,16 @@
     "dailyDigestDescApplications": "Zbiorcze powiadomienie raz dziennie o 6:00 ze zgłoszeniami z poprzedniego dnia.",
     "saveFailed": "Nie udało się zapisać ustawień powiadomień",
     "saved": "Ustawienia powiadomień zapisane."
+  },
+  "invitation": {
+    "title": "Zaproszenie do oferty",
+    "invalidLink": "Link jest nieważny lub został już wykorzystany.",
+    "introFbGroup": "Widzieliśmy Twoją ofertę i chcielibyśmy zaproponować Ci publikację na naszej platformie. Oferta: „{title}”.",
+    "agree": "Zgadzam się",
+    "reject": "Nie",
+    "acceptSuccess": "Konto utworzone. Wysłaliśmy na Twój adres e-mail dane logowania – zaloguj się i zmień hasło.",
+    "rejectSuccess": "Dziękujemy za odpowiedź.",
+    "goToLogin": "Przejdź do logowania"
   },
   "footer": {
     "copyright": "© {year} Hoplo. Wszelkie prawa zastrzeżone.",

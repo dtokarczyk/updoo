@@ -61,7 +61,10 @@
     "contractorProfileClientForbidden": "Tylko konta wykonawców mogą zakładać i zarządzać profilami wykonawcy",
     "acceptTermsAndPrivacyRequired": "Aby korzystać z serwisu, musisz zaakceptować regulamin i politykę prywatności.",
     "acceptCurrentTermsRequired": "Aby korzystać z serwisu, musisz zaakceptować aktualny regulamin.",
-    "acceptCurrentPrivacyRequired": "Aby korzystać z serwisu, musisz zaakceptować aktualną politykę prywatności."
+    "acceptCurrentPrivacyRequired": "Aby korzystać z serwisu, musisz zaakceptować aktualną politykę prywatności.",
+    "proposalInvalidOrUsed": "Link jest nieważny lub został już wykorzystany.",
+    "proposalEmailExists": "Użytkownik z tym adresem e-mail już istnieje.",
+    "proposalEmailNotClient": "Ten adres e-mail jest przypisany do konta innego typu. Akceptacja możliwa tylko dla zaproszeń na konto klienta."
   },
   "messages": {
     "forgotPasswordSuccess": "Jeśli konto z tym adresem e-mail istnieje, otrzymasz link do ustawienia nowego hasła.",
@@ -85,6 +88,21 @@
     "profileRejectedEmailIntro": "Twoja wizytówka „{name}” została odrzucona przez administratora.",
     "profileRejectedEmailReason": "Powód odrzucenia",
     "profileRejectedEmailCta": "Popraw wizytówkę i wyślij ponownie",
-    "profileRejectedEmailOutro": "Po wprowadzeniu poprawek wizytówka zostanie ponownie sprawdzona przez administratora."
+    "profileRejectedEmailOutro": "Po wprowadzeniu poprawek wizytówka zostanie ponownie sprawdzona przez administratora.",
+    "proposalInvitationEmailSubject": "Hoplo – zaproszenie do oferty",
+    "proposalInvitationJobTitle": "Oferta",
+    "proposalInvitationEmailIntro": "Widziałem Twoją ofertę i chciałbym zaproponować Ci publikację na naszej platformie. Oferta: „{title}”. Adres: {email}.",
+    "proposalInvitationCtaAccept": "Zgadzam się",
+    "proposalInvitationCtaReject": "Nie",
+    "proposalInvitationLinkExpiry": "Link jest jednorazowy. Po akceptacji założymy dla Ciebie konto i wyślemy dane logowania.",
+    "proposalCredentialsEmailSubject": "Hoplo – Twoje dane logowania",
+    "proposalCredentialsEmailIntro": "Twoje konto zostało utworzone. Zaloguj się używając poniższych danych. Adres e-mail: {email}.",
+    "proposalCredentialsEmailPassword": "Twoje tymczasowe hasło:",
+    "proposalCredentialsEmailCta": "Zaloguj się",
+    "proposalCredentialsEmailChangePassword": "Zalecamy zmianę hasła po pierwszym logowaniu.",
+    "welcomeEmailSubject": "Hoplo – witamy na platformie",
+    "welcomeEmailBody": "Witamy w Hoplo! Cieszymy się, że do nas dołączyłeś. Możesz teraz przeglądać oferty, składać aplikacje i zarządzać swoimi ogłoszeniami.",
+    "proposalAcceptSuccess": "Konto utworzone. Wysłaliśmy na Twój adres e-mail dane logowania – zaloguj się i zmień hasło.",
+    "proposalRejectSuccess": "Dziękujemy za odpowiedź."
   }
 }

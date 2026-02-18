@@ -61,7 +61,10 @@
     "contractorProfileClientForbidden": "Only freelancer accounts can create or manage contractor profiles",
     "acceptTermsAndPrivacyRequired": "You must accept the terms of service and privacy policy to use this service.",
     "acceptCurrentTermsRequired": "You must accept the current terms of service to use this service.",
-    "acceptCurrentPrivacyRequired": "You must accept the current privacy policy to use this service."
+    "acceptCurrentPrivacyRequired": "You must accept the current privacy policy to use this service.",
+    "proposalInvalidOrUsed": "This link is invalid or has already been used.",
+    "proposalEmailExists": "A user with this email already exists.",
+    "proposalEmailNotClient": "This email is associated with a different account type. Acceptance is only for client invitations."
   },
   "messages": {
     "forgotPasswordSuccess": "If an account exists with this email, you will receive a link to set a new password.",
@@ -85,6 +88,21 @@
     "profileRejectedEmailIntro": "Your visiting card \"{name}\" has been rejected by an administrator.",
     "profileRejectedEmailReason": "Rejection reason",
     "profileRejectedEmailCta": "Fix the visiting card and submit again",
-    "profileRejectedEmailOutro": "After making corrections, your visiting card will be reviewed again by an administrator."
+    "profileRejectedEmailOutro": "After making corrections, your visiting card will be reviewed again by an administrator.",
+    "proposalInvitationEmailSubject": "Hoplo – job invitation",
+    "proposalInvitationJobTitle": "Job",
+    "proposalInvitationEmailIntro": "I saw your offer and would like to invite you to publish it on our platform. Job: \"{title}\". Email: {email}.",
+    "proposalInvitationCtaAccept": "I agree",
+    "proposalInvitationCtaReject": "No",
+    "proposalInvitationLinkExpiry": "This link is one-time use. After you accept, we will create your account and send you login details.",
+    "proposalCredentialsEmailSubject": "Hoplo – your login details",
+    "proposalCredentialsEmailIntro": "Your account has been created. Log in using the details below. Email: {email}.",
+    "proposalCredentialsEmailPassword": "Your temporary password:",
+    "proposalCredentialsEmailCta": "Log in",
+    "proposalCredentialsEmailChangePassword": "We recommend changing your password after first login.",
+    "welcomeEmailSubject": "Hoplo – welcome to the platform",
+    "welcomeEmailBody": "Welcome to Hoplo! We're glad you joined. You can now browse jobs, submit applications and manage your listings.",
+    "proposalAcceptSuccess": "Account created. We have sent login details to your email – log in and change your password.",
+    "proposalRejectSuccess": "Thank you for your response."
   }
 }

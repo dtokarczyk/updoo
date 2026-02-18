@@ -713,9 +713,9 @@
     "saved": "Ustawienia powiadomień zapisane."
   },
   "invitation": {
-    "title": "Zaproszenie do oferty",
+    "title": "Opublikuj ofertę",
     "invalidLink": "Link jest nieważny lub został już wykorzystany.",
-    "introFbGroup": "Widzieliśmy Twoją ofertę i chcielibyśmy zaproponować Ci publikację na naszej platformie. Oferta: „{title}”.",
+    "introFbGroup": "Widzieliśmy Twoją ofertę na innych platformach. Chcielibyśmy zaproponować Ci publikację na naszej platformie. Całkowicie za darmo. Po zaakceptowaniu oferty stworzymy dla Ciebie konto w serwisie i wyślemy dane do logowania. Gdy ktoś się zgłosi, otrzymasz powiadomienie na e-mail.",
     "agree": "Zgadzam się",
     "reject": "Nie",
     "acceptSuccess": "Konto utworzone. Wysłaliśmy na Twój adres e-mail dane logowania – zaloguj się i zmień hasło.",

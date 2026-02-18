@@ -15,6 +15,7 @@ import { I18nService } from '../i18n/i18n.service';
 import type { SupportedLanguage } from '../i18n/i18n.service';
 import { ProposalService } from './proposal.service';
 import { CreateProposalDto } from './dto/create-proposal.dto';
+import { AcceptProposalDto } from './dto/accept-proposal.dto';
 import { ProposalTokenDto } from './dto/accept-reject.dto';
 
 @Controller('proposals')
@@ -22,7 +23,7 @@ export class ProposalController {
   constructor(
     private readonly proposalService: ProposalService,
     private readonly i18nService: I18nService,
-  ) {}
+  ) { }
 
   private getLanguage(acceptLanguage?: string): SupportedLanguage {
     return this.i18nService.parseLanguageFromHeader(acceptLanguage);
@@ -68,11 +69,11 @@ export class ProposalController {
 
   @Post('accept')
   async accept(
-    @Body() dto: ProposalTokenDto,
+    @Body() dto: AcceptProposalDto,
     @Headers('accept-language') acceptLanguage?: string,
   ) {
     const lang = this.getLanguage(acceptLanguage) as 'pl' | 'en';
-    return this.proposalService.accept(dto.token, lang);
+    return this.proposalService.accept(dto.token, lang, dto.termsAccepted);
   }
 
   @Post('reject')

@@ -1810,7 +1810,10 @@ export async function getProposalByToken(
   return data as ProposalByTokenResponse;
 }
 
-export async function acceptProposal(token: string): Promise<{ message: string }> {
+export async function acceptProposal(
+  token: string,
+  termsAccepted: boolean,
+): Promise<{ message: string }> {
   const headers: HeadersInit = { 'Content-Type': 'application/json' };
   if (typeof window !== 'undefined') {
     const { getUserLocale } = await import('./i18n');
@@ -1819,7 +1822,7 @@ export async function acceptProposal(token: string): Promise<{ message: string }
   const res = await fetch(`${API_URL}/proposals/accept`, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ token }),
+    body: JSON.stringify({ token, termsAccepted }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

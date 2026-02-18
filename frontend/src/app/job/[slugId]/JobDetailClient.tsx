@@ -31,6 +31,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { JobApplications } from './JobApplications';
 import { JobMeta } from './JobMeta';
 import { JobRateValue } from './JobRateValue';
@@ -93,6 +95,9 @@ export function JobDetailClient({
   const [rejectSubmitting, setRejectSubmitting] = useState(false);
   const [invitationAccepting, setInvitationAccepting] = useState(false);
   const [invitationRejecting, setInvitationRejecting] = useState(false);
+  const [invitationTermsChecked, setInvitationTermsChecked] = useState(false);
+  const [invitationPrivacyChecked, setInvitationPrivacyChecked] = useState(false);
+  const [invitationError, setInvitationError] = useState<string | null>(null);
   const [invitationResult, setInvitationResult] = useState<
     { type: 'accepted' | 'rejected'; message: string } | null
   >(null);
@@ -298,10 +303,15 @@ export function JobDetailClient({
   async function handleInvitationAccept() {
     const token = job.invitationToken;
     if (!token) return;
+    setInvitationError(null);
+    if (!invitationTermsChecked || !invitationPrivacyChecked) {
+      setInvitationError(t('auth.mustAcceptTerms'));
+      return;
+    }
     setInvitationAccepting(true);
     setInvitationResult(null);
     try {
-      const res = await acceptProposal(token);
+      const res = await acceptProposal(token, true);
       setInvitationResult({ type: 'accepted', message: res.message });
       router.refresh();
     } catch (e) {
@@ -344,6 +354,9 @@ export function JobDetailClient({
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {invitationError && (
+              <p className="text-sm text-destructive">{invitationError}</p>
+            )}
             {invitationResult ? (
               <>
                 <p className="text-sm text-muted-foreground">
@@ -354,24 +367,85 @@ export function JobDetailClient({
                 </Button>
               </>
             ) : (
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleInvitationAccept}
-                  disabled={invitationAccepting || invitationRejecting}
-                >
-                  {invitationAccepting
-                    ? t('common.submitting')
-                    : t('invitation.agree')}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleInvitationReject}
-                  disabled={invitationAccepting || invitationRejecting}
-                >
-                  {invitationRejecting
-                    ? t('common.submitting')
-                    : t('invitation.reject')}
-                </Button>
+              <div className="space-y-4">
+                <div className="flex items-start gap-2">
+                  <Checkbox
+                    id="invitation-terms"
+                    checked={invitationTermsChecked}
+                    onCheckedChange={(c) =>
+                      setInvitationTermsChecked(Boolean(c))
+                    }
+                    disabled={invitationAccepting || invitationRejecting}
+                    aria-describedby="invitation-terms-desc"
+                  />
+                  <Label
+                    htmlFor="invitation-terms"
+                    id="invitation-terms-desc"
+                    className="text-sm font-normal cursor-pointer"
+                  >
+                    {t('auth.termsLabelBefore')}{' '}
+                    <Link
+                      href="/agreements/terms"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary underline hover:underline"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {t('auth.termsLink')}
+                    </Link>
+                  </Label>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Checkbox
+                    id="invitation-privacy"
+                    checked={invitationPrivacyChecked}
+                    onCheckedChange={(c) =>
+                      setInvitationPrivacyChecked(Boolean(c))
+                    }
+                    disabled={invitationAccepting || invitationRejecting}
+                    aria-describedby="invitation-privacy-desc"
+                  />
+                  <Label
+                    htmlFor="invitation-privacy"
+                    id="invitation-privacy-desc"
+                    className="text-sm font-normal cursor-pointer"
+                  >
+                    {t('auth.privacyLabelBefore')}{' '}
+                    <Link
+                      href="/agreements/privacy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary underline hover:underline"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {t('auth.privacyLink')}
+                    </Link>
+                  </Label>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleInvitationAccept}
+                    disabled={
+                      invitationAccepting ||
+                      invitationRejecting ||
+                      !invitationTermsChecked ||
+                      !invitationPrivacyChecked
+                    }
+                  >
+                    {invitationAccepting
+                      ? t('common.submitting')
+                      : t('invitation.agree')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleInvitationReject}
+                    disabled={invitationAccepting || invitationRejecting}
+                  >
+                    {invitationRejecting
+                      ? t('common.submitting')
+                      : t('invitation.reject')}
+                  </Button>
+                </div>
               </div>
             )}
           </CardContent>
@@ -587,33 +661,33 @@ export function JobDetailClient({
         canApply ||
         criteriaNotMet ||
         (!user && !isDraft && !isClosed)) && (
-        <div className="fixed inset-x-0 bottom-16 z-50 border-t border-border bg-background/95 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
-          <div className="mx-auto max-w-4xl">
-            <JobActions
-              isOwnJob={isOwnJob}
-              isAdmin={isAdmin}
-              isDraft={isDraft}
-              isClosed={isClosed}
-              user={user}
-              canApply={canApply}
-              criteriaNotMet={criteriaNotMet}
-              currentUserApplied={job.currentUserApplied}
-              deadlinePassed={deadlinePassed}
-              canClose={canClose}
-              closeSubmitting={closeSubmitting}
-              onAccept={handleAccept}
-              acceptSubmitting={acceptSubmitting}
-              onRejectClick={openRejectDialog}
-              rejectSubmitting={rejectSubmitting}
-              job={job}
-              onApplyClick={handleApplyClick}
-              onClose={handleClose}
-              t={t}
-              layout="row"
-            />
+          <div className="fixed inset-x-0 bottom-16 z-50 border-t border-border bg-background/95 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
+            <div className="mx-auto max-w-4xl">
+              <JobActions
+                isOwnJob={isOwnJob}
+                isAdmin={isAdmin}
+                isDraft={isDraft}
+                isClosed={isClosed}
+                user={user}
+                canApply={canApply}
+                criteriaNotMet={criteriaNotMet}
+                currentUserApplied={job.currentUserApplied}
+                deadlinePassed={deadlinePassed}
+                canClose={canClose}
+                closeSubmitting={closeSubmitting}
+                onAccept={handleAccept}
+                acceptSubmitting={acceptSubmitting}
+                onRejectClick={openRejectDialog}
+                rejectSubmitting={rejectSubmitting}
+                job={job}
+                onApplyClick={handleApplyClick}
+                onClose={handleClose}
+                t={t}
+                layout="row"
+              />
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       <RejectJobDialog
         open={rejectDialogOpen}

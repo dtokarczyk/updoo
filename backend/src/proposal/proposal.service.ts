@@ -102,7 +102,16 @@ export class ProposalService {
     };
   }
 
-  async accept(token: string, lang: 'pl' | 'en' = 'pl'): Promise<{ message: string }> {
+  async accept(
+    token: string,
+    lang: 'pl' | 'en' = 'pl',
+    termsAccepted: boolean,
+  ): Promise<{ message: string }> {
+    if (!termsAccepted) {
+      throw new BadRequestException(
+        'Terms and privacy policy must be accepted',
+      );
+    }
     const proposal = await this.prisma.proposal.findUnique({
       where: { token },
       include: { job: true },

@@ -713,9 +713,9 @@
     "saved": "Notification settings saved."
   },
   "invitation": {
-    "title": "Job invitation",
+    "title": "Publish your offer",
     "invalidLink": "This link is invalid or has already been used.",
-    "introFbGroup": "We saw your offer and would like to invite you to publish it on our platform. Job: \"{title}\".",
+    "introFbGroup": "We saw your offer on other platforms. We would like to invite you to publish it on our platform. Completely free. After you accept the offer we will create an account for you and send you login details. When someone applies you will receive an email notification.",
     "agree": "I agree",
     "reject": "No",
     "acceptSuccess": "Account created. We have sent login details to your email – log in and change your password.",

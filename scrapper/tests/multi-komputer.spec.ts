@@ -137,7 +137,7 @@ interface MultiKomputerScrapeResult {
 
 const BASE_URL = 'https://www.multi-komputer.pl';
 const LISTING_PATH = '/firmy/polska/komputery%20-%20oprogramowanie';
-const START_PAGE = 1177; // e.g. 10 to start from page 10
+const START_PAGE = 1209; // e.g. 10 to start from page 10
 const TOTAL_PAGES = 2546;
 const MAX_COMPANIES = 99999999999999; // only first company (for quick test)
 

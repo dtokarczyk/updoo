@@ -39,17 +39,31 @@ function escapeHtmlForEmail(str: string): string {
     .replace(/"/g, '&quot;');
 }
 
+const TEMPLATES_SUBDIR = 'templates';
+
 @Injectable()
 export class EmailTemplatesService {
   private readonly templatesDir: string;
   private readonly cache = new Map<string, { subject: string; html: string; text?: string }>();
 
   constructor() {
-    // Compiled output is in dist/src/email-templates; Nest copies assets to dist/email-templates/templates
+    this.templatesDir = this.resolveTemplatesDir();
+  }
+
+  /**
+   * Resolves templates directory for both dev (src/) and prod (dist/).
+   * Nest copies assets to dist/email-templates/templates (not under dist/src/).
+   * When compiled, we try that path first so header/footer and all templates are found.
+   */
+  private resolveTemplatesDir(): string {
     const isCompiled = __dirname.includes(path.sep + 'dist' + path.sep);
-    this.templatesDir = isCompiled
-      ? path.join(__dirname, '..', '..', 'email-templates', 'templates')
-      : path.join(__dirname, 'templates');
+    if (isCompiled) {
+      const distWhereNestCopies = path.join(__dirname, '..', '..', 'email-templates', TEMPLATES_SUBDIR);
+      const hasHeader = fs.existsSync(path.join(distWhereNestCopies, 'header.en.html'));
+      const hasSubject = fs.existsSync(path.join(distWhereNestCopies, 'forgot-password.pl.subject.txt'));
+      if (hasHeader && hasSubject) return distWhereNestCopies;
+    }
+    return path.join(__dirname, TEMPLATES_SUBDIR);
   }
 
   /**

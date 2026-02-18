@@ -1668,6 +1668,12 @@ export interface AdminStats {
   registeredUsersLast7Days: number;
   registeredUsersToday: number;
   jobsCreatedByRealUsers: number;
+  proposalsCreatedLast7Days: number;
+  proposalsAcceptedLast7Days: number;
+  proposalsRejectedLast7Days: number;
+  proposalsCreatedToday: number;
+  proposalsAcceptedToday: number;
+  proposalsRejectedToday: number;
 }
 
 /** Fetch admin dashboard stats (admin only). */

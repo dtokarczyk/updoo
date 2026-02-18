@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/card';
 import { useTranslations } from '@/hooks/useTranslations';
 import { Input } from '@/components/ui/input';
+import { Plus, X } from 'lucide-react';
 
 export default function AdminMainPage() {
   const { t } = useTranslations();
@@ -149,6 +150,77 @@ export default function AdminMainPage() {
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {stats !== null && (
+        <section
+          className="rounded-lg border-2 border-border bg-card p-4 sm:p-5"
+          aria-labelledby="proposals-stats-title"
+        >
+          <h2
+            id="proposals-stats-title"
+            className="text-lg font-semibold text-foreground mb-1"
+          >
+            {t('admin.proposals.title')}
+          </h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            {t('admin.proposals.statsBoxDescription')}
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[280px] text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left py-2 pr-4 font-medium text-foreground">
+                    {' '}
+                  </th>
+                  <th className="text-right py-2 px-2 font-medium text-muted-foreground tabular-nums">
+                    {t('admin.proposals.statsLabel7Days')}
+                  </th>
+                  <th className="text-right py-2 pl-2 font-medium text-muted-foreground tabular-nums">
+                    {t('admin.proposals.statsLabelToday')}
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="text-foreground">
+                <tr className="border-b border-border/80">
+                  <td className="py-2.5 pr-4">
+                    {t('admin.proposals.statsCreated7Days')}
+                  </td>
+                  <td className="text-right py-2.5 px-2 font-semibold tabular-nums">
+                    {stats.proposalsCreatedLast7Days}
+                  </td>
+                  <td className="text-right py-2.5 pl-2 font-semibold tabular-nums">
+                    {stats.proposalsCreatedToday}
+                  </td>
+                </tr>
+                <tr className="border-b border-border/80">
+                  <td className="py-2.5 pr-4 flex items-center gap-1.5">
+                    <Plus className="h-4 w-4 shrink-0 text-green-600 dark:text-green-500" aria-hidden />
+                    {t('admin.proposals.statsAccepted7Days')}
+                  </td>
+                  <td className="text-right py-2.5 px-2 font-semibold tabular-nums text-green-600 dark:text-green-500">
+                    {stats.proposalsAcceptedLast7Days}
+                  </td>
+                  <td className="text-right py-2.5 pl-2 font-semibold tabular-nums text-green-600 dark:text-green-500">
+                    {stats.proposalsAcceptedToday}
+                  </td>
+                </tr>
+                <tr className="border-b border-border/80">
+                  <td className="py-2.5 pr-4 flex items-center gap-1.5">
+                    <X className="h-4 w-4 shrink-0 text-red-600 dark:text-red-500" aria-hidden />
+                    {t('admin.proposals.statsRejected7Days')}
+                  </td>
+                  <td className="text-right py-2.5 px-2 font-semibold tabular-nums text-red-600 dark:text-red-500">
+                    {stats.proposalsRejectedLast7Days}
+                  </td>
+                  <td className="text-right py-2.5 pl-2 font-semibold tabular-nums text-red-600 dark:text-red-500">
+                    {stats.proposalsRejectedToday}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
       )}
 
       <Card>

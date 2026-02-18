@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { getProposals, getProposalsStats } from '@/lib/api';
-import type { ProposalListItem, ProposalsStatsResponse } from '@/lib/api';
+import { getProposals } from '@/lib/api';
+import type { ProposalListItem } from '@/lib/api';
 import {
   Card,
   CardContent,
@@ -27,20 +27,17 @@ export default function AdminProposalsPage() {
   const { t } = useTranslations();
   const [items, setItems] = useState<ProposalListItem[]>([]);
   const [total, setTotal] = useState(0);
-  const [stats, setStats] = useState<ProposalsStatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([getProposals(1, 20), getProposalsStats()])
-      .then(([list, s]) => {
+    getProposals(1, 20)
+      .then((list) => {
         setItems(list.items);
         setTotal(list.total);
-        setStats(s);
       })
       .catch(() => {
         setItems([]);
         setTotal(0);
-        setStats(null);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -50,13 +47,6 @@ export default function AdminProposalsPage() {
       <CardHeader>
         <CardTitle>{t('admin.proposals.title')}</CardTitle>
         <CardDescription>{t('admin.proposals.description')}</CardDescription>
-        {stats != null && (
-          <p className="text-sm text-muted-foreground">
-            {t('admin.proposals.statsPending')}: {stats.pending},{' '}
-            {t('admin.proposals.statsAccepted')}: {stats.accepted},{' '}
-            {t('admin.proposals.statsRejected')}: {stats.rejected}
-          </p>
-        )}
         <div className="pt-2">
           <Button asChild variant="default">
             <Link href="/admin/proposals/new">

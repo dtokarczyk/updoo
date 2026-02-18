@@ -657,6 +657,12 @@
     "proposals": {
       "title": "Oferty zaproszeniowe",
       "description": "Zaproszenia do ofert – wyślij link, odbiorca może zaakceptować i otrzyma konto z danymi logowania.",
+      "statsBoxDescription": "Statystyki z ostatnich 7 dni",
+      "statsLabel7Days": "7 dni",
+      "statsLabelToday": "Dziś",
+      "statsCreated7Days": "Stworzone oferty zaproszeniowe",
+      "statsAccepted7Days": "Zaakceptowane",
+      "statsRejected7Days": "Odrzucone",
       "addProposal": "Dodaj propozycję",
       "statsPending": "Oczekujące",
       "statsAccepted": "Zaakceptowane",

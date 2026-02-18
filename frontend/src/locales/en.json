@@ -657,6 +657,12 @@
     "proposals": {
       "title": "Invitation offers",
       "description": "Invitations to publish a job – send a link; the recipient can accept and will receive an account with login details.",
+      "statsBoxDescription": "Stats for the last 7 days",
+      "statsLabel7Days": "7 days",
+      "statsLabelToday": "Today",
+      "statsCreated7Days": "Created invitation offers",
+      "statsAccepted7Days": "Accepted",
+      "statsRejected7Days": "Rejected",
       "addProposal": "Add proposal",
       "statsPending": "Pending",
       "statsAccepted": "Accepted",

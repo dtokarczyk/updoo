@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ProposalStatus } from '@prisma/client';
 import { EmailService } from '../email/email.service';
 import { JobsService } from '../jobs/jobs.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -11,6 +12,18 @@ export interface AdminStatsDto {
   registeredUsersLast7Days: number;
   registeredUsersToday: number;
   jobsCreatedByRealUsers: number;
+  /** Invitation proposals created in the last 7 days */
+  proposalsCreatedLast7Days: number;
+  /** Invitation proposals accepted in the last 7 days */
+  proposalsAcceptedLast7Days: number;
+  /** Invitation proposals rejected in the last 7 days */
+  proposalsRejectedLast7Days: number;
+  /** Invitation proposals created today */
+  proposalsCreatedToday: number;
+  /** Invitation proposals accepted today */
+  proposalsAcceptedToday: number;
+  /** Invitation proposals rejected today */
+  proposalsRejectedToday: number;
 }
 
 export interface AdminUserListItemDto {
@@ -91,6 +104,12 @@ export class AdminService {
       registeredUsersLast7Days,
       registeredUsersToday,
       jobsCreatedByRealUsers,
+      proposalsCreatedLast7Days,
+      proposalsAcceptedLast7Days,
+      proposalsRejectedLast7Days,
+      proposalsCreatedToday,
+      proposalsAcceptedToday,
+      proposalsRejectedToday,
     ] = await Promise.all([
       this.prisma.user.count({
         where: this.realUserWhere(),
@@ -112,6 +131,36 @@ export class AdminService {
           author: this.realUserWhere(),
         },
       }),
+      this.prisma.proposal.count({
+        where: { createdAt: { gte: sevenDaysAgo } },
+      }),
+      this.prisma.proposal.count({
+        where: {
+          status: ProposalStatus.ACCEPTED,
+          respondedAt: { gte: sevenDaysAgo },
+        },
+      }),
+      this.prisma.proposal.count({
+        where: {
+          status: ProposalStatus.REJECTED,
+          respondedAt: { gte: sevenDaysAgo },
+        },
+      }),
+      this.prisma.proposal.count({
+        where: { createdAt: { gte: startOfToday } },
+      }),
+      this.prisma.proposal.count({
+        where: {
+          status: ProposalStatus.ACCEPTED,
+          respondedAt: { gte: startOfToday },
+        },
+      }),
+      this.prisma.proposal.count({
+        where: {
+          status: ProposalStatus.REJECTED,
+          respondedAt: { gte: startOfToday },
+        },
+      }),
     ]);
 
     return {
@@ -119,6 +168,12 @@ export class AdminService {
       registeredUsersLast7Days,
       registeredUsersToday,
       jobsCreatedByRealUsers,
+      proposalsCreatedLast7Days,
+      proposalsAcceptedLast7Days,
+      proposalsRejectedLast7Days,
+      proposalsCreatedToday,
+      proposalsAcceptedToday,
+      proposalsRejectedToday,
     };
   }
 

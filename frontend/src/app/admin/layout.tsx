@@ -35,7 +35,10 @@ export default async function AdminLayout({
   if (user?.accountType !== 'ADMIN') redirect('/');
 
   return (
-    <SettingsLayout sidebar={<AdminSidebar variant="sidebar" />}>
+    <SettingsLayout
+      sidebar={<AdminSidebar variant="sidebar" />}
+      maxWidth="7xl"
+    >
       {children}
     </SettingsLayout>
   );

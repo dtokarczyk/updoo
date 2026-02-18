@@ -8,6 +8,7 @@ import {
   FolderOpen,
   UserCircle,
   Settings,
+  Shield,
 } from 'lucide-react';
 import { Logotype } from '@/components/Logotype';
 import { useAuth } from '@/contexts/AuthContext';
@@ -25,6 +26,7 @@ export function AppHeader() {
   const { data: myProfiles } = useMyProfilesQuery();
 
   const isFreelancer = user?.accountType === 'FREELANCER';
+  const isAdmin = user?.accountType === 'ADMIN';
   const hasProfile = (myProfiles?.length ?? 0) > 0;
   const firstProfileSlug = myProfiles?.[0]?.slug;
 
@@ -34,9 +36,9 @@ export function AppHeader() {
       icon: typeof LayoutDashboard;
       labelKey: string;
     }> = [
-      { href: '/', icon: LayoutDashboard, labelKey: 'nav.board' },
-      { href: '/my', icon: FolderOpen, labelKey: 'nav.myThings' },
-    ];
+        { href: '/', icon: LayoutDashboard, labelKey: 'nav.board' },
+        { href: '/my', icon: FolderOpen, labelKey: 'nav.myThings' },
+      ];
     if (isFreelancer) {
       if (hasProfile && firstProfileSlug) {
         items.push({
@@ -52,13 +54,20 @@ export function AppHeader() {
         });
       }
     }
+    if (isAdmin) {
+      items.push({
+        href: '/admin',
+        icon: Shield,
+        labelKey: 'nav.admin',
+      });
+    }
     items.push({
       href: '/profile/basic',
       icon: Settings,
       labelKey: 'nav.settings',
     });
     return items;
-  }, [isFreelancer, hasProfile, firstProfileSlug]);
+  }, [isFreelancer, isAdmin, hasProfile, firstProfileSlug]);
 
   return (
     <>

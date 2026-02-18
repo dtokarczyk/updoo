@@ -21,7 +21,11 @@ import {
 } from '@/components/ui/select';
 import { JobForm } from '@/components/JobForm';
 import { createProposal } from '@/lib/api';
-import type { CreateJobPayload, CreateProposalPayload, ProposalReason } from '@/lib/api';
+import type {
+  CreateJobPayload,
+  CreateProposalPayload,
+  ProposalReason,
+} from '@/lib/api';
 import { useTranslations } from '@/hooks/useTranslations';
 
 const PROPOSAL_REASONS: ProposalReason[] = ['FB_GROUP'];
@@ -55,7 +59,9 @@ export default function AdminProposalsNewPage() {
       await createProposal(payload);
       router.push('/admin/proposals');
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('admin.proposals.createFailed'));
+      setError(
+        err instanceof Error ? err.message : t('admin.proposals.createFailed'),
+      );
     } finally {
       setSubmitting(false);
     }
@@ -66,7 +72,9 @@ export default function AdminProposalsNewPage() {
       <Card>
         <CardHeader>
           <CardTitle>{t('admin.proposals.newTitle')}</CardTitle>
-          <CardDescription>{t('admin.proposals.newDescription')}</CardDescription>
+          <CardDescription>
+            {t('admin.proposals.newDescription')}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {step === 1 ? (
@@ -82,10 +90,14 @@ export default function AdminProposalsNewPage() {
                 {t('admin.proposals.step2Description')}
               </p>
               {error && (
-                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                <p className="text-sm text-red-600 dark:text-red-400">
+                  {error}
+                </p>
               )}
               <div className="space-y-2">
-                <Label htmlFor="proposal-email">{t('admin.proposals.emailLabel')}</Label>
+                <Label htmlFor="proposal-email">
+                  {t('admin.proposals.emailLabel')}
+                </Label>
                 <Input
                   id="proposal-email"
                   type="email"
@@ -98,7 +110,9 @@ export default function AdminProposalsNewPage() {
                 />
               </div>
               <div className="space-y-2 max-w-md">
-                <Label htmlFor="proposal-reason">{t('admin.proposals.reasonLabel')}</Label>
+                <Label htmlFor="proposal-reason">
+                  {t('admin.proposals.reasonLabel')}
+                </Label>
                 <Select
                   value={reason}
                   onValueChange={(v) => setReason(v as ProposalReason)}
@@ -110,7 +124,9 @@ export default function AdminProposalsNewPage() {
                   <SelectContent>
                     {PROPOSAL_REASONS.map((r) => (
                       <SelectItem key={r} value={r}>
-                        {r === 'FB_GROUP' ? t('admin.proposals.reasonFbGroup') : r}
+                        {r === 'FB_GROUP'
+                          ? t('admin.proposals.reasonFbGroup')
+                          : r}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -126,7 +142,9 @@ export default function AdminProposalsNewPage() {
                   {t('common.back')}
                 </Button>
                 <Button type="submit" disabled={submitting}>
-                  {submitting ? t('common.submitting') : t('admin.proposals.sendInvitation')}
+                  {submitting
+                    ? t('common.submitting')
+                    : t('admin.proposals.sendInvitation')}
                 </Button>
               </div>
             </form>

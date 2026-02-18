@@ -35,7 +35,7 @@ export class ProposalService {
     private readonly emailTemplates: EmailTemplatesService,
     private readonly agreementsService: AgreementsService,
     private readonly jobsService: JobsService,
-  ) { }
+  ) {}
 
   async create(
     dto: CreateProposalDto,
@@ -66,7 +66,8 @@ export class ProposalService {
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
     const slug = slugFromName(job.title, 'oferta');
     const draftUrl = `${frontendUrl}/job/${slug}-${job.id}?preview=${encodeURIComponent(job.previewHash)}`;
-    const offerTitle = (dto.title ?? '').trim() || (lang === 'pl' ? 'Oferta' : 'Job');
+    const offerTitle =
+      (dto.title ?? '').trim() || (lang === 'pl' ? 'Oferta' : 'Job');
 
     const { subject, html } = this.emailTemplates.render(
       'proposal-invitation',
@@ -127,7 +128,9 @@ export class ProposalService {
     }
     const job = proposal.job;
     if (job.status !== JobStatus.DRAFT) {
-      throw new BadRequestException('This invitation has already been accepted');
+      throw new BadRequestException(
+        'This invitation has already been accepted',
+      );
     }
 
     const emailLower = proposal.email.trim().toLowerCase();
@@ -212,16 +215,19 @@ export class ProposalService {
     });
 
     const message = isNewUser
-      ? (lang === 'pl'
+      ? lang === 'pl'
         ? 'Konto utworzone. Wysłaliśmy na Twój adres e-mail dane logowania – zaloguj się i zmień hasło.'
-        : 'Account created. We have sent login details to your email – log in and change your password.')
-      : (lang === 'pl'
+        : 'Account created. We have sent login details to your email – log in and change your password.'
+      : lang === 'pl'
         ? 'Oferta została opublikowana. Zaloguj się, aby zarządzać ofertą.'
-        : 'The offer has been published. Log in to manage your listing.');
+        : 'The offer has been published. Log in to manage your listing.';
     return { message };
   }
 
-  async reject(token: string, _lang: 'pl' | 'en' = 'pl'): Promise<{ message: string }> {
+  async reject(
+    token: string,
+    _lang: 'pl' | 'en' = 'pl',
+  ): Promise<{ message: string }> {
     const proposal = await this.prisma.proposal.findUnique({
       where: { token },
     });
@@ -230,7 +236,10 @@ export class ProposalService {
     }
     if (proposal.status !== ProposalStatus.PENDING) {
       return {
-        message: _lang === 'pl' ? 'Dziękujemy za odpowiedź.' : 'Thank you for your response.',
+        message:
+          _lang === 'pl'
+            ? 'Dziękujemy za odpowiedź.'
+            : 'Thank you for your response.',
       };
     }
 
@@ -243,7 +252,10 @@ export class ProposalService {
     });
 
     return {
-      message: _lang === 'pl' ? 'Dziękujemy za odpowiedź.' : 'Thank you for your response.',
+      message:
+        _lang === 'pl'
+          ? 'Dziękujemy za odpowiedź.'
+          : 'Thank you for your response.',
     };
   }
 
@@ -299,8 +311,12 @@ export class ProposalService {
   }> {
     const [pending, accepted, rejected] = await Promise.all([
       this.prisma.proposal.count({ where: { status: ProposalStatus.PENDING } }),
-      this.prisma.proposal.count({ where: { status: ProposalStatus.ACCEPTED } }),
-      this.prisma.proposal.count({ where: { status: ProposalStatus.REJECTED } }),
+      this.prisma.proposal.count({
+        where: { status: ProposalStatus.ACCEPTED },
+      }),
+      this.prisma.proposal.count({
+        where: { status: ProposalStatus.REJECTED },
+      }),
     ]);
     return { pending, accepted, rejected };
   }

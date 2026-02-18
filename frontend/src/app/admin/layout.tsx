@@ -15,7 +15,10 @@ export async function generateMetadata(): Promise<Metadata> {
     description: meta.description,
     robots: 'noindex, nofollow',
     openGraph: {
-      ...getDefaultOpenGraph(process.env.NEXT_PUBLIC_APP_URL ?? 'https://hoplo.pl', '/admin'),
+      ...getDefaultOpenGraph(
+        process.env.NEXT_PUBLIC_APP_URL ?? 'https://hoplo.pl',
+        '/admin',
+      ),
       title: meta.title,
       description: meta.description,
     },
@@ -35,10 +38,7 @@ export default async function AdminLayout({
   if (user?.accountType !== 'ADMIN') redirect('/');
 
   return (
-    <SettingsLayout
-      sidebar={<AdminSidebar variant="sidebar" />}
-      maxWidth="7xl"
-    >
+    <SettingsLayout sidebar={<AdminSidebar variant="sidebar" />} maxWidth="7xl">
       {children}
     </SettingsLayout>
   );

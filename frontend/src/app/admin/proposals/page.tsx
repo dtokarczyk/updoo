@@ -64,11 +64,17 @@ export default function AdminProposalsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[200px]">{t('admin.proposals.tableTitle')}</TableHead>
-                <TableHead className="w-[180px]">{t('admin.proposals.tableEmail')}</TableHead>
+                <TableHead className="w-[200px]">
+                  {t('admin.proposals.tableTitle')}
+                </TableHead>
+                <TableHead className="w-[180px]">
+                  {t('admin.proposals.tableEmail')}
+                </TableHead>
                 <TableHead>{t('admin.proposals.tableReason')}</TableHead>
                 <TableHead>{t('admin.proposals.tableStatus')}</TableHead>
-                <TableHead className="text-right">{t('admin.proposals.tableCreated')}</TableHead>
+                <TableHead className="text-right">
+                  {t('admin.proposals.tableCreated')}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -86,7 +92,11 @@ export default function AdminProposalsPage() {
                   <TableRow key={p.id}>
                     <TableCell className="font-medium">{p.title}</TableCell>
                     <TableCell>{p.email}</TableCell>
-                    <TableCell>{p.reason === 'FB_GROUP' ? t('admin.proposals.reasonFbGroup') : p.reason}</TableCell>
+                    <TableCell>
+                      {p.reason === 'FB_GROUP'
+                        ? t('admin.proposals.reasonFbGroup')
+                        : p.reason}
+                    </TableCell>
                     <TableCell>{p.status}</TableCell>
                     <TableCell className="text-right">
                       {format(new Date(p.createdAt), 'dd.MM.yyyy HH:mm')}

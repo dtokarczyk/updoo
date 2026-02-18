@@ -10,7 +10,10 @@ export async function generateMetadata(): Promise<Metadata> {
     description: meta.description,
     robots: 'noindex, nofollow',
     openGraph: {
-      ...getDefaultOpenGraph(process.env.NEXT_PUBLIC_APP_URL ?? 'https://hoplo.pl', '/profile/create'),
+      ...getDefaultOpenGraph(
+        process.env.NEXT_PUBLIC_APP_URL ?? 'https://hoplo.pl',
+        '/profile/create',
+      ),
       title: meta.title,
       description: meta.description,
     },

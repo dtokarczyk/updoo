@@ -22,7 +22,7 @@ export class ProfilesService {
     private readonly storageService: StorageService,
     private readonly emailService: EmailService,
     private readonly i18nService: I18nService,
-  ) { }
+  ) {}
 
   /**
    * Check if slug is available (no other profile uses it, or only the excluded one).

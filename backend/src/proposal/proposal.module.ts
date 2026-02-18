@@ -21,4 +21,4 @@ import { ProposalService } from './proposal.service';
   providers: [ProposalService],
   exports: [ProposalService],
 })
-export class ProposalModule { }
+export class ProposalModule {}

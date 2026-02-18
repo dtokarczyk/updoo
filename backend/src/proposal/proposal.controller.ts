@@ -23,7 +23,7 @@ export class ProposalController {
   constructor(
     private readonly proposalService: ProposalService,
     private readonly i18nService: I18nService,
-  ) { }
+  ) {}
 
   private getLanguage(acceptLanguage?: string): SupportedLanguage {
     return this.i18nService.parseLanguageFromHeader(acceptLanguage);

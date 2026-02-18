@@ -39,7 +39,7 @@ export class AuthService {
     private readonly agreementsService: AgreementsService,
     private readonly i18nService: I18nService,
     private readonly storageService: StorageService,
-  ) { }
+  ) {}
 
   /**
    * Request password reset: find user by email (must have password), generate token,

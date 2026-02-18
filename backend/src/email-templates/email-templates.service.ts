@@ -44,7 +44,10 @@ const TEMPLATES_SUBDIR = 'templates';
 @Injectable()
 export class EmailTemplatesService {
   private readonly templatesDir: string;
-  private readonly cache = new Map<string, { subject: string; html: string; text?: string }>();
+  private readonly cache = new Map<
+    string,
+    { subject: string; html: string; text?: string }
+  >();
 
   constructor() {
     this.templatesDir = this.resolveTemplatesDir();
@@ -58,9 +61,19 @@ export class EmailTemplatesService {
   private resolveTemplatesDir(): string {
     const isCompiled = __dirname.includes(path.sep + 'dist' + path.sep);
     if (isCompiled) {
-      const distWhereNestCopies = path.join(__dirname, '..', '..', 'email-templates', TEMPLATES_SUBDIR);
-      const hasHeader = fs.existsSync(path.join(distWhereNestCopies, 'header.en.html'));
-      const hasSubject = fs.existsSync(path.join(distWhereNestCopies, 'forgot-password.pl.subject.txt'));
+      const distWhereNestCopies = path.join(
+        __dirname,
+        '..',
+        '..',
+        'email-templates',
+        TEMPLATES_SUBDIR,
+      );
+      const hasHeader = fs.existsSync(
+        path.join(distWhereNestCopies, 'header.en.html'),
+      );
+      const hasSubject = fs.existsSync(
+        path.join(distWhereNestCopies, 'forgot-password.pl.subject.txt'),
+      );
       if (hasHeader && hasSubject) return distWhereNestCopies;
     }
     return path.join(__dirname, TEMPLATES_SUBDIR);

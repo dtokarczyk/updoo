@@ -1832,7 +1832,9 @@ export async function acceptProposal(
   return res.json();
 }
 
-export async function rejectProposal(token: string): Promise<{ message: string }> {
+export async function rejectProposal(
+  token: string,
+): Promise<{ message: string }> {
   const headers: HeadersInit = { 'Content-Type': 'application/json' };
   if (typeof window !== 'undefined') {
     const { getUserLocale } = await import('./i18n');

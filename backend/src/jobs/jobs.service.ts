@@ -49,7 +49,7 @@ export class JobsService implements OnModuleInit {
     private readonly storageService: StorageService,
     @Inject(forwardRef(() => NotificationsService))
     private readonly notificationsService: NotificationsService,
-  ) { }
+  ) {}
 
   async onModuleInit() {
     await this.ensureCategories();
@@ -721,18 +721,18 @@ export class JobsService implements OnModuleInit {
     const appliedIds =
       userId && jobs.length
         ? new Set(
-          (
-            await this.prisma.jobApplication.findMany({
-              where: {
-                freelancerId: userId,
-                jobId: {
-                  in: jobs.map((j) => j.id),
+            (
+              await this.prisma.jobApplication.findMany({
+                where: {
+                  freelancerId: userId,
+                  jobId: {
+                    in: jobs.map((j) => j.id),
+                  },
                 },
-              },
-              select: { jobId: true },
-            })
-          ).map((a) => a.jobId),
-        )
+                select: { jobId: true },
+              })
+            ).map((a) => a.jobId),
+          )
         : new Set<string>();
 
     const items = jobs.map((item) => {
@@ -866,9 +866,9 @@ export class JobsService implements OnModuleInit {
         createdAt: app.createdAt,
         // Include message for the current user's own application so they can see what they wrote
         ...(userId &&
-          app.freelancerId === userId &&
-          app.message != null &&
-          app.message !== ''
+        app.freelancerId === userId &&
+        app.message != null &&
+        app.message !== ''
           ? { message: app.message }
           : {}),
       };
@@ -887,7 +887,7 @@ export class JobsService implements OnModuleInit {
     const { applications: _app, proposal: _proposal, ...rest } = job;
     const invitationToken =
       job.proposal?.status === 'PENDING' &&
-        (isAuthorOrAdmin || allowedByPreview)
+      (isAuthorOrAdmin || allowedByPreview)
         ? job.proposal.token
         : undefined;
     const result = {
@@ -1505,8 +1505,8 @@ export class JobsService implements OnModuleInit {
     const newDeadline =
       dto.offerDays != null && allowedDays.includes(dto.offerDays)
         ? new Date(
-          job.createdAt.getTime() + dto.offerDays * 24 * 60 * 60 * 1000,
-        )
+            job.createdAt.getTime() + dto.offerDays * 24 * 60 * 60 * 1000,
+          )
         : undefined;
     // Job announcements are always in Polish
     const language = JobLanguage.POLISH;

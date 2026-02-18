@@ -8,7 +8,13 @@ import { NotificationsController } from './notifications.controller';
 import { NotificationsService } from './notifications.service';
 
 @Module({
-  imports: [PrismaModule, EmailModule, EmailTemplatesModule, AuthModule, AgreementsModule],
+  imports: [
+    PrismaModule,
+    EmailModule,
+    EmailTemplatesModule,
+    AuthModule,
+    AgreementsModule,
+  ],
   controllers: [NotificationsController],
   providers: [NotificationsService],
   exports: [NotificationsService],

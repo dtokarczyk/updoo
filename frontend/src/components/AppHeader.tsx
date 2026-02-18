@@ -36,9 +36,9 @@ export function AppHeader() {
       icon: typeof LayoutDashboard;
       labelKey: string;
     }> = [
-        { href: '/', icon: LayoutDashboard, labelKey: 'nav.board' },
-        { href: '/my', icon: FolderOpen, labelKey: 'nav.myThings' },
-      ];
+      { href: '/', icon: LayoutDashboard, labelKey: 'nav.board' },
+      { href: '/my', icon: FolderOpen, labelKey: 'nav.myThings' },
+    ];
     if (isFreelancer) {
       if (hasProfile && firstProfileSlug) {
         items.push({

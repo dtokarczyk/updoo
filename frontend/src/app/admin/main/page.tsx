@@ -195,7 +195,10 @@ export default function AdminMainPage() {
                 </tr>
                 <tr className="border-b border-border/80">
                   <td className="py-2.5 pr-4 flex items-center gap-1.5">
-                    <Plus className="h-4 w-4 shrink-0 text-green-600 dark:text-green-500" aria-hidden />
+                    <Plus
+                      className="h-4 w-4 shrink-0 text-green-600 dark:text-green-500"
+                      aria-hidden
+                    />
                     {t('admin.proposals.statsAccepted7Days')}
                   </td>
                   <td className="text-right py-2.5 px-2 font-semibold tabular-nums text-green-600 dark:text-green-500">
@@ -207,7 +210,10 @@ export default function AdminMainPage() {
                 </tr>
                 <tr className="border-b border-border/80">
                   <td className="py-2.5 pr-4 flex items-center gap-1.5">
-                    <X className="h-4 w-4 shrink-0 text-red-600 dark:text-red-500" aria-hidden />
+                    <X
+                      className="h-4 w-4 shrink-0 text-red-600 dark:text-red-500"
+                      aria-hidden
+                    />
                     {t('admin.proposals.statsRejected7Days')}
                   </td>
                   <td className="text-right py-2.5 px-2 font-semibold tabular-nums text-red-600 dark:text-red-500">

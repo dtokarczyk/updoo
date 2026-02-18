@@ -19,7 +19,7 @@ export class NotificationsService {
     private readonly prisma: PrismaService,
     private readonly emailService: EmailService,
     private readonly emailTemplates: EmailTemplatesService,
-  ) { }
+  ) {}
 
   /**
    * Returns true if the job should be excluded from notification emails (newsletter, digest, instant).
@@ -617,9 +617,17 @@ export class NotificationsService {
             ?.name ??
           job.category?.translations[0]?.name ??
           '';
-        const parts = [`<a href="${url}" style="color:#4e8668;text-decoration:none;font-weight:bold;">${this.escapeHtml(job.title)}</a>`];
-        if (categoryName) parts.push(`<br/><span style="color:#666;">${categoryLabel}: ${this.escapeHtml(categoryName)}</span>`);
-        if (skills) parts.push(`<br/><span style="color:#666;">${skillsLabel}: ${this.escapeHtml(skills)}</span>`);
+        const parts = [
+          `<a href="${url}" style="color:#4e8668;text-decoration:none;font-weight:bold;">${this.escapeHtml(job.title)}</a>`,
+        ];
+        if (categoryName)
+          parts.push(
+            `<br/><span style="color:#666;">${categoryLabel}: ${this.escapeHtml(categoryName)}</span>`,
+          );
+        if (skills)
+          parts.push(
+            `<br/><span style="color:#666;">${skillsLabel}: ${this.escapeHtml(skills)}</span>`,
+          );
         return `<li style="margin-bottom:12px;">${parts.join('')}</li>`;
       })
       .join('');

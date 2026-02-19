@@ -156,6 +156,13 @@ export class AuthService {
         acceptedPrivacyPolicyVersion: privacyPolicyVersion ?? undefined,
       },
     });
+
+    // Fire Sinum scene activation after registration (non-blocking)
+    this.triggerSinumRegistrationScene().catch((err) => {
+      // Log but do not fail registration if Sinum is unavailable
+      console.warn('Sinum registration scene trigger failed:', err?.message ?? err);
+    });
+
     const withRelations = await this.prisma.user.findUnique({
       where: { id: user.id },
       include: {
@@ -592,5 +599,28 @@ export class AuthService {
       ...user,
       avatarUrl: resolvedAvatarUrl ?? user.avatarUrl ?? null,
     });
+  }
+
+  /**
+   * Calls Sinum API to activate the registration scene (e.g. visual/audio cue).
+   * Uses SINUM_SCENE_ACTIVATE_URL and SINUM_AUTH_TOKEN from env. No-op if not configured.
+   */
+  private async triggerSinumRegistrationScene(): Promise<void> {
+    const url = process.env.SINUM_SCENE_ACTIVATE_URL?.trim();
+    const token = process.env.SINUM_AUTH_TOKEN?.trim();
+    if (!url || !token) return;
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: token,
+        'Content-Type': 'application/json',
+        Accept: 'application/json, text/plain, */*',
+      },
+      body: '{}',
+    });
+    if (!res.ok) {
+      throw new Error(`Sinum API ${res.status}: ${await res.text().catch(() => '')}`);
+    }
   }
 }

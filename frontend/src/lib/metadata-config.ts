@@ -227,15 +227,27 @@ export function getMetadataConfig(locale: Locale) {
   return metadataByLocale[locale];
 }
 
-/** Base Open Graph fields required by validators (og:url, og:type). Use in generateMetadata openGraph to avoid missing required props when overriding. */
+/** Base Open Graph fields (url, type, images fallback). Use in generateMetadata openGraph so child pages do not lose OG image when overriding. */
 export function getDefaultOpenGraph(
   baseUrl: string,
   path = '/',
-): { url: string; type: 'website' } {
+): {
+  url: string;
+  type: 'website';
+  images: Array<{ url: string; width: number; height: number; alt: string }>;
+} {
   const base = baseUrl.replace(/\/$/, '');
   const pathNorm = path.startsWith('/') ? path : `/${path}`;
   return {
     url: pathNorm === '/' ? base : `${base}${pathNorm}`,
     type: 'website',
+    images: [
+      {
+        url: '/og-fallback.png',
+        width: 1200,
+        height: 630,
+        alt: PROJECT_NAME,
+      },
+    ],
   };
 }

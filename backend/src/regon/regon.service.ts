@@ -83,7 +83,7 @@ export class RegonService {
             reports[reportName] = reportObj;
           }
         } catch {
-          // Report not applicable for this entity (e.g. wrong type) or no data – skip
+          // Report not applicable for this entity (e.g. wrong type) or no data - skip
         }
       }
 

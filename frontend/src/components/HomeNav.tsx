@@ -42,7 +42,7 @@ export function HomeNav({
   }
 
   if (!isLoggedIn) {
-    // Don't show login/register in HomeNav – login is in AppHeader
+    // Don't show login/register in HomeNav - login is in AppHeader
     return null;
   }
 

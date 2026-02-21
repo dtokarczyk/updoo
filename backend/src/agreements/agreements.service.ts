@@ -13,7 +13,7 @@ export class AgreementsService {
     // 1) Same dir as this file has terms-of-service/ (e.g. dist/src/agreements or legacy dist/agreements)
     const sameDir = path.join(__dirname, TERMS_DIR);
     if (fs.existsSync(sameDir)) return __dirname;
-    // 2) Nest copies assets to dist/agreements/ – when __dirname is dist/src/agreements, dist/agreements is sibling of dist/src
+    // 2) Nest copies assets to dist/agreements/ - when __dirname is dist/src/agreements, dist/agreements is sibling of dist/src
     const distAgreements = path.join(__dirname, '..', '..', AGREEMENTS_DIR);
     if (fs.existsSync(path.join(distAgreements, TERMS_DIR)))
       return distAgreements;

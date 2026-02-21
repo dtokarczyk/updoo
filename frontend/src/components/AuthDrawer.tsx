@@ -68,7 +68,7 @@ export function AuthDrawerContent({
             className="h-[44px] w-[44px] px-0"
           />
         </div>
-        {/* Add job posting – above login (same as sidebar) */}
+        {/* Add job posting - above login (same as sidebar) */}
         <Button className="w-full mb-4" size="lg" asChild>
           <Link href="/job/new" onClick={onClose}>
             <Plus className="mr-2 h-4 w-4" />

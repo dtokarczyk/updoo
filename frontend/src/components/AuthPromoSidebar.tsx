@@ -39,7 +39,7 @@ export function AuthPromoSidebar({ initialLocale }: AuthPromoSidebarProps) {
 
   return (
     <>
-      {/* Add job posting – above login */}
+      {/* Add job posting - above login */}
       <Button className="w-full mb-4 min-w-0" size="lg" asChild>
         <Link
           href="/job/new"

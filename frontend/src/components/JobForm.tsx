@@ -152,19 +152,19 @@ export function JobForm({
       const offerDays =
         initialData.deadline && initialData.createdAt
           ? (() => {
-              const ms =
-                new Date(initialData.deadline).getTime() -
-                new Date(initialData.createdAt).getTime();
-              const days = Math.round(ms / (24 * 60 * 60 * 1000));
-              const allowed = [7, 14, 21, 30];
-              return allowed.reduce((prev, curr) =>
-                Math.abs(curr - days) < Math.abs(prev - days) ? curr : prev,
-              );
-            })()
+            const ms =
+              new Date(initialData.deadline).getTime() -
+              new Date(initialData.createdAt).getTime();
+            const days = Math.round(ms / (24 * 60 * 60 * 1000));
+            const allowed = [7, 14, 21, 30];
+            return allowed.reduce((prev, curr) =>
+              Math.abs(curr - days) < Math.abs(prev - days) ? curr : prev,
+            );
+          })()
           : 14;
       const expectedOffers =
         initialData.expectedOffers != null &&
-        [6, 10, 14].includes(initialData.expectedOffers)
+          [6, 10, 14].includes(initialData.expectedOffers)
           ? initialData.expectedOffers
           : 10;
       reset({
@@ -177,9 +177,9 @@ export function JobForm({
           '') as JobFormValues['hoursPerWeek'],
         rate:
           initialData.rateNegotiable &&
-          (initialData.rate === '0' ||
-            initialData.rate === '' ||
-            !initialData.rate)
+            (initialData.rate === '0' ||
+              initialData.rate === '' ||
+              !initialData.rate)
             ? ''
             : (initialData.rate ?? '1000'),
         rateNegotiable: initialData.rateNegotiable ?? false,
@@ -200,7 +200,7 @@ export function JobForm({
     }
   }, [initialData, mode, reset]);
 
-  // Load draft for create mode (no skills – backend will derive from content)
+  // Load draft for create mode (no skills - backend will derive from content)
   useEffect(() => {
     if (mode === 'create' && !draftLoaded) {
       const draft = getDraftJob();
@@ -225,7 +225,7 @@ export function JobForm({
           projectType: draft.projectType,
           offerDays: (draft.offerDays ?? 14) as JobFormValues['offerDays'],
           expectedOffers: (draft.expectedOffers != null &&
-          [6, 10, 14].includes(draft.expectedOffers)
+            [6, 10, 14].includes(draft.expectedOffers)
             ? draft.expectedOffers
             : 10) as JobFormValues['expectedOffers'],
           expectedApplicantTypes: draft.expectedApplicantTypes ?? [],

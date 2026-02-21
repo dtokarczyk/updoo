@@ -1,4 +1,4 @@
-# Hoplo – Boilerplate
+# Hoplo - Boilerplate
 
 Monorepo z aplikacją **backend** (NestJS) i **frontend** (Next.js).
 
@@ -28,8 +28,8 @@ npm run start:dev
 
 API: **http://localhost:3001**
 
-- `GET /` – Hello World
-- `GET /api/health` – health check
+- `GET /` - Hello World
+- `GET /api/health` - health check
 
 ### Frontend (Next.js)
 
@@ -67,16 +67,16 @@ W dwóch terminalach:
 
 ### Backend
 
-- `npm run start` – start
-- `npm run start:dev` – start z hot-reload
-- `npm run build` – build produkcyjny
-- `npm run start:prod` – uruchomienie buildu
-- `npm run test` – testy
-- `npm run lint` – ESLint
+- `npm run start` - start
+- `npm run start:dev` - start z hot-reload
+- `npm run build` - build produkcyjny
+- `npm run start:prod` - uruchomienie buildu
+- `npm run test` - testy
+- `npm run lint` - ESLint
 
 ### Frontend
 
-- `npm run dev` – dev server
-- `npm run build` – build produkcyjny
-- `npm run start` – uruchomienie buildu
-- `npm run lint` – ESLint
+- `npm run dev` - dev server
+- `npm run build` - build produkcyjny
+- `npm run start` - uruchomienie buildu
+- `npm run lint` - ESLint

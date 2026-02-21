@@ -558,7 +558,7 @@ export function JobDetailClient({
             </div>
           </section>
 
-          {/* OG image for social sharing – test preview only when ?debug=true */}
+          {/* OG image for social sharing - test preview only when ?debug=true */}
           <Suspense fallback={null}>
             <JobOgPreview job={job} id={id} />
           </Suspense>
@@ -663,33 +663,33 @@ export function JobDetailClient({
         canApply ||
         criteriaNotMet ||
         (!user && !isDraft && !isClosed)) && (
-        <div className="fixed inset-x-0 bottom-16 z-50 border-t border-border bg-background/95 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
-          <div className="mx-auto max-w-4xl">
-            <JobActions
-              isOwnJob={isOwnJob}
-              isAdmin={isAdmin}
-              isDraft={isDraft}
-              isClosed={isClosed}
-              user={user}
-              canApply={canApply}
-              criteriaNotMet={criteriaNotMet}
-              currentUserApplied={job.currentUserApplied}
-              deadlinePassed={deadlinePassed}
-              canClose={canClose}
-              closeSubmitting={closeSubmitting}
-              onAccept={handleAccept}
-              acceptSubmitting={acceptSubmitting}
-              onRejectClick={openRejectDialog}
-              rejectSubmitting={rejectSubmitting}
-              job={job}
-              onApplyClick={handleApplyClick}
-              onClose={handleClose}
-              t={t}
-              layout="row"
-            />
+          <div className="fixed inset-x-0 bottom-16 z-50 border-t border-border bg-background/95 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
+            <div className="mx-auto max-w-4xl">
+              <JobActions
+                isOwnJob={isOwnJob}
+                isAdmin={isAdmin}
+                isDraft={isDraft}
+                isClosed={isClosed}
+                user={user}
+                canApply={canApply}
+                criteriaNotMet={criteriaNotMet}
+                currentUserApplied={job.currentUserApplied}
+                deadlinePassed={deadlinePassed}
+                canClose={canClose}
+                closeSubmitting={closeSubmitting}
+                onAccept={handleAccept}
+                acceptSubmitting={acceptSubmitting}
+                onRejectClick={openRejectDialog}
+                rejectSubmitting={rejectSubmitting}
+                job={job}
+                onApplyClick={handleApplyClick}
+                onClose={handleClose}
+                t={t}
+                layout="row"
+              />
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       <RejectJobDialog
         open={rejectDialogOpen}

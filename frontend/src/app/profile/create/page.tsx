@@ -60,7 +60,7 @@ export default function CreateProfilePage() {
       .then((profiles) => {
         if (profiles.length > 0) router.replace('/profile');
       })
-      .catch(() => {});
+      .catch(() => { });
   }, [router]);
 
   const onSubmit = async (data: ProfileFormValues) => {
@@ -92,7 +92,7 @@ export default function CreateProfilePage() {
     router.refresh();
   };
 
-  // Step 2: after profile created – show cover photo (like in edit) then "Zakończ"
+  // Step 2: after profile created - show cover photo (like in edit) then "Zakończ"
   if (createdProfile) {
     return (
       <main className="w-full">

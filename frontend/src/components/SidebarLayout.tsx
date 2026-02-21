@@ -1,5 +1,5 @@
 type SidebarLayoutProps = {
-  /** Sidebar (desktop) and list (mobile) – same component with different variants. */
+  /** Sidebar (desktop) and list (mobile) - same component with different variants. */
   sidebar: React.ReactNode;
   /** Mobile list shown above content when sidebar is visible. */
   mobileList: React.ReactNode;
@@ -10,7 +10,7 @@ type SidebarLayoutProps = {
 
 /**
  * Layout with left sidebar (desktop) or top list (mobile).
- * No drawer – list is always visible above content on mobile.
+ * No drawer - list is always visible above content on mobile.
  */
 export function SidebarLayout({
   sidebar,

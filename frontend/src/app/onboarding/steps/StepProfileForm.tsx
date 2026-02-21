@@ -115,7 +115,7 @@ export function StepProfileForm({
 
   const rootError = formState.errors.root?.message;
 
-  // Step 2: after profile created – show cover photo (like in edit) then continue
+  // Step 2: after profile created - show cover photo (like in edit) then continue
   if (createdProfile) {
     return (
       <>

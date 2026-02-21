@@ -51,11 +51,11 @@ export class AdminService {
     private readonly emailService: EmailService,
     private readonly jobsService: JobsService,
     private readonly prisma: PrismaService,
-  ) {}
+  ) { }
 
   /**
    * Returns real users only (excludes FAKE auto-generated: password !== FAKE_PASSWORD or null).
-   * Sorted by createdAt desc (newest first). For admin panel display only – no editing.
+   * Sorted by createdAt desc (newest first). For admin panel display only - no editing.
    */
   async getRealUsers(): Promise<AdminUserListItemDto[]> {
     const users = await this.prisma.user.findMany({

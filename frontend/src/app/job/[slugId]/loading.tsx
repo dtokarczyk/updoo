@@ -16,7 +16,7 @@ export default function JobDetailLoading() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
       <div className="grid gap-8 lg:grid-cols-6">
-        {/* Main content – col-span-4 */}
+        {/* Main content - col-span-4 */}
         <div className="lg:col-span-4 space-y-6">
           {/* Title block */}
           <div className="space-y-4">
@@ -92,7 +92,7 @@ export default function JobDetailLoading() {
           </section>
         </div>
 
-        {/* Sidebar – col-span-2, hidden on mobile */}
+        {/* Sidebar - col-span-2, hidden on mobile */}
         <aside className="hidden lg:block lg:col-span-2 space-y-6">
           <div className="space-y-2">
             <Skeleton className="h-10 w-full rounded-md" />

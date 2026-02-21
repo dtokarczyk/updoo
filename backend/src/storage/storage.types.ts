@@ -4,7 +4,7 @@ export interface ImageUploadConfig {
   path: string;
   /** Max dimension for fit 'inside' (keep aspect). Ignored when width/height are set. */
   size: number;
-  /** WebP quality 1–100. */
+  /** WebP quality 1-100. */
   quality: number;
   /** Optional: exact width for fit 'cover'. */
   width?: number;

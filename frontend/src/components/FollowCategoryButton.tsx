@@ -78,7 +78,7 @@ export function FollowCategoryButton({
         size="sm"
         onClick={handleClick}
         disabled={loading}
-        aria-label={title ? `${label} – ${title}` : label}
+        aria-label={title ? `${label} - ${title}` : label}
         title={t('jobs.categoryNewsletterDescription')}
         className="shrink-0"
       >

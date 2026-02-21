@@ -19,11 +19,11 @@ export class NotificationsService {
     private readonly prisma: PrismaService,
     private readonly emailService: EmailService,
     private readonly emailTemplates: EmailTemplatesService,
-  ) {}
+  ) { }
 
   /**
    * Returns true if the job should be excluded from notification emails (newsletter, digest, instant).
-   * Central place for all rules – add new conditions here.
+   * Central place for all rules - add new conditions here.
    */
   private shouldExcludeJobFromNotificationEmails(job: {
     author?: { password: string | null } | null;
@@ -99,12 +99,12 @@ export class NotificationsService {
         },
       },
     });
-    // Only process published jobs – never send instant notifications for drafts or when creating
+    // Only process published jobs - never send instant notifications for drafts or when creating
     if (!job || job.status !== JobStatus.PUBLISHED) return;
     if (this.shouldExcludeJobFromNotificationEmails(job)) return;
 
     const jobSkillIds = job.skills.map((js) => js.skillId);
-    if (jobSkillIds.length === 0) return; // no skills – no matching
+    if (jobSkillIds.length === 0) return; // no skills - no matching
 
     // Find freelancer users who have at least one matching skill
     const matchingUsers = await this.prisma.user.findMany({
@@ -233,7 +233,7 @@ export class NotificationsService {
         await this.emailService.sendHtml(author.email, subject, html);
       } else {
         this.logger.warn(
-          `Email not configured – skipping new-application notification to ${author.email}`,
+          `Email not configured - skipping new-application notification to ${author.email}`,
         );
       }
     } catch (error) {
@@ -277,7 +277,7 @@ export class NotificationsService {
     // Logs for jobs that are no longer published: mark as dispatched so we don't retry every day
     const skipLogIds: string[] = [];
 
-    // Group by user – only include jobs that are still PUBLISHED
+    // Group by user - only include jobs that are still PUBLISHED
     const byUser = new Map<
       string,
       {
@@ -380,7 +380,7 @@ export class NotificationsService {
         await this.emailService.sendHtml(user.email, subject, html);
       } else {
         this.logger.warn(
-          `Email not configured – skipping notification to ${user.email}`,
+          `Email not configured - skipping notification to ${user.email}`,
         );
       }
     } catch (error) {
@@ -436,7 +436,7 @@ export class NotificationsService {
         await this.emailService.sendHtml(user.email, subject, html);
       } else {
         this.logger.warn(
-          `Email not configured – skipping digest to ${user.email}`,
+          `Email not configured - skipping digest to ${user.email}`,
         );
       }
     } catch (error) {
@@ -648,7 +648,7 @@ export class NotificationsService {
         await this.emailService.sendHtml(user.email, subject, html);
       } else {
         this.logger.warn(
-          `Email not configured – skipping category newsletter to ${user.email}`,
+          `Email not configured - skipping category newsletter to ${user.email}`,
         );
       }
     } catch (error) {

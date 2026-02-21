@@ -11,7 +11,7 @@ export interface AuthUser {
   surname: string | null;
   /** Avatar image URL (S3-compatible storage, 500x500). */
   avatarUrl?: string | null;
-  /** Phone number – used only for important notifications about application status. */
+  /** Phone number - used only for important notifications about application status. */
   phone?: string | null;
   /** Linked company id. */
   companyId?: string | null;
@@ -1342,7 +1342,7 @@ export interface CreateJobPayload {
   locationId?: string | null;
   isRemote: boolean;
   projectType: ProjectType;
-  /** Number of days to collect offers (7–30). */
+  /** Number of days to collect offers (7-30). */
   offerDays?: number;
   /** Expected number of offers (6, 10 or 14). */
   expectedOffers?: number;
@@ -1497,7 +1497,7 @@ export async function getFavoritesJobs(): Promise<Job[]> {
 }
 
 /**
- * Server-side fetch – accepts token and locale (no localStorage).
+ * Server-side fetch - accepts token and locale (no localStorage).
  * Returns empty array on error.
  */
 export async function getFavoritesJobsServer(
@@ -1577,7 +1577,7 @@ export async function getUserApplications(): Promise<UserApplication[]> {
 }
 
 /**
- * Server-side fetch – accepts token and locale (no localStorage).
+ * Server-side fetch - accepts token and locale (no localStorage).
  * Returns empty array on error.
  */
 export async function getUserApplicationsServer(

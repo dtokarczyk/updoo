@@ -34,7 +34,7 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const subject = 'Test wiadomość – MailerSend (Hoplo)';
+  const subject = 'Test wiadomość - MailerSend (Hoplo)';
   const text =
     'To jest testowa wiadomość wysłana przez skrypt gmail-send-test.\n\nJeśli ją widzisz, integracja z MailerSend działa poprawnie.';
   const html = `<p>${text.replace(/\n/g, '</p><p>')}</p>`;

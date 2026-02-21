@@ -499,7 +499,7 @@ export class JobsService implements OnModuleInit {
   }
 
   /**
-   * Extract 1–5 expected skill names from job title and description via AI.
+   * Extract 1-5 expected skill names from job title and description via AI.
    * Runs in background; errors are logged and not thrown.
    */
   private async extractExpectedSkillNames(
@@ -518,9 +518,9 @@ export class JobsService implements OnModuleInit {
       `Tytuł: ${title}`,
       `Opis (fragment): ${description.slice(0, 2000)}`,
       allowed.length > 0
-        ? `Dostępne skille – wybierz wyłącznie 1–5 nazw z tej listy (zwróć tablicę JSON skillNames):\n${allowed.join(', ')}`
-        : 'Brak zdefiniowanych skilli w systemie. Podaj 1–5 krótkich nazw umiejętności (technologie, narzędzia, dziedziny) jako tablicę JSON skillNames.',
-      'Zwróć JSON: {"skillNames": ["Nazwa1", "Nazwa2"]}. Tylko nazwy z podanej listy (gdy lista jest pusta – dowolne krótkie nazwy).',
+        ? `Dostępne skille - wybierz wyłącznie 1-5 nazw z tej listy (zwróć tablicę JSON skillNames):\n${allowed.join(', ')}`
+        : 'Brak zdefiniowanych skilli w systemie. Podaj 1-5 krótkich nazw umiejętności (technologie, narzędzia, dziedziny) jako tablicę JSON skillNames.',
+      'Zwróć JSON: {"skillNames": ["Nazwa1", "Nazwa2"]}. Tylko nazwy z podanej listy (gdy lista jest pusta - dowolne krótkie nazwy).',
     ].join('\n\n');
 
     try {
@@ -544,8 +544,8 @@ export class JobsService implements OnModuleInit {
                 maxItems: 5,
                 description:
                   allowed.length > 0
-                    ? '1–5 nazw umiejętności z podanej listy'
-                    : '1–5 nazw umiejętności',
+                    ? '1-5 nazw umiejętności z podanej listy'
+                    : '1-5 nazw umiejętności',
               },
             },
           },

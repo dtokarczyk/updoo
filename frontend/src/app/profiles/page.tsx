@@ -20,11 +20,15 @@ function ProfileCard({
   showVerificationState: boolean;
 }) {
   const isUnverified = !profile.isVerified;
-  const hasRejection = !!profile.rejectedReason;
-  const borderClass =
-    showVerificationState && isUnverified
-      ? 'ring-2 ring-amber-500 dark:ring-amber-400'
-      : '';
+  const hasRejection = !!profile.rejectedReason || !!profile.rejectedAt;
+  const isPending = isUnverified && !hasRejection;
+  const borderClass = showVerificationState
+    ? hasRejection
+      ? 'ring-2 ring-red-500 dark:ring-red-400'
+      : isPending
+        ? 'ring-2 ring-amber-500 dark:ring-amber-400'
+        : ''
+    : '';
 
   return (
     <Link href={`/company/${profile.slug}`} className="block h-full">
@@ -45,7 +49,7 @@ function ProfileCard({
         </CardHeader>
         <CardContent className="pt-0">
           {hasRejection && showVerificationState && (
-            <p className="text-xs text-amber-700 dark:text-amber-300 line-clamp-2 mb-2">
+            <p className="text-xs text-red-700 dark:text-red-300 line-clamp-2 mb-2">
               {t(locale, 'company.rejectionReason')}: {profile.rejectedReason}
             </p>
           )}

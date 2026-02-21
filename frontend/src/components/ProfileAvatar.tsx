@@ -21,7 +21,7 @@ type ProfileAvatarProps = {
 };
 
 /**
- * Avatar for the current logged-in user. Uses React Query auth profile – updates
+ * Avatar for the current logged-in user. Uses React Query auth profile - updates
  * automatically after profile/avatar mutations (refetch). Key on image forces
  * remount when URL or userKey changes so the browser loads the new image.
  */

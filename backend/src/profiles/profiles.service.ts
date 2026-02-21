@@ -22,7 +22,7 @@ export class ProfilesService {
     private readonly storageService: StorageService,
     private readonly emailService: EmailService,
     private readonly i18nService: I18nService,
-  ) {}
+  ) { }
 
   /**
    * Check if slug is available (no other profile uses it, or only the excluded one).
@@ -154,7 +154,10 @@ export class ProfilesService {
   async countPendingForAdmin(isAdmin: boolean): Promise<{ count: number }> {
     if (!isAdmin) return { count: 0 };
     const count = await this.prisma.profile.count({
-      where: { isVerified: false },
+      where: {
+        isVerified: false,
+        rejectedAt: null, // exclude rejected - banner only for profiles awaiting verification
+      },
     });
     return { count };
   }

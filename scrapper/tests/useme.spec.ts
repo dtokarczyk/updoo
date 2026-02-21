@@ -119,7 +119,7 @@ test.afterAll(async () => {
   }
 });
 
-// Resume from page 41 (output has pages 2–40 complete, page 41 had only 2 jobs)
+// Resume from page 41 (output has pages 2-40 complete, page 41 had only 2 jobs)
 const startPage = 41;
 const endPage = 2001; // 2000 pages total (from 2 to 2001)
 const baseUrl = 'https://useme.com/pl/jobs/';

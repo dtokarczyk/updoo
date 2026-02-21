@@ -38,7 +38,7 @@ function getInitialAuthProfile(): ProfileResponse | null {
 export interface UseAuthQueryReturn {
   user: AuthUser | null;
   isLoggedIn: boolean;
-  /** Key that changes on each refetch – use as cache buster for avatar URL. */
+  /** Key that changes on each refetch - use as cache buster for avatar URL. */
   userKey: number;
   /** Refetch user from API and update cache (e.g. after login/register/avatar change). */
   refreshAuth: () => Promise<void>;

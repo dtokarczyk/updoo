@@ -219,8 +219,8 @@ export class ProposalService {
 
     const message = isNewUser
       ? lang === 'pl'
-        ? 'Konto utworzone. Wysłaliśmy na Twój adres e-mail dane logowania – zaloguj się i zmień hasło.'
-        : 'Account created. We have sent login details to your email – log in and change your password.'
+        ? 'Konto utworzone. Wysłaliśmy na Twój adres e-mail dane logowania - zaloguj się i zmień hasło.'
+        : 'Account created. We have sent login details to your email - log in and change your password.'
       : lang === 'pl'
         ? 'Oferta została opublikowana. Zaloguj się, aby zarządzać ofertą.'
         : 'The offer has been published. Log in to manage your listing.';

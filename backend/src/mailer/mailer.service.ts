@@ -50,12 +50,12 @@ export class MailerService {
       );
     }
 
-    // Filter out auto-generated (fake) users – never send them real emails.
+    // Filter out auto-generated (fake) users - never send them real emails.
     const realRecipients = await this.filterOutFakeUsers(toList);
     if (realRecipients.length === 0) {
       const skippedId = `skipped-fake-${Date.now()}`;
       this.logger.log(
-        `All recipients are fake users – skipping email "${dto.subject}"`,
+        `All recipients are fake users - skipping email "${dto.subject}"`,
       );
       return { id: skippedId };
     }
@@ -246,8 +246,8 @@ function getMailerSendApiMessage(error: unknown): string | null {
   const msg =
     err?.body?.message ??
     (typeof err?.response?.body === 'object' &&
-    err?.response?.body !== null &&
-    'message' in err.response.body
+      err?.response?.body !== null &&
+      'message' in err.response.body
       ? (err.response.body as { message?: string }).message
       : null);
   return typeof msg === 'string' && msg.length > 0 ? msg : null;

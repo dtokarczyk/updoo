@@ -1,5 +1,5 @@
 /**
- * React Query layer for API – query hooks end with Query, mutation hooks with Mutation.
+ * React Query layer for API - query hooks end with Query, mutation hooks with Mutation.
  * Re-export useAuthQuery as useAuth for backward compatibility.
  */
 

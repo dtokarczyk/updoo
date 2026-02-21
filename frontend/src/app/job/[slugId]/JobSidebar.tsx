@@ -22,8 +22,8 @@ const BILLING_LABELS: Record<string, string> = {
 
 const HOURS_LABELS: Record<string, string> = {
   LESS_THAN_10: '< 10 h/tydz.',
-  FROM_11_TO_20: '11–20 h/tydz.',
-  FROM_21_TO_30: '21–30 h/tydz.',
+  FROM_11_TO_20: '11-20 h/tydz.',
+  FROM_21_TO_30: '21-30 h/tydz.',
   MORE_THAN_30: '> 30 h/tydz.',
 };
 

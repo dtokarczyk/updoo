@@ -71,9 +71,9 @@ export default function AdminUsersPage() {
                 users.map((u) => (
                   <TableRow key={u.id}>
                     <TableCell className="font-medium">{u.email}</TableCell>
-                    <TableCell>{u.name ?? '–'}</TableCell>
-                    <TableCell>{u.surname ?? '–'}</TableCell>
-                    <TableCell>{u.accountType ?? '–'}</TableCell>
+                    <TableCell>{u.name ?? '-'}</TableCell>
+                    <TableCell>{u.surname ?? '-'}</TableCell>
+                    <TableCell>{u.accountType ?? '-'}</TableCell>
                     <TableCell className="text-right">
                       {format(new Date(u.createdAt), 'dd.MM.yyyy HH:mm')}
                     </TableCell>

@@ -102,13 +102,13 @@ model User {
   email         String          @unique
   /** Null for OAuth-only users (e.g. Google). */
   password      String?
-  /** Google OAuth sub (subject) – unique per Google account. */
+  /** Google OAuth sub (subject) - unique per Google account. */
   googleId      String?         @unique
   /** Avatar image URL (stored in S3-compatible storage, compressed to 500x500). */
   avatarUrl     String?
   name          String?
   surname       String?
-  /** Phone number – used only for important notifications about application status. */
+  /** Phone number - used only for important notifications about application status. */
   phone         String?
   /** Linked company (NIP from Company.nip). */
   companyId     String?

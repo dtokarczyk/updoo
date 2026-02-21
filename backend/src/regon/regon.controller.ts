@@ -13,7 +13,7 @@ import { GetUser } from '../auth/get-user.decorator';
 import type { JwtUser } from '../auth/get-user.decorator';
 
 /**
- * REST API for REGON (GUS BIR 1.2) – Polish business registry.
+ * REST API for REGON (GUS BIR 1.2) - Polish business registry.
  * Production BIR 1.2: https://wyszukiwarkaregon.stat.gov.pl/wsBIR/UslugaBIRzewnPubl.svc
  *
  * Requires REGON_API_KEY in environment (API key from GUS).
@@ -21,7 +21,7 @@ import type { JwtUser } from '../auth/get-user.decorator';
  */
 @Controller('regon')
 export class RegonController {
-  constructor(private readonly regonService: RegonService) {}
+  constructor(private readonly regonService: RegonService) { }
 
   /**
    * Get full company data by NIP, REGON, or KRS.

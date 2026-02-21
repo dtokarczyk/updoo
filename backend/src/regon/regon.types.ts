@@ -1,5 +1,5 @@
 /**
- * Search result type for REGON (bir1) – keys as in GUS API (DaneSzukajPodmioty).
+ * Search result type for REGON (bir1) - keys as in GUS API (DaneSzukajPodmioty).
  */
 export interface SearchResultRow {
   Regon: string;

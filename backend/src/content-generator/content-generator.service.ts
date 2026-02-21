@@ -30,7 +30,7 @@ export class ContentGeneratorService {
   constructor(
     private readonly aiService: AiService,
     private readonly prisma: PrismaService,
-  ) {}
+  ) { }
 
   /**
    * Call AI to generate job metadata (billing, rate, experience, category, skills, etc.) from title + description.
@@ -68,7 +68,7 @@ export class ContentGeneratorService {
       `Opis (fragment): ${params.description.slice(0, 1500)}`,
       `Dostępne kategorie (wybierz dokładnie jeden slug najlepiej pasujący do opisu oferty): ${params.categorySlugs}`,
       `Dostępne umiejętności (wybierz od 1 do 4 nazw najlepiej pasujących do realizacji tej oferty): ${allowedSkillNames.join(', ')}`,
-      `Zwróć poprawne wartości enum, realistyczną stawkę w PLN (typowa dla polskiego rynku, np. 1000–5000 dla FIXED, 50–200 dla HOURLY), categorySlug z podanej listy oraz skillNames – tablicę od 1 do 4 nazw umiejętności z podanej listy.`,
+      `Zwróć poprawne wartości enum, realistyczną stawkę w PLN (typowa dla polskiego rynku, np. 1000-5000 dla FIXED, 50-200 dla HOURLY), categorySlug z podanej listy oraz skillNames - tablicę od 1 do 4 nazw umiejętności z podanej listy.`,
     ].join('\n');
 
     const properties: Record<string, unknown> = {
@@ -79,7 +79,7 @@ export class ContentGeneratorService {
       },
       rate: {
         type: 'number',
-        description: 'Stawka/budżet w PLN (np. 1000–5000 fixed, 50–200 hourly)',
+        description: 'Stawka/budżet w PLN (np. 1000-5000 fixed, 50-200 hourly)',
       },
       experienceLevel: {
         type: 'string',
@@ -155,15 +155,15 @@ export class ContentGeneratorService {
     const hoursPerWeek =
       billingType === BillingType.HOURLY
         ? ALLOWED.hoursPerWeek[
-            Math.floor(Math.random() * ALLOWED.hoursPerWeek.length)
-          ]
+        Math.floor(Math.random() * ALLOWED.hoursPerWeek.length)
+        ]
         : null;
 
     const rateNegotiable = Math.random() < 0.3;
 
     const expectedOffers =
       ALLOWED.expectedOffers[
-        Math.floor(Math.random() * ALLOWED.expectedOffers.length)
+      Math.floor(Math.random() * ALLOWED.expectedOffers.length)
       ];
 
     const expectedApplicantTypesCount =
@@ -178,7 +178,7 @@ export class ContentGeneratorService {
 
     const categorySlug =
       typeof parsed.categorySlug === 'string' &&
-      allowedCategorySlugs.includes(parsed.categorySlug.trim())
+        allowedCategorySlugs.includes(parsed.categorySlug.trim())
         ? parsed.categorySlug.trim()
         : allowedCategorySlugs[0];
 
@@ -287,7 +287,7 @@ export class ContentGeneratorService {
                 description: {
                   type: 'string',
                   description:
-                    'Opis oferty pracy. Zachowaj strukturę, sekcje i styl benchmarku. Przeredaguj tylko minimalnie słownictwo. WYMAGANE: jeśli to możliwe podziel tekst na akapity – każdy logiczny fragment (np. wprowadzenie, wymagania, zakres) oddziel podwójną nową linią (\\n\\n). Minimum 2–3 akapity. Wypunktowania formatuj od znaku "-" (np. "- wymaganie").',
+                    'Opis oferty pracy. Zachowaj strukturę, sekcje i styl benchmarku. Przeredaguj tylko minimalnie słownictwo. WYMAGANE: jeśli to możliwe podziel tekst na akapity - każdy logiczny fragment (np. wprowadzenie, wymagania, zakres) oddziel podwójną nową linią (\\n\\n). Minimum 2-3 akapity. Wypunktowania formatuj od znaku "-" (np. "- wymaganie").',
                 },
               },
             },
@@ -316,7 +316,7 @@ export class ContentGeneratorService {
         throw new Error('No categories in database.');
       }
 
-      // Load all skills from DB – names go into AI enum
+      // Load all skills from DB - names go into AI enum
       const skills = await this.prisma.skill.findMany({
         select: { id: true, name: true },
       });
@@ -337,11 +337,11 @@ export class ContentGeneratorService {
       const skillIds =
         metadata.skillNames.length > 0
           ? (
-              await this.prisma.skill.findMany({
-                where: { name: { in: metadata.skillNames } },
-                select: { id: true },
-              })
-            ).map((s) => s.id)
+            await this.prisma.skill.findMany({
+              where: { name: { in: metadata.skillNames } },
+              select: { id: true },
+            })
+          ).map((s) => s.id)
           : [];
 
       const safeUser: GeneratedJobFormData['user'] = {

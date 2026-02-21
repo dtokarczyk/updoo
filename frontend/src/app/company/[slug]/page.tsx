@@ -144,11 +144,11 @@ export default function CompanyProfilePage() {
       setProfile((prev) =>
         prev
           ? {
-              ...prev,
-              isVerified: true,
-              rejectedAt: null,
-              rejectedReason: null,
-            }
+            ...prev,
+            isVerified: true,
+            rejectedAt: null,
+            rejectedReason: null,
+          }
           : null,
       );
       router.refresh();
@@ -189,7 +189,7 @@ export default function CompanyProfilePage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
-      {/* Cover photo – 16:9 above content */}
+      {/* Cover photo - 16:9 above content */}
       {profile.coverPhotoUrl ? (
         <div className="-mx-4 mb-8 sm:-mx-6 sm:rounded-lg overflow-hidden aspect-video bg-muted relative">
           <Image
@@ -203,7 +203,7 @@ export default function CompanyProfilePage() {
       ) : null}
 
       <div className="grid gap-8 lg:grid-cols-6">
-        {/* Lewa kolumna – tytuł + opis */}
+        {/* Lewa kolumna - tytuł + opis */}
         <div className="lg:col-span-4 order-2 lg:order-1 space-y-6">
           <div>
             <div className="flex flex-wrap items-center gap-2">
@@ -281,7 +281,7 @@ export default function CompanyProfilePage() {
           ) : null}
         </div>
 
-        {/* Prawa kolumna – wszystkie dane */}
+        {/* Prawa kolumna - wszystkie dane */}
         <aside className="lg:col-span-2 lg:self-start lg:sticky lg:top-8 order-1 lg:order-2">
           <div className="space-y-6">
             {contactName && (

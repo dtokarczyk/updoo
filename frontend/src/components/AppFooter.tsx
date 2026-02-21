@@ -23,6 +23,12 @@ export function AppFooter({ initialLocale }: { initialLocale: Locale }) {
               {PROJECT_NAME}
             </Link>
             <Link
+              href="/blog"
+              className="text-sm text-muted-foreground underline hover:underline focus:outline-none focus:underline"
+            >
+              {t(initialLocale, 'footer.blog')}
+            </Link>
+            <Link
               href="/agreements/terms"
               target="_blank"
               rel="noopener noreferrer"

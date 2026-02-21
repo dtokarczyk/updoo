@@ -726,6 +726,24 @@
     "copyright": "© {year} Hoplo. Wszelkie prawa zastrzeżone.",
     "terms": "Regulamin",
     "privacy": "Polityka prywatności",
-    "cookieSettings": "Ustawienia plików cookie"
+    "cookieSettings": "Ustawienia plików cookie",
+    "blog": "Blog"
+  },
+  "blog": {
+    "title": "Blog",
+    "empty": "Brak wpisów na blogu.",
+    "notFound": "Nie znaleziono wpisu.",
+    "error": "Wystąpił błąd podczas ładowania wpisów bloga.",
+    "home": "Strona główna",
+    "toc": "Spis treści",
+    "createJob": "Utwórz darmowe ogłoszenie",
+    "sidebarTitle": "Dopiero zaczynasz korzystać z Hoplo?",
+    "sidebarDescription": "Załóż konto, aby szybciej znajdować ogłoszenia idealnie dopasowane do Ciebie.",
+    "register": "Zarejestruj się",
+    "haveAccount": "Mam już konto",
+    "login": "Zaloguj się",
+    "ctaTitle": "Załóż konto w Hoplo",
+    "ctaDescription": "Dołącz do platformy i znajdź ogłoszenia dopasowane do Twoich umiejętności.",
+    "otherPosts": "Pozostałe wpisy"
   }
 }

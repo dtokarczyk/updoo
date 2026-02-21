@@ -37,6 +37,8 @@ const metadataByLocale: Record<
     jobDetail: (title: string) => PageMeta;
     offersCategory: (categoryName: string, page: number) => PageMeta;
     companyList: PageMeta;
+    blog: PageMeta;
+    blogPost: (title: string) => PageMeta;
   }
 > = {
   pl: {
@@ -119,6 +121,15 @@ const metadataByLocale: Record<
       title: 'Wizytówki',
       description: `Lista zweryfikowanych wizytówek wykonawców i firm w ${PROJECT_NAME}.`,
     },
+    blog: {
+      title: `Blog - ${PROJECT_NAME}`,
+      description:
+        'Odkryj najnowsze artykuły i poradniki. Wiedza o zleceniach i freelancingu.',
+    },
+    blogPost: (title: string) => ({
+      title: `${title} | Blog - ${PROJECT_NAME}`,
+      description: `Przeczytaj wpis na blogu: ${title}.`,
+    }),
   },
   en: {
     default: {
@@ -200,6 +211,15 @@ const metadataByLocale: Record<
       title: 'Visiting cards',
       description: `List of verified visiting cards of contractors and companies on ${PROJECT_NAME}.`,
     },
+    blog: {
+      title: `Blog - ${PROJECT_NAME}`,
+      description:
+        'Discover the latest articles and guides. Knowledge about gigs and freelancing.',
+    },
+    blogPost: (title: string) => ({
+      title: `${title} | Blog - ${PROJECT_NAME}`,
+      description: `Read blog post: ${title}.`,
+    }),
   },
 };
 

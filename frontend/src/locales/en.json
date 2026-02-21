@@ -726,6 +726,24 @@
     "copyright": "© {year} Hoplo. All rights reserved.",
     "terms": "Terms of service",
     "privacy": "Privacy policy",
-    "cookieSettings": "Cookie settings"
+    "cookieSettings": "Cookie settings",
+    "blog": "Blog"
+  },
+  "blog": {
+    "title": "Blog",
+    "empty": "No blog posts yet.",
+    "notFound": "Blog post not found.",
+    "error": "An error occurred while loading blog posts.",
+    "home": "Home",
+    "toc": "Table of contents",
+    "createJob": "Create free job listing",
+    "sidebarTitle": "Just starting with Hoplo?",
+    "sidebarDescription": "Create an account to find job listings that match your skills.",
+    "register": "Register",
+    "haveAccount": "I already have an account",
+    "login": "Log in",
+    "ctaTitle": "Create a Hoplo account",
+    "ctaDescription": "Join the platform and find job listings that match your skills.",
+    "otherPosts": "More posts"
   }
 }

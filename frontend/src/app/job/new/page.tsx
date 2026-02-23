@@ -18,6 +18,7 @@ import {
 import { useTranslations } from '@/hooks/useTranslations';
 import { JobForm } from '@/components/JobForm';
 import type { CreateJobPayload } from '@/lib/api';
+import { conversionEvent } from '@/lib/conversion-event';
 
 export default function NewListingPage() {
   const router = useRouter();
@@ -44,6 +45,7 @@ export default function NewListingPage() {
 
     // User is logged in, create the job
     await createJob(data);
+    conversionEvent({ googleEvent: 'generate_lead', fbqEvent: 'Lead' });
     // Clear draft after successful creation
     clearDraftJob();
     router.push('/');

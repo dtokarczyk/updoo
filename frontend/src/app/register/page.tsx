@@ -24,6 +24,7 @@ import {
 } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from '@/hooks/useTranslations';
+import { conversionEvent } from '@/lib/conversion-event';
 
 function RegisterForm() {
   const router = useRouter();
@@ -54,19 +55,11 @@ function RegisterForm() {
       const data = await apiRegister(email, password, confirmPassword, true);
       setAuth(data);
       refreshAuth();
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'sign_up', { method: 'email' });
-      }
-      if (
-        typeof window !== 'undefined' &&
-        typeof (window as unknown as { fbq?: (a: string, b: string) => void })
-          .fbq === 'function'
-      ) {
-        (window as unknown as { fbq: (a: string, b: string) => void }).fbq(
-          'track',
-          'CompleteRegistration',
-        );
-      }
+      conversionEvent({
+        googleEvent: 'sign_up',
+        googleParams: { method: 'email' },
+        fbqEvent: 'CompleteRegistration',
+      });
       router.push('/onboarding');
       router.refresh();
     } catch (err) {

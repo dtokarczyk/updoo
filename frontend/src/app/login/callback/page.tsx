@@ -12,6 +12,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTranslations } from '@/hooks/useTranslations';
+import { conversionEvent } from '@/lib/conversion-event';
 
 const PROFILE_FETCH_TIMEOUT_MS = 15_000;
 /** Delay before treating missing token as "redirect to login" (avoids redirect on first paint before params are ready) */
@@ -101,19 +102,12 @@ function LoginCallbackContent() {
         clearTimeout(timeoutId);
         setAuth({ access_token: token, user });
         refreshAuth();
-        if (isNewUser && typeof window !== 'undefined' && window.gtag) {
-          window.gtag('event', 'sign_up', { method: 'google' });
-        }
-        if (
-          isNewUser &&
-          typeof window !== 'undefined' &&
-          typeof (window as unknown as { fbq?: (a: string, b: string) => void })
-            .fbq === 'function'
-        ) {
-          (window as unknown as { fbq: (a: string, b: string) => void }).fbq(
-            'track',
-            'CompleteRegistration',
-          );
+        if (isNewUser) {
+          conversionEvent({
+            googleEvent: 'sign_up',
+            googleParams: { method: 'google' },
+            fbqEvent: 'CompleteRegistration',
+          });
         }
         const target =
           returnUrl ||
